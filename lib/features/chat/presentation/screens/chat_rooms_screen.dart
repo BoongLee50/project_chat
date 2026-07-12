@@ -115,8 +115,7 @@ class ChatRoomsScreen extends StatelessWidget {
               AppDimens.gapMd,
             ),
             itemCount: _rooms.length,
-            separatorBuilder: (_, _) =>
-                const SizedBox(height: AppDimens.gapSm),
+            separatorBuilder: (_, _) => const SizedBox(height: AppDimens.gapSm),
             itemBuilder: (context, i) => _RoomTile(room: _rooms[i]),
           ),
         ),

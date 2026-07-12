@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
 import '../features/chat/presentation/screens/chat_rooms_screen.dart';
+import '../features/friend/presentation/screens/friends_screen.dart';
 import '../features/garden/presentation/screens/garden_screen.dart';
 import '../features/post/presentation/screens/home_screen.dart';
 import '../features/profile/presentation/screens/profile_screen.dart';
 import '../shared/widgets/main_bottom_nav.dart';
-import '../shared/widgets/placeholder_screen.dart';
 
 /// 로그인·온보딩 이후의 메인 셸. 하단 5탭으로 화면을 전환한다.
 /// (대화방·친구·프로필은 아직 임시 화면)
@@ -32,7 +32,7 @@ class _MainShellState extends State<MainShell> {
             HomeScreen(),
             GardenScreen(),
             ChatRoomsScreen(),
-            PlaceholderScreen(title: '친구', icon: Icons.people_outline),
+            FriendsScreen(),
             ProfileScreen(),
           ],
         ),
