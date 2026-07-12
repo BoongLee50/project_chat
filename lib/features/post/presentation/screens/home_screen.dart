@@ -3,63 +3,37 @@ import 'package:flutter/material.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimens.dart';
 
-/// 홈 — 오늘의 포스트 (정적 UI).
+/// 홈 — 오늘의 포스트 (정적 UI). 메인 셸의 '포스트' 탭 본문.
 ///
-/// 온보딩 완료 후 도착하는 메인 화면. 사진 등록/타이머/좋아요 등의
-/// 실제 동작은 서버 연동 단계에서 붙인다. (docs/01, 기획서 3장)
-class HomeScreen extends StatefulWidget {
+/// 사진 등록/타이머/좋아요 등의 실제 동작은 서버 연동 단계에서 붙인다.
+/// (docs/01, 기획서 3장)
+class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends State<HomeScreen> {
-  int _navIndex = 0; // 0=포스트
-
-  void _onTapTab(int i, String label) {
-    if (i == 0) return;
-    setState(() => _navIndex = i);
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text('[$label] 화면은 곧 만들 예정이에요.')));
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(
-                  AppDimens.pagePad,
-                  AppDimens.gapMd,
-                  AppDimens.pagePad,
-                  AppDimens.gapMd,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
-                    _TopBar(),
-                    SizedBox(height: AppDimens.gapMd),
-                    _InfoCards(),
-                    SizedBox(height: AppDimens.gapMd),
-                    _PostPhotoCard(),
-                    SizedBox(height: AppDimens.gapMd),
-                    _NameLikeRow(),
-                    SizedBox(height: AppDimens.gapLg),
-                    _OneLiner(),
-                    SizedBox(height: AppDimens.gapLg),
-                    _ShareButton(),
-                  ],
-                ),
-              ),
-            ),
-            _BottomNav(selected: _navIndex, onTap: _onTapTab),
-          ],
-        ),
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(
+        AppDimens.pagePad,
+        AppDimens.gapMd,
+        AppDimens.pagePad,
+        AppDimens.gapMd,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: const [
+          _TopBar(),
+          SizedBox(height: AppDimens.gapMd),
+          _InfoCards(),
+          SizedBox(height: AppDimens.gapMd),
+          _PostPhotoCard(),
+          SizedBox(height: AppDimens.gapMd),
+          _NameLikeRow(),
+          SizedBox(height: AppDimens.gapLg),
+          _OneLiner(),
+          SizedBox(height: AppDimens.gapLg),
+          _ShareButton(),
+        ],
       ),
     );
   }
@@ -453,88 +427,6 @@ class _ShareButton extends StatelessWidget {
         label: const Text(
           '포스트 공유하기',
           style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
-        ),
-      ),
-    );
-  }
-}
-
-// ── 하단 내비게이션 ──────────────────────────────────────
-class _BottomNav extends StatelessWidget {
-  const _BottomNav({required this.selected, required this.onTap});
-
-  final int selected;
-  final void Function(int index, String label) onTap;
-
-  static const _items = [
-    (Icons.photo_camera_rounded, '포스트'),
-    (Icons.nightlight_round, '달빛가든'),
-    (Icons.chat_bubble_outline, '대화방'),
-    (Icons.people_outline, '친구'),
-    (Icons.person_outline, '프로필'),
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.fromLTRB(12, 0, 12, 8),
-      padding: const EdgeInsets.symmetric(vertical: 10),
-      decoration: BoxDecoration(
-        color: AppColors.night,
-        borderRadius: BorderRadius.circular(AppDimens.radiusLg),
-        border: Border.all(color: AppColors.gold.withValues(alpha: 0.6)),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          for (var i = 0; i < _items.length; i++)
-            _NavItem(
-              icon: _items[i].$1,
-              label: _items[i].$2,
-              active: i == selected,
-              onTap: () => onTap(i, _items[i].$2),
-            ),
-        ],
-      ),
-    );
-  }
-}
-
-class _NavItem extends StatelessWidget {
-  const _NavItem({
-    required this.icon,
-    required this.label,
-    required this.active,
-    required this.onTap,
-  });
-
-  final IconData icon;
-  final String label;
-  final bool active;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final color = active ? AppColors.gold : AppColors.textSecondary;
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, color: color, size: 26),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              style: TextStyle(
-                color: color,
-                fontSize: 12,
-                fontWeight: active ? FontWeight.w700 : FontWeight.w400,
-              ),
-            ),
-          ],
         ),
       ),
     );

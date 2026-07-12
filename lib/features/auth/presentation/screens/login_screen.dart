@@ -100,9 +100,9 @@ class _SocialButtons extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // 정적 UI 흐름 — 실제 소셜 인증 대신 온보딩(프로필 생성)으로 이동한다.
-    void startOnboarding() => Navigator.of(context).push(
-          MaterialPageRoute(builder: (_) => const NicknameScreen()),
-        );
+    void startOnboarding() => Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const NicknameScreen()));
 
     return Column(
       children: [
@@ -113,7 +113,11 @@ class _SocialButtons extends StatelessWidget {
           onPressed: startOnboarding,
           leading: _badge(
             bg: Colors.white,
-            child: const Icon(Icons.chat_bubble, size: 16, color: AppColors.line),
+            child: const Icon(
+              Icons.chat_bubble,
+              size: 16,
+              color: AppColors.line,
+            ),
           ),
         ),
         const SizedBox(height: AppDimens.gapMd),
@@ -124,7 +128,11 @@ class _SocialButtons extends StatelessWidget {
           onPressed: startOnboarding,
           leading: _badge(
             bg: AppColors.kakaoText,
-            child: const Icon(Icons.chat_bubble, size: 16, color: AppColors.kakao),
+            child: const Icon(
+              Icons.chat_bubble,
+              size: 16,
+              color: AppColors.kakao,
+            ),
           ),
         ),
         const SizedBox(height: AppDimens.gapMd),

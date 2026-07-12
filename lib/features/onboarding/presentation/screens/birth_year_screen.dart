@@ -19,8 +19,10 @@ class _BirthYearScreenState extends State<BirthYearScreen> {
   // 만 18세 이상만 가입 가능 → 올해 - 18 이 최대 출생년도.
   static final int _maxYear = DateTime.now().year - 18;
   static const int _minYear = 1960;
-  late final List<int> _years =
-      List.generate(_maxYear - _minYear + 1, (i) => _maxYear - i);
+  late final List<int> _years = List.generate(
+    _maxYear - _minYear + 1,
+    (i) => _maxYear - i,
+  );
 
   int _selectedIndex = 5; // 기본값(대략 20대 초반)
 
@@ -31,15 +33,16 @@ class _BirthYearScreenState extends State<BirthYearScreen> {
       title: '출생년도 설정',
       subtitle: '정확한 나이 확인을 위해 출생년도를 선택해주세요.',
       note: '* 이 정보는 다른 사용자에게 공개되지 않습니다.',
-      onSubmit: () => Navigator.of(context).push(
-        MaterialPageRoute(builder: (_) => const GenderCountryScreen()),
-      ),
+      onSubmit: () => Navigator.of(
+        context,
+      ).push(MaterialPageRoute(builder: (_) => const GenderCountryScreen())),
       child: SizedBox(
         height: 280,
         child: CupertinoPicker(
           itemExtent: 56,
-          scrollController:
-              FixedExtentScrollController(initialItem: _selectedIndex),
+          scrollController: FixedExtentScrollController(
+            initialItem: _selectedIndex,
+          ),
           onSelectedItemChanged: (i) => setState(() => _selectedIndex = i),
           selectionOverlay: Container(
             margin: const EdgeInsets.symmetric(horizontal: 12),

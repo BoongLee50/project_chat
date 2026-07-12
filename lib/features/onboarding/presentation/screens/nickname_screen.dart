@@ -40,9 +40,9 @@ class _NicknameScreenState extends State<NicknameScreen> {
       title: '닉네임 설정',
       subtitle: '달빛톡에서 사용할 닉네임을 입력해주세요.',
       submitEnabled: _valid,
-      onSubmit: () => Navigator.of(context).push(
-        MaterialPageRoute(builder: (_) => const BirthYearScreen()),
-      ),
+      onSubmit: () => Navigator.of(
+        context,
+      ).push(MaterialPageRoute(builder: (_) => const BirthYearScreen())),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -116,7 +116,10 @@ class _Bullet extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('• ', style: TextStyle(color: AppColors.textSecondary, fontSize: 15)),
+          const Text(
+            '• ',
+            style: TextStyle(color: AppColors.textSecondary, fontSize: 15),
+          ),
           Expanded(
             child: Text(
               text,
