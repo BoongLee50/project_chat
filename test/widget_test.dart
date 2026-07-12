@@ -6,9 +6,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:project_chat/app/app.dart';
 
 void main() {
-  testWidgets('앱이 스캐폴딩 상태로 렌더된다', (WidgetTester tester) async {
+  testWidgets('로그인 화면이 렌더되고 소셜 버튼이 보인다', (WidgetTester tester) async {
     await tester.pumpWidget(const DalbittokApp());
 
-    expect(find.text('달빛톡 · scaffold'), findsOneWidget);
+    expect(find.text('LINE으로 로그인'), findsOneWidget);
+    expect(find.text('카카오톡으로 로그인'), findsOneWidget);
+    expect(find.text('Google로 로그인'), findsOneWidget);
   });
 }

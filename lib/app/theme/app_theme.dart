@@ -1,15 +1,47 @@
 import 'package:flutter/material.dart';
 
-/// 야간 컨셉 다크 테마의 골격.
+import 'app_colors.dart';
+import 'app_dimens.dart';
+
+/// 앱 전역 다크 테마.
 ///
-/// 색상·타이포 토큰(달빛/밤 컨셉)은 디자인 확정 시 채운다.
-/// 앱은 다크 모드 고정으로 시작한다.
+/// 팔레트는 [AppColors], 치수는 [AppDimens]에 정의. 앱은 다크 모드 고정.
 class AppTheme {
   const AppTheme._();
 
-  static ThemeData get dark => ThemeData(
-        brightness: Brightness.dark,
-        useMaterial3: true,
-        colorScheme: const ColorScheme.dark(),
-      );
+  static ThemeData get dark {
+    final base = ThemeData.dark(useMaterial3: true);
+
+    final scheme = base.colorScheme.copyWith(
+      primary: AppColors.moonlight,
+      onPrimary: Colors.white,
+      secondary: AppColors.gold,
+      onSecondary: const Color(0xFF2A2400),
+      surface: AppColors.surface,
+      onSurface: AppColors.textPrimary,
+      error: AppColors.danger,
+    );
+
+    return base.copyWith(
+      colorScheme: scheme,
+      scaffoldBackgroundColor: AppColors.night,
+      textTheme: base.textTheme.apply(
+        bodyColor: AppColors.textPrimary,
+        displayColor: AppColors.textPrimary,
+      ),
+      appBarTheme: const AppBarTheme(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        foregroundColor: AppColors.textPrimary,
+      ),
+      cardTheme: CardThemeData(
+        color: AppColors.surface,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppDimens.radiusLg),
+          side: const BorderSide(color: AppColors.border),
+        ),
+      ),
+    );
+  }
 }

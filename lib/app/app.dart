@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../features/auth/presentation/screens/login_screen.dart';
 import 'theme/app_theme.dart';
 
 /// 앱 루트 위젯.
@@ -20,21 +21,7 @@ class DalbittokApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.dark,
       themeMode: ThemeMode.dark,
-      home: const _ScaffoldPlaceholder(),
-    );
-  }
-}
-
-/// 스캐폴딩 확인용 임시 홈. 실제 홈(오늘의 포스트)으로 교체 예정.
-class _ScaffoldPlaceholder extends StatelessWidget {
-  const _ScaffoldPlaceholder();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(
-        child: Text('달빛톡 · scaffold'),
-      ),
+      home: const LoginScreen(),
     );
   }
 }
