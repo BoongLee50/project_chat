@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../features/chat/presentation/screens/chat_rooms_screen.dart';
 import '../features/garden/presentation/screens/garden_screen.dart';
 import '../features/post/presentation/screens/home_screen.dart';
+import '../features/profile/presentation/screens/profile_screen.dart';
 import '../shared/widgets/main_bottom_nav.dart';
 import '../shared/widgets/placeholder_screen.dart';
 
@@ -29,9 +31,9 @@ class _MainShellState extends State<MainShell> {
           children: const [
             HomeScreen(),
             GardenScreen(),
-            PlaceholderScreen(title: '대화방', icon: Icons.chat_bubble_outline),
+            ChatRoomsScreen(),
             PlaceholderScreen(title: '친구', icon: Icons.people_outline),
-            PlaceholderScreen(title: '프로필', icon: Icons.person_outline),
+            ProfileScreen(),
           ],
         ),
       ),
