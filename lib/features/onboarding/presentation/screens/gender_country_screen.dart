@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimens.dart';
+import '../../../post/presentation/screens/home_screen.dart';
 import '../widgets/onboarding_scaffold.dart';
 
 /// 온보딩 3/3 — 성별 및 나라 설정 (정적 UI).
@@ -19,10 +20,11 @@ class _GenderCountryScreenState extends State<GenderCountryScreen> {
   bool get _valid => _gender != null && _country != null;
 
   void _finish() {
-    // 정적 UI — 실제 프로필 생성 API 연동은 이후 단계.
-    Navigator.of(context).popUntil((route) => route.isFirst);
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('프로필이 생성되었어요. 달빛 아래에서 만나요 🌙')),
+    // 프로필 생성 완료 → 홈(오늘의 포스트)으로 이동하며 온보딩/로그인 스택을 제거.
+    // 실제 프로필 생성 API 연동은 이후 단계.
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const HomeScreen()),
+      (route) => false,
     );
   }
 
@@ -145,7 +147,9 @@ class _SelectCard extends StatelessWidget {
             children: [
               IconTheme(
                 data: IconThemeData(
-                  color: selected ? AppColors.moonlight : AppColors.textSecondary,
+                  color: selected
+                      ? AppColors.moonlight
+                      : AppColors.textSecondary,
                 ),
                 child: leading,
               ),
