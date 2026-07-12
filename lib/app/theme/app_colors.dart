@@ -7,6 +7,7 @@ class AppColors {
 
   // 배경 (밤하늘) — 근검정 남보라 계열
   static const Color night = Color(0xFF0B0A14); // 페이지 배경
+  static const Color panel = Color(0xFF141122); // 온보딩 하단 패널(배경보다 약간 밝음)
   static const Color surface = Color(0xFF17142A); // 카드 / 시트
   static const Color surfaceHigh = Color(0xFF211C3B); // 강조 서피스
   static const Color glass = Color(0xB817142A); // 반투명 유리 카드(≈72%)

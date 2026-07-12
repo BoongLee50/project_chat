@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimens.dart';
+import '../../../onboarding/presentation/screens/nickname_screen.dart';
 
 /// 로그인 화면 (정적 UI).
 ///
@@ -98,12 +99,18 @@ class _SocialButtons extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 정적 UI 흐름 — 실제 소셜 인증 대신 온보딩(프로필 생성)으로 이동한다.
+    void startOnboarding() => Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => const NicknameScreen()),
+        );
+
     return Column(
       children: [
         _SocialButton(
           label: 'LINE으로 로그인',
           background: AppColors.line,
           foreground: Colors.white,
+          onPressed: startOnboarding,
           leading: _badge(
             bg: Colors.white,
             child: const Icon(Icons.chat_bubble, size: 16, color: AppColors.line),
@@ -114,6 +121,7 @@ class _SocialButtons extends StatelessWidget {
           label: '카카오톡으로 로그인',
           background: AppColors.kakao,
           foreground: AppColors.kakaoText,
+          onPressed: startOnboarding,
           leading: _badge(
             bg: AppColors.kakaoText,
             child: const Icon(Icons.chat_bubble, size: 16, color: AppColors.kakao),
@@ -124,6 +132,7 @@ class _SocialButtons extends StatelessWidget {
           label: 'Google로 로그인',
           background: AppColors.google,
           foreground: AppColors.googleText,
+          onPressed: startOnboarding,
           leading: _badge(
             bg: Colors.white,
             child: const Text(
@@ -157,12 +166,14 @@ class _SocialButton extends StatelessWidget {
     required this.background,
     required this.foreground,
     required this.leading,
+    required this.onPressed,
   });
 
   final String label;
   final Color background;
   final Color foreground;
   final Widget leading;
+  final VoidCallback onPressed;
 
   @override
   Widget build(BuildContext context) {
@@ -174,7 +185,7 @@ class _SocialButton extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppDimens.radiusMd),
         child: InkWell(
           borderRadius: BorderRadius.circular(AppDimens.radiusMd),
-          onTap: () {}, // 정적 UI — 실제 로그인 연동은 이후 단계
+          onTap: onPressed,
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Row(
