@@ -98,15 +98,15 @@ chat_rooms
   created_at  timestamptz
   UNIQUE(user_a, user_b)                    -- 정렬된 페어로 중복 방지
 
-chat_messages                              -- 하이브리드 보관(영속). 진행중은 Redis 캐시
+chat_messages                              -- 서버 30일 보관(영속). 진행중은 Redis 캐시
   id          uuid PK
   room_id     uuid FK
   sender_id   uuid FK
   body        varchar(25)
-  created_at  timestamptz
+  created_at  timestamptz                    -- 보관 만료(30일) 판정 기준
   read_at     timestamptz null
 ```
-> 보관정책(잠정): 영속 저장하되 종료 시 UI에서만 제거. `ended_at + 30분` 후 방/메시지 정리 배치(신고 증거 필요분은 보관기간 별도).
+> **보관정책(확정)**: 서버는 메시지를 **30일간 보관**하고, 30일이 지난 것부터 **오래된 순(앞에서부터) 삭제 = 큐(FIFO)**. 클라이언트의 "대화 삭제"는 **UI 표시만 제거**(서버 데이터는 30일 큐가 만료시킬 때까지 유지). 구현: `created_at < now() - 30일` 메시지를 일배치로 삭제(오래된 것부터). 방 목록에서의 종료 항목 제거(`ended_at + 30분`)는 별개(기획서 5장).
 
 ### 1.5 친구 / 신고 / 차단
 ```
