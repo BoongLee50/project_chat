@@ -46,3 +46,10 @@ app.*.map.json
 
 # Claude Code local settings
 .claude/settings.local.json
+
+# Server (Spring Boot / Gradle)
+server/.gradle/
+server/build/
+server/uploads/
+server/out/
+!server/gradle/wrapper/gradle-wrapper.jar

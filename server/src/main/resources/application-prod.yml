@@ -1,0 +1,24 @@
+spring:
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.mariadb.jdbc.Driver
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT:6379}
+  flyway:
+    enabled: false        # 배포 파이프라인에서만 수동 실행(05 문서 §7)
+
+app:
+  redis:
+    enabled: true
+  storage:
+    type: s3
+    bucket: ${APP_STORAGE_BUCKET}
+
+logging:
+  level:
+    root: WARN
+    com.moonlighttalk.server: INFO

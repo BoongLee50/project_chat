@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.moonlighttalk.server.auth.mapper.UserMapper">
+
+    <resultMap id="UserResultMap" type="com.moonlighttalk.server.auth.entity.User">
+        <id property="id" column="id"/>
+        <result property="provider" column="provider"/>
+        <result property="providerUid" column="provider_uid"/>
+        <result property="nickname" column="nickname"/>
+        <result property="birthYear" column="birth_year"/>
+        <result property="gender" column="gender"/>
+        <result property="country" column="country"/>
+        <result property="status" column="status"/>
+        <result property="premium" column="is_premium"/>
+        <result property="premiumUntil" column="premium_until"/>
+        <result property="createdAt" column="created_at"/>
+    </resultMap>
+
+    <select id="findByProvider" resultMap="UserResultMap">
+        SELECT * FROM users WHERE provider = #{provider} AND provider_uid = #{providerUid}
+    </select>
+
+    <select id="findById" resultMap="UserResultMap">
+        SELECT * FROM users WHERE id = #{id}
+    </select>
+
+    <insert id="insert">
+        INSERT INTO users (id, provider, provider_uid, nickname, birth_year, gender, country, status, is_premium, created_at)
+        VALUES (#{id}, #{provider}, #{providerUid}, #{nickname}, #{birthYear}, #{gender}, #{country}, #{status}, #{premium}, NOW())
+    </insert>
+
+    <update id="updateProfile">
+        UPDATE users
+        SET nickname = #{nickname}, birth_year = #{birthYear}, gender = #{gender}, country = #{country}
+        WHERE id = #{id}
+    </update>
+
+    <select id="countByNickname" resultType="int">
+        SELECT COUNT(*) FROM users WHERE nickname = #{nickname}
+    </select>
+
+</mapper>

@@ -1,0 +1,14 @@
+package com.moonlighttalk.server.common.response;
+
+public enum ErrorCode {
+    UNAUTHORIZED,
+    PROVIDER_DISABLED,
+    NICKNAME_INVALID,
+    NICKNAME_DUPLICATE,
+    LUNA_INSUFFICIENT,
+    TARGET_BLOCKED_OR_REPORTED,
+    ROOM_ALREADY_ACTIVE,
+    VALIDATION_FAILED,
+    NOT_FOUND,
+    INTERNAL_ERROR
+}

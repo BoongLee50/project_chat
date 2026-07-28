@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.moonlighttalk.server.profile.mapper.ProfileMapper">
+
+    <resultMap id="UserProfileResultMap" type="com.moonlighttalk.server.profile.entity.UserProfile">
+        <id property="userId" column="user_id"/>
+        <result property="photoKey" column="photo_key"/>
+        <result property="intro" column="intro"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <insert id="insertProfile">
+        INSERT INTO user_profiles (user_id, updated_at) VALUES (#{userId}, NOW())
+    </insert>
+
+    <select id="selectByUserId" resultMap="UserProfileResultMap">
+        SELECT * FROM user_profiles WHERE user_id = #{userId}
+    </select>
+
+    <update id="updatePhotoKey">
+        UPDATE user_profiles SET photo_key = #{photoKey}, updated_at = NOW() WHERE user_id = #{userId}
+    </update>
+
+    <update id="updateIntro">
+        UPDATE user_profiles SET intro = #{intro}, updated_at = NOW() WHERE user_id = #{userId}
+    </update>
+
+    <select id="selectInterests" resultType="string">
+        SELECT code FROM user_interests WHERE user_id = #{userId}
+    </select>
+
+    <delete id="deleteInterests">
+        DELETE FROM user_interests WHERE user_id = #{userId}
+    </delete>
+
+    <insert id="insertInterests">
+        INSERT INTO user_interests (user_id, code) VALUES
+        <foreach collection="codes" item="code" separator=",">
+            (#{userId}, #{code})
+        </foreach>
+    </insert>
+
+    <select id="selectRegions" resultType="string">
+        SELECT code FROM user_regions WHERE user_id = #{userId}
+    </select>
+
+    <delete id="deleteRegions">
+        DELETE FROM user_regions WHERE user_id = #{userId}
+    </delete>
+
+    <insert id="insertRegions">
+        INSERT INTO user_regions (user_id, code) VALUES
+        <foreach collection="codes" item="code" separator=",">
+            (#{userId}, #{code})
+        </foreach>
+    </insert>
+
+</mapper>
