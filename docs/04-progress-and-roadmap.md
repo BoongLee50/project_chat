@@ -20,6 +20,11 @@
 - 05 서버(Spring Boot) 폴더 구조 설계
 - 시스템 아키텍처 · 화면 흐름 다이어그램
 
+**서버 (Spring Boot)** — 서버 개발자 초기 구현 + 로컬 빌드 환경 구축
+- 인증(소셜 로그인 추상화)·프로필 도메인 실동작, 공통 인프라(JWT 인터셉터·스토리지 추상화·예외/CORS), Flyway V1 스키마, MyBatis.
+- **로컬 빌드 환경 완료**: JDK 17(Adoptium, `D:\dev-tools\jdk-17.0.19+10`) + Gradle 8.10.2 → `server/`에서 `./gradlew` 사용. **컴파일 성공 확인**(`gradlew assemble` → bootJar 생성).
+- 남은 것: 서버 **실행**에 로컬 MariaDB 필요(아직 미설치). post/garden/chat·소켓/friend/luna/scheduler 도메인 미구현.
+
 **앱 UI — 화면 11개** (정적, 다크 테마 고정, Android 에뮬레이터 검증 완료)
 - 로그인 → 온보딩 3단계(닉네임 · 출생년도 · 성별/국가)
 - 메인 셸(하단 5탭 IndexedStack):
