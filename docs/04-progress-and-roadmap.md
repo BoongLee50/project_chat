@@ -1,8 +1,8 @@
 # 달빛톡 — 진행 현황 & 로드맵
 
-> 최종 업데이트: 2026-07 (정적 UI 완료 · 채팅 보관정책 확정).
+> 최종 업데이트: 2026-07 (정적 UI 완료 · 채팅 보관정책 확정 · 서버 스택 확정).
 > 이 문서는 "어디까지 했고 / 무엇이 남았고 / 무엇을 정해야 하는지"의 핸드오프용 요약이다.
-> 설계 상세는 [01 프로토콜/API](01-protocol-api-spec.md) · [02 DB 스키마](02-db-schema.md) · [03 Flutter 구조](03-flutter-structure.md) 참고.
+> 설계 상세는 [01 프로토콜/API](01-protocol-api-spec.md) · [02 DB 스키마](02-db-schema.md) · [03 Flutter 구조](03-flutter-structure.md) · [05 서버 구조](05-server-structure.md) 참고.
 
 ---
 
@@ -15,8 +15,9 @@
 
 **설계 문서** (`docs/`)
 - 01 통신 프로토콜 & REST/WebSocket API 명세
-- 02 DB 스키마 (PostgreSQL + Redis)
+- 02 DB 스키마 (MariaDB + Redis(선택))
 - 03 Flutter 폴더 구조 설계
+- 05 서버(Spring Boot) 폴더 구조 설계
 - 시스템 아키텍처 · 화면 흐름 다이어그램
 
 **앱 UI — 화면 11개** (정적, 다크 테마 고정, Android 에뮬레이터 검증 완료)
@@ -37,9 +38,10 @@
 - [ ] 다국어(한↔일) `l10n`
 - [ ] (선택) 태블릿 · 가로모드 대응
 
-### 백엔드 (서버 스택 확정 후)
-- [ ] 서버 프로젝트 + DB 스키마 구현
-- [ ] 소셜 인증 · REST API · WebSocket(채팅/프레즌스) · 스케줄러(18/05/06시) · Redis(랭킹/프레즌스)
+### 백엔드 (Spring Boot + MariaDB/MyBatis + Redis(선택))
+- [ ] 서버 프로젝트 스캐폴딩 + DB 스키마 구현(MyBatis Mapper)
+- [ ] 소셜 인증 · REST API · WebSocket(채팅/프레즌스) · 스케줄러(18/05/06시)
+- [ ] Redis 옵션 구성(`app.redis.enabled` + `@ConditionalOnProperty`, 인메모리 폴백 구현체)
 - [ ] 이미지 Object Storage + CDN (presigned 업로드)
 - [ ] UI에 실제 데이터 연결 (하드코딩 값 · 필터 · 좋아요 등 동작화)
 
@@ -53,15 +55,15 @@
 
 ## 3. 확실히 지정해야 하는 것 (미결정)
 
-이후 작업 방향을 좌우하므로 재개 전에 결정 권장. **1·3번 최우선** (2번 확정됨).
+이후 작업 방향을 좌우하므로 재개 전에 결정 권장. **3번 최우선** (1·2번 확정됨).
 
 | # | 결정 항목 | 현재 상태 / 추천 |
 |---|----------|-----------------|
-| 1 | 서버 스택 | 미정 · **NestJS 추천** (REST+WS+스케줄러 통합) |
+| 1 | 서버 스택 | ✅ **확정** — Spring Boot + MariaDB(MyBatis) + Redis(선택, 설정으로 on/off). [01](01-protocol-api-spec.md)/[02](02-db-schema.md) 반영 완료 |
 | 2 | 채팅 보관 정책 | ✅ **확정** — 서버 30일 보관 후 오래된 순 삭제(FIFO 큐), 클라는 UI만 삭제. [01](01-protocol-api-spec.md)/[02](02-db-schema.md) 반영 완료 |
 | 3 | 상태관리/라우팅 라이브러리 | 미도입 · **Riverpod + go_router 추천** |
 | 4 | 프로필 화면 테마 | 다크로 통일 적용 · 시안대로 **라이트로 되돌릴지** |
-| 5 | 인프라/호스팅 | 미정 (AWS RDS · Supabase · ElastiCache 등) |
+| 5 | 인프라/호스팅 | 미정 (AWS RDS(MariaDB) · 자체 서버 · ElastiCache(Redis, 선택) 등) |
 | 6 | 소셜 로그인 키 | 미발급 (개발자 계정 필요) |
 | 7 | 결제 정책 | 미정 (루나 가격 · 인앱결제 상품 구성) |
 | 8 | 타겟 범위 | 폰 세로 전용 · 태블릿/iOS 포함 시점 |

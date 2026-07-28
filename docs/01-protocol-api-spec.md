@@ -1,6 +1,6 @@
 # 달빛톡 — 통신 프로토콜 & API 명세 (초안)
 
-> 상태: **설계 초안**. 서버 스택(NestJS 추천)은 잠정. 채팅 보관정책은 **확정**(서버 30일 보관·FIFO 삭제, 클라 UI만 삭제 — [02 스키마](02-db-schema.md) 참고). 기획서 화면 기준으로 매핑.
+> 상태: **설계 초안**. 서버 스택 **확정**(Spring Boot + MariaDB/MyBatis + Redis(선택 구성)). 채팅 보관정책은 **확정**(서버 30일 보관·FIFO 삭제, 클라 UI만 삭제 — [02 스키마](02-db-schema.md) 참고). 기획서 화면 기준으로 매핑.
 > 통신 분리 원칙: **소켓(WebSocket)=실시간 양방향/푸시**, **REST(패킷)=단발 요청-응답**.
 
 공통 규약
@@ -28,6 +28,7 @@
   "user": { "id": "...", "nickname": null } }
 ```
 - `BANNED` → 클라는 [MSG NUM1] 출력 후 로그인 종료.
+- provider별 client-id/secret/검증 URL과 사용 여부(`app.auth.social.{provider}.enabled`)는 서버 설정 파일로 관리. 키가 아직 없는 provider는 `enabled: false`로 꺼두고, 발급되는 대로 설정만 켜서 순차 오픈. [05 서버구조 §9.1](05-server-structure.md#91-소셜-로그인-실-구현-설정-파일-기반) 참고.
 
 ### 1.2 온보딩 / 프로필
 | Method | Path | 설명 | 화면 |
@@ -35,13 +36,15 @@
 | GET | `/profile/nickname:check?value=` | 닉네임 검증(특수문자/10자/중복/금지어) | 3 |
 | POST | `/profile` | 프로필 생성(nickname, birthYear, gender, country) | 3,4,5 |
 | GET | `/me` | 내 프로필 조회 | 20 |
-| PUT | `/me/profile-photo` | 프로필 사진 설정/제거(URL) | 21 |
+| POST | `/me/profile-photo:upload-url` | 프로필 사진 업로드 URL 발급 | 21 |
+| PUT | `/me/profile-photo` | 업로드 완료 후 사진 등록(storageKey) — storageKey 생략 시 제거 | 21 |
 | PUT | `/me/interests` | 관심사(최대 8) | 22 |
 | PUT | `/me/intro` | 소개 한마디(최대 50자) | 23 |
 | PUT | `/me/regions` | 지역(최대 2) | 24 |
 | GET | `/users/:id/profile` | 상대 프로필 조회 | 14,19 |
 
 검증 규칙: 닉네임 특수문자·이모지 불가/≤10자/중복·금지어, 가입 만 18세 이상.
+프로필 사진은 포스트 사진(§1.3)과 동일한 흐름 — 업로드 URL 발급 → 클라가 그 URL로 직접 업로드 → `storageKey`로 등록. `GET /me`/`GET /users/:id/profile` 응답에는 다운로드 URL이 이미 포함되어 내려옴(05 서버구조 §8 참고).
 
 ### 1.3 오늘의 포스트 (사진은 Storage 직접 업로드)
 | Method | Path | 설명 | 화면 |
@@ -54,6 +57,7 @@
 | POST | `/posts:publish` | 포스트 공유하기(사진+한마디 확정) | 6 |
 
 제한: 일반 사진 2장/구독 8장, 일반 등록시간 30분/구독 무제한. 시간 종료 시 [촬영] 비활성.
+> 업로드 대상(S3/로컬 디스크)은 서버 설정(`app.storage.type`)에 따라 전환 — 클라이언트는 동일한 업로드 URL 발급 흐름만 사용. [05 서버구조 §8](05-server-structure.md#8-파일-스토리지-추상화-s3--로컬-디스크) 참고.
 
 ### 1.4 달빛가든 (피드/댓글)
 | Method | Path | 설명 | 화면 |
@@ -68,6 +72,7 @@
 
 필터 기본값 [전체]. 노출순 = Post Score 내림차순, 동점은 랜덤.
 `Post Score = Pick(프리미엄50) + Online(10/0) + Recency(1h내20/1~3h10/3h초과0) + Engage(전환율 구간별)`.
+`/translate`는 번역 API 키 설정 전엔 원문을 그대로 반환하는 패스스루로 동작(`app.translate.provider=none`), 추후 실제 번역 공급자로 전환. [05 서버구조 §9.2](05-server-structure.md#92-번역) 참고.
 
 ### 1.5 대화 신청 (하이브리드: 생성=REST, 도착알림=소켓)
 | Method | Path | 설명 | 화면 |
@@ -88,6 +93,7 @@
 | POST | `/chat/rooms/:id:leave` | 대화방 나가기(종료) | 15 |
 
 종료/차단/신고된 항목은 목록에서 제거, `대화 종료` 마크 30분 후 삭제.
+> 종료된 방은 재사용되지 않음 — 같은 상대와 다시 매칭되면 새 `roomId`로 새 대화방이 생성됨(02 스키마 §1.5 참고). 클라는 roomId를 상대 userId 기준으로 캐싱하지 말 것.
 
 ### 1.7 친구 / 신고·차단 / 루나
 | Method | Path | 설명 | 화면 |
@@ -113,7 +119,8 @@
 ```
 - `op`: opcode(패킷 종류) · `seq`: 클라 시퀀스(ACK 매칭·중복방지) · `ts`: 타임스탬프 · `data`: 페이로드
 - 연결 유지: `PING/PONG` heartbeat. 밤샘 사용 대비 자동 재연결 + `seq` 기반 유실 복구.
-- 서버 다중화: room 전달은 Redis Pub/Sub으로 노드 간 브로드캐스트.
+- 서버 다중화: room 전달은 Redis Pub/Sub으로 노드 간 브로드캐스트(Redis 활성화 시).
+- Redis는 선택 구성(설정으로 on/off). 비활성화 시(단일 인스턴스 운영 기준) 프레즌스·피드 랭킹은 인메모리/DB 직접 조회로 대체되어 서비스 동작에는 지장 없음. 다만 서버를 여러 대로 수평 확장하면 인스턴스 간 소켓 브로드캐스트·프레즌스 동기화를 위해 Redis가 사실상 필요.
 
 ### 2.2 Opcode 목록
 | 방향 | op | data(요약) | 용도 |
