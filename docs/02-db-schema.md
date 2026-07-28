@@ -97,6 +97,8 @@ feed_skips                                 -- 내가 스킵한 대상(당일 재
   PK(user_id, target_user_id, session_date)
 ```
 > 노출/좋아요/신청/스킵 이벤트 발생 시 **항상 이 테이블을 먼저 갱신**. Redis 활성화 시에는 추가로 `feed:score:{date}` ZSET 등도 갱신해 빠른 정렬용 캐시로 사용(§2). Redis 비활성화 시엔 이 두 테이블을 직접 집계해 Post Score를 계산.
+> **동시성**: `post_stats` 갱신은 읽고-더하고-쓰기가 아니라 `INSERT ... ON DUPLICATE KEY UPDATE exposures = exposures + 1`(해당 컬럼만) 같은 원자적 UPSERT로 처리(동시 좋아요/노출 시 lost update 방지). `feed_skips`는 같은 대상을 중복 스킵해도 에러 안 나게 `INSERT IGNORE`로 처리.
+> **정리**: 06시 초기화 배치(§4)가 지난 `session_date`의 `post_stats`/`feed_skips`도 함께 정리 대상에 포함(무한정 누적 방지).
 
 ### 1.5 대화 신청 / 대화방 / 메시지
 ```
@@ -190,5 +192,5 @@ blocks
 
 ## 4. 스케줄러(배치)가 건드리는 데이터
 - **18:00** `system:gate` 오픈 / **05:00** 종료 처리 + `SYSTEM_CLOSE` 브로드캐스트
-- **06:00** 지난 영업일 posts/post_photos + Storage + score 키 초기화
+- **06:00** 지난 영업일 posts/post_photos + post_stats/feed_skips + Storage + score 키 초기화
 - **상시** `ended_at+30분` 대화방/메시지 정리, presence TTL 자연 만료

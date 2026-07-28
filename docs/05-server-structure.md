@@ -110,7 +110,7 @@ presence/
 |-----------|------|
 | 18:00 | `system:gate` 오픈 처리 |
 | 05:00 | 시스템 종료 + `SYSTEM_CLOSE` 소켓 브로드캐스트 |
-| 06:00 | 지난 영업일 `posts`/`post_photos` + Storage + 스코어 키 초기화 |
+| 06:00 | 지난 영업일 `posts`/`post_photos`/`post_stats`/`feed_skips` + Storage + 스코어 키 초기화 |
 | 상시(주기 실행) | `ended_at+30분` 지난 대화방 정리, `chat_messages` 30일 초과분 FIFO 삭제, presence TTL 자연 만료(Redis 비활성 시 인메모리 청소 잡 별도 필요) |
 
 ---
