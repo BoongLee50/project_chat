@@ -107,6 +107,9 @@ class SessionController extends Notifier<SessionState> {
   /// 온보딩 완료 후 프로필을 다시 읽어 authenticated로 전환.
   Future<void> completeOnboarding() => _loadProfile();
 
+  /// 프로필 최신화(당겨서 새로고침 등).
+  Future<void> refresh() => _loadProfile();
+
   Future<void> signOut() async {
     await ref.read(tokenStorageProvider).clear();
     state = const SessionState(status: SessionStatus.unauthenticated);

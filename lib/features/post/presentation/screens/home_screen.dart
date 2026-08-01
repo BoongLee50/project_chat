@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimens.dart';
+import '../../../auth/presentation/providers/session_provider.dart';
 
 /// 홈 — 오늘의 포스트 (정적 UI). 메인 셸의 '포스트' 탭 본문.
 ///
@@ -272,23 +274,41 @@ class _RoundIconButton extends StatelessWidget {
 }
 
 // ── 이름 + 좋아요/댓글 ───────────────────────────────────
-class _NameLikeRow extends StatelessWidget {
+class _NameLikeRow extends ConsumerWidget {
   const _NameLikeRow();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    // 이름·나이·국가는 로그인한 내 프로필(GET /me) 기준.
+    // 좋아요/댓글 수치는 post 도메인 구현 후 연결 예정(현재 더미).
+    final profile = ref.watch(sessionProvider).profile;
+    final age = profile?.birthYear == null
+        ? null
+        : DateTime.now().year - profile!.birthYear!;
+    final flag = switch (profile?.country) {
+      'KR' => '🇰🇷',
+      'JP' => '🇯🇵',
+      _ => '',
+    };
+
     return Row(
       children: [
-        const Text(
-          '채원 27',
-          style: TextStyle(
-            color: AppColors.textPrimary,
-            fontSize: 22,
-            fontWeight: FontWeight.w800,
+        Flexible(
+          child: Text(
+            [profile?.nickname ?? '', if (age != null) '$age'].join(' ').trim(),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              color: AppColors.textPrimary,
+              fontSize: 22,
+              fontWeight: FontWeight.w800,
+            ),
           ),
         ),
-        const SizedBox(width: 6),
-        const Text('🇰🇷', style: TextStyle(fontSize: 20)),
+        if (flag.isNotEmpty) ...[
+          const SizedBox(width: 6),
+          Text(flag, style: const TextStyle(fontSize: 20)),
+        ],
         const Spacer(),
         _StatPill(
           icon: Icons.favorite,
