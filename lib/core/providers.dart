@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../features/auth/data/datasources/auth_api.dart';
+import '../features/garden/data/datasources/garden_api.dart';
 import '../features/post/data/datasources/post_api.dart';
 import '../features/profile/data/datasources/profile_api.dart';
 import 'network/dio_client.dart';
@@ -24,6 +25,10 @@ final profileApiProvider = Provider<ProfileApi>(
 
 final postApiProvider = Provider<PostApi>(
   (ref) => PostApi(ref.watch(dioClientProvider)),
+);
+
+final gardenApiProvider = Provider<GardenApi>(
+  (ref) => GardenApi(ref.watch(dioClientProvider)),
 );
 
 /// 인증이 걸린 이미지 URL(`GET /files?key=`)을 로드할 때 쓸 헤더.
