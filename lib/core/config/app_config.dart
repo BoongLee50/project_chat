@@ -6,13 +6,13 @@
 class AppConfig {
   const AppConfig._();
 
-  /// 서비스 오픈 시각 (KST, 시)
-  static const int openHourKst = 18;
+  /// 서비스 오픈 시각 (KST, 시) — Plan_2: 오후 5시
+  static const int openHourKst = 17;
 
-  /// 서비스 종료 시각 (KST, 시)
-  static const int closeHourKst = 5;
+  /// 서비스 종료 시각 (KST, 시) — Plan_2: 새벽 6시
+  static const int closeHourKst = 6;
 
-  /// 포스트/스코어 초기화 시각 (KST, 시)
+  /// 포스트/스코어 초기화 시각 (KST, 시) — 새벽 6시 (하루 한마디는 유지)
   static const int postResetHourKst = 6;
 
   /// API base URL — 서버 스택 확정 후 빌드 환경변수로 주입.

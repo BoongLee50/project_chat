@@ -73,7 +73,7 @@ class _TimeBadge extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                '밤 6시 ~ 새벽 5시',
+                '오후 5시 ~ 새벽 6시',
                 style: TextStyle(
                   color: AppColors.textPrimary,
                   fontSize: 18,
