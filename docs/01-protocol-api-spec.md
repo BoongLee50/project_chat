@@ -1,5 +1,6 @@
 # 달빛톡 — 통신 프로토콜 & API 명세 (초안)
 
+> 기준 기획: **Plan_2**(2026-07-30). 운영시간 **17:00 개방 ~ 06:00 종료**(친구목록·친구 대화방은 24시간). 상점/구독(BM)은 §1.8, 친구는 양방향(요청/수락).
 > 상태: **설계 초안**. 서버 스택 **확정**(Spring Boot + MariaDB/MyBatis + Redis(선택 구성)). 채팅 보관정책은 **확정**(서버 30일 보관·FIFO 삭제, 클라 UI만 삭제 — [02 스키마](02-db-schema.md) 참고). 기획서 화면 기준으로 매핑.
 > 통신 분리 원칙: **소켓(WebSocket)=실시간 양방향/푸시**, **REST(패킷)=단발 요청-응답**.
 
@@ -19,7 +20,7 @@
 |--------|------|------|------|
 | POST | `/auth/social` | 소셜 로그인(provider, providerToken) → JWT 발급 + 회원상태 | 1,2 |
 | POST | `/auth/refresh` | accessToken 재발급(refreshToken) | - |
-| GET | `/system/gate` | 현재 오픈 여부/다음 오픈시각 (18~05시) | 1 |
+| GET | `/system/gate` | 현재 오픈 여부/다음 오픈시각 (**17시 개방~06시 종료**) | 1 |
 
 `POST /auth/social` 응답 예:
 ```json
@@ -73,13 +74,15 @@
 필터 기본값 [전체]. 노출순 = Post Score 내림차순, 동점은 랜덤.
 `Post Score = Pick(프리미엄50) + Online(10/0) + Recency(1h내20/1~3h10/3h초과0) + Engage(전환율 구간별)`.
 `/translate`는 번역 API 키 설정 전엔 원문을 그대로 반환하는 패스스루로 동작(`app.translate.provider=none`), 추후 실제 번역 공급자로 전환. [05 서버구조 §9.2](05-server-structure.md#92-번역) 참고.
+무료 번역 쿼터(Plan_2): **댓글 하루 2회 / 채팅 매일 2명**(daily_usage), 초과 시 자동번역패스 유도. **자동번역패스**(TRANSLATE_PASS) 보유 시 무제한. 프로필 보기는 항상 무료. 프라임 구독은 번역 무제한.
 
 ### 1.5 대화 신청 (하이브리드: 생성=REST, 도착알림=소켓)
 | Method | Path | 설명 | 화면 |
 |--------|------|------|------|
 | POST | `/chat-requests` | 대화 신청(targetUserId, message ≤100자) — **루나 5 차감 트랜잭션** | 10 |
 
-실패: 루나 부족 [MSG NUM1] / 차단·신고 대상 [MSG NUM2]. 프리미엄은 루나 미차감.
+**하루 무료 2회**(daily_usage, [02 §1.7](02-db-schema.md)) 후 건당 루나 5 차감. 프리미엄(프라임 구독)은 무제한·무차감.
+실패: 루나 부족 [MSG NUM1] / 차단·신고 대상 [MSG NUM2].
 성공 시 서버가 상대에게 `CHAT_REQ_INCOMING` 소켓 푸시 + 내 [보낸신청] 목록 생성.
 
 ### 1.6 대화방 (초기 로드=REST, 갱신=소켓)
@@ -98,8 +101,11 @@
 ### 1.7 친구 / 신고·차단 / 루나
 | Method | Path | 설명 | 화면 |
 |--------|------|------|------|
-| GET | `/friends?gender=&age=&country=` | 친구 목록(최신순) | 18 |
-| POST | `/friends` | 친구 등록(상대 수락 불필요) | 14,18 |
+| GET | `/friends?gender=&age=&country=` | 친구 목록(최신순, ACCEPTED) | 18 |
+| GET | `/friends/requests` | 받은 친구 요청 목록(PENDING) | 18 |
+| POST | `/friends/requests` | 친구 **요청**(targetUserId) — 양방향, 상대 수락 필요 | 14,18 |
+| POST | `/friends/requests/:id:accept` | 친구 요청 수락 → **상시 대화방 생성** | 18 |
+| POST | `/friends/requests/:id:reject` | 친구 요청 거절 | 18 |
 | DELETE | `/friends/:id` | 친구 삭제 | 19 |
 | GET | `/friends/:id/today-post` | 친구 오늘의 포스트 팝업 | 19 |
 | POST | `/reports` | 신고(targetUserId, reason) | 16 |
@@ -107,7 +113,22 @@
 | GET | `/luna/balance` | 보유 루나 | 6 |
 | POST | `/luna/charge` | 루나 충전(결제) | 6 |
 
-친구 최대 일반 20/프리미엄 무제한. 신고·차단 시 상대는 내 프로필 열람 불가, 친구목록 즉시 삭제.
+친구는 **양방향(상호 동의)** — 요청→수락 시 친구가 되며 **24시간 상시 대화방**이 생성됨(야간 게이트/30분 삭제 예외, [02 §1.6](02-db-schema.md)). 최대 일반 20/프리미엄 무제한(20 vs 30 기획서 모순 — 보완 대기). 신고·차단 시 상대는 내 프로필 열람 불가, 친구·대화방 즉시 삭제.
+
+### 1.8 유료 상점 / 구독 / 부스트 (BM, 기획 8장 · 화면 25~30)
+| Method | Path | 설명 | 화면 |
+|--------|------|------|------|
+| GET | `/store/products` | 상품 카탈로그(프라임/루나상품/부스트/패스 가격·구성) | 25~30 |
+| GET | `/me/wallet` | 내 재화·구독·엔티틀먼트 요약(루나, 구독상태, 활성 패스, 부스트 재고) | 6,25~30 |
+| POST | `/store/prime:subscribe` | 프라임 구독(product: PRIME_1M/PRIME_6M) — 인앱결제 | 26 |
+| POST | `/me/subscription:cancel` | 자동갱신 해지(만료까지 유효) | 26 |
+| POST | `/store/luna:charge` | 루나 충전(인앱결제) | 27 |
+| POST | `/store/luna:purchase` | 루나로 개별상품 구매(부스트 매수/앨범패스/번역패스) — 루나 차감 트랜잭션 | 25,28,29,30 |
+| POST | `/boosts:use` | 보유 부스트 사용(kind: POST/SPOTLIGHT) → 1시간 활성 | 28 |
+
+- 결제는 **인앱결제(스토어)** 기반 — provider/상품ID·가격은 서버 설정+스토어 콘솔에서 관리(값 하드코딩 금지). 인앱결제 실연동은 스토어 계정 발급 후.
+- 혜택 판정은 [02 §1.7](02-db-schema.md) `subscriptions`/`user_entitlements`/`boost_inventory` 기준. `/me/wallet`이 클라가 화면(PASS 표시·버튼 상태)에 쓸 상태를 한 번에 내려줌.
+- 프라임/앨범패스 보유자는 §1.3 포스트(8장·시간무제한·갤러리)·§1.4 열람 제한 해제. 부스트 활성 시 §1.4 Post Score의 Pick Point 반영.
 
 ---
 

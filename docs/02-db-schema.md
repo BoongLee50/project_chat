@@ -1,5 +1,6 @@
 # 달빛톡 — 데이터 스키마 설계 (초안)
 
+> 기준 기획: **Plan_2**(2026-07-30, BM 추가 · 운영시간 17~06시). BM 엔티티는 §1.7, 친구 양방향은 §1.6.
 > 상태: **설계 확정**. Spring Boot + MariaDB(MyBatis, 영속) + Redis(휘발/랭킹/프레즌스, 선택 구성) + Object Storage(사진) 분리.
 > 원칙: 매일 초기화·랭킹·프레즌스처럼 휘발성/고빈도 데이터는 Redis(선택), 회원·원장·신고·대화 등 영속 데이터는 MariaDB.
 > Redis는 `app.redis.enabled` 설정으로 on/off. 비활성화 시 프레즌스=인메모리, 피드 스코어=MariaDB 직접 집계, 최근 메시지 캐시=생략(DB 조회), 미확인 수=DB 카운트 쿼리로 대체 — 단일 인스턴스 운영에는 지장 없음(수평 확장 시에는 Redis 필요).
@@ -139,12 +140,15 @@ chat_messages                              -- 서버 30일 보관(영속). 진�
 
 ### 1.6 친구 / 신고 / 차단
 ```
-friendships               -- 상대 수락 불필요(단방향 등록)
-  id             uuid PK
-  user_id        uuid FK
-  friend_user_id uuid FK
-  created_at     timestamptz
-  UNIQUE(user_id, friend_user_id)
+friendships               -- 양방향(상호 동의). requester 요청 → addressee 수락 시 ACCEPTED
+  id            uuid PK
+  requester_id  uuid FK
+  addressee_id  uuid FK
+  status        enum(PENDING, ACCEPTED)          -- 수락 전 PENDING, 수락 후 ACCEPTED
+  pair_key      varchar(80)                       -- CONCAT(LEAST,GREATEST) 정렬 페어 → 같은 두 사람 관계 1개
+  created_at    timestamptz
+  accepted_at   timestamptz null
+  UNIQUE(pair_key)
 
 reports
   id          uuid PK
@@ -161,6 +165,63 @@ blocks
   UNIQUE(blocker_id, blocked_id)
 ```
 > 신고·차단 발생 시: 친구 관계 즉시 삭제, 상대의 내 프로필 열람 차단, 대화방 종료.
+> **친구 = 양방향(상호 동의) + 상시 대화방(확정, 2026-07)**: 친구 수락 시 두 사람 간 **영구 대화방**이 생성되어 **야간 게이트(17~06)·30분 삭제 정책과 무관하게 24시간** 대화 가능. 이를 위해 `chat_rooms`에 **`type enum(MATCH, FRIEND)`** 를 두고, `FRIEND` 방은 종료/자동삭제 배치 대상에서 제외(메시지 30일 보관 정책은 공통 적용 여부 보완 대기). 최대 친구 수(일반 20 vs 30 기획서 모순)·요청/수락 UI 등 **세부는 친구 기획 보완 문서 대기** — 위 확정 방향만 우선 반영.
+
+---
+
+## 1.7 유료 상점 / 재화 / 엔티틀먼트 (BM, 기획 8장)
+
+> 원칙: **가격·상품 구성 값은 하드코딩하지 않고 설정/카탈로그로 관리**(BM 값 변동을 코드 변경 없이 흡수). 아래는 "상태를 저장하는" 스키마이며, 가격은 별도 상품 카탈로그(설정 또는 `products` 참조 테이블)에서 온다.
+
+```
+subscriptions              -- 프라임 멤버십(구독, 8-1)
+  id          uuid PK
+  user_id     uuid FK
+  product     enum(PRIME_1M, PRIME_6M)
+  status      enum(ACTIVE, CANCELLED, EXPIRED)   -- CANCELLED=자동갱신만 해지(만료까지 유효)
+  started_at  timestamptz
+  expires_at  timestamptz
+  auto_renew  bool default true
+  store_txn   text null                          -- 인앱결제 참조
+  created_at  timestamptz
+  -- 중복결제 방지: 같은 user의 ACTIVE 구독은 1개만(부분 유니크, §1.5 chat_rooms와 동일 트릭)
+
+user_entitlements          -- 시간제 권리(앨범패스/번역패스/대화무제한/광고제거) (8-2,8-4,8-5)
+  id          uuid PK
+  user_id     uuid FK
+  kind        enum(ALBUM_PASS, TRANSLATE_PASS, UNLIMITED_CHAT_REQ, NO_ADS)
+  source      enum(PRIME, LUNA_PURCHASE)         -- 프라임 번들 / 루나 개별구매
+  started_at  timestamptz
+  expires_at  timestamptz
+  created_at  timestamptz
+  KEY(user_id, kind, expires_at)                 -- "지금 이 기능 활성?" = kind + expires_at > now 조회
+  -- 중복구매 불가(같은 kind 활성 1개) — 연장 시 expires_at 갱신
+
+boost_inventory            -- 부스트 보유 매수 (8-3)
+  user_id   uuid FK
+  kind      enum(POST_BOOST, SPOTLIGHT_BOOST)
+  quantity  int default 0
+  PK(user_id, kind)
+
+boost_activations          -- 부스트 사용(1시간 적용) → Post Score의 Pick Point 반영
+  id           uuid PK
+  user_id      uuid FK
+  kind         enum(POST_BOOST, SPOTLIGHT_BOOST)
+  session_date date
+  started_at   timestamptz
+  expires_at   timestamptz                        -- started_at + 1시간
+  KEY(user_id, expires_at)
+
+daily_usage                -- 일일 무료 쿼터 카운터
+  user_id      uuid FK
+  session_date date
+  kind         enum(CHAT_REQUEST, COMMENT_TRANSLATE, CHAT_TRANSLATE)
+  used_count   int default 0
+  PK(user_id, session_date, kind)
+  -- 대화신청 2회 / 댓글번역 2회 / 채팅번역 2명(무료). 원자적 UPSERT로 증가(§1.4 패턴). 06시 배치가 지난 날짜 정리
+```
+> **루나 개별구매**는 `luna_transactions`(§1.2) 차감 + 대상 엔티틀먼트/재고 갱신을 **단일 트랜잭션**으로. `reason` enum에 `BUY_BOOST, BUY_ALBUM_PASS, BUY_TRANSLATE_PASS` 추가 예정(대화신청 소비는 기존 `CHAT_REQUEST`).
+> **프리미엄 판정**: `users.is_premium`(§1.1)은 캐시/호환용이고, 실제 혜택 판정은 `subscriptions`(ACTIVE) + `user_entitlements`(kind별 미만료)로 한다. 프라임 구독 시 앨범패스/대화무제한/번역무제한/광고제거 엔티틀먼트를 `source=PRIME`으로 발급하고, 부스트는 매수를 `boost_inventory`에 충전.
 
 ---
 
@@ -191,6 +252,8 @@ blocks
 ---
 
 ## 4. 스케줄러(배치)가 건드리는 데이터
-- **18:00** `system:gate` 오픈 / **05:00** 종료 처리 + `SYSTEM_CLOSE` 브로드캐스트
-- **06:00** 지난 영업일 posts/post_photos + post_stats/feed_skips + Storage + score 키 초기화
-- **상시** `ended_at+30분` 대화방/메시지 정리, presence TTL 자연 만료
+> 운영시간 **17:00 개방 ~ 06:00 종료**(Plan_2). 단 **친구목록·친구 대화방(chat_rooms.type=FRIEND)은 24시간** 예외.
+- **17:00** `system:gate` 오픈 / **06:00** 종료 처리 + `SYSTEM_CLOSE` 브로드캐스트(단, 친구 대화방은 종료 대상 아님)
+- **06:00** 지난 영업일 posts/post_photos + post_stats/feed_skips + daily_usage + Storage + score 키 초기화. **하루 한마디(posts.one_liner)는 유지**(초기화 제외).
+- **상시** `type=MATCH`이고 `ended_at+30분` 지난 대화방/메시지 정리(FRIEND 방 제외), `chat_messages` 30일 초과 FIFO 삭제, 만료된 `boost_activations`/`user_entitlements` 정리, presence TTL 만료.
+- **구독**: `subscriptions` 만료 시 `auto_renew=true`면 자동 갱신(결제 연동), `CANCELLED`이면 `EXPIRED` 처리 + 연동 엔티틀먼트 만료.

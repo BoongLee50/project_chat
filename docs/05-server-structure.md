@@ -2,6 +2,7 @@
 
 > 상태: **설계 초안**(코드 아님). 스택 확정: Spring Boot + MariaDB(MyBatis) + Redis(선택 구성). [01 프로토콜/API](01-protocol-api-spec.md) · [02 DB 스키마](02-db-schema.md) 참고.
 > 레포 구성: **모노레포**. 클라이언트(`lib/`)와 서버(`server/`)를 한 저장소에서 함께 관리 — `docs/`가 이미 양쪽 설계를 함께 다루고 있어 계약(API 스펙) 동기화가 쉬움.
+> **Plan_2 반영 필요(2026-07-30)**: ① 신규 `store`(결제·구독·부스트·패스=BM) 도메인 추가 — [01 §1.8](01-protocol-api-spec.md) / [02 §1.7](02-db-schema.md). ② `friend` 양방향(요청/수락) + 친구 상시 대화방(`chat_rooms.type=FRIEND`, 야간 게이트·30분 삭제 예외). ③ 운영시간 **17:00~06:00**(§5 스케줄러 값), 일일 무료 쿼터(`daily_usage`). 세부 구조 확정은 서버 개발자 반영 예정.
 
 ---
 
