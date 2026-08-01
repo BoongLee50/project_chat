@@ -96,6 +96,14 @@ feed_skips                                 -- 내가 스킵한 대상(당일 재
   session_date   date
   created_at     timestamptz
   PK(user_id, target_user_id, session_date)
+
+post_comments                              -- 포스트 댓글(기획서 4-2). 대댓글 없음, 최대 25자
+  id         uuid PK
+  post_id    uuid FK -> posts (ON DELETE CASCADE — 06시 포스트 정리 시 함께 삭제)
+  author_id  uuid FK -> users
+  body       varchar(25)
+  created_at timestamptz
+  KEY(post_id, created_at)
 ```
 > 노출/좋아요/신청/스킵 이벤트 발생 시 **항상 이 테이블을 먼저 갱신**. Redis 활성화 시에는 추가로 `feed:score:{date}` ZSET 등도 갱신해 빠른 정렬용 캐시로 사용(§2). Redis 비활성화 시엔 이 두 테이블을 직접 집계해 Post Score를 계산.
 > **동시성**: `post_stats` 갱신은 읽고-더하고-쓰기가 아니라 `INSERT ... ON DUPLICATE KEY UPDATE exposures = exposures + 1`(해당 컬럼만) 같은 원자적 UPSERT로 처리(동시 좋아요/노출 시 lost update 방지). `feed_skips`는 같은 대상을 중복 스킵해도 에러 안 나게 `INSERT IGNORE`로 처리.

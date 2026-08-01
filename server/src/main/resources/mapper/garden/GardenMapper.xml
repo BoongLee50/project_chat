@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.moonlighttalk.server.garden.mapper.GardenMapper">
+
+    <resultMap id="FeedCandidateResultMap" type="com.moonlighttalk.server.garden.entity.FeedCandidate">
+        <result property="userId" column="user_id"/>
+        <result property="postId" column="post_id"/>
+        <result property="nickname" column="nickname"/>
+        <result property="birthYear" column="birth_year"/>
+        <result property="gender" column="gender"/>
+        <result property="country" column="country"/>
+        <result property="premium" column="is_premium"/>
+        <result property="oneLiner" column="one_liner"/>
+        <result property="publishedAt" column="published_at"/>
+        <result property="exposures" column="exposures"/>
+        <result property="likes" column="likes"/>
+        <result property="requests" column="requests"/>
+    </resultMap>
+
+    <resultMap id="PostCommentResultMap" type="com.moonlighttalk.server.garden.entity.PostComment">
+        <id property="id" column="id"/>
+        <result property="postId" column="post_id"/>
+        <result property="authorId" column="author_id"/>
+        <result property="authorNickname" column="author_nickname"/>
+        <result property="body" column="body"/>
+        <result property="createdAt" column="created_at"/>
+    </resultMap>
+
+    <!--
+      오늘 포스트를 "공유"(published_at NOT NULL)한 사용자만 후보.
+      제외: 나 자신, 정지 회원, 차단(양방향), 신고(양방향), 오늘 내가 스킵한 대상.
+    -->
+    <select id="selectFeedCandidates" resultMap="FeedCandidateResultMap">
+        SELECT u.id            AS user_id,
+               p.id            AS post_id,
+               u.nickname,
+               u.birth_year,
+               u.gender,
+               u.country,
+               u.is_premium,
+               p.one_liner,
+               p.published_at,
+               COALESCE(ps.exposures, 0) AS exposures,
+               COALESCE(ps.likes, 0)     AS likes,
+               COALESCE(ps.requests, 0)  AS requests
+        FROM posts p
+                 JOIN users u ON u.id = p.user_id
+                 LEFT JOIN post_stats ps
+                           ON ps.user_id = u.id AND ps.session_date = #{sessionDate}
+        WHERE p.session_date = #{sessionDate}
+          AND p.published_at IS NOT NULL
+          AND u.id != #{userId}
+          AND u.status = 'ACTIVE'
+          AND NOT EXISTS (SELECT 1 FROM blocks b
+                          WHERE (b.blocker_id = #{userId} AND b.blocked_id = u.id)
+                             OR (b.blocker_id = u.id AND b.blocked_id = #{userId}))
+          AND NOT EXISTS (SELECT 1 FROM reports r
+                          WHERE (r.reporter_id = #{userId} AND r.target_id = u.id)
+                             OR (r.reporter_id = u.id AND r.target_id = #{userId}))
+          AND NOT EXISTS (SELECT 1 FROM feed_skips s
+                          WHERE s.user_id = #{userId} AND s.target_user_id = u.id
+                            AND s.session_date = #{sessionDate})
+        <if test="gender != null">AND u.gender = #{gender}</if>
+        <if test="country != null">AND u.country = #{country}</if>
+        <if test="ageMin != null">
+            AND (YEAR(CURDATE()) - u.birth_year) BETWEEN #{ageMin} AND #{ageMax}
+        </if>
+        <if test="premiumOnly">AND u.is_premium = 1</if>
+    </select>
+
+    <select id="selectPhotoKeys" resultType="string">
+        SELECT storage_key FROM post_photos WHERE post_id = #{postId} ORDER BY order_idx
+    </select>
+
+    <select id="selectInterests" resultType="string">
+        SELECT code FROM user_interests WHERE user_id = #{userId}
+    </select>
+
+    <!-- 읽고-더하고-쓰기 대신 원자적 UPSERT (동시 좋아요/노출 시 lost update 방지) -->
+    <update id="incrementStat">
+        INSERT INTO post_stats (user_id, session_date, exposures, likes, requests, updated_at)
+        VALUES (#{userId}, #{sessionDate},
+                <choose><when test="column == 'exposures'">#{delta}</when><otherwise>0</otherwise></choose>,
+                <choose><when test="column == 'likes'">#{delta}</when><otherwise>0</otherwise></choose>,
+                <choose><when test="column == 'requests'">#{delta}</when><otherwise>0</otherwise></choose>,
+                NOW())
+        ON DUPLICATE KEY UPDATE
+        <choose>
+            <when test="column == 'exposures'">exposures = exposures + #{delta}</when>
+            <when test="column == 'likes'">likes = likes + #{delta}</when>
+            <otherwise>requests = requests + #{delta}</otherwise>
+        </choose>,
+        updated_at = NOW()
+    </update>
+
+    <insert id="insertSkip">
+        INSERT IGNORE INTO feed_skips (user_id, target_user_id, session_date, created_at)
+        VALUES (#{userId}, #{targetUserId}, #{sessionDate}, NOW())
+    </insert>
+
+    <select id="selectTodayPostId" resultType="string">
+        SELECT id FROM posts WHERE user_id = #{userId} AND session_date = #{sessionDate}
+    </select>
+
+    <select id="selectComments" resultMap="PostCommentResultMap">
+        SELECT c.*, u.nickname AS author_nickname
+        FROM post_comments c
+                 JOIN users u ON u.id = c.author_id
+        WHERE c.post_id = #{postId}
+        ORDER BY c.created_at
+    </select>
+
+    <insert id="insertComment">
+        INSERT INTO post_comments (id, post_id, author_id, body, created_at)
+        VALUES (#{id}, #{postId}, #{authorId}, #{body}, NOW(3))
+    </insert>
+
+    <select id="countComments" resultType="int">
+        SELECT COUNT(*) FROM post_comments WHERE post_id = #{postId}
+    </select>
+
+    <select id="existsBlockOrReport" resultType="boolean">
+        SELECT EXISTS (
+            SELECT 1 FROM blocks b
+            WHERE (b.blocker_id = #{userId} AND b.blocked_id = #{targetUserId})
+               OR (b.blocker_id = #{targetUserId} AND b.blocked_id = #{userId})
+            UNION ALL
+            SELECT 1 FROM reports r
+            WHERE (r.reporter_id = #{userId} AND r.target_id = #{targetUserId})
+               OR (r.reporter_id = #{targetUserId} AND r.target_id = #{userId})
+        )
+    </select>
+
+</mapper>
