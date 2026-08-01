@@ -64,28 +64,43 @@ JAVA_HOME="/c/경로/jdk-17" ./gradlew assemble
 
 ---
 
-## 3. 서버 실행 (⏸ 아직 미완 — 로컬 MariaDB 필요)
+## 3. 로컬 MariaDB + 서버 실행 (✅ 검증 완료)
 
-> 오늘은 **컴파일까지만** 검증. 실행(`bootRun`)은 DB가 있어야 가능(Flyway가 시작 시 스키마 적용 + DB 접속).
+**MariaDB (무설치 ZIP 방식 — 관리자 권한 불필요)**
+1. winx64 ZIP 다운로드: `https://archive.mariadb.org/mariadb-11.4.5/winx64-packages/mariadb-11.4.5-winx64.zip` (LTS 11.4대). 압축해제.
+2. 데이터 디렉토리 초기화: `bin/mariadb-install-db.exe --datadir="<경로>/mariadb-data"`
+3. 서버 기동(백그라운드): `bin/mariadbd.exe --datadir="<경로>/mariadb-data" --port=3306 --console`
+4. DB·계정 생성(`application-local.yml`과 일치 — DB명/계정/비번 모두 `moonlighttalk`):
+   ```sql
+   CREATE DATABASE moonlighttalk CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+   CREATE USER 'moonlighttalk'@'%' IDENTIFIED BY 'moonlighttalk';
+   GRANT ALL PRIVILEGES ON moonlighttalk.* TO 'moonlighttalk'@'%'; FLUSH PRIVILEGES;
+   ```
+   (`bin/mariadb.exe --port=3306 -u root` 로 접속해 실행. 초기 root는 무비번)
+- **Redis는 생략**: `app.redis.enabled=false`(기본).
 
-향후 세팅 예정:
-- **로컬 MariaDB** 설치 → `server/src/main/resources/application-local.yml`의 DB 접속정보 맞추기 → Flyway가 `db/migration/V1__init_schema.sql` 자동 적용.
-- **Redis는 선택**: `app.redis.enabled=false`(기본)로 생략 가능(단일 인스턴스 개발).
-- 실행: `cd server && ./gradlew bootRun` (프로필 `local` 기본).
+**서버 실행**
+```bash
+cd server
+JAVA_HOME="<jdk17경로>" ./gradlew bootRun    # Flyway가 V1 스키마 자동 적용, 8080 기동
+```
+- 확인: `Started ServerApplication` 로그 + `curl http://localhost:8080/system/gate` → `{"open":...,"nextOpenAt":"..."}`.
+- ⚠️ MariaDB 11.4는 생성 컬럼에서 문자열 함수 불허 → V1의 `chat_rooms.active_pair_key`는 앱 세팅 일반 컬럼으로 수정됨(커밋 `40d9130`).
 - 상세: [05 서버 구조](05-server-structure.md).
+- 이 PC 실제 경로(참고): MariaDB=`D:\dev-tools\mariadb-11.4.5-winx64`, data=`D:\dev-tools\mariadb-data`.
 
 ---
 
-## 4. 오늘까지 검증된 상태
+## 4. 검증된 상태
 - **클라**: 정적 UI 11개 화면 — Android 에뮬레이터 검증 완료.
-- **서버**: `./gradlew assemble` **컴파일 성공** (실행은 MariaDB 세팅 후).
+- **서버**: MariaDB 11.4.5 + Flyway V1 적용 + Spring Boot 8080 **구동 성공**(2026-08). `GET /system/gate` 200, 인증 엔드포인트 401.
 
 ## 5. 버전 요약
 | 대상 | 버전 |
 |------|------|
 | Flutter | stable (Dart `^3.12.2`) |
 | Android Gradle / AGP / Kotlin | 9.1.0 / 9.0.1 / 2.3.20 |
-| 서버 JDK | 17 (Temurin 17.0.19 사용) |
+| 서버 JDK | 17 (Temurin 17.0.19) |
 | 서버 Gradle(래퍼) | 8.10.2 |
 | Spring Boot | 3.3.4 |
-| DB | MariaDB (설치 예정) |
+| DB | MariaDB 11.4.5 (winx64 ZIP, 로컬) |

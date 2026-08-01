@@ -22,8 +22,9 @@
 
 **서버 (Spring Boot)** — 서버 개발자 초기 구현 + 로컬 빌드 환경 구축
 - 인증(소셜 로그인 추상화)·프로필 도메인 실동작, 공통 인프라(JWT 인터셉터·스토리지 추상화·예외/CORS), Flyway V1 스키마, MyBatis.
-- **로컬 빌드 환경 완료**: JDK 17(Adoptium, `D:\dev-tools\jdk-17.0.19+10`) + Gradle 8.10.2 → `server/`에서 `./gradlew` 사용. **컴파일 성공 확인**(`gradlew assemble` → bootJar 생성).
-- 남은 것: 서버 **실행**에 로컬 MariaDB 필요(아직 미설치). post/garden/chat·소켓/friend/luna/scheduler 도메인 미구현.
+- **로컬 풀스택 구동 완료(2026-08)**: JDK 17 + Gradle 8.10.2 + **로컬 MariaDB 11.4.5** → Flyway V1 스키마 적용, **Spring Boot 8080 구동 성공**(`/system/gate` 200, 인증 401). 세팅 절차 = [06 개발환경](06-dev-environment-setup.md).
+  - MariaDB 11.4 호환 이슈 1건 수정: `chat_rooms.active_pair_key` 생성컬럼→앱세팅(커밋 `40d9130`). REST 날짜=ISO-8601 확인.
+- 남은 것(서버): post/garden/chat·소켓/friend/luna/store(BM)/scheduler 도메인 미구현.
 
 **앱 UI — 화면 11개** (정적, 다크 테마 고정, Android 에뮬레이터 검증 완료)
 - 로그인 → 온보딩 3단계(닉네임 · 출생년도 · 성별/국가)
