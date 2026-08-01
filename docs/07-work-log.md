@@ -19,16 +19,16 @@
 
 ## 1. 현재 상태 스냅샷 (2026-08-01 기준)
 
-**한 줄 요약**: 정적 UI 11개 화면 완성 + **로그인/온보딩은 로컬 서버·DB와 실제 연동 완료**(첫 수직 슬라이스). 나머지 화면은 아직 더미 데이터.
+**한 줄 요약**: 화면 11개 완성. **로그인/온보딩 + 프로필 + 홈(오늘의 포스트)까지 로컬 서버·DB와 실제 연동 완료**(사진 촬영·업로드 포함). 달빛가든/대화방/친구는 아직 더미(해당 서버 도메인 미구현).
 
 | 영역 | 상태 |
 |------|------|
 | 기획 | **Plan_2** 기준 (`D:\MyProject\Plan_Chat\Plan_2` — BM 추가, 운영시간 17~06시). Plan_1은 구버전 |
 | 클라 UI | 로그인·온보딩3·홈·달빛가든·대화방·채팅창·친구·프로필 (11화면, 다크 테마) |
-| 클라 데이터 | **Riverpod + go_router + Dio + secure storage** 도입. 인증/프로필만 실연동, 나머지 화면은 하드코딩 |
-| 서버 | Spring Boot. **auth(소셜 추상화 + mock) / profile 도메인만 구현**. post·garden·chat·friend·luna·store·scheduler 미구현 |
-| DB | 로컬 MariaDB 11.4.5, Flyway **V1 적용됨**(17테이블). BM/친구양방향 테이블은 **문서에만 있고 DDL 미반영**(V2 필요) |
-| 실기기 검증 | 에뮬(Pixel_10) → 로컬 서버 → DB **end-to-end 성공**, 앱 재시작 자동 로그인 확인 |
+| 클라 데이터 | **Riverpod + go_router + Dio + secure storage + image_picker**. 인증·프로필·포스트 실연동, 달빛가든/대화방/친구는 하드코딩 |
+| 서버 | Spring Boot. **auth(소셜 추상화 + mock) / profile / post 도메인 구현**. garden·chat·friend·luna·store·scheduler 미구현 |
+| DB | 로컬 MariaDB 11.4.5, Flyway **V2까지 적용**(V1 초기 17테이블 + V2 posts 등록창/교체횟수). BM·친구양방향 테이블은 **문서에만 있고 DDL 미반영 → 다음은 V3** |
+| 실기기 검증 | 에뮬(Pixel_10) → 로컬 서버 → DB/디스크 **end-to-end 성공**: 자동 로그인, 프로필 표시, **카메라 촬영→업로드→화면 표시** |
 
 **작업 분담**: 서버 개발자(abombspy) = 초기 뼈대 + 추후 클라우드(AWS) 배포. 그 사이 실제 개발(서버 도메인 + 클라 연동 + 로컬 통합)은 이 저장소에서 직접 진행.
 
@@ -77,6 +77,10 @@ flutter run -d emulator-5554
 | 5 | 서버 응답 날짜 포맷 | **ISO-8601 문자열**(`"2026-08-01T17:00:00"`). 클라 DTO는 `DateTime.tryParse` |
 | 6 | Redis | `app.redis.enabled=false`로 **없이도 동작**(단일 인스턴스). 수평 확장 시에만 필요 |
 | 7 | adb 자동 탭 좌표 | 스크린샷(1080x2424) 기준으로 계산. 표시 이미지 좌표에 **×1.21** 해야 실제 좌표 |
+| 8 | **Windows: pub 캐시(C:)와 프로젝트(D:)가 다른 드라이브** → 플러그인 Kotlin 증분 컴파일 실패(`different roots`) | `android/gradle.properties`에 `kotlin.incremental=false` (커밋 `c47aced`) |
+| 9 | 로컬 스토리지 업로드 경로 | 서버 작업디렉터리 기준이라 실제 저장 위치는 **`server/server/uploads/`** (gitignore 처리됨) |
+| 10 | 서버가 주는 이미지 URL | **상대경로**(`/files?key=`) + **인증 헤더 필요** → baseUrl 접두 + `Image.network(headers:)` (`authHeadersProvider`) |
+| 11 | Windows 셸에서 curl로 한글 JSON 전송 | 인코딩이 깨져 500 → python으로 UTF-8 파일 작성 후 `--data-binary @file` |
 
 ---
 
@@ -129,9 +133,10 @@ flutter run -d emulator-5554
 
 ## 5. 다음 작업 후보
 
-1. **나머지 화면 실데이터 연결** — 홈/프로필부터(`GET /me` 이미 있음). 그 외는 서버 도메인 구현이 선행돼야 함.
-2. **서버 남은 도메인 구현** — post → garden → chat(+WebSocket) → friend → luna → store(BM) → scheduler. [01](01-protocol-api-spec.md) 명세대로.
-3. **V2 마이그레이션** — BM 테이블 5종(`subscriptions`/`user_entitlements`/`boost_inventory`/`boost_activations`/`daily_usage`) + `chat_rooms.type(MATCH|FRIEND)` + `friendships` 양방향 구조 + `luna_transactions.reason` 값 추가. ([02 §1.7](02-db-schema.md))
+1. **서버 garden(달빛가든) 도메인** — 피드(스코어 정렬·필터·스킵), 좋아요, 댓글, 번역. 그 후 달빛가든 화면 연동. [01 §1.4](01-protocol-api-spec.md)
+2. **서버 chat 도메인 + WebSocket** — 대화 신청(루나 차감)·대화방·채팅 소켓(봉투 `{op,seq,ts,data}`). 그 후 대화방/채팅창 연동.
+3. **friend / luna / store(BM) 도메인** + **V3 마이그레이션** — BM 테이블 5종(`subscriptions`/`user_entitlements`/`boost_inventory`/`boost_activations`/`daily_usage`) + `chat_rooms.type(MATCH|FRIEND)` + `friendships` 양방향 + `luna_transactions.reason` 값 추가. ([02 §1.7](02-db-schema.md))
 4. **BM 화면 6종 신규** — 루나상점·프라임 멤버십·루나 충전샵·포스트 부스트·앨범 패스·자동 번역 패스 (Plan_2 화면 25~30).
+5. **scheduler** — 17시 오픈/06시 초기화(포스트·스코어·daily_usage), 30일 FIFO, 종료 방 정리.
 
 **대기 중**: 친구 기획 보완 문서(요청/수락 흐름 세부, 친구 최대수 20 vs 30 모순). 소셜 로그인 키, 인앱결제/광고 계정.
