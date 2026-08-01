@@ -46,6 +46,8 @@
   - auth/profile API·DTO, `sessionProvider`, `onboardingProvider`(3단계 폼)
   - **에뮬레이터 → 로컬 서버 → MariaDB end-to-end 검증 완료**: 로그인→닉네임(서버 중복검사)→출생년도→성별/국가→`POST /profile`→홈, DB row 확인, **앱 재시작 시 자동 로그인(토큰 복원)**까지 확인
   - 개발용 목 로그인: 서버 `MockAuthProvider`(`app.auth.social.mock.enabled`, local 전용) + 클라가 `dev-{provider}` 토큰 전송 → 실제 소셜 키 없이 흐름 테스트
+- [x] 프로필/홈 화면 실데이터 연결(`GET /me`) (2026-08)
+- [ ] 홈 포스트 실연동(사진 등록/한마디/공유 — 서버 post 도메인 완료됨)
 - [ ] Plan_2 반영 — 포스트 등록창 버튼/규칙(Prime·부스트·앨범패스), 홈 "PASS" 표시 (BM 화면과 함께)
 - [ ] **BM 화면 신규(25~30)**: 루나상점 · 프라임 멤버십 · 루나 충전샵 · 포스트 부스트 · 앨범 패스 · 자동 번역 패스
 - [ ] 세부 팝업/화면: 대화 신청, 신고·차단, 관심사/지역/소개 **편집** 팝업, 달빛가든 **댓글**, 스포트라이트, 친구 **요청/수락**
@@ -54,7 +56,9 @@
 - [ ] (선택) 태블릿 · 가로모드 대응
 
 ### 백엔드 (Spring Boot + MariaDB/MyBatis + Redis(선택))
-- [ ] **Plan_2 반영**: `store`(결제·구독·부스트·패스=BM) 도메인, 친구 양방향+상시 대화방(`chat_rooms.type`), 시간 17/06, `daily_usage`(01 §1.8 / 02 §1.7)
+- [x] **post(오늘의 포스트) 도메인 구현** (2026-08, V2 마이그레이션 포함 — 등록창/사진수/교체 제한·한마디·공유)
+- [ ] 남은 도메인: garden → chat(+WebSocket) → friend → luna → store(BM) → scheduler
+- [ ] **Plan_2 반영**: `store`(결제·구독·부스트·패스=BM) 도메인, 친구 양방향+상시 대화방(`chat_rooms.type`), `daily_usage`(01 §1.8 / 02 §1.7)
 - [ ] 서버 프로젝트 스캐폴딩 + DB 스키마 구현(MyBatis Mapper)
 - [ ] 소셜 인증 · REST API · WebSocket(채팅/프레즌스) · 스케줄러(18/05/06시)
 - [ ] Redis 옵션 구성(`app.redis.enabled` + `@ConditionalOnProperty`, 인메모리 폴백 구현체)
