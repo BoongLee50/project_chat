@@ -149,12 +149,12 @@ CREATE TABLE chat_rooms (
     created_at       DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     -- 재매칭 정책(확정): 방 종료는 영구 종료, 재입장 불가 — 재매칭 시 새 row 생성.
     -- 같은 페어의 ACTIVE 방은 동시에 1개만 허용하고 과거 ENDED 방과는 충돌하지 않도록
-    -- status=ACTIVE일 때만 값을 갖는 생성 컬럼에 유니크 제약을 건다(NULL은 유니크 검사 제외).
-    active_pair_key  VARCHAR(80) GENERATED ALWAYS AS (
-                        CASE WHEN status = 'ACTIVE'
-                             THEN CONCAT(LEAST(user_a, user_b), '_', GREATEST(user_a, user_b))
-                             ELSE NULL END
-                      ) STORED,
+    -- active_pair_key(ACTIVE일 때만 값)에 유니크 제약(NULL은 유니크 검사 제외).
+    -- 주의: MariaDB 11.4는 CONCAT/LEAST/GREATEST를 생성 컬럼(GENERATED ALWAYS AS)에서
+    -- 허용하지 않음(err 1901). → 생성 컬럼이 아니라 애플리케이션이 채우는 일반 컬럼으로 둔다.
+    -- 방 생성(ACTIVE): CONCAT(LEAST(user_a,user_b),'_',GREATEST(user_a,user_b)) 값 세팅,
+    -- 방 종료(ENDED): NULL 로 세팅 → 과거 방과 유니크 충돌 없이 재매칭 허용.
+    active_pair_key  VARCHAR(80)  NULL,
     PRIMARY KEY (id),
     UNIQUE KEY uk_chat_rooms_active_pair (active_pair_key),
     KEY ix_chat_rooms_user_a (user_a),

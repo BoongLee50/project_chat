@@ -120,12 +120,9 @@ chat_rooms
   request_id       uuid FK null -> chat_requests
   ended_at         timestamptz null             -- 종료 30분 후 삭제 배치 기준
   created_at       timestamptz
-  active_pair_key  varchar(80) GENERATED ALWAYS AS (
-                      CASE WHEN status = 'ACTIVE'
-                           THEN CONCAT(LEAST(user_a, user_b), '_', GREATEST(user_a, user_b))
-                           ELSE NULL END
-                    ) STORED
-  UNIQUE(active_pair_key)                       -- 같은 페어의 ACTIVE 방은 동시에 1개만. ENDED는 NULL이라 유니크 검사 제외 → 과거 방과 충돌 없이 여러 개 허용
+  active_pair_key  varchar(80) null              -- 앱이 세팅: ACTIVE=CONCAT(LEAST(a,b),'_',GREATEST(a,b)), ENDED=NULL
+  UNIQUE(active_pair_key)                        -- 같은 페어의 ACTIVE 방은 동시에 1개만. ENDED는 NULL이라 유니크 검사 제외 → 과거 방과 충돌 없이 여러 개 허용
+  -- ⚠ MariaDB 11.4는 CONCAT/LEAST/GREATEST를 생성 컬럼에서 불허(err 1901) → 생성 컬럼 대신 앱이 채우는 일반 컬럼으로 확정(2026-08 로컬 검증)
 
 chat_messages                              -- 서버 30일 보관(영속). 진행중은 Redis 캐시(선택, 비활성 시 DB 직접 조회)
   id          uuid PK

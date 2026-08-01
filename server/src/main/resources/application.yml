@@ -25,8 +25,8 @@ app:
     access-token-ttl-minutes: 60
     refresh-token-ttl-days: 30
   gate:
-    open-hour: 18
-    close-hour: 5
+    open-hour: 17
+    close-hour: 6
   redis:
     enabled: false
   storage:
