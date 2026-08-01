@@ -1,41 +1,58 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../app/main_shell.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimens.dart';
+import '../providers/onboarding_provider.dart';
 import '../widgets/onboarding_scaffold.dart';
 
-/// 온보딩 3/3 — 성별 및 나라 설정 (정적 UI).
-class GenderCountryScreen extends StatefulWidget {
+/// 온보딩 3/3 — 성별 및 나라 설정.
+/// [완료] 시 `POST /profile`로 프로필을 생성하고, 세션이 authenticated로 바뀌면
+/// 라우터가 자동으로 홈(메인 셸)으로 보낸다.
+class GenderCountryScreen extends ConsumerStatefulWidget {
   const GenderCountryScreen({super.key});
 
   @override
-  State<GenderCountryScreen> createState() => _GenderCountryScreenState();
+  ConsumerState<GenderCountryScreen> createState() =>
+      _GenderCountryScreenState();
 }
 
-class _GenderCountryScreenState extends State<GenderCountryScreen> {
-  String? _gender; // 'male' | 'female'
-  String? _country; // 'kr' | 'jp'
+class _GenderCountryScreenState extends ConsumerState<GenderCountryScreen> {
+  /// 서버 enum 값(MALE | FEMALE)
+  String? _gender;
+
+  /// 서버 enum 값(KR | JP)
+  String? _country;
 
   bool get _valid => _gender != null && _country != null;
 
-  void _finish() {
-    // 프로필 생성 완료 → 홈(오늘의 포스트)으로 이동하며 온보딩/로그인 스택을 제거.
-    // 실제 프로필 생성 API 연동은 이후 단계.
-    Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (_) => const MainShell()),
-      (route) => false,
-    );
+  Future<void> _finish() async {
+    final controller = ref.read(onboardingProvider.notifier);
+    controller.setGender(_gender!);
+    controller.setCountry(_country!);
+    await controller.submitProfile();
+    // 성공 시 세션 상태 변경 → router redirect가 홈으로 이동시킨다.
   }
 
   @override
   Widget build(BuildContext context) {
+    final form = ref.watch(onboardingProvider);
+
+    ref.listen(onboardingProvider, (previous, next) {
+      final message = next.error;
+      if (message != null && message != previous?.error) {
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(SnackBar(content: Text(message)));
+      }
+    });
+
     return OnboardingScaffold(
       backgroundAsset: 'assets/images/onboarding_3.jpg',
       title: '성별 및 나라 설정',
       subtitle: '정확한 매칭을 위해 성별과 나라를 선택해주세요.',
       note: '* 이 정보는 다른 사용자에게 공개되지 않습니다.',
-      submitEnabled: _valid,
+      submitEnabled: _valid && !form.busy,
       onSubmit: _finish,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -48,8 +65,8 @@ class _GenderCountryScreenState extends State<GenderCountryScreen> {
                 child: _SelectCard(
                   leading: const Icon(Icons.person_outline, size: 24),
                   label: '남자',
-                  selected: _gender == 'male',
-                  onTap: () => setState(() => _gender = 'male'),
+                  selected: _gender == 'MALE',
+                  onTap: () => setState(() => _gender = 'MALE'),
                 ),
               ),
               const SizedBox(width: AppDimens.gapMd),
@@ -57,8 +74,8 @@ class _GenderCountryScreenState extends State<GenderCountryScreen> {
                 child: _SelectCard(
                   leading: const Icon(Icons.person_outline, size: 24),
                   label: '여자',
-                  selected: _gender == 'female',
-                  onTap: () => setState(() => _gender = 'female'),
+                  selected: _gender == 'FEMALE',
+                  onTap: () => setState(() => _gender = 'FEMALE'),
                 ),
               ),
             ],
@@ -72,8 +89,8 @@ class _GenderCountryScreenState extends State<GenderCountryScreen> {
                 child: _SelectCard(
                   leading: const Text('🇰🇷', style: TextStyle(fontSize: 22)),
                   label: '한국',
-                  selected: _country == 'kr',
-                  onTap: () => setState(() => _country = 'kr'),
+                  selected: _country == 'KR',
+                  onTap: () => setState(() => _country = 'KR'),
                 ),
               ),
               const SizedBox(width: AppDimens.gapMd),
@@ -81,8 +98,8 @@ class _GenderCountryScreenState extends State<GenderCountryScreen> {
                 child: _SelectCard(
                   leading: const Text('🇯🇵', style: TextStyle(fontSize: 22)),
                   label: '일본',
-                  selected: _country == 'jp',
-                  onTap: () => setState(() => _country = 'jp'),
+                  selected: _country == 'JP',
+                  onTap: () => setState(() => _country = 'JP'),
                 ),
               ),
             ],

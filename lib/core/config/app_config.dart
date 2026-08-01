@@ -15,7 +15,21 @@ class AppConfig {
   /// 포스트/스코어 초기화 시각 (KST, 시) — 새벽 6시 (하루 한마디는 유지)
   static const int postResetHourKst = 6;
 
-  /// API base URL — 서버 스택 확정 후 빌드 환경변수로 주입.
+  /// API base URL — 빌드 환경변수로 주입.
   /// 예: flutter run --dart-define=API_BASE_URL=https://api.example.com
-  static const String apiBaseUrl = String.fromEnvironment('API_BASE_URL');
+  ///
+  /// 기본값은 **안드로이드 에뮬레이터에서 호스트 PC를 가리키는 주소**(10.0.2.2).
+  /// 에뮬레이터의 localhost는 에뮬레이터 자신이라 호스트의 로컬 서버에 닿지 않는다.
+  /// (실기기에서 테스트할 땐 PC의 LAN IP를 --dart-define으로 주입)
+  static const String apiBaseUrl = String.fromEnvironment(
+    'API_BASE_URL',
+    defaultValue: 'http://10.0.2.2:8080',
+  );
+
+  /// 개발용 목 로그인 사용 여부(서버 local 프로필의 mock provider와 짝).
+  /// 실제 소셜 SDK 연동 전까지 로그인 흐름을 테스트하기 위한 임시 스위치.
+  static const bool useMockLogin = bool.fromEnvironment(
+    'USE_MOCK_LOGIN',
+    defaultValue: true,
+  );
 }

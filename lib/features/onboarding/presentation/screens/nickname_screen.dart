@@ -1,19 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../../app/router.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimens.dart';
+import '../providers/onboarding_provider.dart';
 import '../widgets/onboarding_scaffold.dart';
-import 'birth_year_screen.dart';
 
-/// 온보딩 1/3 — 닉네임 설정 (정적 UI).
-class NicknameScreen extends StatefulWidget {
+/// 온보딩 1/3 — 닉네임 설정.
+/// 서버(`GET /profile/nickname:check`)가 중복·금지어·형식을 판정한다.
+class NicknameScreen extends ConsumerStatefulWidget {
   const NicknameScreen({super.key});
 
   @override
-  State<NicknameScreen> createState() => _NicknameScreenState();
+  ConsumerState<NicknameScreen> createState() => _NicknameScreenState();
 }
 
-class _NicknameScreenState extends State<NicknameScreen> {
+class _NicknameScreenState extends ConsumerState<NicknameScreen> {
   static const int _maxLen = 10;
   final TextEditingController _controller = TextEditingController();
 
@@ -31,18 +35,34 @@ class _NicknameScreenState extends State<NicknameScreen> {
 
   bool get _valid => _controller.text.trim().length >= 2;
 
+  Future<void> _submit() async {
+    final ok = await ref
+        .read(onboardingProvider.notifier)
+        .submitNickname(_controller.text.trim());
+    if (ok && mounted) context.go(Routes.onboardingBirthYear);
+  }
+
   @override
   Widget build(BuildContext context) {
     final len = _controller.text.characters.length;
+    final form = ref.watch(onboardingProvider);
+
+    // 닉네임 검사 실패(중복·금지어 등) 메시지 표시.
+    ref.listen(onboardingProvider, (previous, next) {
+      final message = next.error;
+      if (message != null && message != previous?.error) {
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(SnackBar(content: Text(message)));
+      }
+    });
 
     return OnboardingScaffold(
       backgroundAsset: 'assets/images/onboarding_1.jpg',
       title: '닉네임 설정',
       subtitle: '달빛톡에서 사용할 닉네임을 입력해주세요.',
-      submitEnabled: _valid,
-      onSubmit: () => Navigator.of(
-        context,
-      ).push(MaterialPageRoute(builder: (_) => const BirthYearScreen())),
+      submitEnabled: _valid && !form.busy,
+      onSubmit: _submit,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

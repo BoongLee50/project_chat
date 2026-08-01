@@ -1,19 +1,32 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimens.dart';
-import '../../../onboarding/presentation/screens/nickname_screen.dart';
+import '../../data/models/auth_models.dart';
+import '../providers/session_provider.dart';
 
-/// 로그인 화면 (정적 UI).
+/// 로그인 화면.
 ///
-/// 배경은 시안에서 뽑은 밤하늘 이미지(상단), 하단은 코드로 구성한
-/// 시간 배지 + 소셜 로그인 버튼 3종. 실제 소셜 인증 연동은 이후 단계.
-/// (docs/01-protocol-api-spec.md · 소셜 개발자 앱 키 발급 필요)
-class LoginScreen extends StatelessWidget {
+/// 배경은 시안의 밤하늘 이미지(상단), 하단은 시간 배지 + 소셜 로그인 버튼 3종.
+/// 버튼을 누르면 `POST /auth/social`로 로그인한다. 실제 소셜 SDK 연동 전까지는
+/// 개발용 목 토큰을 보내고 서버의 mock provider가 이를 받아준다
+/// (docs/01 §1.1 · 서버 `app.auth.social.mock.enabled`).
+class LoginScreen extends ConsumerWidget {
   const LoginScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    // 로그인 실패 메시지를 스낵바로 표시.
+    ref.listen(sessionProvider, (previous, next) {
+      final message = next.error;
+      if (message != null && message != previous?.error) {
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(SnackBar(content: Text(message)));
+      }
+    });
+
     return Scaffold(
       body: Stack(
         fit: StackFit.expand,
@@ -94,15 +107,24 @@ class _TimeBadge extends StatelessWidget {
 }
 
 /// 소셜 로그인 버튼 3종.
-class _SocialButtons extends StatelessWidget {
+class _SocialButtons extends ConsumerWidget {
   const _SocialButtons();
 
   @override
-  Widget build(BuildContext context) {
-    // 정적 UI 흐름 — 실제 소셜 인증 대신 온보딩(프로필 생성)으로 이동한다.
-    void startOnboarding() => Navigator.of(
-      context,
-    ).push(MaterialPageRoute(builder: (_) => const NicknameScreen()));
+  Widget build(BuildContext context, WidgetRef ref) {
+    final busy = ref.watch(sessionProvider).busy;
+
+    // 개발용: 소셜 SDK 대신 provider별 목 토큰을 서버에 보낸다.
+    // 토큰 문자열이 곧 테스트 계정 식별자라, provider마다 다른 계정이 된다.
+    void signIn(SocialProvider provider) {
+      if (busy) return;
+      ref
+          .read(sessionProvider.notifier)
+          .signIn(
+            provider: provider,
+            providerToken: 'dev-${provider.wireName.toLowerCase()}',
+          );
+    }
 
     return Column(
       children: [
@@ -110,7 +132,7 @@ class _SocialButtons extends StatelessWidget {
           label: 'LINE으로 로그인',
           background: AppColors.line,
           foreground: Colors.white,
-          onPressed: startOnboarding,
+          onPressed: () => signIn(SocialProvider.line),
           leading: _badge(
             bg: Colors.white,
             child: const Icon(
@@ -125,7 +147,7 @@ class _SocialButtons extends StatelessWidget {
           label: '카카오톡으로 로그인',
           background: AppColors.kakao,
           foreground: AppColors.kakaoText,
-          onPressed: startOnboarding,
+          onPressed: () => signIn(SocialProvider.kakao),
           leading: _badge(
             bg: AppColors.kakaoText,
             child: const Icon(
@@ -140,7 +162,7 @@ class _SocialButtons extends StatelessWidget {
           label: 'Google로 로그인',
           background: AppColors.google,
           foreground: AppColors.googleText,
-          onPressed: startOnboarding,
+          onPressed: () => signIn(SocialProvider.google),
           leading: _badge(
             bg: Colors.white,
             child: const Text(

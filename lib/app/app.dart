@@ -1,27 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../features/auth/presentation/screens/login_screen.dart';
+import 'router.dart';
 import 'theme/app_theme.dart';
 
 /// 앱 루트 위젯.
 ///
-/// 지금은 스캐폴딩 단계라 정적 홈만 표시한다.
-/// 이후 단계에서 연결할 것:
-///  - 상태관리: ProviderScope(Riverpod)로 감싸기
-///  - 라우팅: MaterialApp.router + go_router (시간/인증 2단 게이트)
-///  - 다국어: 한국어/일본어 로케일
-/// 자세한 내용은 docs/03-flutter-structure.md 참고.
-class DalbittokApp extends StatelessWidget {
+/// 상태관리는 Riverpod(main.dart의 ProviderScope), 라우팅은 go_router.
+/// 진입 화면은 세션 상태에 따라 [routerProvider]가 결정한다.
+class DalbittokApp extends ConsumerWidget {
   const DalbittokApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
+  Widget build(BuildContext context, WidgetRef ref) {
+    return MaterialApp.router(
       title: '달빛톡',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.dark,
       themeMode: ThemeMode.dark,
-      home: const LoginScreen(),
+      routerConfig: ref.watch(routerProvider),
     );
   }
 }

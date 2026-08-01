@@ -14,6 +14,12 @@ app:
     enabled: false
   storage:
     type: local
+  auth:
+    social:
+      # 개발용 목 로그인 — 실제 소셜 키 없이 로그인/온보딩 흐름 테스트.
+      # 비활성 provider 자리를 mock이 대신 받는다(MockAuthProvider). 운영에서는 절대 켜지 말 것.
+      mock:
+        enabled: true
 
 logging:
   level:
