@@ -82,6 +82,20 @@ flutter run -d emulator-5554
 
 ## 4. 세션 로그
 
+### 2026-08-01(3) — 홈 화면 post API 실연동 (`c47aced`)
+**한 일**: 클라 post 데이터 레이어(DTO·PostApi·myPostProvider) + 홈 화면 전면 연동 —
+사진 촬영(image_picker 카메라)→업로드→표시, 삭제, 좌우 탭 전환, 남은 시간("PASS" 포함),
+하루 한마디 편집, 공유하기. 인증 이미지 로드용 `authHeadersProvider` 추가.
+
+**검증**: 에뮬 카메라 촬영 → 서버 디스크 저장 + DB 반영 → 화면 표시까지 전 사이클 성공.
+
+**함정 추가**: ① Windows에서 pub 캐시(C:)와 프로젝트(D:)가 다른 드라이브면 Kotlin 증분
+컴파일이 깨짐(`different roots`) → `android/gradle.properties`에 `kotlin.incremental=false`.
+② 로컬 스토리지 업로드 경로는 서버 작업디렉터리 기준이라 실제로는 `server/server/uploads/`.
+③ 서버가 주는 이미지 URL은 **상대경로**(`/files?key=`)이고 **인증 헤더 필요** → baseUrl 접두 + headers.
+
+**남은 것**: 루나 잔액·달 위상·좋아요/댓글 수치는 각 도메인(luna/garden) 구현 후 연결.
+
 ### 2026-08-01(2) — 프로필/홈 실데이터 + 서버 post 도메인 (`b9310ba`~`ac2ab64`)
 **한 일**
 1. **프로필/홈 화면 실데이터 연결**(`b9310ba`) — `GET /me` 기반. 프로필: 닉네임·나이·국가·프리미엄 배지, 사진 미등록 플레이스홀더, 관심사/소개/지역 빈 상태 안내, 당겨서 새로고침, **로그아웃 메뉴(계정 전환 테스트용)**. 홈: 이름·나이·국기.
