@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.moonlighttalk.server.chat.mapper.ChatMapper">
+
+    <resultMap id="RequestResultMap" type="com.moonlighttalk.server.chat.entity.ChatRequestEntity">
+        <id property="id" column="id"/>
+        <result property="fromUser" column="from_user"/>
+        <result property="toUser" column="to_user"/>
+        <result property="message" column="message"/>
+        <result property="status" column="status"/>
+        <result property="lunaCost" column="luna_cost"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="partnerNickname" column="partner_nickname"/>
+        <result property="partnerBirthYear" column="partner_birth_year"/>
+        <result property="partnerCountry" column="partner_country"/>
+        <result property="partnerPhotoKey" column="partner_photo_key"/>
+    </resultMap>
+
+    <resultMap id="RoomResultMap" type="com.moonlighttalk.server.chat.entity.ChatRoom">
+        <id property="id" column="id"/>
+        <result property="userA" column="user_a"/>
+        <result property="userB" column="user_b"/>
+        <result property="status" column="status"/>
+        <result property="type" column="type"/>
+        <result property="requestId" column="request_id"/>
+        <result property="endedAt" column="ended_at"/>
+        <result property="createdAt" column="created_at"/>
+    </resultMap>
+
+    <resultMap id="RoomSummaryResultMap" type="com.moonlighttalk.server.chat.entity.ChatRoomSummary">
+        <result property="roomId" column="room_id"/>
+        <result property="status" column="status"/>
+        <result property="type" column="type"/>
+        <result property="partnerId" column="partner_id"/>
+        <result property="partnerNickname" column="partner_nickname"/>
+        <result property="partnerBirthYear" column="partner_birth_year"/>
+        <result property="partnerCountry" column="partner_country"/>
+        <result property="partnerPhotoKey" column="partner_photo_key"/>
+        <result property="lastMessage" column="last_message"/>
+        <result property="lastMessageAt" column="last_message_at"/>
+        <result property="unreadCount" column="unread_count"/>
+    </resultMap>
+
+    <resultMap id="MessageResultMap" type="com.moonlighttalk.server.chat.entity.ChatMessage">
+        <id property="id" column="id"/>
+        <result property="roomId" column="room_id"/>
+        <result property="senderId" column="sender_id"/>
+        <result property="body" column="body"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="readAt" column="read_at"/>
+    </resultMap>
+
+    <!-- ── 대화 신청 ── -->
+    <insert id="insertRequest">
+        INSERT INTO chat_requests (id, from_user, to_user, message, status, luna_cost, created_at)
+        VALUES (#{id}, #{fromUser}, #{toUser}, #{message}, #{status}, #{lunaCost}, NOW())
+    </insert>
+
+    <select id="selectRequest" resultMap="RequestResultMap">
+        SELECT * FROM chat_requests WHERE id = #{id}
+    </select>
+
+    <update id="updateRequestStatus">
+        UPDATE chat_requests SET status = #{status} WHERE id = #{id}
+    </update>
+
+    <select id="selectReceivedRequests" resultMap="RequestResultMap">
+        SELECT r.*, u.nickname AS partner_nickname, u.birth_year AS partner_birth_year,
+               u.country AS partner_country, p.photo_key AS partner_photo_key
+        FROM chat_requests r
+                 JOIN users u ON u.id = r.from_user
+                 LEFT JOIN user_profiles p ON p.user_id = u.id
+        WHERE r.to_user = #{userId} AND r.status = 'PENDING'
+        ORDER BY r.created_at DESC
+    </select>
+
+    <select id="selectSentRequests" resultMap="RequestResultMap">
+        SELECT r.*, u.nickname AS partner_nickname, u.birth_year AS partner_birth_year,
+               u.country AS partner_country, p.photo_key AS partner_photo_key
+        FROM chat_requests r
+                 JOIN users u ON u.id = r.to_user
+                 LEFT JOIN user_profiles p ON p.user_id = u.id
+        WHERE r.from_user = #{userId}
+        ORDER BY r.created_at DESC
+    </select>
+
+    <select id="existsPendingRequest" resultType="boolean">
+        SELECT EXISTS (SELECT 1 FROM chat_requests
+                       WHERE from_user = #{fromUser} AND to_user = #{toUser} AND status = 'PENDING')
+    </select>
+
+    <!-- ── 대화방 ── -->
+    <insert id="insertRoom">
+        INSERT INTO chat_rooms (id, user_a, user_b, status, type, request_id, active_pair_key, created_at)
+        VALUES (#{id}, #{userA}, #{userB}, #{status}, #{type}, #{requestId},
+                CONCAT(LEAST(#{userA}, #{userB}), '_', GREATEST(#{userA}, #{userB})), NOW())
+    </insert>
+
+    <select id="selectRoom" resultMap="RoomResultMap">
+        SELECT * FROM chat_rooms WHERE id = #{id}
+    </select>
+
+    <!-- 상대 정보 + 마지막 메시지 + 내가 안 읽은 수 -->
+    <select id="selectMyRooms" resultMap="RoomSummaryResultMap">
+        SELECT r.id                                       AS room_id,
+               r.status,
+               r.type,
+               u.id                                       AS partner_id,
+               u.nickname                                 AS partner_nickname,
+               u.birth_year                               AS partner_birth_year,
+               u.country                                  AS partner_country,
+               pr.photo_key                               AS partner_photo_key,
+               (SELECT m.body FROM chat_messages m
+                WHERE m.room_id = r.id ORDER BY m.created_at DESC LIMIT 1)      AS last_message,
+               (SELECT m.created_at FROM chat_messages m
+                WHERE m.room_id = r.id ORDER BY m.created_at DESC LIMIT 1)      AS last_message_at,
+               (SELECT COUNT(*) FROM chat_messages m
+                WHERE m.room_id = r.id AND m.sender_id != #{userId} AND m.read_at IS NULL) AS unread_count
+        FROM chat_rooms r
+                 JOIN users u ON u.id = CASE WHEN r.user_a = #{userId} THEN r.user_b ELSE r.user_a END
+                 LEFT JOIN user_profiles pr ON pr.user_id = u.id
+        WHERE (r.user_a = #{userId} OR r.user_b = #{userId})
+          AND r.status = 'ACTIVE'
+        ORDER BY last_message_at IS NULL, last_message_at DESC, r.created_at DESC
+    </select>
+
+    <!-- 종료 시 active_pair_key를 NULL로 비워 같은 페어의 새 방 생성이 가능하게 한다(02 §1.5) -->
+    <update id="endRoom">
+        UPDATE chat_rooms
+        SET status = 'ENDED', ended_at = #{endedAt}, active_pair_key = NULL
+        WHERE id = #{id}
+    </update>
+
+    <!-- ── 메시지 ── -->
+    <insert id="insertMessage">
+        INSERT INTO chat_messages (id, room_id, sender_id, body, created_at)
+        VALUES (#{id}, #{roomId}, #{senderId}, #{body}, NOW(3))
+    </insert>
+
+    <select id="selectMessages" resultMap="MessageResultMap">
+        SELECT * FROM chat_messages
+        WHERE room_id = #{roomId}
+        <if test="beforeCreatedAt != null">AND created_at &lt; #{beforeCreatedAt}</if>
+        ORDER BY created_at DESC
+        LIMIT #{limit}
+    </select>
+
+    <select id="selectMessage" resultMap="MessageResultMap">
+        SELECT * FROM chat_messages WHERE id = #{id}
+    </select>
+
+    <update id="markRead">
+        UPDATE chat_messages
+        SET read_at = #{readAt}
+        WHERE room_id = #{roomId} AND sender_id != #{readerId} AND read_at IS NULL
+    </update>
+
+    <select id="countUnread" resultType="int">
+        SELECT COUNT(*) FROM chat_messages
+        WHERE room_id = #{roomId} AND sender_id != #{readerId} AND read_at IS NULL
+    </select>
+
+</mapper>

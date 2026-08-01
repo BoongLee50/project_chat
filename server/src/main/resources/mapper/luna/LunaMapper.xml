@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.moonlighttalk.server.luna.mapper.LunaMapper">
+
+    <insert id="ensureWallet">
+        INSERT IGNORE INTO luna_wallets (user_id, balance) VALUES (#{userId}, 0)
+    </insert>
+
+    <!-- 트랜잭션 안에서만 의미가 있다(호출부 @Transactional 필수) -->
+    <select id="selectBalanceForUpdate" resultType="java.lang.Integer">
+        SELECT balance FROM luna_wallets WHERE user_id = #{userId} FOR UPDATE
+    </select>
+
+    <select id="selectBalance" resultType="java.lang.Integer">
+        SELECT balance FROM luna_wallets WHERE user_id = #{userId}
+    </select>
+
+    <update id="addBalance">
+        UPDATE luna_wallets SET balance = balance + #{delta} WHERE user_id = #{userId}
+    </update>
+
+    <insert id="insertTransaction">
+        INSERT INTO luna_transactions (id, user_id, delta, reason, ref_id, created_at)
+        VALUES (#{id}, #{userId}, #{delta}, #{reason}, #{refId}, NOW())
+    </insert>
+
+    <select id="selectDailyUsage" resultType="int">
+        SELECT COALESCE((SELECT used_count FROM daily_usage
+                         WHERE user_id = #{userId} AND session_date = #{sessionDate} AND kind = #{kind}), 0)
+    </select>
+
+    <update id="incrementDailyUsage">
+        INSERT INTO daily_usage (user_id, session_date, kind, used_count)
+        VALUES (#{userId}, #{sessionDate}, #{kind}, 1)
+        ON DUPLICATE KEY UPDATE used_count = used_count + 1
+    </update>
+
+</mapper>
