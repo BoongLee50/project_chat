@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.moonlighttalk.server.post.mapper.PostMapper">
+
+    <resultMap id="PostResultMap" type="com.moonlighttalk.server.post.entity.Post">
+        <id property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="sessionDate" column="session_date"/>
+        <result property="oneLiner" column="one_liner"/>
+        <result property="publishedAt" column="published_at"/>
+        <result property="windowStartedAt" column="window_started_at"/>
+        <result property="replaceCount" column="replace_count"/>
+    </resultMap>
+
+    <resultMap id="PostPhotoResultMap" type="com.moonlighttalk.server.post.entity.PostPhoto">
+        <id property="id" column="id"/>
+        <result property="postId" column="post_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="storageKey" column="storage_key"/>
+        <result property="orderIdx" column="order_idx"/>
+        <result property="createdAt" column="created_at"/>
+    </resultMap>
+
+    <select id="selectByUserAndDate" resultMap="PostResultMap">
+        SELECT * FROM posts WHERE user_id = #{userId} AND session_date = #{sessionDate}
+    </select>
+
+    <insert id="insertPost">
+        INSERT INTO posts (id, user_id, session_date, one_liner, published_at, window_started_at, replace_count)
+        VALUES (#{id}, #{userId}, #{sessionDate}, #{oneLiner}, #{publishedAt}, #{windowStartedAt}, #{replaceCount})
+    </insert>
+
+    <update id="updateWindowStartedAt">
+        UPDATE posts SET window_started_at = #{startedAt} WHERE id = #{postId}
+    </update>
+
+    <update id="updateOneLiner">
+        UPDATE posts SET one_liner = #{oneLiner} WHERE id = #{postId}
+    </update>
+
+    <update id="updatePublishedAt">
+        UPDATE posts SET published_at = #{publishedAt} WHERE id = #{postId}
+    </update>
+
+    <update id="incrementReplaceCount">
+        UPDATE posts SET replace_count = replace_count + 1 WHERE id = #{postId}
+    </update>
+
+    <select id="selectPhotos" resultMap="PostPhotoResultMap">
+        SELECT * FROM post_photos WHERE post_id = #{postId} ORDER BY order_idx
+    </select>
+
+    <select id="selectPhotoById" resultMap="PostPhotoResultMap">
+        SELECT * FROM post_photos WHERE id = #{photoId}
+    </select>
+
+    <insert id="insertPhoto">
+        INSERT INTO post_photos (id, post_id, user_id, storage_key, order_idx, created_at)
+        VALUES (#{id}, #{postId}, #{userId}, #{storageKey}, #{orderIdx}, NOW())
+    </insert>
+
+    <delete id="deletePhoto">
+        DELETE FROM post_photos WHERE id = #{photoId}
+    </delete>
+
+    <select id="countPhotos" resultType="int">
+        SELECT COUNT(*) FROM post_photos WHERE post_id = #{postId}
+    </select>
+
+    <select id="selectMaxOrderIdx" resultType="java.lang.Integer">
+        SELECT MAX(order_idx) FROM post_photos WHERE post_id = #{postId}
+    </select>
+
+</mapper>
