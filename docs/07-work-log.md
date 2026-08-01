@@ -17,18 +17,20 @@
 
 ---
 
-## 1. 현재 상태 스냅샷 (2026-08-01 기준)
+## 1. 현재 상태 스냅샷 (2026-08-02 기준, 커밋 `b6db067`)
 
-**한 줄 요약**: 화면 11개 완성. **로그인/온보딩 + 프로필 + 홈(오늘의 포스트)까지 로컬 서버·DB와 실제 연동 완료**(사진 촬영·업로드 포함). 달빛가든/대화방/친구는 아직 더미(해당 서버 도메인 미구현).
+**한 줄 요약**: 화면 11개 완성. **로그인/온보딩 · 프로필 · 홈(오늘의 포스트) · 달빛가든 · 대화방/채팅창(WebSocket 실시간)** 까지 로컬 서버·DB와 실제 연동 완료. **친구 탭만 아직 더미**(friend 도메인 미구현).
 
 | 영역 | 상태 |
 |------|------|
 | 기획 | **Plan_2** 기준 (`D:\MyProject\Plan_Chat\Plan_2` — BM 추가, 운영시간 17~06시). Plan_1은 구버전 |
 | 클라 UI | 로그인·온보딩3·홈·달빛가든·대화방·채팅창·친구·프로필 (11화면, 다크 테마) |
-| 클라 데이터 | **Riverpod + go_router + Dio + secure storage + image_picker**. 인증·프로필·포스트·**달빛가든** 실연동, 대화방/친구는 하드코딩 |
-| 서버 | Spring Boot. **auth(mock 포함) / profile / post / garden 도메인 구현**. chat·friend·luna·store·scheduler 미구현 |
-| DB | 로컬 MariaDB 11.4.5, Flyway **V3까지 적용**(V1 초기 + V2 posts 등록창/교체 + V3 post_comments). BM·친구양방향은 **DDL 미반영 → 다음은 V4** |
-| 실기기 검증 | 에뮬(Pixel_10) → 로컬 서버 → DB/디스크 **end-to-end 성공**: 자동 로그인, 프로필 표시, **카메라 촬영→업로드→화면 표시** |
+| 클라 데이터 | **Riverpod + go_router + Dio + secure storage + image_picker + web_socket_channel**. 인증·프로필·포스트·달빛가든·**대화방/채팅** 실연동, **친구만 하드코딩** |
+| 서버 | Spring Boot. **auth(mock 포함) / profile / post / garden / chat(+WebSocket) / luna(내부용) 도메인 구현**. friend·store(BM)·scheduler 미구현 |
+| DB | 로컬 MariaDB 11.4.5, Flyway **V4까지 적용**(V1 초기 + V2 posts 등록창/교체 + V3 post_comments + V4 chat: 메시지 500자·`chat_rooms.type`·`daily_usage`). BM 테이블·친구 양방향은 **DDL 미반영 → 다음은 V5** |
+| 실기기 검증 | 에뮬(Pixel_10) → 로컬 서버 → DB/디스크 **end-to-end 성공**: 자동 로그인, 프로필, 카메라 촬영→업로드→표시, 가든 피드/좋아요/댓글, **에뮬 2대 양방향 실시간 채팅** |
+
+**남은 화면/기능 한눈에**: 친구(요청·수락·목록) · BM 화면 6종(25~30) · 신고/차단 팝업 · 관심사/지역/소개 편집 팝업 · 다국어(한↔일) · 스케줄러.
 
 **작업 분담**: 서버 개발자(abombspy) = 초기 뼈대 + 추후 클라우드(AWS) 배포. 그 사이 실제 개발(서버 도메인 + 클라 연동 + 로컬 통합)은 이 저장소에서 직접 진행.
 
@@ -57,6 +59,27 @@ flutter emulators --launch Pixel_10
 flutter run -d emulator-5554
 ```
 확인: `curl http://localhost:8080/system/gate` → `{"open":...,"nextOpenAt":"..."}`
+
+**⚠️ 채팅(WebSocket)을 건드릴 땐 반드시 `adb reverse` 방식으로.**
+기본값 `10.0.2.2`는 에뮬레이터 NAT가 소켓을 30~60초마다 끊어서 실시간 검증이 불가능하다(함정 #12).
+```bash
+# 기기마다 1회 (에뮬 재시작하면 다시)
+adb -s emulator-5554 reverse tcp:8080 tcp:8080
+adb -s emulator-5556 reverse tcp:8080 tcp:8080
+
+# localhost 로 붙게 빌드/실행
+flutter run -d emulator-5554 --dart-define=API_BASE_URL=http://localhost:8080
+```
+
+**에뮬 2대로 채팅 테스트하기**
+```bash
+flutter emulators --launch Pixel_10          # 첫 번째 → emulator-5554
+flutter emulators --launch Pixel_10          # 두 번째 → emulator-5556
+```
+- 두 기기에서 **서로 다른 소셜 버튼**으로 로그인해야 다른 계정이 된다(`dev-line` / `dev-kakao` / `dev-google`).
+- 흐름: A 달빛가든에서 B에게 **대화 신청** → B 대화방에 신청 카드 → **수락** → 양쪽에 방 생성 → 채팅.
+- 소켓 상태는 앱 로그로 확인: `adb -s <기기> logcat -d | grep "\[socket\]"` → `연결됨` / `AUTH_OK` / `연결 종료됨`.
+- 서버 쪽은 `소켓 인증 성공` / `소켓 종료 ... status=` / `푸시 op=... 세션수=` 로그로 추적.
 
 ### 2-3. 로그인 방법 (실제 소셜 키 없음)
 소셜 3사 키가 아직 없어 **개발용 목 로그인**을 쓴다.
@@ -89,7 +112,7 @@ flutter run -d emulator-5554
 
 ## 4. 세션 로그
 
-### 2026-08-01(5) — 대화방/채팅창 실연동 (chat + WebSocket)
+### 2026-08-01(5) — 대화방/채팅창 실연동 (chat + WebSocket) (`2886dd5`~`b6db067`)
 **한 일**
 1. **서버 chat 도메인 + WebSocket**(`2886dd5`) — V4(메시지 body 500자, `chat_rooms.type`, `daily_usage`), 대화 신청(무료 2회/일 → 이후 루나 5), 수락 시 방 생성(중복 방지), 소켓 봉투 `{op,seq,ts,data}`(AUTH/PING/ROOM_SUBSCRIBE/CHAT_SEND/CHAT_READ + 서버 푸시 CHAT_RECV·CHAT_SENT_ACK·UNREAD_COUNT·ROOM_STATE·CHAT_READ_RECEIPT·CHAT_REQ_INCOMING).
 2. **클라 소켓 클라이언트 + 대화방/채팅창 연동** — `SocketClient`(AUTH·하트비트·지수 백오프 재연결), 대화방 목록(받은/보낸 신청, 미확인 배지), 채팅창(히스토리 REST + 실시간 소켓, 읽음 표시, 나가기), 달빛가든에서 대화 신청 다이얼로그.
@@ -159,11 +182,17 @@ flutter run -d emulator-5554
 
 ---
 
-## 5. 다음 작업 후보
+## 5. 다음 작업 후보 (이 순서로 이어가면 됨)
 
-1. **서버 chat 도메인 + WebSocket** — 대화 신청(루나 차감)·대화방·채팅 소켓(봉투 `{op,seq,ts,data}`). 그 후 대화방/채팅창 연동.
-2. **friend / luna / store(BM) 도메인** + **V4 마이그레이션** — BM 테이블 5종(`subscriptions`/`user_entitlements`/`boost_inventory`/`boost_activations`/`daily_usage`) + `chat_rooms.type(MATCH|FRIEND)` + `friendships` 양방향 + `luna_transactions.reason` 값 추가. ([02 §1.7](02-db-schema.md))
+1. **friend 도메인 + 친구 탭 연동** — **양방향 동의** 방식(단방향 등록 아님). 요청→수락해야 친구 성립, 친구가 되면 **운영시간(17~06시) 밖에도 대화방 상시 유지**(`chat_rooms.type=FRIEND`은 게이트 예외). V5에 `friendships`(requester/addressee/status/pair_key) 필요.
+2. **luna / store(BM) 도메인** + **V5 마이그레이션** — BM 테이블(`subscriptions`/`user_entitlements`/`boost_inventory`/`boost_activations`) + `luna_transactions.reason` 값 추가. `daily_usage`와 `chat_rooms.type`은 **V4에서 이미 생성됨**. ([02 §1.7](02-db-schema.md))
+   - 결제는 `POST /store/purchases:verify`(서버 영수증 검증 + purchaseToken 멱등) + 스토어 웹훅. IAP 대상은 **루나 충전·프라임 구독만**([01 §1.8](01-protocol-api-spec.md)).
 3. **BM 화면 6종 신규** — 루나상점·프라임 멤버십·루나 충전샵·포스트 부스트·앨범 패스·자동 번역 패스 (Plan_2 화면 25~30).
-4. **scheduler** — 17시 오픈/06시 초기화(포스트·스코어·daily_usage), 30일 FIFO, 종료 방 정리.
+4. **scheduler** — 17시 오픈/06시 초기화(포스트·스코어·daily_usage), 채팅 30일 FIFO 삭제, 종료 방 정리.
 
-**대기 중**: 친구 기획 보완 문서(요청/수락 흐름 세부, 친구 최대수 20 vs 30 모순). 소셜 로그인 키, 인앱결제/광고 계정.
+**같이 정리하면 좋은 잔여 항목**
+- 채팅창 팝업 미구현분: 프로필 보기 / 신고하기 / 차단하기 (현재 메뉴만 있고 동작은 "나가기"만).
+- 가든 Pick Point가 부스트 테이블 도입 전이라 **임시로 프리미엄 여부**로 대체 중 → BM 도입 시 교체.
+- 시드 사진이 1px 투명 PNG라 피드 이미지가 검게 보임(데이터 문제, 코드 정상).
+
+**대기 중(외부 입력 필요)**: 친구 기획 보완 문서(요청/수락 흐름 세부, 친구 최대수 20 vs 30 모순). 소셜 로그인 키, 인앱결제/광고 계정.
