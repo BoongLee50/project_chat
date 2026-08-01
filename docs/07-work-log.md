@@ -25,9 +25,9 @@
 |------|------|
 | 기획 | **Plan_2** 기준 (`D:\MyProject\Plan_Chat\Plan_2` — BM 추가, 운영시간 17~06시). Plan_1은 구버전 |
 | 클라 UI | 로그인·온보딩3·홈·달빛가든·대화방·채팅창·친구·프로필 (11화면, 다크 테마) |
-| 클라 데이터 | **Riverpod + go_router + Dio + secure storage + image_picker**. 인증·프로필·포스트 실연동, 달빛가든/대화방/친구는 하드코딩 |
-| 서버 | Spring Boot. **auth(소셜 추상화 + mock) / profile / post 도메인 구현**. garden·chat·friend·luna·store·scheduler 미구현 |
-| DB | 로컬 MariaDB 11.4.5, Flyway **V2까지 적용**(V1 초기 17테이블 + V2 posts 등록창/교체횟수). BM·친구양방향 테이블은 **문서에만 있고 DDL 미반영 → 다음은 V3** |
+| 클라 데이터 | **Riverpod + go_router + Dio + secure storage + image_picker**. 인증·프로필·포스트·**달빛가든** 실연동, 대화방/친구는 하드코딩 |
+| 서버 | Spring Boot. **auth(mock 포함) / profile / post / garden 도메인 구현**. chat·friend·luna·store·scheduler 미구현 |
+| DB | 로컬 MariaDB 11.4.5, Flyway **V3까지 적용**(V1 초기 + V2 posts 등록창/교체 + V3 post_comments). BM·친구양방향은 **DDL 미반영 → 다음은 V4** |
 | 실기기 검증 | 에뮬(Pixel_10) → 로컬 서버 → DB/디스크 **end-to-end 성공**: 자동 로그인, 프로필 표시, **카메라 촬영→업로드→화면 표시** |
 
 **작업 분담**: 서버 개발자(abombspy) = 초기 뼈대 + 추후 클라우드(AWS) 배포. 그 사이 실제 개발(서버 도메인 + 클라 연동 + 로컬 통합)은 이 저장소에서 직접 진행.
@@ -86,6 +86,16 @@ flutter run -d emulator-5554
 
 ## 4. 세션 로그
 
+### 2026-08-01(4) — 달빛가든 도메인 + 화면 연동 (`9ad67c6`~`8ff267f`)
+**한 일**
+1. **IAP 문서 반영**(`9ad67c6`) — 결제는 `POST /store/purchases:verify`(서버 영수증 검증 + purchaseToken 멱등) + 스토어 웹훅 구조로 개편. IAP 대상은 루나 충전·프라임 구독만(루나 소비 상품은 내부 처리). LINE은 로그인용이지 결제 아님.
+2. **서버 garden 도메인**(`55609c4`) — **V3: post_comments**(V1 설계 누락분) + Post Score(Pick·Online·Recency·Engage) 정렬, 차단/신고/스킵/필터 제외, 노출수 원자 증가, 좋아요·스킵·댓글·번역(패스스루).
+3. **달빛가든 화면 연동**(`8ff267f`) — 피드 렌더, **필터 실제 동작**, 스포트라이트 토글, 스와이프 스킵, 좋아요, 댓글 시트. `AuthedImage` 공용 위젯 추출.
+
+**검증**: 테스트 유저 3명 시드 → 피드 노출·스코어, 앱에서 좋아요(likes=1)·댓글(post_comments 저장)·스킵(다음 피드에서 제외), 노출 시 exposures 증가 — 전부 DB로 확인.
+
+**메모**: Pick Point는 부스트 테이블(BM) 도입 전이라 **임시로 프리미엄 여부**로 대체 중. 시드 사진이 1px 투명 PNG라 피드 이미지가 검게 보이는 것은 데이터 문제(정상).
+
 ### 2026-08-01(3) — 홈 화면 post API 실연동 (`c47aced`)
 **한 일**: 클라 post 데이터 레이어(DTO·PostApi·myPostProvider) + 홈 화면 전면 연동 —
 사진 촬영(image_picker 카메라)→업로드→표시, 삭제, 좌우 탭 전환, 남은 시간("PASS" 포함),
@@ -133,10 +143,9 @@ flutter run -d emulator-5554
 
 ## 5. 다음 작업 후보
 
-1. **서버 garden(달빛가든) 도메인** — 피드(스코어 정렬·필터·스킵), 좋아요, 댓글, 번역. 그 후 달빛가든 화면 연동. [01 §1.4](01-protocol-api-spec.md)
-2. **서버 chat 도메인 + WebSocket** — 대화 신청(루나 차감)·대화방·채팅 소켓(봉투 `{op,seq,ts,data}`). 그 후 대화방/채팅창 연동.
-3. **friend / luna / store(BM) 도메인** + **V3 마이그레이션** — BM 테이블 5종(`subscriptions`/`user_entitlements`/`boost_inventory`/`boost_activations`/`daily_usage`) + `chat_rooms.type(MATCH|FRIEND)` + `friendships` 양방향 + `luna_transactions.reason` 값 추가. ([02 §1.7](02-db-schema.md))
-4. **BM 화면 6종 신규** — 루나상점·프라임 멤버십·루나 충전샵·포스트 부스트·앨범 패스·자동 번역 패스 (Plan_2 화면 25~30).
-5. **scheduler** — 17시 오픈/06시 초기화(포스트·스코어·daily_usage), 30일 FIFO, 종료 방 정리.
+1. **서버 chat 도메인 + WebSocket** — 대화 신청(루나 차감)·대화방·채팅 소켓(봉투 `{op,seq,ts,data}`). 그 후 대화방/채팅창 연동.
+2. **friend / luna / store(BM) 도메인** + **V4 마이그레이션** — BM 테이블 5종(`subscriptions`/`user_entitlements`/`boost_inventory`/`boost_activations`/`daily_usage`) + `chat_rooms.type(MATCH|FRIEND)` + `friendships` 양방향 + `luna_transactions.reason` 값 추가. ([02 §1.7](02-db-schema.md))
+3. **BM 화면 6종 신규** — 루나상점·프라임 멤버십·루나 충전샵·포스트 부스트·앨범 패스·자동 번역 패스 (Plan_2 화면 25~30).
+4. **scheduler** — 17시 오픈/06시 초기화(포스트·스코어·daily_usage), 30일 FIFO, 종료 방 정리.
 
 **대기 중**: 친구 기획 보완 문서(요청/수락 흐름 세부, 친구 최대수 20 vs 30 모순). 소셜 로그인 키, 인앱결제/광고 계정.
