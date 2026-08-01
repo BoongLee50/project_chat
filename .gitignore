@@ -53,3 +53,7 @@ server/build/
 server/uploads/
 server/out/
 !server/gradle/wrapper/gradle-wrapper.jar
+
+# 로컬 스토리지 모드에서 서버가 저장하는 업로드 파일
+server/server/uploads/
+server/uploads/

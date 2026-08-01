@@ -125,6 +125,33 @@ class DioClient {
     return _send(() => _dio.put(path, data: body, options: _options(noAuth)));
   }
 
+  Future<dynamic> delete(String path, {bool noAuth = false}) async {
+    return _send(() => _dio.delete(path, options: _options(noAuth)));
+  }
+
+  /// 파일 바이트를 그대로 PUT 한다(스토리지 업로드 URL 전용).
+  ///
+  /// 로컬 스토리지 모드의 업로드 URL(`/internal/files?key=...`)은 우리 서버라
+  /// 인증 헤더가 필요하고, S3 presigned URL은 절대 URL이라 baseUrl이 무시된다.
+  Future<void> putBytes(
+    String url, {
+    required List<int> bytes,
+    required String contentType,
+  }) async {
+    await _send(
+      () => _dio.put(
+        url,
+        data: Stream.fromIterable([bytes]),
+        options: Options(
+          headers: {
+            Headers.contentTypeHeader: contentType,
+            Headers.contentLengthHeader: bytes.length,
+          },
+        ),
+      ),
+    );
+  }
+
   Options _options(bool noAuth) => Options(extra: {'noAuth': noAuth});
 
   /// 응답 상태를 확인해 성공이면 body를, 실패면 [ApiException]을 던진다.

@@ -1,20 +1,96 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimens.dart';
+import '../../../../core/providers.dart';
 import '../../../auth/presentation/providers/session_provider.dart';
+import '../../data/models/my_post.dart';
+import '../providers/post_provider.dart';
 
-/// 홈 — 오늘의 포스트 (정적 UI). 메인 셸의 '포스트' 탭 본문.
+/// 홈 — 오늘의 포스트. 메인 셸의 '포스트' 탭 본문. (기획서 3장, 01 문서 §1.3)
 ///
-/// 사진 등록/타이머/좋아요 등의 실제 동작은 서버 연동 단계에서 붙인다.
-/// (docs/01, 기획서 3장)
-class HomeScreen extends StatelessWidget {
+/// 사진 등록/삭제, 하루 한 마디, 공유하기를 서버와 연동한다.
+/// 루나 잔액·달 위상·좋아요/댓글 수치는 해당 도메인(luna/garden) 구현 후 연결 예정.
+class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
   @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final postState = ref.watch(myPostProvider);
+
+    return RefreshIndicator(
+      color: AppColors.moonlight,
+      backgroundColor: AppColors.surface,
+      onRefresh: () => ref.read(myPostProvider.notifier).refresh(),
+      child: postState.when(
+        loading: () => const _CenteredScroll(
+          child: CircularProgressIndicator(color: AppColors.moonlight),
+        ),
+        error: (error, _) => _CenteredScroll(
+          child: Padding(
+            padding: const EdgeInsets.all(AppDimens.pagePad),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  Icons.cloud_off,
+                  color: AppColors.textMuted,
+                  size: 48,
+                ),
+                const SizedBox(height: 12),
+                const Text(
+                  '포스트를 불러오지 못했어요.',
+                  style: TextStyle(color: AppColors.textPrimary, fontSize: 16),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '아래로 당겨 새로고침해 주세요.',
+                  style: const TextStyle(
+                    color: AppColors.textMuted,
+                    fontSize: 13,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        data: (post) => _PostBody(post: post),
+      ),
+    );
+  }
+}
+
+/// RefreshIndicator가 동작하려면 항상 스크롤 가능해야 한다.
+class _CenteredScroll extends StatelessWidget {
+  const _CenteredScroll({required this.child});
+
+  final Widget child;
+
+  @override
   Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) => SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        child: SizedBox(
+          height: constraints.maxHeight,
+          child: Center(child: child),
+        ),
+      ),
+    );
+  }
+}
+
+class _PostBody extends ConsumerWidget {
+  const _PostBody({required this.post});
+
+  final MyPost post;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
     return SingleChildScrollView(
+      physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.fromLTRB(
         AppDimens.pagePad,
         AppDimens.gapMd,
@@ -23,18 +99,18 @@ class HomeScreen extends StatelessWidget {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: const [
-          _TopBar(),
-          SizedBox(height: AppDimens.gapMd),
-          _InfoCards(),
-          SizedBox(height: AppDimens.gapMd),
-          _PostPhotoCard(),
-          SizedBox(height: AppDimens.gapMd),
-          _NameLikeRow(),
-          SizedBox(height: AppDimens.gapLg),
-          _OneLiner(),
-          SizedBox(height: AppDimens.gapLg),
-          _ShareButton(),
+        children: [
+          const _TopBar(),
+          const SizedBox(height: AppDimens.gapMd),
+          _InfoCards(post: post),
+          const SizedBox(height: AppDimens.gapMd),
+          _PostPhotoCard(post: post),
+          const SizedBox(height: AppDimens.gapMd),
+          const _NameLikeRow(),
+          const SizedBox(height: AppDimens.gapLg),
+          _OneLiner(post: post),
+          const SizedBox(height: AppDimens.gapLg),
+          _ShareButton(post: post),
         ],
       ),
     );
@@ -67,7 +143,7 @@ class _TopBar extends StatelessWidget {
           ),
         ),
         const Spacer(),
-        // 보유 루나
+        // 보유 루나 — luna 도메인 구현 후 실제 잔액 연결 예정.
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: BoxDecoration(
@@ -79,7 +155,7 @@ class _TopBar extends StatelessWidget {
               Icon(Icons.star_rounded, color: AppColors.gold, size: 22),
               SizedBox(width: 8),
               Text(
-                '80',
+                '—',
                 style: TextStyle(
                   color: AppColors.textPrimary,
                   fontSize: 18,
@@ -96,7 +172,9 @@ class _TopBar extends StatelessWidget {
 
 // ── 달 정보 / 남은 시간 카드 ─────────────────────────────
 class _InfoCards extends StatelessWidget {
-  const _InfoCards();
+  const _InfoCards({required this.post});
+
+  final MyPost post;
 
   @override
   Widget build(BuildContext context) {
@@ -120,6 +198,7 @@ class _InfoCards extends StatelessWidget {
                       ),
                     ),
                     SizedBox(height: 2),
+                    // 달 위상은 별도 이벤트 테이블 예정(기획서 3-1).
                     Text(
                       '초승달',
                       style: TextStyle(
@@ -139,18 +218,18 @@ class _InfoCards extends StatelessWidget {
           child: _InfoCard(
             child: Column(
               mainAxisSize: MainAxisSize.min,
-              children: const [
-                Text(
+              children: [
+                const Text(
                   '포스트 등록 남은 시간',
                   style: TextStyle(
                     color: AppColors.textSecondary,
                     fontSize: 13,
                   ),
                 ),
-                SizedBox(height: 4),
+                const SizedBox(height: 4),
                 Text(
-                  '09:32',
-                  style: TextStyle(
+                  _remainingLabel(post),
+                  style: const TextStyle(
                     color: AppColors.textPrimary,
                     fontSize: 20,
                     fontWeight: FontWeight.w700,
@@ -162,6 +241,16 @@ class _InfoCards extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  /// 프라임/앨범패스는 시간 제한이 없어 "PASS"로 표시한다(기획서 3-1).
+  static String _remainingLabel(MyPost post) {
+    if (post.uploadUnlimited) return 'PASS';
+    if (!post.gateOpen) return '--:--';
+    final seconds = post.remainingUploadSeconds ?? 0;
+    final mm = (seconds ~/ 60).toString().padLeft(2, '0');
+    final ss = (seconds % 60).toString().padLeft(2, '0');
+    return '$mm:$ss';
   }
 }
 
@@ -187,11 +276,64 @@ class _InfoCard extends StatelessWidget {
 }
 
 // ── 포스트 사진 카드 ─────────────────────────────────────
-class _PostPhotoCard extends StatelessWidget {
-  const _PostPhotoCard();
+class _PostPhotoCard extends ConsumerStatefulWidget {
+  const _PostPhotoCard({required this.post});
+
+  final MyPost post;
+
+  @override
+  ConsumerState<_PostPhotoCard> createState() => _PostPhotoCardState();
+}
+
+class _PostPhotoCardState extends ConsumerState<_PostPhotoCard> {
+  int _index = 0;
+  bool _busy = false;
+
+  List<PostPhoto> get _photos => widget.post.photos;
+
+  /// 카메라로 촬영해 업로드. 갤러리 선택은 앨범 패스 보유자만(기획서 3-1).
+  Future<void> _capture() async {
+    if (_busy) return;
+    final picker = ImagePicker();
+    final file = await picker.pickImage(
+      source: ImageSource.camera,
+      imageQuality: 85,
+    );
+    if (file == null) return;
+
+    setState(() => _busy = true);
+    final bytes = await file.readAsBytes();
+    final error = await ref.read(myPostProvider.notifier).addPhoto(bytes);
+    if (!mounted) return;
+    setState(() => _busy = false);
+    if (error != null) _toast(error);
+  }
+
+  Future<void> _delete() async {
+    if (_busy || _photos.isEmpty) return;
+    setState(() => _busy = true);
+    final target = _photos[_index.clamp(0, _photos.length - 1)];
+    final error = await ref.read(myPostProvider.notifier).deletePhoto(target.id);
+    if (!mounted) return;
+    setState(() {
+      _busy = false;
+      _index = 0;
+    });
+    if (error != null) _toast(error);
+  }
+
+  void _toast(String message) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(message)));
+  }
 
   @override
   Widget build(BuildContext context) {
+    final headers = ref.watch(authHeadersProvider).valueOrNull ?? const {};
+    final hasPhoto = _photos.isNotEmpty;
+    final index = _index.clamp(0, _photos.length - 1);
+
     return ClipRRect(
       borderRadius: BorderRadius.circular(AppDimens.radiusLg),
       child: AspectRatio(
@@ -199,49 +341,87 @@ class _PostPhotoCard extends StatelessWidget {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            Image.asset('assets/images/post_sample.jpg', fit: BoxFit.cover),
-            // 삭제 버튼
-            Positioned(
-              left: 14,
-              bottom: 14,
-              child: _RoundIconButton(
-                icon: Icons.delete_outline,
-                background: Colors.black.withValues(alpha: 0.5),
-                iconColor: AppColors.textPrimary,
-                size: 44,
+            if (hasPhoto)
+              // 좌/우 탭으로 등록된 사진을 순차 검색(기획서 3-1).
+              GestureDetector(
+                onTapUp: (details) {
+                  final width = context.size?.width ?? 1;
+                  final next = details.localPosition.dx > width / 2
+                      ? index + 1
+                      : index - 1;
+                  setState(
+                    () => _index = next.clamp(0, _photos.length - 1),
+                  );
+                },
+                child: _AuthedImage(
+                  url: _photos[index].url,
+                  headers: headers,
+                ),
+              )
+            else
+              const _EmptyPhoto(),
+
+            if (_busy)
+              Container(
+                color: Colors.black45,
+                alignment: Alignment.center,
+                child: const CircularProgressIndicator(
+                  color: AppColors.moonlight,
+                ),
               ),
-            ),
-            // 촬영 버튼
+
+            // 삭제 버튼
+            if (hasPhoto)
+              Positioned(
+                left: 14,
+                bottom: 14,
+                child: _RoundButton(
+                  icon: Icons.delete_outline,
+                  background: Colors.black.withValues(alpha: 0.5),
+                  iconColor: AppColors.textPrimary,
+                  size: 44,
+                  onTap: _delete,
+                ),
+              ),
+
+            // 촬영 버튼 — 등록 가능 시간/장수를 넘기면 비활성
             Align(
               alignment: const Alignment(0, 0.92),
-              child: _RoundIconButton(
+              child: _RoundButton(
                 icon: Icons.photo_camera_rounded,
-                background: AppColors.moonlight,
-                iconColor: Colors.white,
+                background: widget.post.canAddPhoto
+                    ? AppColors.moonlight
+                    : AppColors.surfaceHigh,
+                iconColor: widget.post.canAddPhoto
+                    ? Colors.white
+                    : AppColors.textMuted,
                 size: 60,
+                onTap: widget.post.canAddPhoto ? _capture : null,
               ),
             ),
-            // 페이지 인디케이터
-            Positioned(
-              right: 16,
-              bottom: 24,
-              child: Row(
-                children: List.generate(5, (i) {
-                  final active = i == 0;
-                  return Container(
-                    width: active ? 18 : 8,
-                    height: 6,
-                    margin: const EdgeInsets.only(left: 4),
-                    decoration: BoxDecoration(
-                      color: active
-                          ? AppColors.moonlight
-                          : Colors.white.withValues(alpha: 0.5),
-                      borderRadius: BorderRadius.circular(3),
-                    ),
-                  );
-                }),
+
+            // 페이지 인디케이터(등록된 사진 수 기준)
+            if (hasPhoto)
+              Positioned(
+                right: 16,
+                bottom: 24,
+                child: Row(
+                  children: List.generate(_photos.length, (i) {
+                    final active = i == index;
+                    return Container(
+                      width: active ? 18 : 8,
+                      height: 6,
+                      margin: const EdgeInsets.only(left: 4),
+                      decoration: BoxDecoration(
+                        color: active
+                            ? AppColors.moonlight
+                            : Colors.white.withValues(alpha: 0.5),
+                        borderRadius: BorderRadius.circular(3),
+                      ),
+                    );
+                  }),
+                ),
               ),
-            ),
           ],
         ),
       ),
@@ -249,26 +429,105 @@ class _PostPhotoCard extends StatelessWidget {
   }
 }
 
-class _RoundIconButton extends StatelessWidget {
-  const _RoundIconButton({
+/// 인증이 필요한 이미지(`GET /files?key=`) 로더.
+class _AuthedImage extends StatelessWidget {
+  const _AuthedImage({required this.url, required this.headers});
+
+  final String url;
+  final Map<String, String> headers;
+
+  @override
+  Widget build(BuildContext context) {
+    if (headers.isEmpty) {
+      return const ColoredBox(color: AppColors.surface);
+    }
+    return Image.network(
+      _absolute(url),
+      fit: BoxFit.cover,
+      headers: headers,
+      errorBuilder: (_, _, _) => const _EmptyPhoto(),
+    );
+  }
+
+  /// 서버는 상대 경로(`/files?key=...`)를 주므로 base URL을 붙인다.
+  static String _absolute(String url) {
+    if (url.startsWith('http')) return url;
+    return '${const String.fromEnvironment('API_BASE_URL', defaultValue: 'http://10.0.2.2:8080')}$url';
+  }
+}
+
+class _EmptyPhoto extends ConsumerWidget {
+  const _EmptyPhoto();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final nickname = ref.watch(sessionProvider).profile?.nickname ?? '';
+    return Container(
+      color: AppColors.surface,
+      alignment: Alignment.center,
+      padding: const EdgeInsets.all(AppDimens.pagePad),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(
+            Icons.nightlight_round,
+            color: AppColors.moonlight,
+            size: 44,
+          ),
+          const SizedBox(height: 14),
+          Text(
+            '$nickname님',
+            style: const TextStyle(
+              color: AppColors.textPrimary,
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 6),
+          const Text(
+            '달빛 아래의 지금을 포스트해 보세요.\n새로운 대화의 시작이 될 수 있어요.',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: 14,
+              height: 1.4,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _RoundButton extends StatelessWidget {
+  const _RoundButton({
     required this.icon,
     required this.background,
     required this.iconColor,
     required this.size,
+    this.onTap,
   });
 
   final IconData icon;
   final Color background;
   final Color iconColor;
   final double size;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(color: background, shape: BoxShape.circle),
-      child: Icon(icon, color: iconColor, size: size * 0.5),
+    return Material(
+      color: background,
+      shape: const CircleBorder(),
+      child: InkWell(
+        customBorder: const CircleBorder(),
+        onTap: onTap,
+        child: SizedBox(
+          width: size,
+          height: size,
+          child: Icon(icon, color: iconColor, size: size * 0.5),
+        ),
+      ),
     );
   }
 }
@@ -279,8 +538,8 @@ class _NameLikeRow extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // 이름·나이·국가는 로그인한 내 프로필(GET /me) 기준.
-    // 좋아요/댓글 수치는 post 도메인 구현 후 연결 예정(현재 더미).
+    // 이름·나이·국가는 내 프로필(GET /me) 기준.
+    // 좋아요/댓글 수치는 garden 도메인 구현 후 연결 예정.
     final profile = ref.watch(sessionProvider).profile;
     final age = profile?.birthYear == null
         ? null
@@ -310,16 +569,16 @@ class _NameLikeRow extends ConsumerWidget {
           Text(flag, style: const TextStyle(fontSize: 20)),
         ],
         const Spacer(),
-        _StatPill(
+        const _StatPill(
           icon: Icons.favorite,
           iconColor: Color(0xFFE85D6E),
-          label: '87',
+          label: '—',
         ),
         const SizedBox(width: 8),
-        _StatPill(
+        const _StatPill(
           icon: Icons.chat_bubble_outline,
           iconColor: AppColors.textSecondary,
-          label: '32',
+          label: '—',
         ),
       ],
     );
@@ -364,17 +623,67 @@ class _StatPill extends StatelessWidget {
 }
 
 // ── 하루 한 마디 ─────────────────────────────────────────
-class _OneLiner extends StatelessWidget {
-  const _OneLiner();
+class _OneLiner extends ConsumerWidget {
+  const _OneLiner({required this.post});
+
+  static const int maxLength = 25;
+
+  final MyPost post;
+
+  Future<void> _edit(BuildContext context, WidgetRef ref) async {
+    final controller = TextEditingController(text: post.oneLiner ?? '');
+    final text = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.surface,
+        title: const Text(
+          '하루 한 마디',
+          style: TextStyle(color: AppColors.textPrimary),
+        ),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          maxLength: maxLength,
+          cursorColor: AppColors.moonlight,
+          style: const TextStyle(color: AppColors.textPrimary),
+          decoration: const InputDecoration(
+            hintText: '오늘의 기분을 한 줄로 남겨보세요',
+            hintStyle: TextStyle(color: AppColors.textMuted),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('취소'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, controller.text.trim()),
+            child: const Text('저장'),
+          ),
+        ],
+      ),
+    );
+
+    if (text == null || !context.mounted) return;
+    final error = await ref.read(myPostProvider.notifier).updateOneLiner(text);
+    if (error != null && context.mounted) {
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(error)));
+    }
+  }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final text = post.oneLiner;
+    final length = text?.characters.length ?? 0;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
-          children: const [
-            Text(
+          children: [
+            const Text(
               '하루 한 마디',
               style: TextStyle(
                 color: AppColors.textPrimary,
@@ -382,15 +691,18 @@ class _OneLiner extends StatelessWidget {
                 fontWeight: FontWeight.w700,
               ),
             ),
-            SizedBox(width: 8),
+            const SizedBox(width: 8),
             Text(
-              '15/50',
-              style: TextStyle(color: AppColors.gold, fontSize: 14),
+              '$length/$maxLength',
+              style: const TextStyle(color: AppColors.gold, fontSize: 14),
             ),
-            Spacer(),
-            Text(
-              '오늘 9:04 PM 작성',
-              style: TextStyle(color: AppColors.textMuted, fontSize: 12),
+            const Spacer(),
+            TextButton(
+              onPressed: () => _edit(context, ref),
+              child: Text(
+                text == null || text.isEmpty ? '작성' : '수정',
+                style: const TextStyle(color: AppColors.moonlight),
+              ),
             ),
           ],
         ),
@@ -404,15 +716,20 @@ class _OneLiner extends StatelessWidget {
             border: Border.all(color: AppColors.border),
           ),
           child: Row(
-            children: const [
+            children: [
               Expanded(
                 child: Text(
-                  '조용한 밤, 내 마음도 조금 정리되는 기분이야.',
-                  style: TextStyle(color: AppColors.textPrimary, fontSize: 15),
+                  text == null || text.isEmpty ? '하루 한 마디를 입력해 주세요.' : text,
+                  style: TextStyle(
+                    color: text == null || text.isEmpty
+                        ? AppColors.textMuted
+                        : AppColors.textPrimary,
+                    fontSize: 15,
+                  ),
                 ),
               ),
-              SizedBox(width: 8),
-              Icon(
+              const SizedBox(width: 8),
+              const Icon(
                 Icons.nightlight_round,
                 color: AppColors.moonlight,
                 size: 22,
@@ -426,27 +743,43 @@ class _OneLiner extends StatelessWidget {
 }
 
 // ── 공유 버튼 ────────────────────────────────────────────
-class _ShareButton extends StatelessWidget {
-  const _ShareButton();
+class _ShareButton extends ConsumerWidget {
+  const _ShareButton({required this.post});
+
+  final MyPost post;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final enabled = post.gateOpen;
+
     return SizedBox(
       width: double.infinity,
       height: AppDimens.buttonHeight,
       child: FilledButton.icon(
-        onPressed: () {},
+        onPressed: enabled
+            ? () async {
+                final error = await ref.read(myPostProvider.notifier).publish();
+                if (!context.mounted) return;
+                ScaffoldMessenger.of(context)
+                  ..hideCurrentSnackBar()
+                  ..showSnackBar(
+                    SnackBar(content: Text(error ?? '포스트를 공유했어요 🌙')),
+                  );
+              }
+            : null,
         style: FilledButton.styleFrom(
           backgroundColor: const Color(0xFF3A3E9E),
+          disabledBackgroundColor: AppColors.surfaceHigh,
           foregroundColor: Colors.white,
+          disabledForegroundColor: AppColors.textMuted,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppDimens.radiusMd),
           ),
         ),
-        icon: const Icon(Icons.ios_share, size: 20),
-        label: const Text(
-          '포스트 공유하기',
-          style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
+        icon: Icon(post.published ? Icons.check : Icons.ios_share, size: 20),
+        label: Text(
+          post.published ? '공유됨 · 다시 공유하기' : '포스트 공유하기',
+          style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
         ),
       ),
     );
