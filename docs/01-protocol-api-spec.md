@@ -120,13 +120,28 @@
 |--------|------|------|------|
 | GET | `/store/products` | 상품 카탈로그(프라임/루나상품/부스트/패스 가격·구성) | 25~30 |
 | GET | `/me/wallet` | 내 재화·구독·엔티틀먼트 요약(루나, 구독상태, 활성 패스, 부스트 재고) | 6,25~30 |
-| POST | `/store/prime:subscribe` | 프라임 구독(product: PRIME_1M/PRIME_6M) — 인앱결제 | 26 |
+| POST | `/store/purchases:verify` | **인앱결제 영수증 검증** → 루나 지급 / 구독 활성화 | 26,27 |
+| POST | `/store/webhooks/google` | Google RTDN 수신(갱신·취소·환불) — 서명 검증, `@NoAuth` | - |
+| POST | `/store/webhooks/apple` | App Store Server Notifications V2 수신 — 서명 검증, `@NoAuth` | - |
 | POST | `/me/subscription:cancel` | 자동갱신 해지(만료까지 유효) | 26 |
-| POST | `/store/luna:charge` | 루나 충전(인앱결제) | 27 |
 | POST | `/store/luna:purchase` | 루나로 개별상품 구매(부스트 매수/앨범패스/번역패스) — 루나 차감 트랜잭션 | 25,28,29,30 |
 | POST | `/boosts:use` | 보유 부스트 사용(kind: POST/SPOTLIGHT) → 1시간 활성 | 28 |
 
-- 결제는 **인앱결제(스토어)** 기반 — provider/상품ID·가격은 서버 설정+스토어 콘솔에서 관리(값 하드코딩 금지). 인앱결제 실연동은 스토어 계정 발급 후.
+**결제 흐름 (중요)** — 클라가 "샀다"고 말하는 것을 믿지 않는다.
+```
+① 클라: 스토어 결제창(in_app_purchase) → purchaseToken/영수증 획득
+② 클라 → 서버: POST /store/purchases:verify
+   { platform: GOOGLE|APPLE, productId, purchaseToken }
+③ 서버: Google Play Developer API / App Store Server API로 **직접 검증**
+   → 유효하면 루나 지급 또는 subscriptions/user_entitlements 활성화(02 §1.7)
+   → purchaseToken을 저장해 **중복 지급 방지**(멱등)
+④ 이후 갱신/취소/환불은 스토어 **웹훅**으로 수신해 상태 동기화
+```
+- **IAP 대상**: 현금이 오가는 것만 — **루나 충전 · 프라임 구독**. 루나로 사는 개별 상품(부스트·앨범패스·번역패스)은 앱 내부 재화 소비라 IAP 불필요(스토어 상품 등록 수를 줄이고, 가격을 서버 설정으로 조정 가능).
+- 상품ID·가격은 **스토어 콘솔 + 서버 설정**에서 관리(코드 하드코딩 금지). `GET /store/products`는 카탈로그(구성·혜택)를 내려주고, 실제 표시 가격은 스토어 SDK가 제공하는 현지 가격을 쓰는 것이 원칙.
+- LINE은 **로그인 provider일 뿐 결제 수단이 아님**(디지털 재화는 스토어 결제 강제).
+- 광고 제거 혜택 → 광고 SDK(AdMob 등) 연동 필요.
+- ⚠️ 인앱결제 정책·수수료·외부결제 허용 범위는 **국가별/시기별로 변동**되므로, BM 확정 시점에 각 스토어 최신 정책을 재확인할 것.
 - 혜택 판정은 [02 §1.7](02-db-schema.md) `subscriptions`/`user_entitlements`/`boost_inventory` 기준. `/me/wallet`이 클라가 화면(PASS 표시·버튼 상태)에 쓸 상태를 한 번에 내려줌.
 - 프라임/앨범패스 보유자는 §1.3 포스트(8장·시간무제한·갤러리)·§1.4 열람 제한 해제. 부스트 활성 시 §1.4 Post Score의 Pick Point 반영.
 

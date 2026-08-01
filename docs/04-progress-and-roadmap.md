@@ -68,7 +68,13 @@
 ### 배포 준비
 - [ ] 소셜 3사 개발자 앱 등록 + 키 발급 (LINE · KAKAO · GOOGLE)
 - [ ] 정식 서명 키스토어 (Play Store 업로드용)
-- [ ] 인앱결제(루나) 설정 · 푸시(FCM/APNs)
+- [ ] **인앱결제(IAP)** — Google Play 개발자 계정($25 1회) / Apple Developer($99·년), 스토어 콘솔에 상품 등록(루나 패키지·프라임 1/6개월)
+  - 클라 `in_app_purchase` → 서버 `POST /store/purchases:verify`(영수증 **서버 검증** + purchaseToken 멱등) → 지급
+  - 갱신·취소·환불은 스토어 **웹훅**(Google RTDN / App Store Server Notifications)으로 동기화
+  - 루나로 사는 개별 상품(부스트·패스)은 IAP 불필요(내부 재화 소비)
+  - ⚠️ 정책·수수료·외부결제 허용 범위는 국가별/시기별 변동 → 착수 시 최신 정책 재확인
+- [ ] 광고 SDK(AdMob 등) 연동 — '광고 제거' 혜택과 짝
+- [ ] 푸시(FCM/APNs)
 - [ ] iOS 빌드 (Mac + Xcode + CocoaPods)
 
 ---
