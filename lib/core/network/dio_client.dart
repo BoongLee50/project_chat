@@ -15,8 +15,8 @@ class DioClient {
           Dio(
             BaseOptions(
               baseUrl: AppConfig.apiBaseUrl,
-              connectTimeout: const Duration(seconds: 10),
-              receiveTimeout: const Duration(seconds: 15),
+              connectTimeout: const Duration(seconds: 20),
+              receiveTimeout: const Duration(seconds: 30),
               contentType: 'application/json',
               // 4xx도 예외로 던지지 않고 아래 인터셉터/변환에서 일관 처리.
               validateStatus: (status) => status != null && status < 500,
@@ -57,6 +57,9 @@ class DioClient {
   final TokenStorage _tokenStorage;
 
   Dio get raw => _dio;
+
+  /// 액세스 토큰을 강제로 갱신한다(소켓 AUTH 실패 복구 등 REST 밖에서도 필요).
+  Future<bool> refreshTokens() => _tryRefresh();
 
   Future<bool> _tryRefresh() async {
     final refreshToken = await _tokenStorage.readRefreshToken();

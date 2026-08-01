@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/error/api_exception.dart';
@@ -111,6 +113,7 @@ class SessionController extends Notifier<SessionState> {
   Future<void> refresh() => _loadProfile();
 
   Future<void> signOut() async {
+    ref.read(socketClientProvider).disconnect();
     await ref.read(tokenStorageProvider).clear();
     state = const SessionState(status: SessionStatus.unauthenticated);
   }
@@ -118,16 +121,28 @@ class SessionController extends Notifier<SessionState> {
   Future<void> _loadProfile() async {
     try {
       final profile = await ref.read(profileApiProvider).me();
+      final authenticated = profile.isComplete;
       state = SessionState(
-        status: profile.isComplete
+        status: authenticated
             ? SessionStatus.authenticated
             : SessionStatus.onboarding,
         profile: profile,
       );
+      // 로그인이 확정되면 실시간 소켓을 연결한다(재연결은 SocketClient가 처리).
+      if (authenticated) {
+        unawaited(ref.read(socketClientProvider).connect());
+      }
     } on ApiException catch (e) {
       if (e.isUnauthorized) {
         await ref.read(tokenStorageProvider).clear();
         state = const SessionState(status: SessionStatus.unauthenticated);
+      } else if (state.status == SessionStatus.loading) {
+        // 앱 시작 복구 중 네트워크 실패 — 여기서 loading을 유지하면
+        // 스플래시 화면에 갇히므로 로그인 화면으로 보내고 사유를 알린다.
+        state = SessionState(
+          status: SessionStatus.unauthenticated,
+          error: e.message,
+        );
       } else {
         state = state.copyWith(busy: false, error: e.message);
       }

@@ -1,10 +1,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../features/auth/data/datasources/auth_api.dart';
+import '../features/chat/data/datasources/chat_api.dart';
 import '../features/garden/data/datasources/garden_api.dart';
 import '../features/post/data/datasources/post_api.dart';
 import '../features/profile/data/datasources/profile_api.dart';
 import 'network/dio_client.dart';
+import 'network/packet.dart';
+import 'network/socket_client.dart';
 import 'storage/token_storage.dart';
 
 /// 앱 전역 인프라 프로바이더(저장소·네트워크·API).
@@ -29,6 +32,25 @@ final postApiProvider = Provider<PostApi>(
 
 final gardenApiProvider = Provider<GardenApi>(
   (ref) => GardenApi(ref.watch(dioClientProvider)),
+);
+
+final chatApiProvider = Provider<ChatApi>(
+  (ref) => ChatApi(ref.watch(dioClientProvider)),
+);
+
+/// 실시간 소켓. 로그인 후 연결하고 로그아웃 시 끊는다(session_provider).
+final socketClientProvider = Provider<SocketClient>((ref) {
+  final client = SocketClient(
+    tokenStorage: ref.watch(tokenStorageProvider),
+    refreshToken: () => ref.read(dioClientProvider).refreshTokens(),
+  );
+  ref.onDispose(client.dispose);
+  return client;
+});
+
+/// 소켓 수신 패킷 스트림 — 화면/프로바이더가 구독해 실시간 갱신에 사용.
+final socketPacketProvider = StreamProvider<Packet>(
+  (ref) => ref.watch(socketClientProvider).packets,
 );
 
 /// 인증이 걸린 이미지 URL(`GET /files?key=`)을 로드할 때 쓸 헤더.

@@ -24,7 +24,7 @@
 - 인증(소셜 로그인 추상화)·프로필 도메인 실동작, 공통 인프라(JWT 인터셉터·스토리지 추상화·예외/CORS), Flyway V1 스키마, MyBatis.
 - **로컬 풀스택 구동 완료(2026-08)**: JDK 17 + Gradle 8.10.2 + **로컬 MariaDB 11.4.5** → Flyway V1 스키마 적용, **Spring Boot 8080 구동 성공**(`/system/gate` 200, 인증 401). 세팅 절차 = [06 개발환경](06-dev-environment-setup.md).
   - MariaDB 11.4 호환 이슈 1건 수정: `chat_rooms.active_pair_key` 생성컬럼→앱세팅(커밋 `40d9130`). REST 날짜=ISO-8601 확인.
-- 남은 것(서버): post/garden/chat·소켓/friend/luna/store(BM)/scheduler 도메인 미구현.
+- 구현 완료(서버): auth/profile · post · garden · **chat(+WebSocket)**. 남은 것: friend/luna/store(BM)/scheduler.
 
 **앱 UI — 화면 11개** (정적, 다크 테마 고정, Android 에뮬레이터 검증 완료)
 - 로그인 → 온보딩 3단계(닉네임 · 출생년도 · 성별/국가)
@@ -50,6 +50,7 @@
 - [x] **홈 포스트 실연동**(촬영·업로드·삭제·한마디·공유) (2026-08)
 - [ ] Plan_2 반영 — 포스트 등록창 버튼/규칙(Prime·부스트·앨범패스), 홈 "PASS" 표시 (BM 화면과 함께)
 - [x] 달빛가든 화면 실연동(피드·필터·좋아요·스킵·댓글) (2026-08)
+- [x] **대화방/채팅창 실연동 + WebSocket** (2026-08) — 대화 신청(가든에서), 받은/보낸 신청 수락·거절, 방 목록(미확인 배지·최근 메시지), 채팅창(히스토리 REST + 실시간 송수신·읽음 표시·나가기). **에뮬 2대로 양방향 실시간 검증 완료**
 - [ ] **BM 화면 신규(25~30)**: 루나상점 · 프라임 멤버십 · 루나 충전샵 · 포스트 부스트 · 앨범 패스 · 자동 번역 패스
 - [ ] 세부 팝업/화면: 대화 신청, 신고·차단, 관심사/지역/소개 **편집** 팝업, 달빛가든 **댓글**, 스포트라이트, 친구 **요청/수락**
 - [ ] 상태관리(**Riverpod**) + 라우팅(**go_router**) 도입 + 시간/인증 게이트
@@ -59,7 +60,8 @@
 ### 백엔드 (Spring Boot + MariaDB/MyBatis + Redis(선택))
 - [x] **post(오늘의 포스트) 도메인 구현** (2026-08, V2 마이그레이션 포함 — 등록창/사진수/교체 제한·한마디·공유)
 - [x] **garden(달빛가든) 도메인** (2026-08, V3 post_comments 포함 — 피드 스코어·필터·좋아요·스킵·댓글·번역)
-- [ ] 남은 도메인: chat(+WebSocket) → friend → luna → store(BM) → scheduler
+- [x] **chat 도메인 + WebSocket** (2026-08, V4 — 메시지 500자·`chat_rooms.type`·`daily_usage`. 대화 신청 무료 2회/일 후 루나 5, 방 생성 중복 방지, 소켓 봉투 `{op,seq,ts,data}`)
+- [ ] 남은 도메인: friend → luna → store(BM) → scheduler
 - [ ] **Plan_2 반영**: `store`(결제·구독·부스트·패스=BM) 도메인, 친구 양방향+상시 대화방(`chat_rooms.type`), `daily_usage`(01 §1.8 / 02 §1.7)
 - [ ] 서버 프로젝트 스캐폴딩 + DB 스키마 구현(MyBatis Mapper)
 - [ ] 소셜 인증 · REST API · WebSocket(채팅/프레즌스) · 스케줄러(18/05/06시)

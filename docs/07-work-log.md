@@ -81,10 +81,28 @@ flutter run -d emulator-5554
 | 9 | 로컬 스토리지 업로드 경로 | 서버 작업디렉터리 기준이라 실제 저장 위치는 **`server/server/uploads/`** (gitignore 처리됨) |
 | 10 | 서버가 주는 이미지 URL | **상대경로**(`/files?key=`) + **인증 헤더 필요** → baseUrl 접두 + `Image.network(headers:)` (`authHeadersProvider`) |
 | 11 | Windows 셸에서 curl로 한글 JSON 전송 | 인코딩이 깨져 500 → python으로 UTF-8 파일 작성 후 `--data-binary @file` |
+| 12 | **에뮬레이터 NAT(`10.0.2.2`)가 WebSocket을 30~60초마다 끊음** (서버 로그 `CloseStatus 1006` + `EOFException`) | **서버 문제 아님**(호스트에서 직접 붙이면 150초+ 무중단). 소켓 테스트는 반드시 아래 `adb reverse` 방식으로: <br>`adb -s <기기> reverse tcp:8080 tcp:8080` <br>`flutter build apk --debug --dart-define=API_BASE_URL=http://localhost:8080` |
+| 13 | `WebSocketChannel.connect()`는 **핸드셰이크 실패/지연을 던지지 않음** | `await channel.ready.timeout(10s)` 필수. 안 기다리면 연결 실패해도 `_channel`이 남아 **모든 send가 조용히 버려지고 재연결도 안 걸린다** |
+| 14 | `WebSocketSession`은 **동시 전송에 안전하지 않음** | 내 ACK와 상대 읽음영수증이 다른 스레드에서 같은 세션에 쓰이면 세션이 깨진다 → `ConcurrentWebSocketSessionDecorator`로 감싸 등록 |
 
 ---
 
 ## 4. 세션 로그
+
+### 2026-08-01(5) — 대화방/채팅창 실연동 (chat + WebSocket)
+**한 일**
+1. **서버 chat 도메인 + WebSocket**(`2886dd5`) — V4(메시지 body 500자, `chat_rooms.type`, `daily_usage`), 대화 신청(무료 2회/일 → 이후 루나 5), 수락 시 방 생성(중복 방지), 소켓 봉투 `{op,seq,ts,data}`(AUTH/PING/ROOM_SUBSCRIBE/CHAT_SEND/CHAT_READ + 서버 푸시 CHAT_RECV·CHAT_SENT_ACK·UNREAD_COUNT·ROOM_STATE·CHAT_READ_RECEIPT·CHAT_REQ_INCOMING).
+2. **클라 소켓 클라이언트 + 대화방/채팅창 연동** — `SocketClient`(AUTH·하트비트·지수 백오프 재연결), 대화방 목록(받은/보낸 신청, 미확인 배지), 채팅창(히스토리 REST + 실시간 소켓, 읽음 표시, 나가기), 달빛가든에서 대화 신청 다이얼로그.
+
+**에뮬 2대 실검증**(Nari↔Suho): 신청 → 상대 실시간 수신 → 수락 → 방 생성 → **양방향 실시간 메시지** → 읽음(파란 ✓✓) → **목록 자동 갱신**(수동 새로고침 없이)까지 전부 확인.
+
+**이번에 잡은 버그(중요)**
+- `channel.ready`를 안 기다려 연결 실패 시 send가 **조용히 유실** → 타임아웃(10초) 붙이고 실패 시 재연결. 전송 실패는 스낵바 + 입력값 복구로 사용자에게 노출.
+- 서버가 같은 세션에 **동시 write** 하며 세션이 깨짐 → `ConcurrentWebSocketSessionDecorator` 적용.
+- AUTH_FAIL(액세스 토큰 만료) 무시하던 것 → **토큰 갱신 후 재연결**(`DioClient.refreshTokens()` 재사용).
+- 재연결 후 상태 불일치 → **AUTH_OK 수신 시 방 목록 refresh + 방 재구독/재조회**.
+- half-open 대비 90초 무수신 시 강제 재연결.
+- (환경) 에뮬레이터 NAT가 소켓을 끊는 문제는 `adb reverse`로 우회 — 함정표 #12.
 
 ### 2026-08-01(4) — 달빛가든 도메인 + 화면 연동 (`9ad67c6`~`8ff267f`)
 **한 일**

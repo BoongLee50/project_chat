@@ -5,6 +5,7 @@ import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimens.dart';
 import '../../../../shared/widgets/authed_image.dart';
 import '../../data/models/feed_item.dart';
+import '../../../chat/presentation/providers/chat_provider.dart';
 import '../providers/garden_provider.dart';
 import '../widgets/comments_sheet.dart';
 
@@ -316,18 +317,65 @@ class _FeedPagerState extends ConsumerState<_FeedPager> {
   FeedItem get _item => widget.items.first;
 
   Future<void> _skip() async {
-    setState(() => _photoIndex = 0);
-    final error = await ref.read(feedProvider.notifier).skip(_item);
+    // Dismissible이 위젯을 제거한 뒤 async가 이어지므로,
+    // await 이전에 notifier를 확보해 둔다(dispose 후 ref 사용 방지).
+    final notifier = ref.read(feedProvider.notifier);
+    final nearlyEmpty = widget.items.length <= 2;
+    _photoIndex = 0;
+
+    final error = await notifier.skip(_item);
     if (error != null && mounted) _toast(error);
     // 목록이 얼마 안 남으면 다음 페이지를 이어붙인다.
-    if (widget.items.length <= 2) {
-      ref.read(feedProvider.notifier).loadMore();
-    }
+    if (nearlyEmpty) notifier.loadMore();
   }
 
   Future<void> _like() async {
     final error = await ref.read(feedProvider.notifier).like(_item);
     if (error != null && mounted) _toast(error);
+  }
+
+  /// 대화 신청 팝업 — 하루 무료 2회 후 루나 5 차감(서버 판정).
+  Future<void> _requestChat(FeedItem item) async {
+    final controller = TextEditingController();
+    final message = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.surface,
+        title: Text(
+          '${item.nickname}님에게 대화 신청',
+          style: const TextStyle(color: AppColors.textPrimary, fontSize: 18),
+        ),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          maxLength: 100,
+          maxLines: 3,
+          cursorColor: AppColors.moonlight,
+          style: const TextStyle(color: AppColors.textPrimary),
+          decoration: const InputDecoration(
+            hintText: '첫 인사를 남겨보세요 (최대 100자)',
+            hintStyle: TextStyle(color: AppColors.textMuted),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('취소'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, controller.text.trim()),
+            child: const Text('보내기'),
+          ),
+        ],
+      ),
+    );
+
+    if (message == null || message.isEmpty || !mounted) return;
+    final error = await ref
+        .read(chatActionsProvider)
+        .requestChat(item.userId, message);
+    if (!mounted) return;
+    _toast(error ?? '대화 신청을 보냈어요. 상대의 응답을 기다려 주세요.');
   }
 
   void _toast(String message) {
@@ -495,9 +543,9 @@ class _FeedPagerState extends ConsumerState<_FeedPager> {
                         onTap: () => showCommentsSheet(context, item),
                       ),
                       const Spacer(),
-                      // 대화 신청 — chat 도메인 구현 후 연결
+                      // 대화 신청 — 100자 메시지를 적어 보낸다(기획서 4-3)
                       GestureDetector(
-                        onTap: () => _toast('대화 신청은 곧 열려요.'),
+                        onTap: () => _requestChat(item),
                         child: Container(
                           width: 48,
                           height: 48,

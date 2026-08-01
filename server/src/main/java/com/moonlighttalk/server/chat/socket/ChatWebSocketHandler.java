@@ -115,8 +115,10 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
             session.getAttributes().put(ATTR_USER_ID, userId);
             registry.register(userId, session);
             presenceService.heartbeat(userId);
+            log.info("소켓 인증 성공 userId={} session={}", userId, session.getId());
             registry.send(session, Packet.of(Opcodes.AUTH_OK, seq, Map.of("userId", userId)));
         } catch (RuntimeException e) {
+            log.warn("소켓 인증 실패 session={} 사유={}", session.getId(), e.toString());
             registry.send(session, Packet.of(Opcodes.AUTH_FAIL, seq,
                     Map.of("code", "UNAUTHORIZED")));
         }
@@ -124,7 +126,13 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
+        log.info("소켓 종료 userId={} session={} status={}", userIdOf(session), session.getId(), status);
         registry.unregister(userIdOf(session), session);
+    }
+
+    @Override
+    public void handleTransportError(WebSocketSession session, Throwable exception) {
+        log.warn("소켓 전송 계층 오류 session={} : {}", session.getId(), exception.toString());
     }
 
     private void requireAuth(String userId) {

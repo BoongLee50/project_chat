@@ -1,73 +1,33 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimens.dart';
+import '../../../../shared/widgets/authed_image.dart';
+import '../../data/models/chat_models.dart';
+import '../providers/chat_provider.dart';
 import 'chat_screen.dart';
 
-/// 대화방 목록 (정적 UI). 메인 셸의 '대화방' 탭 본문.
-/// 매칭 목록/보낸 신청/실시간 갱신은 서버 연동 단계에서 붙인다. (docs/01, 기획서 5장)
-class ChatRoomsScreen extends StatelessWidget {
+/// 대화방 — 메인 셸의 '대화방' 탭 본문. (기획서 5장)
+///
+/// [매칭 대화] 진행 중인 방 + 받은 신청 / [보낸 신청] 목록을 전환해 보여준다.
+/// 새 메시지·신청·방 상태 변화는 소켓 이벤트로 자동 갱신된다.
+class ChatRoomsScreen extends ConsumerStatefulWidget {
   const ChatRoomsScreen({super.key});
 
-  static const _rooms = <_Room>[
-    _Room(
-      '지우',
-      27,
-      '🇰🇷',
-      '2분 전',
-      '오늘 하루 있었던 일들을 편하게 나눠요 :)',
-      'assets/images/avatar1.jpg',
-      true,
-    ),
-    _Room(
-      '유리',
-      25,
-      '🇰🇷',
-      '15분 전',
-      '좋아하는 음악을 추천하고 함께 들어요!',
-      'assets/images/avatar2.jpg',
-      true,
-    ),
-    _Room(
-      'ゆい',
-      24,
-      '🇯🇵',
-      '1시간 전',
-      '綺麗な風景や日常をシェアして癒されましょう！',
-      'assets/images/avatar3.jpg',
-      true,
-    ),
-    _Room(
-      '민서',
-      26,
-      '🇰🇷',
-      '2시간 전',
-      '요즘 읽고 있는 책, 추천하고 싶어요.',
-      'assets/images/avatar1.jpg',
-      false,
-    ),
-    _Room(
-      'さくら',
-      23,
-      '🇯🇵',
-      '3시간 전',
-      '気軽におしゃべりして、友達を作りましょう！',
-      'assets/images/avatar2.jpg',
-      false,
-    ),
-    _Room(
-      '하린',
-      22,
-      '🇰🇷',
-      '5시간 전',
-      '주말 계획 함께 공유하고 약속을 잡아요!',
-      'assets/images/avatar3.jpg',
-      false,
-    ),
-  ];
+  @override
+  ConsumerState<ChatRoomsScreen> createState() => _ChatRoomsScreenState();
+}
+
+class _ChatRoomsScreenState extends ConsumerState<ChatRoomsScreen> {
+  bool _showSent = false;
 
   @override
   Widget build(BuildContext context) {
+    final rooms = ref.watch(chatRoomsProvider);
+    final received = ref.watch(receivedRequestsProvider);
+    final sent = ref.watch(sentRequestsProvider);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -101,22 +61,46 @@ class ChatRoomsScreen extends StatelessWidget {
                 style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
               ),
               const SizedBox(height: AppDimens.gapMd),
-              const _TabPills(),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    _Pill(
+                      icon: Icons.chat_bubble_outline,
+                      label: '매칭 대화',
+                      count:
+                          (rooms.valueOrNull?.length ?? 0) +
+                          (received.valueOrNull?.length ?? 0),
+                      active: !_showSent,
+                      onTap: () => setState(() => _showSent = false),
+                    ),
+                    const SizedBox(width: 10),
+                    _Pill(
+                      icon: Icons.send_outlined,
+                      label: '보낸 신청',
+                      count: sent.valueOrNull?.length ?? 0,
+                      active: _showSent,
+                      onTap: () => setState(() => _showSent = true),
+                    ),
+                  ],
+                ),
+              ),
               const SizedBox(height: AppDimens.gapMd),
             ],
           ),
         ),
         Expanded(
-          child: ListView.separated(
-            padding: const EdgeInsets.fromLTRB(
-              AppDimens.pagePad,
-              0,
-              AppDimens.pagePad,
-              AppDimens.gapMd,
-            ),
-            itemCount: _rooms.length,
-            separatorBuilder: (_, _) => const SizedBox(height: AppDimens.gapSm),
-            itemBuilder: (context, i) => _RoomTile(room: _rooms[i]),
+          child: RefreshIndicator(
+            color: AppColors.moonlight,
+            backgroundColor: AppColors.surface,
+            onRefresh: () async {
+              await ref.read(chatRoomsProvider.notifier).refresh();
+              ref.invalidate(receivedRequestsProvider);
+              ref.invalidate(sentRequestsProvider);
+            },
+            child: _showSent
+                ? _SentList(sent: sent)
+                : _MatchedList(rooms: rooms, received: received),
           ),
         ),
       ],
@@ -124,84 +108,90 @@ class ChatRoomsScreen extends StatelessWidget {
   }
 }
 
-class _Room {
-  const _Room(
-    this.name,
-    this.age,
-    this.flag,
-    this.time,
-    this.message,
-    this.avatar,
-    this.unread,
-  );
-  final String name;
-  final int age;
-  final String flag;
-  final String time;
-  final String message;
-  final String avatar;
-  final bool unread;
+/// 매칭 대화 + 받은 신청.
+class _MatchedList extends ConsumerWidget {
+  const _MatchedList({required this.rooms, required this.received});
+
+  final AsyncValue<List<ChatRoomSummary>> rooms;
+  final AsyncValue<List<ChatRequest>> received;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final roomList = rooms.valueOrNull ?? const <ChatRoomSummary>[];
+    final requestList = received.valueOrNull ?? const <ChatRequest>[];
+
+    if (rooms.isLoading && roomList.isEmpty) {
+      return const _Loading();
+    }
+    if (roomList.isEmpty && requestList.isEmpty) {
+      return const _Empty('아직 대화가 없어요.\n달빛가든에서 마음에 드는 사람에게 말을 걸어보세요.');
+    }
+
+    return ListView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: const EdgeInsets.fromLTRB(
+        AppDimens.pagePad,
+        0,
+        AppDimens.pagePad,
+        AppDimens.gapMd,
+      ),
+      children: [
+        if (requestList.isNotEmpty) ...[
+          const _SectionLabel('받은 신청'),
+          for (final request in requestList)
+            _RequestTile(request: request),
+          const SizedBox(height: AppDimens.gapMd),
+          const _SectionLabel('대화 중'),
+        ],
+        for (final room in roomList) _RoomTile(room: room),
+      ],
+    );
+  }
 }
 
-class _RoomTile extends StatelessWidget {
-  const _RoomTile({required this.room});
+class _SentList extends StatelessWidget {
+  const _SentList({required this.sent});
 
-  final _Room room;
+  final AsyncValue<List<ChatRequest>> sent;
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: AppColors.surface,
-      borderRadius: BorderRadius.circular(AppDimens.radiusLg),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(AppDimens.radiusLg),
-        onTap: () => Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (_) => ChatScreen(name: room.name, avatar: room.avatar),
-          ),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(14),
+    final list = sent.valueOrNull ?? const <ChatRequest>[];
+    if (sent.isLoading && list.isEmpty) return const _Loading();
+    if (list.isEmpty) return const _Empty('보낸 대화 신청이 없어요.');
+
+    return ListView.separated(
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: const EdgeInsets.fromLTRB(
+        AppDimens.pagePad,
+        0,
+        AppDimens.pagePad,
+        AppDimens.gapMd,
+      ),
+      itemCount: list.length,
+      separatorBuilder: (_, _) => const SizedBox(height: AppDimens.gapSm),
+      itemBuilder: (context, i) {
+        final request = list[i];
+        return _Card(
           child: Row(
             children: [
-              ClipOval(
-                child: Image.asset(
-                  room.avatar,
-                  width: 60,
-                  height: 60,
-                  fit: BoxFit.cover,
-                ),
-              ),
+              _Avatar(url: request.partnerPhotoUrl),
               const SizedBox(width: 14),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      children: [
-                        Text(
-                          '${room.name} ${room.age}',
-                          style: const TextStyle(
-                            color: AppColors.textPrimary,
-                            fontSize: 17,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        Text(room.flag, style: const TextStyle(fontSize: 15)),
-                        const SizedBox(width: 8),
-                        Text(
-                          room.time,
-                          style: const TextStyle(
-                            color: AppColors.textMuted,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ],
+                    Text(
+                      _nameAge(request.partnerNickname, request.partnerAge),
+                      style: const TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 17,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      room.message,
+                      request.message,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
@@ -212,54 +202,275 @@ class _RoomTile extends StatelessWidget {
                   ],
                 ),
               ),
-              if (room.unread) ...[
-                const SizedBox(width: 10),
-                Container(
-                  width: 28,
-                  height: 28,
-                  alignment: Alignment.center,
-                  decoration: const BoxDecoration(
-                    color: AppColors.moonlight,
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Text(
-                    'N',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                    ),
+              const SizedBox(width: 8),
+              Text(
+                request.sentStatusLabel,
+                style: TextStyle(
+                  color: request.status == 'PENDING'
+                      ? AppColors.gold
+                      : AppColors.textMuted,
+                  fontSize: 12,
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+/// 받은 신청 — 수락/거절 버튼.
+class _RequestTile extends ConsumerWidget {
+  const _RequestTile({required this.request});
+
+  final ChatRequest request;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    Future<void> run(Future<String?> Function() action) async {
+      final error = await action();
+      if (error != null && context.mounted) {
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(SnackBar(content: Text(error)));
+      }
+    }
+
+    final actions = ref.read(chatActionsProvider);
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppDimens.gapSm),
+      child: _Card(
+        child: Column(
+          children: [
+            Row(
+              children: [
+                _Avatar(url: request.partnerPhotoUrl),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        _nameAge(request.partnerNickname, request.partnerAge),
+                        style: const TextStyle(
+                          color: AppColors.textPrimary,
+                          fontSize: 17,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        request.message,
+                        maxLines: 2,
+                        style: const TextStyle(
+                          color: AppColors.textSecondary,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
-            ],
-          ),
+            ),
+            const SizedBox(height: AppDimens.gapMd),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => run(() => actions.reject(request.id)),
+                    child: const Text('거절'),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: FilledButton(
+                    onPressed: () => run(() => actions.accept(request.id)),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: AppColors.moonlight,
+                    ),
+                    child: const Text('수락'),
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );
   }
 }
 
-class _TabPills extends StatelessWidget {
-  const _TabPills();
+class _RoomTile extends StatelessWidget {
+  const _RoomTile({required this.room});
+
+  final ChatRoomSummary room;
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: const [
-          _Pill(
-            icon: Icons.chat_bubble_outline,
-            label: '매칭 대화',
-            count: 6,
-            active: true,
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppDimens.gapSm),
+      child: Material(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppDimens.radiusLg),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(AppDimens.radiusLg),
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => ChatScreen(room: room)),
           ),
-          SizedBox(width: 10),
-          _Pill(icon: Icons.send_outlined, label: '보낸 신청', count: 6),
-          SizedBox(width: 10),
-          _Pill(icon: Icons.translate, label: '번역'),
-        ],
+          child: Padding(
+            padding: const EdgeInsets.all(14),
+            child: Row(
+              children: [
+                _Avatar(url: room.partnerPhotoUrl),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Text(
+                            _nameAge(room.partnerNickname, room.partnerAge),
+                            style: const TextStyle(
+                              color: AppColors.textPrimary,
+                              fontSize: 17,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            room.flag,
+                            style: const TextStyle(fontSize: 15),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            _timeAgo(room.lastMessageAt),
+                            style: const TextStyle(
+                              color: AppColors.textMuted,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        // 목록 미리보기는 25자까지만(기획서 5장)
+                        _preview(room.lastMessage),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: AppColors.textSecondary,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (room.unreadCount > 0) ...[
+                  const SizedBox(width: 10),
+                  Container(
+                    width: 28,
+                    height: 28,
+                    alignment: Alignment.center,
+                    decoration: const BoxDecoration(
+                      color: AppColors.moonlight,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Text(
+                      'N',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  static String _preview(String? text) {
+    if (text == null || text.isEmpty) return '대화를 시작해보세요.';
+    final chars = text.characters;
+    return chars.length <= 25 ? text : '${chars.take(25)}…';
+  }
+
+  static String _timeAgo(DateTime? at) {
+    if (at == null) return '';
+    final diff = DateTime.now().difference(at);
+    if (diff.inMinutes < 1) return '방금';
+    if (diff.inMinutes < 60) return '${diff.inMinutes}분 전';
+    if (diff.inHours < 24) return '${diff.inHours}시간 전';
+    return '${diff.inDays}일 전';
+  }
+}
+
+String _nameAge(String name, int? age) =>
+    age == null ? name : '$name $age';
+
+class _Avatar extends StatelessWidget {
+  const _Avatar({this.url});
+
+  final String? url;
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipOval(
+      child: SizedBox(
+        width: 60,
+        height: 60,
+        child: url == null
+            ? const ColoredBox(
+                color: AppColors.surfaceHigh,
+                child: Icon(Icons.person, color: AppColors.textMuted),
+              )
+            : AuthedImage(url: url!),
+      ),
+    );
+  }
+}
+
+class _Card extends StatelessWidget {
+  const _Card({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppDimens.radiusLg),
+      ),
+      child: child,
+    );
+  }
+}
+
+class _SectionLabel extends StatelessWidget {
+  const _SectionLabel(this.text);
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppDimens.gapSm),
+      child: Text(
+        text,
+        style: const TextStyle(
+          color: AppColors.textSecondary,
+          fontSize: 13,
+          fontWeight: FontWeight.w700,
+        ),
       ),
     );
   }
@@ -269,62 +480,107 @@ class _Pill extends StatelessWidget {
   const _Pill({
     required this.icon,
     required this.label,
-    this.count,
-    this.active = false,
+    required this.count,
+    required this.active,
+    required this.onTap,
   });
 
   final IconData icon;
   final String label;
-  final int? count;
+  final int count;
   final bool active;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
-      decoration: BoxDecoration(
-        color: active ? AppColors.moonlight.withValues(alpha: 0.15) : null,
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(
-          color: active ? AppColors.moonlight : AppColors.border,
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+        decoration: BoxDecoration(
+          color: active ? AppColors.moonlight.withValues(alpha: 0.15) : null,
+          borderRadius: BorderRadius.circular(22),
+          border: Border.all(
+            color: active ? AppColors.moonlight : AppColors.border,
+          ),
         ),
-      ),
-      child: Row(
-        children: [
-          Icon(
-            icon,
-            size: 18,
-            color: active ? AppColors.moonlight : AppColors.textSecondary,
-          ),
-          const SizedBox(width: 6),
-          Text(
-            label,
-            style: TextStyle(
-              color: active ? AppColors.textPrimary : AppColors.textSecondary,
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
+        child: Row(
+          children: [
+            Icon(
+              icon,
+              size: 18,
+              color: active ? AppColors.moonlight : AppColors.textSecondary,
             ),
-          ),
-          if (count != null) ...[
             const SizedBox(width: 6),
-            Container(
-              padding: const EdgeInsets.all(5),
-              decoration: const BoxDecoration(
-                color: AppColors.moonlight,
-                shape: BoxShape.circle,
+            Text(
+              label,
+              style: TextStyle(
+                color: active ? AppColors.textPrimary : AppColors.textSecondary,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
               ),
-              child: Text(
-                '$count',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
+            ),
+            if (count > 0) ...[
+              const SizedBox(width: 6),
+              Container(
+                padding: const EdgeInsets.all(5),
+                decoration: const BoxDecoration(
+                  color: AppColors.moonlight,
+                  shape: BoxShape.circle,
+                ),
+                child: Text(
+                  '$count',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
-            ),
+            ],
           ],
-        ],
+        ),
       ),
+    );
+  }
+}
+
+class _Loading extends StatelessWidget {
+  const _Loading();
+
+  @override
+  Widget build(BuildContext context) => const Center(
+    child: CircularProgressIndicator(color: AppColors.moonlight),
+  );
+}
+
+class _Empty extends StatelessWidget {
+  const _Empty(this.message);
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      children: [
+        SizedBox(height: MediaQuery.of(context).size.height * 0.2),
+        Icon(
+          Icons.forum_outlined,
+          color: AppColors.textMuted,
+          size: 48,
+        ),
+        const SizedBox(height: 12),
+        Text(
+          message,
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            color: AppColors.textMuted,
+            fontSize: 14,
+            height: 1.5,
+          ),
+        ),
+      ],
     );
   }
 }
