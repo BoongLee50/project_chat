@@ -332,7 +332,9 @@ class _PostPhotoCardState extends ConsumerState<_PostPhotoCard> {
   Widget build(BuildContext context) {
     final headers = ref.watch(authHeadersProvider).valueOrNull ?? const {};
     final hasPhoto = _photos.isNotEmpty;
-    final index = _index.clamp(0, _photos.length - 1);
+    // 사진이 없으면 clamp 상한이 -1이 되어 ArgumentError가 난다.
+    // index는 hasPhoto인 가지에서만 쓰이므로 빈 경우엔 0으로 둔다.
+    final index = hasPhoto ? _index.clamp(0, _photos.length - 1) : 0;
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(AppDimens.radiusLg),

@@ -23,6 +23,10 @@ git clone https://github.com/BoongLee50/project_chat
 | Android Studio | Android SDK + 에뮬레이터 + 내장 JBR(21) |
 | (선택) VS Code | Flutter/Dart 확장 |
 
+> ⚠️ **Windows는 개발자 모드를 먼저 켜야 한다.** `flutter_secure_storage`·`image_picker` 같은 네이티브 플러그인이
+> 심볼릭 링크를 요구해서, 꺼져 있으면 `flutter pub get`이 `Building with plugins requires symlink support`로 실패한다.
+> `start ms-settings:developers` → 개발자 모드 ON (관리자 권한 필요, 기기당 1회).
+
 ```bash
 # 저장소 루트에서
 flutter pub get          # 의존성 + .dart_tool 생성 (git엔 없음, 각 기기에서 생성)

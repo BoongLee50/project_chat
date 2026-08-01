@@ -107,10 +107,34 @@ flutter emulators --launch Pixel_10          # 두 번째 → emulator-5556
 | 12 | **에뮬레이터 NAT(`10.0.2.2`)가 WebSocket을 30~60초마다 끊음** (서버 로그 `CloseStatus 1006` + `EOFException`) | **서버 문제 아님**(호스트에서 직접 붙이면 150초+ 무중단). 소켓 테스트는 반드시 아래 `adb reverse` 방식으로: <br>`adb -s <기기> reverse tcp:8080 tcp:8080` <br>`flutter build apk --debug --dart-define=API_BASE_URL=http://localhost:8080` |
 | 13 | `WebSocketChannel.connect()`는 **핸드셰이크 실패/지연을 던지지 않음** | `await channel.ready.timeout(10s)` 필수. 안 기다리면 연결 실패해도 `_channel`이 남아 **모든 send가 조용히 버려지고 재연결도 안 걸린다** |
 | 14 | `WebSocketSession`은 **동시 전송에 안전하지 않음** | 내 ACK와 상대 읽음영수증이 다른 스레드에서 같은 세션에 쓰이면 세션이 깨진다 → `ConcurrentWebSocketSessionDecorator`로 감싸 등록 |
+| 15 | **에뮬 I/O 포화 시 `screencap`·IME가 D상태로 wedge** | 화면이 갱신을 멈추고 `input text`가 조용히 무시됨(`mBoundToMethod=false`). 스냅샷 재시작으론 안 풀림 → **콜드 부팅** `emulator -avd Pixel_10 -no-snapshot-load`. 스크린샷은 기기 디스크에 쓰지 말고 `adb exec-out screencap -p`를 **cmd 리다이렉트**로 받을 것(PowerShell `>`는 바이너리가 깨짐) |
+| 16 | **Windows 개발자 모드 OFF면 `flutter pub get` 실패** | 네이티브 플러그인이 심볼릭 링크를 요구("Building with plugins requires symlink support") → 기기당 1회 `start ms-settings:developers`에서 켤 것 |
+| 17 | **빈 컬렉션에 `clamp(0, length - 1)`** | 비면 상한이 `-1`이 되어 `ArgumentError`("Invalid argument(s): 0"). 홈 화면이 사진 0장일 때 깨졌던 원인 — 길이 의존 clamp는 **비어있는지 먼저 분기**할 것 |
 
 ---
 
 ## 4. 세션 로그
+
+### 2026-08-02 — 새 기기(랩탑) 환경 재현 + 홈 화면 빈 사진 버그 수정
+**한 일**
+1. **새 Windows 기기에 전체 환경 세팅** — Flutter stable(3.44.6/Dart 3.12.2) + JDK 17(Temurin 17.0.19) + MariaDB 11.4.5(무설치 ZIP). 서버 기동 시 **Flyway V2·V3·V4 자동 적용**(v1 → v4, 19테이블) 확인.
+2. **홈 화면 버그 수정** — 사진이 **0장인 계정에서 홈 탭이 빨간 에러 위젯**(`Invalid argument(s): 0`)으로 깨지던 것 수정.
+
+**버그 상세**: `home_screen.dart`의 `build()`에서
+```dart
+final index = _index.clamp(0, _photos.length - 1);   // 사진 0장이면 clamp(0, -1) → ArgumentError
+```
+`index`는 `hasPhoto`인 가지에서만 쓰이는데 **계산 자체가 무조건 실행**돼서, 사진이 없으면 상한이 `-1`이 되어 던진다.
+→ `final index = hasPhoto ? _index.clamp(0, _photos.length - 1) : 0;` 으로 수정.
+같은 패턴인 `_delete()`(315행)는 앞에 `_photos.isEmpty` 가드가 있어 안전하다.
+
+**왜 이전 기기에서 안 걸렸나**: 그쪽 테스트 계정은 이미 촬영→업로드를 마쳐 사진이 있었다. **신규 계정은 100% 재현**되므로 온보딩 직후 첫 홈 진입이 항상 깨지던 상태였다.
+
+**검증**: 수정 후 `flutter analyze` 무경고 · `flutter test` 통과 · 에뮬에서 빈 상태 UI("달빛 아래의 지금을 포스트해 보세요") 정상 렌더 확인.
+
+**환경 메모(이 기기에서 겪음)**
+- Windows **개발자 모드 OFF면 `flutter pub get`이 실패**한다(`flutter_secure_storage` 등 플러그인이 심볼릭 링크 요구) → 기기당 1회 켜야 함. 06 문서에 반영.
+- 호스트 메모리가 빠듯하면 에뮬 디스크 I/O가 포화되며 `screencap`·IME가 D상태(`balance_dirty_pages`)로 wedge된다. 화면이 프레임 갱신을 멈추고 `input text`가 먹지 않음(`mBoundToMethod=false`). **스냅샷 재시작으로는 안 풀리고 콜드 부팅**(`emulator -avd Pixel_10 -no-snapshot-load`)해야 복구. (함정 #15)
 
 ### 2026-08-01(5) — 대화방/채팅창 실연동 (chat + WebSocket) (`2886dd5`~`b6db067`)
 **한 일**
