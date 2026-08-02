@@ -294,6 +294,150 @@ abstract class L10n {
   /// In ko, this message translates to:
   /// **'일본'**
   String get countryJapan;
+
+  /// No description provided for @commonEdit.
+  ///
+  /// In ko, this message translates to:
+  /// **'수정'**
+  String get commonEdit;
+
+  /// No description provided for @commonEmptyValue.
+  ///
+  /// In ko, this message translates to:
+  /// **'—'**
+  String get commonEmptyValue;
+
+  /// No description provided for @homeTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'오늘의 포스트'**
+  String get homeTitle;
+
+  /// No description provided for @homeTodayMoon.
+  ///
+  /// In ko, this message translates to:
+  /// **'오늘의 달'**
+  String get homeTodayMoon;
+
+  /// No description provided for @homeMoonCrescent.
+  ///
+  /// In ko, this message translates to:
+  /// **'초승달'**
+  String get homeMoonCrescent;
+
+  /// No description provided for @homeUploadRemaining.
+  ///
+  /// In ko, this message translates to:
+  /// **'포스트 등록 남은 시간'**
+  String get homeUploadRemaining;
+
+  /// No description provided for @homeLoadFailed.
+  ///
+  /// In ko, this message translates to:
+  /// **'포스트를 불러오지 못했어요.'**
+  String get homeLoadFailed;
+
+  /// No description provided for @homePullToRefresh.
+  ///
+  /// In ko, this message translates to:
+  /// **'아래로 당겨 새로고침해 주세요.'**
+  String get homePullToRefresh;
+
+  /// No description provided for @homeEmptyGreeting.
+  ///
+  /// In ko, this message translates to:
+  /// **'{nickname}님'**
+  String homeEmptyGreeting(String nickname);
+
+  /// No description provided for @homeEmptyHint.
+  ///
+  /// In ko, this message translates to:
+  /// **'달빛 아래의 지금을 포스트해 보세요.\n새로운 대화의 시작이 될 수 있어요.'**
+  String get homeEmptyHint;
+
+  /// No description provided for @homeGateClosed.
+  ///
+  /// In ko, this message translates to:
+  /// **'지금은 포스트를 등록할 수 있는 시간이 아니에요.'**
+  String get homeGateClosed;
+
+  /// No description provided for @homeAlbumPass.
+  ///
+  /// In ko, this message translates to:
+  /// **'포스트 앨범 패스'**
+  String get homeAlbumPass;
+
+  /// No description provided for @homeAlbumPassRemaining.
+  ///
+  /// In ko, this message translates to:
+  /// **'{days}일 남음'**
+  String homeAlbumPassRemaining(int days);
+
+  /// No description provided for @homeAlbumPassMaxPhotos.
+  ///
+  /// In ko, this message translates to:
+  /// **'최대 {count}장 등록 가능'**
+  String homeAlbumPassMaxPhotos(int count);
+
+  /// No description provided for @homeBoost.
+  ///
+  /// In ko, this message translates to:
+  /// **'부스트'**
+  String get homeBoost;
+
+  /// No description provided for @homeBoostActive.
+  ///
+  /// In ko, this message translates to:
+  /// **'부스트 사용 중'**
+  String get homeBoostActive;
+
+  /// No description provided for @homeBoostStock.
+  ///
+  /// In ko, this message translates to:
+  /// **'보유 {count}매'**
+  String homeBoostStock(int count);
+
+  /// No description provided for @homeOneLiner.
+  ///
+  /// In ko, this message translates to:
+  /// **'하루 한 마디'**
+  String get homeOneLiner;
+
+  /// No description provided for @homeOneLinerHint.
+  ///
+  /// In ko, this message translates to:
+  /// **'오늘의 기분을 한 줄로 남겨보세요'**
+  String get homeOneLinerHint;
+
+  /// No description provided for @homeOneLinerEmpty.
+  ///
+  /// In ko, this message translates to:
+  /// **'하루 한 마디를 입력해 주세요.'**
+  String get homeOneLinerEmpty;
+
+  /// No description provided for @homeOneLinerWrite.
+  ///
+  /// In ko, this message translates to:
+  /// **'작성'**
+  String get homeOneLinerWrite;
+
+  /// No description provided for @homeShare.
+  ///
+  /// In ko, this message translates to:
+  /// **'포스트 공유하기'**
+  String get homeShare;
+
+  /// No description provided for @homeShareAgain.
+  ///
+  /// In ko, this message translates to:
+  /// **'공유됨 · 다시 공유하기'**
+  String get homeShareAgain;
+
+  /// No description provided for @homeShared.
+  ///
+  /// In ko, this message translates to:
+  /// **'포스트를 공유했어요 🌙'**
+  String get homeShared;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

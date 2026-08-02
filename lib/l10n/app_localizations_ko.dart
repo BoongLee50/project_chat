@@ -106,4 +106,84 @@ class L10nKo extends L10n {
 
   @override
   String get countryJapan => '일본';
+
+  @override
+  String get commonEdit => '수정';
+
+  @override
+  String get commonEmptyValue => '—';
+
+  @override
+  String get homeTitle => '오늘의 포스트';
+
+  @override
+  String get homeTodayMoon => '오늘의 달';
+
+  @override
+  String get homeMoonCrescent => '초승달';
+
+  @override
+  String get homeUploadRemaining => '포스트 등록 남은 시간';
+
+  @override
+  String get homeLoadFailed => '포스트를 불러오지 못했어요.';
+
+  @override
+  String get homePullToRefresh => '아래로 당겨 새로고침해 주세요.';
+
+  @override
+  String homeEmptyGreeting(String nickname) {
+    return '$nickname님';
+  }
+
+  @override
+  String get homeEmptyHint => '달빛 아래의 지금을 포스트해 보세요.\n새로운 대화의 시작이 될 수 있어요.';
+
+  @override
+  String get homeGateClosed => '지금은 포스트를 등록할 수 있는 시간이 아니에요.';
+
+  @override
+  String get homeAlbumPass => '포스트 앨범 패스';
+
+  @override
+  String homeAlbumPassRemaining(int days) {
+    return '$days일 남음';
+  }
+
+  @override
+  String homeAlbumPassMaxPhotos(int count) {
+    return '최대 $count장 등록 가능';
+  }
+
+  @override
+  String get homeBoost => '부스트';
+
+  @override
+  String get homeBoostActive => '부스트 사용 중';
+
+  @override
+  String homeBoostStock(int count) {
+    return '보유 $count매';
+  }
+
+  @override
+  String get homeOneLiner => '하루 한 마디';
+
+  @override
+  String get homeOneLinerHint => '오늘의 기분을 한 줄로 남겨보세요';
+
+  @override
+  String get homeOneLinerEmpty => '하루 한 마디를 입력해 주세요.';
+
+  @override
+  String get homeOneLinerWrite => '작성';
+
+  @override
+  String get homeShare => '포스트 공유하기';
+
+  @override
+  String get homeShareAgain => '공유됨 · 다시 공유하기';
+
+  @override
+  String get homeShared => '포스트를 공유했어요 🌙';
 }

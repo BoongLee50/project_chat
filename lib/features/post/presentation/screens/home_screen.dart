@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimens.dart';
 import '../../../../core/providers.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/gate_notice.dart';
 import '../../../auth/presentation/providers/gate_provider.dart';
 import '../../../auth/presentation/providers/session_provider.dart';
@@ -28,6 +29,7 @@ class HomeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = L10n.of(context);
     final postState = ref.watch(myPostProvider);
 
     // 앨범 패스를 사면 등록 규칙(사진 장수·시간 제한)이 달라진다. 서버가 판정하므로
@@ -60,13 +62,13 @@ class HomeScreen extends ConsumerWidget {
                   size: 48,
                 ),
                 const SizedBox(height: 12),
-                const Text(
-                  '포스트를 불러오지 못했어요.',
+                Text(
+                  l10n.homeLoadFailed,
                   style: TextStyle(color: AppColors.textPrimary, fontSize: 16),
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '아래로 당겨 새로고침해 주세요.',
+                  l10n.homePullToRefresh,
                   style: const TextStyle(
                     color: AppColors.textMuted,
                     fontSize: 13,
@@ -109,6 +111,7 @@ class _PostBody extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = L10n.of(context);
     return SingleChildScrollView(
       physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.fromLTRB(
@@ -124,7 +127,7 @@ class _PostBody extends ConsumerWidget {
           const SizedBox(height: AppDimens.gapMd),
           // 운영시간 밖에는 사진 등록·공유만 막힌다(하루 한 마디는 언제든 가능).
           if (!ref.watch(gateOpenProvider))
-            const GateBanner(message: '지금은 포스트를 등록할 수 있는 시간이 아니에요.'),
+            GateBanner(message: l10n.homeGateClosed),
           _InfoCards(post: post),
           const SizedBox(height: AppDimens.gapMd),
           _PostPhotoCard(post: post),
@@ -148,12 +151,13 @@ class _TopBar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = L10n.of(context);
     final wallet = ref.watch(walletProvider).valueOrNull ?? Wallet.empty;
 
     return Row(
       children: [
-        const Text(
-          '오늘의 포스트',
+        Text(
+          l10n.homeTitle,
           style: TextStyle(
             color: AppColors.textPrimary,
             fontSize: 24,
@@ -258,12 +262,13 @@ class _InfoCards extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     return Row(
       children: [
         Expanded(
           child: _InfoCard(
             child: Row(
-              children: const [
+              children: [
                 Icon(Icons.nightlight_round, color: AppColors.gold, size: 30),
                 SizedBox(width: 12),
                 Column(
@@ -271,7 +276,7 @@ class _InfoCards extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      '오늘의 달',
+                      l10n.homeTodayMoon,
                       style: TextStyle(
                         color: AppColors.textSecondary,
                         fontSize: 13,
@@ -280,7 +285,7 @@ class _InfoCards extends StatelessWidget {
                     SizedBox(height: 2),
                     // 달 위상은 별도 이벤트 테이블 예정(기획서 3-1).
                     Text(
-                      '초승달',
+                      l10n.homeMoonCrescent,
                       style: TextStyle(
                         color: AppColors.textPrimary,
                         fontSize: 16,
@@ -299,8 +304,8 @@ class _InfoCards extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text(
-                  '포스트 등록 남은 시간',
+                Text(
+                  l10n.homeUploadRemaining,
                   style: TextStyle(
                     color: AppColors.textSecondary,
                     fontSize: 13,
@@ -540,6 +545,7 @@ class _AlbumPassBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
@@ -552,11 +558,11 @@ class _AlbumPassBadge extends StatelessWidget {
         children: [
           Row(
             mainAxisSize: MainAxisSize.min,
-            children: const [
+            children: [
               Icon(Icons.star_rounded, color: AppColors.moonlight, size: 16),
               SizedBox(width: 4),
               Text(
-                '포스트 앨범 패스',
+                l10n.homeAlbumPass,
                 style: TextStyle(
                   color: AppColors.moonlight,
                   fontSize: 12,
@@ -568,7 +574,7 @@ class _AlbumPassBadge extends StatelessWidget {
           if (remainingDays != null) ...[
             const SizedBox(height: 2),
             Text(
-              '$remainingDays일 남음',
+              l10n.homeAlbumPassRemaining(remainingDays!),
               style: const TextStyle(
                 color: AppColors.textPrimary,
                 fontSize: 12,
@@ -585,7 +591,7 @@ class _AlbumPassBadge extends StatelessWidget {
               ),
             ),
             child: Text(
-              '최대 $maxPhotos장 등록 가능',
+              l10n.homeAlbumPassMaxPhotos(maxPhotos),
               style: const TextStyle(
                 color: AppColors.textSecondary,
                 fontSize: 11,
@@ -630,6 +636,7 @@ class _BoostRowState extends ConsumerState<_BoostRow> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     final wallet = ref.watch(walletProvider).valueOrNull ?? Wallet.empty;
     final active = wallet.activeBoost(StoreKind.postBoost);
     final stock = wallet.stockOf(StoreKind.postBoost);
@@ -658,7 +665,7 @@ class _BoostRowState extends ConsumerState<_BoostRow> {
             ),
             const SizedBox(width: 8),
             Text(
-              active != null ? '부스트 사용 중' : '부스트',
+              active != null ? l10n.homeBoostActive : l10n.homeBoost,
               style: TextStyle(
                 color: active != null
                     ? const Color(0xFFE8386D)
@@ -669,7 +676,7 @@ class _BoostRowState extends ConsumerState<_BoostRow> {
             ),
             const SizedBox(width: 10),
             Text(
-              active != null ? _clock(active.remaining) : '보유 $stock매',
+              active != null ? _clock(active.remaining) : l10n.homeBoostStock(stock),
               style: const TextStyle(
                 color: AppColors.textSecondary,
                 fontSize: 14,
@@ -721,6 +728,7 @@ class _EmptyPhoto extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = L10n.of(context);
     final nickname = ref.watch(sessionProvider).profile?.nickname ?? '';
     return Container(
       color: AppColors.surface,
@@ -736,7 +744,7 @@ class _EmptyPhoto extends ConsumerWidget {
           ),
           const SizedBox(height: 14),
           Text(
-            '$nickname님',
+            l10n.homeEmptyGreeting(nickname),
             style: const TextStyle(
               color: AppColors.textPrimary,
               fontSize: 16,
@@ -744,10 +752,10 @@ class _EmptyPhoto extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 6),
-          const Text(
-            '달빛 아래의 지금을 포스트해 보세요.\n새로운 대화의 시작이 될 수 있어요.',
+          Text(
+            l10n.homeEmptyHint,
             textAlign: TextAlign.center,
-            style: TextStyle(
+            style: const TextStyle(
               color: AppColors.textSecondary,
               fontSize: 14,
               height: 1.4,
@@ -891,13 +899,14 @@ class _OneLiner extends ConsumerWidget {
   final MyPost post;
 
   Future<void> _edit(BuildContext context, WidgetRef ref) async {
+    final l10n = L10n.of(context);
     final controller = TextEditingController(text: post.oneLiner ?? '');
     final text = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.surface,
-        title: const Text(
-          '하루 한 마디',
+        title: Text(
+          l10n.homeOneLiner,
           style: TextStyle(color: AppColors.textPrimary),
         ),
         content: TextField(
@@ -906,19 +915,19 @@ class _OneLiner extends ConsumerWidget {
           maxLength: maxLength,
           cursorColor: AppColors.moonlight,
           style: const TextStyle(color: AppColors.textPrimary),
-          decoration: const InputDecoration(
-            hintText: '오늘의 기분을 한 줄로 남겨보세요',
+          decoration: InputDecoration(
+            hintText: l10n.homeOneLinerHint,
             hintStyle: TextStyle(color: AppColors.textMuted),
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('취소'),
+            child: Text(l10n.commonCancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, controller.text.trim()),
-            child: const Text('저장'),
+            child: Text(l10n.commonSave),
           ),
         ],
       ),
@@ -935,6 +944,7 @@ class _OneLiner extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = L10n.of(context);
     final text = post.oneLiner;
     final length = text?.characters.length ?? 0;
 
@@ -943,8 +953,8 @@ class _OneLiner extends ConsumerWidget {
       children: [
         Row(
           children: [
-            const Text(
-              '하루 한 마디',
+            Text(
+              l10n.homeOneLiner,
               style: TextStyle(
                 color: AppColors.textPrimary,
                 fontSize: 16,
@@ -960,7 +970,7 @@ class _OneLiner extends ConsumerWidget {
             TextButton(
               onPressed: () => _edit(context, ref),
               child: Text(
-                text == null || text.isEmpty ? '작성' : '수정',
+                text == null || text.isEmpty ? l10n.homeOneLinerWrite : l10n.commonEdit,
                 style: const TextStyle(color: AppColors.moonlight),
               ),
             ),
@@ -979,7 +989,7 @@ class _OneLiner extends ConsumerWidget {
             children: [
               Expanded(
                 child: Text(
-                  text == null || text.isEmpty ? '하루 한 마디를 입력해 주세요.' : text,
+                  text == null || text.isEmpty ? l10n.homeOneLinerEmpty : text,
                   style: TextStyle(
                     color: text == null || text.isEmpty
                         ? AppColors.textMuted
@@ -1010,6 +1020,7 @@ class _ShareButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = L10n.of(context);
     final enabled = post.gateOpen;
 
     return SizedBox(
@@ -1023,7 +1034,7 @@ class _ShareButton extends ConsumerWidget {
                 ScaffoldMessenger.of(context)
                   ..hideCurrentSnackBar()
                   ..showSnackBar(
-                    SnackBar(content: Text(error ?? '포스트를 공유했어요 🌙')),
+                    SnackBar(content: Text(error ?? l10n.homeShared)),
                   );
               }
             : null,
@@ -1038,7 +1049,7 @@ class _ShareButton extends ConsumerWidget {
         ),
         icon: Icon(post.published ? Icons.check : Icons.ios_share, size: 20),
         label: Text(
-          post.published ? '공유됨 · 다시 공유하기' : '포스트 공유하기',
+          post.published ? l10n.homeShareAgain : l10n.homeShare,
           style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
         ),
       ),

@@ -41,5 +41,57 @@
   "genderFemale": "여자",
   "countrySectionTitle": "나라 선택",
   "countryKorea": "한국",
-  "countryJapan": "일본"
+  "countryJapan": "일본",
+  "commonEdit": "수정",
+  "commonEmptyValue": "—",
+  "homeTitle": "오늘의 포스트",
+  "homeTodayMoon": "오늘의 달",
+  "homeMoonCrescent": "초승달",
+  "homeUploadRemaining": "포스트 등록 남은 시간",
+  "homeLoadFailed": "포스트를 불러오지 못했어요.",
+  "homePullToRefresh": "아래로 당겨 새로고침해 주세요.",
+  "homeEmptyGreeting": "{nickname}님",
+  "@homeEmptyGreeting": {
+    "placeholders": {
+      "nickname": {
+        "type": "String"
+      }
+    }
+  },
+  "homeEmptyHint": "달빛 아래의 지금을 포스트해 보세요.\n새로운 대화의 시작이 될 수 있어요.",
+  "homeGateClosed": "지금은 포스트를 등록할 수 있는 시간이 아니에요.",
+  "homeAlbumPass": "포스트 앨범 패스",
+  "homeAlbumPassRemaining": "{days}일 남음",
+  "@homeAlbumPassRemaining": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "homeAlbumPassMaxPhotos": "최대 {count}장 등록 가능",
+  "@homeAlbumPassMaxPhotos": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homeBoost": "부스트",
+  "homeBoostActive": "부스트 사용 중",
+  "homeBoostStock": "보유 {count}매",
+  "@homeBoostStock": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homeOneLiner": "하루 한 마디",
+  "homeOneLinerHint": "오늘의 기분을 한 줄로 남겨보세요",
+  "homeOneLinerEmpty": "하루 한 마디를 입력해 주세요.",
+  "homeOneLinerWrite": "작성",
+  "homeShare": "포스트 공유하기",
+  "homeShareAgain": "공유됨 · 다시 공유하기",
+  "homeShared": "포스트를 공유했어요 🌙"
 }

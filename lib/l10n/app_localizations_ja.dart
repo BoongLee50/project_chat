@@ -106,4 +106,84 @@ class L10nJa extends L10n {
 
   @override
   String get countryJapan => '日本';
+
+  @override
+  String get commonEdit => '編集';
+
+  @override
+  String get commonEmptyValue => '—';
+
+  @override
+  String get homeTitle => '今日のポスト';
+
+  @override
+  String get homeTodayMoon => '今日の月';
+
+  @override
+  String get homeMoonCrescent => '三日月';
+
+  @override
+  String get homeUploadRemaining => 'ポスト登録の残り時間';
+
+  @override
+  String get homeLoadFailed => 'ポストを読み込めませんでした。';
+
+  @override
+  String get homePullToRefresh => '下に引いて更新してください。';
+
+  @override
+  String homeEmptyGreeting(String nickname) {
+    return '$nicknameさん';
+  }
+
+  @override
+  String get homeEmptyHint => '月明かりの下の今をポストしてみましょう。\n新しい会話のきっかけになるかもしれません。';
+
+  @override
+  String get homeGateClosed => '今はポストを登録できる時間ではありません。';
+
+  @override
+  String get homeAlbumPass => 'ポストアルバムパス';
+
+  @override
+  String homeAlbumPassRemaining(int days) {
+    return '残り$days日';
+  }
+
+  @override
+  String homeAlbumPassMaxPhotos(int count) {
+    return '最大$count枚まで登録可能';
+  }
+
+  @override
+  String get homeBoost => 'ブースト';
+
+  @override
+  String get homeBoostActive => 'ブースト使用中';
+
+  @override
+  String homeBoostStock(int count) {
+    return '保有$count枚';
+  }
+
+  @override
+  String get homeOneLiner => '今日のひとこと';
+
+  @override
+  String get homeOneLinerHint => '今日の気分を一言で残してみましょう';
+
+  @override
+  String get homeOneLinerEmpty => '今日のひとことを入力してください。';
+
+  @override
+  String get homeOneLinerWrite => '作成';
+
+  @override
+  String get homeShare => 'ポストを共有する';
+
+  @override
+  String get homeShareAgain => '共有済み · もう一度共有';
+
+  @override
+  String get homeShared => 'ポストを共有しました 🌙';
 }
