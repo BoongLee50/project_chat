@@ -37,4 +37,17 @@ public interface SchedulerMapper {
      * 하루 한 마디(one_liner)가 이 row에 있고, 다음 영업일 첫 진입 때 값을 이어받기 때문이다.
      */
     int deleteStalePosts(@Param("sessionDate") LocalDate sessionDate);
+
+    // ── 메시지 보관 만료(FIFO) ──
+
+    /**
+     * 보관 기간이 지난 메시지 id를 오래된 순으로 [limit]개까지. 방 타입별로 임계 시각이 다르다.
+     *
+     * <p>다중 테이블 DELETE는 MariaDB에서 LIMIT을 못 쓰므로 id를 먼저 뽑아 나눠 지운다.
+     */
+    List<String> selectExpiredMessageIds(@Param("matchBefore") LocalDateTime matchBefore,
+                                          @Param("friendBefore") LocalDateTime friendBefore,
+                                          @Param("limit") int limit);
+
+    int deleteMessagesByIds(@Param("ids") List<String> ids);
 }

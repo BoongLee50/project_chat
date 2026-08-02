@@ -61,4 +61,22 @@
           AND p.session_date &lt; t.latest
     </delete>
 
+    <!--
+      보관 만료 메시지. 판정 기준은 **방 타입** — 친구를 끊어 ENDED가 된 방도 type은 FRIEND라
+      1년 기준을 그대로 적용받는다. 오래된 순으로 뽑아 FIFO로 지운다(02 §1.5).
+    -->
+    <select id="selectExpiredMessageIds" resultType="string">
+        SELECT m.id
+        FROM chat_messages m
+                 JOIN chat_rooms r ON r.id = m.room_id
+        WHERE m.created_at &lt; CASE WHEN r.type = 'FRIEND' THEN #{friendBefore} ELSE #{matchBefore} END
+        ORDER BY m.created_at
+        LIMIT #{limit}
+    </select>
+
+    <delete id="deleteMessagesByIds">
+        DELETE FROM chat_messages WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">#{id}</foreach>
+    </delete>
+
 </mapper>

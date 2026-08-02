@@ -116,13 +116,13 @@ presence/
 | 06:00 | 매칭 대화방 일괄 종료 + `ROOM_STATE(ended)` · `SYSTEM_CLOSE` 브로드캐스트. **친구 방(`type=FRIEND`)은 제외** | ✅ |
 | 06:05 | 지난 영업일 `post_photos`(+Storage 파일) / `post_stats` / `feed_skips` / `daily_usage` 삭제, `posts`는 **사용자별 최신 1건만 남기고** 삭제 | ✅ |
 | 5분 | presence 인메모리 만료 항목 청소(Redis 비활성 시 필요 — Redis면 TTL이 처리) | ✅ |
-| 상시 | `chat_messages` 30일 초과분 FIFO 삭제 | ⏸ 2차(친구 방 적용 여부 미결) |
-| 상시 | 만료된 `boost_activations`/`user_entitlements` 정리, 구독 갱신·만료 | ⏸ 2차(BM 테이블 미생성) |
+| 06:20 | `chat_messages` 보관 만료 FIFO 삭제 — **방 타입 기준**(MATCH 30일 / FRIEND 1년, 끊은 친구 방도 FRIEND 기준) | ✅ |
+| 상시 | 만료된 `boost_activations`/`user_entitlements` 정리, 구독 갱신·만료 | ⏸ BM 테이블 미생성 |
 
 **왜 posts를 다 지우지 않는가**: 하루 한 마디(`posts.one_liner`)가 이 row에 있고 다음 영업일 첫 진입 때 값을 이어받는다. 전부 지우면 "하루 한 마디는 유지"(기획서 3-1)가 깨지므로 **사용자별 최신 1건은 남긴다**.
 
 **개발용 수동 실행**: `app.scheduler.dev-trigger-enabled=true`(local 프로필만)일 때
-`POST /internal/scheduler/gate-close`, `POST /internal/scheduler/daily-cleanup`으로 06시를 기다리지 않고 확인할 수 있다.
+`POST /internal/scheduler/{gate-close, daily-cleanup, purge-messages}`로 06시를 기다리지 않고 확인할 수 있다.
 
 ---
 

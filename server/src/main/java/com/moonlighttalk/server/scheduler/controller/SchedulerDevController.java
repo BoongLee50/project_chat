@@ -36,4 +36,10 @@ public class SchedulerDevController {
         schedulerService.cleanupPreviousSessions();
         return Map.of("ok", true);
     }
+
+    /** 보관 만료 메시지 삭제(매칭 30일 / 친구 1년). */
+    @PostMapping("/internal/scheduler/purge-messages")
+    public Map<String, Object> purgeMessages(@CurrentUserId String userId) {
+        return Map.of("deleted", schedulerService.purgeExpiredMessages());
+    }
 }

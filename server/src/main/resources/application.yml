@@ -27,6 +27,12 @@ app:
   gate:
     open-hour: 17
     close-hour: 6
+  chat:
+    # 메시지 보관 기간. 방 타입 기준으로 판정한다(친구를 끊어 ENDED가 된 방도 FRIEND 기준).
+    retention-days: 30
+    retention-days-friend: 365
+    # 한 번에 지울 행 수. 큰 트랜잭션으로 테이블을 오래 잠그지 않도록 나눠서 지운다.
+    retention-batch-size: 1000
   scheduler:
     # ⚠️ gate-open/close cron은 app.gate.open-hour/close-hour와 같은 값이어야 한다.
     gate-open-cron: "0 0 17 * * *"

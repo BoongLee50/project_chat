@@ -9,6 +9,7 @@ import com.moonlighttalk.server.common.storage.FileStorageService;
 import com.moonlighttalk.server.scheduler.mapper.SchedulerMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,15 +34,28 @@ public class SchedulerService {
     private final SocketRegistry socketRegistry;
     private final FileStorageService fileStorageService;
     private final GateService gateService;
+    private final MessageRetentionPurger messageRetentionPurger;
+
+    private final int retentionDays;
+    private final int retentionDaysFriend;
+    private final int retentionBatchSize;
 
     public SchedulerService(SchedulerMapper schedulerMapper,
                              SocketRegistry socketRegistry,
                              FileStorageService fileStorageService,
-                             GateService gateService) {
+                             GateService gateService,
+                             MessageRetentionPurger messageRetentionPurger,
+                             @Value("${app.chat.retention-days:30}") int retentionDays,
+                             @Value("${app.chat.retention-days-friend:365}") int retentionDaysFriend,
+                             @Value("${app.chat.retention-batch-size:1000}") int retentionBatchSize) {
         this.schedulerMapper = schedulerMapper;
         this.socketRegistry = socketRegistry;
         this.fileStorageService = fileStorageService;
         this.gateService = gateService;
+        this.messageRetentionPurger = messageRetentionPurger;
+        this.retentionDays = retentionDays;
+        this.retentionDaysFriend = retentionDaysFriend;
+        this.retentionBatchSize = retentionBatchSize;
     }
 
     /**
@@ -103,5 +117,30 @@ public class SchedulerService {
 
         log.info("[배치] 지난 영업일 정리(<{}) 사진 {}건(파일 실패 {}) · 스코어 {} · 스킵 {} · 일일사용량 {} · 포스트 {}",
                 today, photos, failed, stats, skips, usage, posts);
+    }
+
+    /**
+     * 보관 기간이 지난 메시지 삭제(FIFO). 기준은 <b>방 타입</b> — 매칭 30일 / 친구 1년.
+     * 친구를 끊어 ENDED가 된 방도 {@code type=FRIEND}라 1년 기준을 그대로 받는다.
+     *
+     * <p>한 트랜잭션에 수백만 행을 담지 않도록 배치 크기만큼 끊어서 지운다
+     * (트랜잭션 단위는 {@link MessageRetentionPurger}).
+     */
+    public int purgeExpiredMessages() {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime matchBefore = now.minusDays(retentionDays);
+        LocalDateTime friendBefore = now.minusDays(retentionDaysFriend);
+
+        int total = 0;
+        while (true) {
+            int deleted = messageRetentionPurger.purgeBatch(matchBefore, friendBefore, retentionBatchSize);
+            total += deleted;
+            if (deleted < retentionBatchSize) {
+                break;
+            }
+        }
+        log.info("[배치] 보관 만료 메시지 삭제 {}건 (매칭 {}일 이전 · 친구 {}일 이전)",
+                total, retentionDays, retentionDaysFriend);
+        return total;
     }
 }

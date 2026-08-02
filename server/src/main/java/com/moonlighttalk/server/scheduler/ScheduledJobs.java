@@ -10,8 +10,8 @@ import org.springframework.stereotype.Component;
  * 배치 트리거. 시각은 KST 고정이며 <b>{@code app.gate.*}와 반드시 같은 값</b>이어야 한다
  * (게이트 판정은 GateService, 배치 시각은 cron이라 두 곳에 있다).
  *
- * <p>1차 범위: 게이트 개방/종료 + 지난 영업일 정리 + 프레즌스 청소.
- * 채팅 30일 FIFO 삭제와 BM(부스트·엔타이틀먼트) 만료 정리는 아직 없다 — 07 문서 §5 참고.
+ * <p>범위: 게이트 개방/종료 + 지난 영업일 정리 + 메시지 보관 만료 + 프레즌스 청소.
+ * BM(부스트·엔타이틀먼트·구독) 만료 정리는 아직 없다 — 07 문서 §5 참고.
  */
 @Component
 public class ScheduledJobs {
@@ -45,5 +45,14 @@ public class ScheduledJobs {
     @Scheduled(cron = "${app.scheduler.daily-cleanup-cron:0 5 6 * * *}", zone = KST)
     public void dailyCleanup() {
         schedulerService.cleanupPreviousSessions();
+    }
+
+    /**
+     * 06:20 보관 만료 메시지 삭제(FIFO). 매칭 30일 / 친구 1년 — 판정은 방 타입 기준.
+     * 정리 배치와 겹치지 않게 뒤로 뺐다.
+     */
+    @Scheduled(cron = "${app.scheduler.message-retention-cron:0 20 6 * * *}", zone = KST)
+    public void purgeExpiredMessages() {
+        schedulerService.purgeExpiredMessages();
     }
 }
