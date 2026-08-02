@@ -6,6 +6,8 @@ import '../../../../app/theme/app_dimens.dart';
 import '../../../../shared/widgets/authed_image.dart';
 import '../../../auth/presentation/providers/session_provider.dart';
 import '../../../friend/presentation/providers/friend_provider.dart';
+import '../../../moderation/presentation/widgets/block_dialog.dart';
+import '../../../moderation/presentation/widgets/report_dialog.dart';
 import '../../data/models/chat_models.dart';
 import '../providers/chat_provider.dart';
 
@@ -81,6 +83,35 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       );
   }
 
+  /// 신고·차단은 서버가 대화방을 종료시키므로, 성공하면 화면을 닫고 목록으로 돌아간다.
+  Future<void> _report() async {
+    final done = await ReportDialog.show(
+      context,
+      targetUserId: widget.room.partnerId,
+      targetNickname: widget.room.partnerNickname,
+    );
+    if (done != true || !mounted) return;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(const SnackBar(content: Text('신고가 접수됐어요. 대화가 종료됩니다.')));
+    Navigator.of(context).pop();
+  }
+
+  Future<void> _block() async {
+    final done = await BlockDialog.show(
+      context,
+      targetUserId: widget.room.partnerId,
+      targetNickname: widget.room.partnerNickname,
+    );
+    if (done != true || !mounted) return;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(content: Text('${widget.room.partnerNickname}님을 차단했어요.')),
+      );
+    Navigator.of(context).pop();
+  }
+
   Future<void> _leave() async {
     final error = await ref
         .read(chatActionsProvider)
@@ -110,6 +141,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         room: widget.room,
         onLeave: _leave,
         onRequestFriend: _requestFriend,
+        onReport: _report,
+        onBlock: _block,
       ),
       body: SafeArea(
         top: false,
@@ -155,11 +188,15 @@ class _ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
     required this.room,
     required this.onLeave,
     required this.onRequestFriend,
+    required this.onReport,
+    required this.onBlock,
   });
 
   final ChatRoomSummary room;
   final VoidCallback onLeave;
   final VoidCallback onRequestFriend;
+  final VoidCallback onReport;
+  final VoidCallback onBlock;
 
   @override
   Size get preferredSize => const Size.fromHeight(64);
@@ -226,6 +263,8 @@ class _ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
           onSelected: (value) {
             if (value == 'leave') onLeave();
             if (value == 'friend') onRequestFriend();
+            if (value == 'report') onReport();
+            if (value == 'block') onBlock();
           },
           itemBuilder: (context) => [
             // 이미 친구인 방(FRIEND)에서는 요청 항목을 숨긴다.

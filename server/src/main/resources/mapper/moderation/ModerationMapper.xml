@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.moonlighttalk.server.moderation.mapper.ModerationMapper">
+
+    <insert id="insertReport">
+        INSERT INTO reports (id, reporter_id, target_id, reason, created_at)
+        VALUES (#{id}, #{reporterId}, #{targetId}, #{reason}, NOW())
+    </insert>
+
+    <!--
+      같은 상대를 다시 차단해도 실패로 만들지 않는다. 이미 차단된 상태가 목적이므로
+      IGNORE로 조용히 통과시키고, 호출부는 부수효과(친구 삭제·방 종료)만 다시 보장한다.
+    -->
+    <insert id="insertBlock">
+        INSERT IGNORE INTO blocks (id, blocker_id, blocked_id, created_at)
+        VALUES (#{id}, #{blockerId}, #{blockedId}, NOW())
+    </insert>
+
+    <select id="existsBlock" resultType="boolean">
+        SELECT EXISTS (SELECT 1 FROM blocks
+                       WHERE blocker_id = #{blockerId} AND blocked_id = #{blockedId})
+    </select>
+
+</mapper>

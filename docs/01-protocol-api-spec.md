@@ -112,10 +112,15 @@
 | POST | `/friends/requests/:id:cancel` | 보낸 요청 취소 | 18 |
 | DELETE | `/friends/:id` | 친구 삭제 — 상시 대화방도 함께 종료 | 19 |
 | GET | `/friends/:id/today-post` | 친구 오늘의 포스트 팝업 **(미구현)** | 19 |
-| POST | `/reports` | 신고(targetUserId, reason) | 16 |
-| POST | `/blocks` | 차단(targetUserId) | 17 |
+| POST | `/reports` | 신고(targetUserId, **reason 코드**, detail?) | 16 |
+| POST | `/blocks` | 차단(targetUserId) — 이미 차단한 상대여도 200(멱등) | 17 |
 | GET | `/luna/balance` | 보유 루나 | 6 |
 | POST | `/luna/charge` | 루나 충전(결제) | 6 |
+
+**신고 사유 코드**(화면 16): `ILLEGAL_AD`(불법 광고 및 홍보) · `ROMANCE_SCAM`(로맨스 스캠) · `SEXUAL_DEEPFAKE`(허위 합성/편집한 성인물) · `ABUSIVE`(욕설 및 비매너) · `COERCION`(강요 및 협박) · `PRIVACY_LEAK`(개인정보 유출) · `OTHER`(기타 — `detail` 필수).
+화면 문구가 바뀌어도 저장값이 흔들리지 않도록 **코드로 보낸다**. `OTHER`면 `reason: detail` 형태로 합쳐 저장.
+
+**신고·차단 부수효과(둘 다 동일)**: 친구 관계 즉시 해제 + 살아있는 대화방 종료(MATCH·FRIEND 모두) + 상대에게 `FRIEND_STATE(removed)` · `ROOM_STATE(ended)` 소켓 통지. 이후 그 상대에게는 대화 신청·친구 요청이 막힌다. 신고 사실 자체는 상대에게 알리지 않는다.
 
 친구는 **양방향(상호 동의)** — 요청→수락 시 친구가 되며 **24시간 상시 대화방**이 생성됨(야간 게이트/30분 삭제 예외, [02 §1.6](02-db-schema.md)). 최대 친구 수는 설정값(`app.friend.max-count` 20 / `max-count-premium` 30 — 기획서 20 vs 30 모순이라 확정 전까지 잠정). 신고·차단 시 상대는 내 프로필 열람 불가, 친구·대화방 즉시 삭제.
 
