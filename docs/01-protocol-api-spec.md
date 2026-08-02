@@ -111,7 +111,7 @@
 | POST | `/friends/requests/:id:reject` | 친구 요청 거절(행 삭제 — 다시 요청 가능) | 18 |
 | POST | `/friends/requests/:id:cancel` | 보낸 요청 취소 | 18 |
 | DELETE | `/friends/:id` | 친구 삭제 — 상시 대화방도 함께 종료 | 19 |
-| GET | `/friends/:id/today-post` | 친구 오늘의 포스트 팝업 **(미구현)** | 19 |
+| GET | `/friends/:id/today-post` | 친구 오늘의 포스트 팝업. `:id`는 **friendshipId**(당사자만 조회 가능). 공유 전이면 404 | 19 |
 | POST | `/reports` | 신고(targetUserId, **reason 코드**, detail?) | 16 |
 | POST | `/blocks` | 차단(targetUserId) — 이미 차단한 상대여도 200(멱등) | 17 |
 | GET | `/luna/balance` | 보유 루나 | 6 |

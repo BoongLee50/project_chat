@@ -13,12 +13,15 @@ import com.moonlighttalk.server.common.response.ErrorCode;
 import com.moonlighttalk.server.common.storage.FileStorageService;
 import com.moonlighttalk.server.friend.dto.AcceptFriendResponse;
 import com.moonlighttalk.server.friend.dto.FriendDto;
+import com.moonlighttalk.server.friend.dto.FriendPostDto;
 import com.moonlighttalk.server.friend.dto.FriendRequestDto;
+import com.moonlighttalk.server.friend.entity.FriendPost;
 import com.moonlighttalk.server.friend.entity.FriendSummary;
 import com.moonlighttalk.server.friend.entity.Friendship;
 import com.moonlighttalk.server.friend.mapper.FriendMapper;
 import com.moonlighttalk.server.garden.mapper.GardenMapper;
 import com.moonlighttalk.server.presence.PresenceService;
+import com.moonlighttalk.server.store.service.EntitlementService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -49,6 +52,7 @@ public class FriendService {
     private final GardenMapper gardenMapper;
     private final GateService gateService;
     private final PresenceService presenceService;
+    private final EntitlementService entitlementService;
     private final SocketRegistry socketRegistry;
     private final FileStorageService fileStorageService;
 
@@ -65,6 +69,7 @@ public class FriendService {
                           GardenMapper gardenMapper,
                           GateService gateService,
                           PresenceService presenceService,
+                          EntitlementService entitlementService,
                           SocketRegistry socketRegistry,
                           FileStorageService fileStorageService,
                           @Value("${app.friend.max-count:20}") int maxFriends,
@@ -75,6 +80,7 @@ public class FriendService {
         this.gardenMapper = gardenMapper;
         this.gateService = gateService;
         this.presenceService = presenceService;
+        this.entitlementService = entitlementService;
         this.socketRegistry = socketRegistry;
         this.fileStorageService = fileStorageService;
         this.maxFriends = maxFriends;
@@ -207,6 +213,48 @@ public class FriendService {
 
     public List<FriendRequestDto> sentRequests(String userId) {
         return friendMapper.selectSentRequests(userId).stream().map(this::toRequestDto).toList();
+    }
+
+    /**
+     * 친구의 오늘 포스트. (기획서 화면 19)
+     *
+     * <p><b>친구만</b> 볼 수 있다 — friendshipId로 조회해 내가 그 관계의 당사자인지 확인하므로
+     * 남의 포스트를 임의로 들여다볼 수 없다.
+     */
+    public FriendPostDto todayPost(String userId, String friendshipId) {
+        Friendship friendship = requireFriendship(friendshipId);
+        if (!friendship.hasMember(userId)) {
+            throw new ApiException(ErrorCode.VALIDATION_FAILED, HttpStatus.FORBIDDEN,
+                    "내 친구 관계가 아니에요.");
+        }
+        if (!"ACCEPTED".equals(friendship.getStatus())) {
+            throw new ApiException(ErrorCode.VALIDATION_FAILED, HttpStatus.CONFLICT,
+                    "아직 친구가 아니에요.");
+        }
+
+        String friendId = friendship.otherOf(userId);
+        FriendPost post = friendMapper.selectTodayPost(friendId, gateService.currentSessionDate());
+        if (post == null) {
+            throw new ApiException(ErrorCode.NOT_FOUND, HttpStatus.NOT_FOUND,
+                    "친구가 아직 오늘의 포스트를 공유하지 않았어요.");
+        }
+
+        List<String> photoUrls = gardenMapper.selectPhotoKeys(post.getPostId()).stream()
+                .map(fileStorageService::issueDownloadUrl)
+                .toList();
+
+        return new FriendPostDto(
+                post.getUserId(),
+                post.getNickname(),
+                age(post.getBirthYear()),
+                post.getCountry(),
+                entitlementService.boostedUserIds().contains(friendId),
+                presenceService.isOnline(friendId),
+                photoUrls,
+                post.getOneLiner(),
+                post.getLikes(),
+                gardenMapper.countComments(post.getPostId()),
+                post.getPublishedAt());
     }
 
     /** 친구 삭제 — 관계를 지우고 상시 대화방도 닫는다. */

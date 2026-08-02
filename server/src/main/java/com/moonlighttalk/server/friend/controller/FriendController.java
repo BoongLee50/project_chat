@@ -4,6 +4,7 @@ import com.moonlighttalk.server.common.security.CurrentUserId;
 import com.moonlighttalk.server.friend.dto.AcceptFriendResponse;
 import com.moonlighttalk.server.friend.dto.CreateFriendRequestBody;
 import com.moonlighttalk.server.friend.dto.FriendDto;
+import com.moonlighttalk.server.friend.dto.FriendPostDto;
 import com.moonlighttalk.server.friend.dto.FriendRequestDto;
 import com.moonlighttalk.server.friend.service.FriendService;
 import jakarta.validation.Valid;
@@ -63,6 +64,13 @@ public class FriendController {
     @PostMapping("/friends/requests/{friendshipId}:cancel")
     public void cancel(@CurrentUserId String userId, @PathVariable String friendshipId) {
         friendService.cancel(userId, friendshipId);
+    }
+
+    /** 친구 오늘의 포스트 팝업. 친구 관계 당사자만 볼 수 있다. */
+    @GetMapping("/friends/{friendshipId}/today-post")
+    public FriendPostDto todayPost(@CurrentUserId String userId,
+                                    @PathVariable String friendshipId) {
+        return friendService.todayPost(userId, friendshipId);
     }
 
     @DeleteMapping("/friends/{friendshipId}")

@@ -1,3 +1,5 @@
+import '../../../../core/util/server_time.dart';
+
 // 친구 DTO. 친구는 양방향(상호 동의) — 요청 후 상대 수락으로 성립한다.
 // (docs/01-protocol-api-spec.md §1.7, docs/02-db-schema.md §1.6)
 
@@ -136,4 +138,58 @@ class FriendFilter {
 
   @override
   int get hashCode => Object.hash(gender, ageMin, ageMax, country);
+}
+
+/// 친구의 오늘 포스트. (기획서 화면 19, docs/01 §1.7)
+class FriendPost {
+  const FriendPost({
+    required this.userId,
+    required this.nickname,
+    required this.pick,
+    required this.online,
+    required this.photoUrls,
+    required this.likes,
+    required this.comments,
+    this.age,
+    this.country,
+    this.oneLiner,
+    this.publishedAt,
+  });
+
+  final String userId;
+  final String nickname;
+
+  /// 지금 부스트를 켜 둔 상태(피드의 PICK 마크와 같은 기준).
+  final bool pick;
+
+  final bool online;
+  final List<String> photoUrls;
+  final int likes;
+  final int comments;
+  final int? age;
+  final String? country;
+  final String? oneLiner;
+  final DateTime? publishedAt;
+
+  String get flag => switch (country) {
+    'KR' => '🇰🇷',
+    'JP' => '🇯🇵',
+    _ => '',
+  };
+
+  factory FriendPost.fromJson(Map<String, dynamic> json) => FriendPost(
+    userId: json['userId'] as String? ?? '',
+    nickname: json['nickname'] as String? ?? '',
+    pick: json['pick'] as bool? ?? false,
+    online: json['online'] as bool? ?? false,
+    photoUrls: (json['photoUrls'] as List? ?? const [])
+        .map((e) => e as String)
+        .toList(),
+    likes: json['likes'] as int? ?? 0,
+    comments: json['comments'] as int? ?? 0,
+    age: json['age'] as int?,
+    country: json['country'] as String?,
+    oneLiner: json['oneLiner'] as String?,
+    publishedAt: parseServerTime(json['publishedAt']),
+  );
 }

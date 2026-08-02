@@ -45,4 +45,10 @@ class FriendApi {
 
   Future<void> remove(String friendshipId) =>
       _client.delete('/friends/$friendshipId');
+
+  /// 친구의 오늘 포스트. 아직 공유하지 않았으면 404가 온다.
+  Future<FriendPost> todayPost(String friendshipId) async {
+    final data = await _client.get('/friends/$friendshipId/today-post');
+    return FriendPost.fromJson(Map<String, dynamic>.from(data as Map));
+  }
 }

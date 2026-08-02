@@ -98,6 +98,36 @@
         ORDER BY f.created_at DESC
     </select>
 
+    <resultMap id="FriendPostResultMap" type="com.moonlighttalk.server.friend.entity.FriendPost">
+        <id property="postId" column="post_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="nickname" column="nickname"/>
+        <result property="birthYear" column="birth_year"/>
+        <result property="country" column="country"/>
+        <result property="oneLiner" column="one_liner"/>
+        <result property="publishedAt" column="published_at"/>
+        <result property="likes" column="likes"/>
+    </resultMap>
+
+    <!-- 공유한 포스트만 보여준다(published_at IS NULL이면 아직 작성 중). -->
+    <select id="selectTodayPost" resultMap="FriendPostResultMap">
+        SELECT p.id           AS post_id,
+               u.id           AS user_id,
+               u.nickname,
+               u.birth_year,
+               u.country,
+               p.one_liner,
+               p.published_at,
+               COALESCE(s.likes, 0) AS likes
+        FROM posts p
+                 JOIN users u ON u.id = p.user_id
+                 LEFT JOIN post_stats s
+                           ON s.user_id = p.user_id AND s.session_date = p.session_date
+        WHERE p.user_id = #{userId}
+          AND p.session_date = #{sessionDate}
+          AND p.published_at IS NOT NULL
+    </select>
+
     <select id="countFriends" resultType="int">
         SELECT COUNT(*) FROM friendships
         WHERE status = 'ACCEPTED' AND (requester_id = #{userId} OR addressee_id = #{userId})

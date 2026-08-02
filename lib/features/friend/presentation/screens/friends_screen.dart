@@ -8,6 +8,7 @@ import '../../../chat/data/models/chat_models.dart';
 import '../../../chat/presentation/screens/chat_screen.dart';
 import '../../data/models/friend_models.dart';
 import '../providers/friend_provider.dart';
+import '../widgets/friend_post_sheet.dart';
 
 /// 친구 목록. 메인 셸의 '친구' 탭 본문. (기획서 6장)
 ///
@@ -187,7 +188,7 @@ class FriendsScreen extends ConsumerWidget {
   }
 }
 
-/// 친구 카드 — 누르면 상시 대화방으로, 길게 누르면 친구 삭제.
+/// 친구 카드 — 누르면 오늘의 포스트 팝업, 길게 누르면 친구 삭제.
 class _FriendCard extends ConsumerWidget {
   const _FriendCard({required this.friend});
 
@@ -263,7 +264,13 @@ class _FriendCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return InkWell(
-      onTap: () => _openRoom(context),
+      // 카드를 누르면 오늘의 포스트를 먼저 보여준다(기획서 화면 19).
+      // 대화방은 그 안의 메시지 버튼으로 간다.
+      onTap: () => FriendPostSheet.show(
+        context,
+        friend: friend,
+        onOpenChat: () => _openRoom(context),
+      ),
       onLongPress: () => _confirmRemove(context, ref),
       borderRadius: BorderRadius.circular(AppDimens.radiusMd),
       child: Column(

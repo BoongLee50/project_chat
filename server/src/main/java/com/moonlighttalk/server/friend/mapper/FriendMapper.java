@@ -1,10 +1,12 @@
 package com.moonlighttalk.server.friend.mapper;
 
+import com.moonlighttalk.server.friend.entity.FriendPost;
 import com.moonlighttalk.server.friend.entity.FriendSummary;
 import com.moonlighttalk.server.friend.entity.Friendship;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -38,4 +40,8 @@ public interface FriendMapper {
 
     /** 성립된 친구 수(최대 친구 수 제한 검사용). */
     int countFriends(@Param("userId") String userId);
+
+    /** 친구의 오늘 포스트(공유한 것만). 없으면 null. */
+    FriendPost selectTodayPost(@Param("userId") String userId,
+                                @Param("sessionDate") LocalDate sessionDate);
 }
