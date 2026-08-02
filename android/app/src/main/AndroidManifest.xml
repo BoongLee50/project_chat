@@ -1,4 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 서버 통신에 필요. Flutter 템플릿은 이 권한을 debug/profile 매니페스트에만 두기 때문에,
+         여기에 없으면 **릴리즈 빌드만 네트워크가 전부 막힌다**(디버그로는 잘 되어 드러나지 않음). -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+
     <application
         android:label="project_chat"
         android:name="${applicationName}"

@@ -90,6 +90,48 @@ flutter emulators --launch Pixel_10          # 두 번째 → emulator-5556
 - 클라: 소셜 버튼을 누르면 `dev-line` / `dev-kakao` / `dev-google` 토큰을 전송 → **버튼마다 다른 테스트 계정**이 된다.
 - 계정 초기화하려면 DB에서 해당 `users` row 삭제(또는 DB 재생성 후 서버 재기동).
 
+### 2-4. 낮에 개발할 때 — 게이트/배치/결제 우회
+운영시간은 17~06시라 **낮에는 서버가 채팅·가든·포스트를 막는다**(서버 강제, 함정 #18).
+낮에 기능을 확인하려면 게이트를 열고 띄운다.
+```bash
+cd server && JAVA_HOME="<jdk17>" ./gradlew bootRun --args='--app.gate.open-hour=0'
+```
+> `isOpen = hour >= openHour || hour < closeHour` 이므로 `open-hour=0`이면 항상 열린다.
+> 실제 운영시간 동작을 볼 땐 이 옵션 없이 띄울 것.
+
+**배치를 기다리지 않고 실행**(local 프로필에서만 열림 — `app.scheduler.dev-trigger-enabled`)
+```
+POST /internal/scheduler/gate-close       # 06시 종료 처리(매칭방 종료 + SYSTEM_CLOSE)
+POST /internal/scheduler/daily-cleanup    # 지난 영업일 정리
+POST /internal/scheduler/purge-messages   # 메시지 보관 만료 삭제
+POST /internal/scheduler/expire-benefits  # 구독·엔티틀먼트·부스트 만료 정리
+```
+
+**결제 없이 상점 테스트**(`app.store.mock-purchase-enabled: true`, local 전용)
+- 영수증 토큰이 **`dev-`로 시작하면 통과**한다(`MockReceiptVerifier`). 앱의 충전/구독 버튼이 이미 이 토큰을 보낸다.
+- 대화 신청 무료 횟수가 소진돼 막히면: `DELETE FROM daily_usage WHERE kind='CHAT_REQUEST';`
+
+### 2-5. 실기기(폰)에서 확인하기
+에뮬레이터 기본값 `10.0.2.2`는 **실기기에서 의미가 없다**. 두 방법 중 하나를 쓴다.
+
+**① USB + adb reverse (추천 — 방화벽·Wi-Fi 불필요)**
+```bash
+adb -s <폰시리얼> reverse tcp:8080 tcp:8080
+flutter build apk --debug --dart-define=API_BASE_URL=http://localhost:8080
+```
+폰 2대를 꽂고 각각 걸면 **실기기끼리 실시간 채팅**까지 된다. IP가 바뀌어도 무관.
+
+**② 같은 Wi-Fi + PC의 LAN IP**
+```bash
+flutter build apk --debug --dart-define=API_BASE_URL=http://<PC의 LAN IP>:8080
+```
+- 서버는 이미 `0.0.0.0:8080`에 바인딩되어 있다.
+- ⚠️ **Windows 방화벽 인바운드 8080을 열어야 한다**(기본 차단). 관리자 PowerShell:
+  `New-NetFirewallRule -DisplayName "달빛톡 개발서버 8080" -Direction Inbound -LocalPort 8080 -Protocol TCP -Action Allow -Profile Private`
+- PC 재부팅 시 IP가 바뀔 수 있다.
+
+> 어느 쪽이든 **PC에서 MariaDB + 서버가 떠 있어야** 한다. 실기기에서만 제대로 보이는 것: 실제 카메라 촬영, 국기 이모지 실물, 노치/둥근 모서리 레이아웃, 스크롤 체감.
+
 ---
 
 ## 3. 반드시 알아야 할 함정 (실제로 겪은 것들)
@@ -113,10 +155,39 @@ flutter emulators --launch Pixel_10          # 두 번째 → emulator-5556
 | 15 | **에뮬 I/O 포화 시 `screencap`·IME가 D상태로 wedge** | 화면이 갱신을 멈추고 `input text`가 조용히 무시됨(`mBoundToMethod=false`). 스냅샷 재시작으론 안 풀림 → **콜드 부팅** `emulator -avd Pixel_10 -no-snapshot-load`. 스크린샷은 기기 디스크에 쓰지 말고 `adb exec-out screencap -p`를 **cmd 리다이렉트**로 받을 것(PowerShell `>`는 바이너리가 깨짐) |
 | 16 | **Windows 개발자 모드 OFF면 `flutter pub get` 실패** | 네이티브 플러그인이 심볼릭 링크를 요구("Building with plugins requires symlink support") → 기기당 1회 `start ms-settings:developers`에서 켤 것 |
 | 17 | **빈 컬렉션에 `clamp(0, length - 1)`** | 비면 상한이 `-1`이 되어 `ArgumentError`("Invalid argument(s): 0"). 홈 화면이 사진 0장일 때 깨졌던 원인 — 길이 의존 clamp는 **비어있는지 먼저 분기**할 것 |
+| 18 | **클라가 화면을 가리는 건 규칙이 아니다** | API를 직접 호출하면 그만이다. 실제로 chat에 서버측 게이트가 빠져 있어 **낮에도 대화방이 만들어졌다**. 시간·권한 제한이 필요한 새 API에는 **반드시 서버 검사**를 함께 넣을 것(`requireGateOpen()` 패턴) |
+| 19 | **릴리즈 APK에 `INTERNET` 권한이 없다** | Flutter 템플릿이 debug/profile 매니페스트에만 넣어 준다 → **릴리즈만 네트워크가 전부 막히고 디버그로는 멀쩡**해서 안 드러난다. `android/app/src/main/AndroidManifest.xml`에 추가함(2026-08-02). 새 권한도 main에 넣을 것 |
+| 20 | **MariaDB는 다중 테이블 DELETE에 LIMIT 불가** | `DELETE a FROM a JOIN b ... LIMIT n`이 문법 오류. 배치로 나눠 지우려면 **id를 먼저 SELECT한 뒤 `DELETE ... WHERE id IN (...)`** |
+| 21 | **`@Transactional`은 같은 빈 안에서 호출하면 안 먹는다** | 프록시 기반이라 self-invocation은 우회된다. 반복 호출하는 쪽과 트랜잭션 단위를 **다른 빈으로 분리**할 것(`MessageRetentionPurger` 사례) |
 
 ---
 
 ## 4. 세션 로그
+
+> **2026-08-02 하루 요약** (다른 기기에서 따라올 때 이것만 봐도 됨)
+> 이날 커밋 `0b928b0` → `1271318` 사이에 **남아 있던 서버 도메인과 화면을 모두 끝냈다.**
+>
+> | 순서 | 한 일 | 커밋 |
+> |---|---|---|
+> | 1 | 문서 체크박스 정리(실제보다 뒤처진 항목 정정) + **friend 도메인 + 친구 탭**(V5 양방향) | `57411f6` |
+> | 2 | **스케줄러 1차** — 게이트 개폐 · 지난 영업일 정리 · presence 청소 | `b9bd426` |
+> | 3 | **채팅 보관 정책 확정 + 메시지 FIFO 삭제**(매칭 30일 / 친구 1년) | `b5f2e08` |
+> | 4 | **채팅 시간 게이트 서버 강제**(친구 방은 24시간 예외) | `8143c52` |
+> | 5 | **store(BM) 도메인 + V6** — 상점·구독·엔티틀먼트·부스트 | `a574706` |
+> | 6 | 미사용 더미 리소스 정리 + **리소스 체크리스트(08)** 신설 | `2bb3d4c` |
+> | 7 | **BM 화면 6종(25~30)** + 서버 시각 파싱 버그 수정 | `9cf3dec` |
+> | 8 | **포스트 등록창 BM 연동 + 홈 PASS** | `1271318` |
+>
+> **이날 확정된 정책**: 채팅 보관 = 방 타입 기준(매칭 30일 / 친구 1년, 끊은 친구 방도 FRIEND 기준) ·
+> `ended_at+30분`은 삭제가 아니라 표시 규칙(현재 미구현) · 운영시간은 서버가 강제.
+>
+> **이날 잡은 큰 버그 3건**: 채팅 시간 게이트 누락(낮에도 방 생성됨) ·
+> 서버 시각을 기기 로컬로 해석해 9시간 밀림(채팅 시각도 영향) · 릴리즈 APK 인터넷 권한 누락.
+
+### 2026-08-02(10) — 릴리즈 APK 인터넷 권한 수정 + 인수인계 문서 정리
+- **`INTERNET` 권한을 main 매니페스트에 추가**. Flutter 템플릿이 debug/profile에만 넣어 주기 때문에, 그대로 두면 **릴리즈 빌드만 네트워크가 전부 막힌다**(디버그로는 멀쩡해서 안 드러남). 릴리즈 APK를 실제로 빌드해 병합 매니페스트에 권한이 들어간 것까지 확인했다.
+- 인수인계 문서 보강: **§2-4 낮에 개발할 때**(게이트 우회·배치 수동 실행·결제 mock), **§2-5 실기기에서 확인하기**(USB adb reverse / LAN IP + 방화벽) 절 신설.
+- 함정 #18~21 추가 — 서버측 검사의 필요성, 릴리즈 인터넷 권한, MariaDB 다중테이블 DELETE + LIMIT 불가, `@Transactional` self-invocation.
 
 ### 2026-08-02(9) — 포스트 등록창 BM 연동 + 홈 PASS 표시
 **한 일**(기획서 화면 6 기준)

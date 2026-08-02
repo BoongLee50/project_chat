@@ -1,6 +1,7 @@
 # 달빛톡 — 진행 현황 & 로드맵
 
-> 최종 업데이트: 2026-07-30 (기획 **Plan_2** 반영 — BM 추가 · 운영시간 17~06 · 친구 양방향).
+> 최종 업데이트: **2026-08-02** — 서버 전 도메인(V6) + 화면 17개(기본 11 + BM 6) 구현 완료.
+> 이날의 작업 순서와 확정 정책은 [07 작업로그 §4 하루 요약](07-work-log.md)에 정리돼 있다.
 > 이 문서는 "어디까지 했고 / 무엇이 남았고 / 무엇을 정해야 하는지"의 핸드오프용 요약이다.
 > 설계 상세는 [01 프로토콜/API](01-protocol-api-spec.md) · [02 DB 스키마](02-db-schema.md) · [03 Flutter 구조](03-flutter-structure.md) · [05 서버 구조](05-server-structure.md) · [06 개발환경 세팅](06-dev-environment-setup.md) 참고.
 
@@ -88,6 +89,7 @@
 
 ### 배포 준비
 - [ ] 소셜 3사 개발자 앱 등록 + 키 발급 (LINE · KAKAO · GOOGLE)
+- [x] **릴리즈 APK `INTERNET` 권한** (2026-08-02) — Flutter 템플릿이 debug/profile에만 넣어 줘서 릴리즈만 통신이 막혔다. main 매니페스트에 추가
 - [ ] 정식 서명 키스토어 (Play Store 업로드용)
 - [ ] **인앱결제(IAP)** — Google Play 개발자 계정($25 1회) / Apple Developer($99·년), 스토어 콘솔에 상품 등록(루나 패키지·프라임 1/6개월)
   - 클라 `in_app_purchase` → 서버 `POST /store/purchases:verify`(영수증 **서버 검증** + purchaseToken 멱등) → 지급
