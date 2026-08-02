@@ -7,6 +7,8 @@ import 'package:image_picker/image_picker.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimens.dart';
 import '../../../../core/providers.dart';
+import '../../../../shared/widgets/gate_notice.dart';
+import '../../../auth/presentation/providers/gate_provider.dart';
 import '../../../auth/presentation/providers/session_provider.dart';
 import '../../../store/data/models/store_models.dart';
 import '../../../store/presentation/providers/store_provider.dart';
@@ -120,6 +122,9 @@ class _PostBody extends ConsumerWidget {
         children: [
           const _TopBar(),
           const SizedBox(height: AppDimens.gapMd),
+          // 운영시간 밖에는 사진 등록·공유만 막힌다(하루 한 마디는 언제든 가능).
+          if (!ref.watch(gateOpenProvider))
+            const GateBanner(message: '지금은 포스트를 등록할 수 있는 시간이 아니에요.'),
           _InfoCards(post: post),
           const SizedBox(height: AppDimens.gapMd),
           _PostPhotoCard(post: post),

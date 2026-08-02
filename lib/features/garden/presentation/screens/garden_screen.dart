@@ -3,9 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimens.dart';
+import '../../../../shared/widgets/gate_notice.dart';
 import '../../../../shared/widgets/authed_image.dart';
 import '../../data/models/feed_item.dart';
 import '../../../chat/presentation/providers/chat_provider.dart';
+import '../../../auth/presentation/providers/gate_provider.dart';
 import '../providers/garden_provider.dart';
 import '../widgets/comments_sheet.dart';
 
@@ -18,6 +20,15 @@ class GardenScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // 달빛가든은 운영시간 밖이면 서버가 피드 자체를 막는다(가든 서비스 전 메서드).
+    // 그래서 에러 화면 대신 안내를 보여주고, 열리면 자동으로 되돌아온다.
+    if (!ref.watch(gateOpenProvider)) {
+      return const GateClosedView(
+        title: '달빛가든은 아직 문을 열지 않았어요.',
+        description: '달빛이 찾아오는 오후 5시부터\n다음날 오전 6시까지 이용할 수 있어요.',
+      );
+    }
+
     final feed = ref.watch(feedProvider);
 
     return Padding(

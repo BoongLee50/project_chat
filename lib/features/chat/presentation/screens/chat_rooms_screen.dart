@@ -3,8 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimens.dart';
+import '../../../../shared/widgets/gate_notice.dart';
 import '../../../../shared/widgets/authed_image.dart';
 import '../../data/models/chat_models.dart';
+import '../../../auth/presentation/providers/gate_provider.dart';
 import '../providers/chat_provider.dart';
 import 'chat_screen.dart';
 
@@ -61,6 +63,11 @@ class _ChatRoomsScreenState extends ConsumerState<ChatRoomsScreen> {
                 style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
               ),
               const SizedBox(height: AppDimens.gapMd),
+              // 운영시간 밖에는 매칭 대화만 막힌다 — 친구 방은 24시간이라 그대로 쓸 수 있다.
+              if (!ref.watch(gateOpenProvider))
+                const GateBanner(
+                  message: '지금은 매칭 대화를 나눌 수 있는 시간이 아니에요.\n친구와의 대화는 언제든 가능해요.',
+                ),
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: Row(
