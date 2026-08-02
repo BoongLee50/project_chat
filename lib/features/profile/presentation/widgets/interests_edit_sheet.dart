@@ -5,6 +5,7 @@ import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimens.dart';
 import '../../data/models/profile_catalog.dart';
 import '../providers/profile_edit_provider.dart';
+import '../../../../l10n/app_localizations.dart';
 
 /// 관심사 등록. (기획서 화면 22)
 ///
@@ -45,11 +46,12 @@ class _InterestsEditSheetState extends ConsumerState<InterestsEditSheet> {
       } else if (_selected.length < ProfileCatalog.maxInterests) {
         _selected.add(code);
       } else {
+        final l10n = L10n.of(context);
         ScaffoldMessenger.of(context)
           ..hideCurrentSnackBar()
           ..showSnackBar(
             SnackBar(
-              content: Text('관심사는 최대 ${ProfileCatalog.maxInterests}개까지 선택할 수 있어요.'),
+              content: Text(l10n.interestsEditLimit(ProfileCatalog.maxInterests)),
             ),
           );
       }
@@ -75,6 +77,7 @@ class _InterestsEditSheetState extends ConsumerState<InterestsEditSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     return SizedBox(
       height: MediaQuery.of(context).size.height * 0.88,
       child: Column(
@@ -89,8 +92,8 @@ class _InterestsEditSheetState extends ConsumerState<InterestsEditSheet> {
             ),
           ),
           const SizedBox(height: 16),
-          const Text(
-            '관심사 등록',
+          Text(
+            l10n.interestsEditTitle,
             style: TextStyle(
               color: AppColors.textPrimary,
               fontSize: 20,
@@ -98,8 +101,8 @@ class _InterestsEditSheetState extends ConsumerState<InterestsEditSheet> {
             ),
           ),
           const SizedBox(height: 6),
-          const Text(
-            '요즘 어떤 것에 꽂혀 계시나요? 취향을 공유해 보세요!',
+          Text(
+            l10n.interestsEditSubtitle,
             style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
           ),
           const SizedBox(height: AppDimens.gapMd),
@@ -161,7 +164,7 @@ class _InterestsEditSheetState extends ConsumerState<InterestsEditSheet> {
                         ),
                       )
                     : Text(
-                        '저장하기 (${_selected.length}/${ProfileCatalog.maxInterests})',
+                        l10n.interestsEditSave(_selected.length, ProfileCatalog.maxInterests),
                         style: const TextStyle(
                           fontSize: 17,
                           fontWeight: FontWeight.w800,
@@ -190,6 +193,7 @@ class _SelectedBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     return Padding(
       padding: const EdgeInsets.fromLTRB(
         AppDimens.pagePad,
@@ -203,7 +207,7 @@ class _SelectedBar extends StatelessWidget {
           Row(
             children: [
               Text(
-                '선택된 관심사 (${selected.length}/${ProfileCatalog.maxInterests})',
+                l10n.interestsEditSelected(selected.length, ProfileCatalog.maxInterests),
                 style: const TextStyle(
                   color: AppColors.textPrimary,
                   fontSize: 14,
@@ -215,7 +219,7 @@ class _SelectedBar extends StatelessWidget {
                 TextButton.icon(
                   onPressed: onClear,
                   icon: const Icon(Icons.refresh, size: 16),
-                  label: const Text('전체 초기화'),
+                  label: Text(l10n.interestsEditReset),
                   style: TextButton.styleFrom(
                     foregroundColor: AppColors.textSecondary,
                     padding: EdgeInsets.zero,
@@ -225,8 +229,8 @@ class _SelectedBar extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           if (selected.isEmpty)
-            const Text(
-              '관심사를 선택해 주세요.',
+            Text(
+              l10n.interestsEditEmpty,
               style: TextStyle(color: AppColors.textMuted, fontSize: 13),
             )
           else

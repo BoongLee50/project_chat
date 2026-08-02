@@ -762,6 +762,360 @@ abstract class L10n {
   /// In ko, this message translates to:
   /// **'{nickname}님을 차단했어요.'**
   String chatBlockDone(String nickname);
+
+  /// No description provided for @friendsTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'친구'**
+  String get friendsTitle;
+
+  /// No description provided for @friendsOnlineNowLabel.
+  ///
+  /// In ko, this message translates to:
+  /// **'지금 접속 중 '**
+  String get friendsOnlineNowLabel;
+
+  /// No description provided for @friendsOnlineCount.
+  ///
+  /// In ko, this message translates to:
+  /// **'{count}명'**
+  String friendsOnlineCount(int count);
+
+  /// No description provided for @friendsRequestsReceived.
+  ///
+  /// In ko, this message translates to:
+  /// **'받은 친구 요청 {count}'**
+  String friendsRequestsReceived(int count);
+
+  /// No description provided for @friendsLoadFailed.
+  ///
+  /// In ko, this message translates to:
+  /// **'친구 목록을 불러오지 못했어요.'**
+  String get friendsLoadFailed;
+
+  /// No description provided for @friendsEmpty.
+  ///
+  /// In ko, this message translates to:
+  /// **'아직 친구가 없어요.'**
+  String get friendsEmpty;
+
+  /// No description provided for @friendsEmptyHint.
+  ///
+  /// In ko, this message translates to:
+  /// **'대화를 나눈 상대에게 채팅창 메뉴에서 친구 요청을 보내보세요.'**
+  String get friendsEmptyHint;
+
+  /// No description provided for @friendsAccepted.
+  ///
+  /// In ko, this message translates to:
+  /// **'친구가 되었어요. 이제 언제든 대화할 수 있어요.'**
+  String get friendsAccepted;
+
+  /// No description provided for @friendsRejected.
+  ///
+  /// In ko, this message translates to:
+  /// **'요청을 거절했어요.'**
+  String get friendsRejected;
+
+  /// No description provided for @friendsRequestSent.
+  ///
+  /// In ko, this message translates to:
+  /// **'친구 요청을 보냈어요.'**
+  String get friendsRequestSent;
+
+  /// No description provided for @friendsRoomNotFound.
+  ///
+  /// In ko, this message translates to:
+  /// **'대화방을 찾을 수 없어요. 새로고침해 주세요.'**
+  String get friendsRoomNotFound;
+
+  /// No description provided for @friendsDeleteConfirm.
+  ///
+  /// In ko, this message translates to:
+  /// **'{nickname}님을 친구에서 삭제할까요?'**
+  String friendsDeleteConfirm(String nickname);
+
+  /// No description provided for @friendsDeleteDetail.
+  ///
+  /// In ko, this message translates to:
+  /// **'상시 대화방도 함께 종료돼요.'**
+  String get friendsDeleteDetail;
+
+  /// No description provided for @filterAge.
+  ///
+  /// In ko, this message translates to:
+  /// **'나이'**
+  String get filterAge;
+
+  /// No description provided for @filterCountry.
+  ///
+  /// In ko, this message translates to:
+  /// **'국가'**
+  String get filterCountry;
+
+  /// No description provided for @statusOnline.
+  ///
+  /// In ko, this message translates to:
+  /// **'온라인'**
+  String get statusOnline;
+
+  /// No description provided for @statusOffline.
+  ///
+  /// In ko, this message translates to:
+  /// **'오프라인'**
+  String get statusOffline;
+
+  /// No description provided for @friendPostTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'오늘의 포스트'**
+  String get friendPostTitle;
+
+  /// No description provided for @friendPostLoadFailed.
+  ///
+  /// In ko, this message translates to:
+  /// **'포스트를 불러오지 못했어요.'**
+  String get friendPostLoadFailed;
+
+  /// No description provided for @friendPostMessage.
+  ///
+  /// In ko, this message translates to:
+  /// **'메시지'**
+  String get friendPostMessage;
+
+  /// No description provided for @friendPostSendMessage.
+  ///
+  /// In ko, this message translates to:
+  /// **'메시지 보내기'**
+  String get friendPostSendMessage;
+
+  /// No description provided for @profileTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'프로필'**
+  String get profileTitle;
+
+  /// No description provided for @profilePhotoPrompt.
+  ///
+  /// In ko, this message translates to:
+  /// **'프로필 사진을 등록해 주세요'**
+  String get profilePhotoPrompt;
+
+  /// No description provided for @profileLunaBalance.
+  ///
+  /// In ko, this message translates to:
+  /// **'보유 루나'**
+  String get profileLunaBalance;
+
+  /// No description provided for @profileLunaStore.
+  ///
+  /// In ko, this message translates to:
+  /// **'루나상점'**
+  String get profileLunaStore;
+
+  /// No description provided for @profilePrimeTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'프라임으로 더 특별하게 ✨'**
+  String get profilePrimeTitle;
+
+  /// No description provided for @profilePrimeBenefits.
+  ///
+  /// In ko, this message translates to:
+  /// **'포스트 8장·부스트·무제한 대화·자동 번역'**
+  String get profilePrimeBenefits;
+
+  /// No description provided for @profileSeeDetail.
+  ///
+  /// In ko, this message translates to:
+  /// **'자세히 보기'**
+  String get profileSeeDetail;
+
+  /// No description provided for @profileBoostPost.
+  ///
+  /// In ko, this message translates to:
+  /// **'포스트 부스트'**
+  String get profileBoostPost;
+
+  /// No description provided for @profileBoostMatch.
+  ///
+  /// In ko, this message translates to:
+  /// **'매칭 부스트'**
+  String get profileBoostMatch;
+
+  /// No description provided for @profileBoostCount.
+  ///
+  /// In ko, this message translates to:
+  /// **'{count}매'**
+  String profileBoostCount(int count);
+
+  /// No description provided for @profileSpotlight.
+  ///
+  /// In ko, this message translates to:
+  /// **'스포트라이트'**
+  String get profileSpotlight;
+
+  /// No description provided for @profileFreeUpload.
+  ///
+  /// In ko, this message translates to:
+  /// **'무료 업로드'**
+  String get profileFreeUpload;
+
+  /// No description provided for @profileNoAds.
+  ///
+  /// In ko, this message translates to:
+  /// **'광고 제거'**
+  String get profileNoAds;
+
+  /// No description provided for @profileVisitors.
+  ///
+  /// In ko, this message translates to:
+  /// **'방문자 확인'**
+  String get profileVisitors;
+
+  /// No description provided for @profileIntro.
+  ///
+  /// In ko, this message translates to:
+  /// **'소개 한마디'**
+  String get profileIntro;
+
+  /// No description provided for @profileIntroEmpty.
+  ///
+  /// In ko, this message translates to:
+  /// **'나를 소개하는 한마디를 남겨보세요. (최대 50자)'**
+  String get profileIntroEmpty;
+
+  /// No description provided for @profileInterests.
+  ///
+  /// In ko, this message translates to:
+  /// **'관심사'**
+  String get profileInterests;
+
+  /// No description provided for @profileInterestsEmpty.
+  ///
+  /// In ko, this message translates to:
+  /// **'관심사를 등록하면 더 잘 맞는 사람을 만날 수 있어요.'**
+  String get profileInterestsEmpty;
+
+  /// No description provided for @profileRegions.
+  ///
+  /// In ko, this message translates to:
+  /// **'활동 지역'**
+  String get profileRegions;
+
+  /// No description provided for @profileRegionsEmpty.
+  ///
+  /// In ko, this message translates to:
+  /// **'활동 지역은 최대 2곳까지 선택할 수 있어요.'**
+  String get profileRegionsEmpty;
+
+  /// No description provided for @profileLogout.
+  ///
+  /// In ko, this message translates to:
+  /// **'로그아웃'**
+  String get profileLogout;
+
+  /// No description provided for @introEditTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'소개 한마디'**
+  String get introEditTitle;
+
+  /// No description provided for @introEditHint.
+  ///
+  /// In ko, this message translates to:
+  /// **'자신의 취미, 성격, 또는\n하고 싶은 말을 자유롭게 적어보세요.'**
+  String get introEditHint;
+
+  /// No description provided for @introEditCounter.
+  ///
+  /// In ko, this message translates to:
+  /// **'최대 50자까지 가능합니다.'**
+  String get introEditCounter;
+
+  /// No description provided for @interestsEditTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'관심사 등록'**
+  String get interestsEditTitle;
+
+  /// No description provided for @interestsEditSubtitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'요즘 어떤 것에 꽂혀 계시나요? 취향을 공유해 보세요!'**
+  String get interestsEditSubtitle;
+
+  /// No description provided for @interestsEditSelected.
+  ///
+  /// In ko, this message translates to:
+  /// **'선택된 관심사 ({count}/{max})'**
+  String interestsEditSelected(int count, int max);
+
+  /// No description provided for @interestsEditEmpty.
+  ///
+  /// In ko, this message translates to:
+  /// **'관심사를 선택해 주세요.'**
+  String get interestsEditEmpty;
+
+  /// No description provided for @interestsEditReset.
+  ///
+  /// In ko, this message translates to:
+  /// **'전체 초기화'**
+  String get interestsEditReset;
+
+  /// No description provided for @interestsEditSave.
+  ///
+  /// In ko, this message translates to:
+  /// **'저장하기 ({count}/{max})'**
+  String interestsEditSave(int count, int max);
+
+  /// No description provided for @interestsEditLimit.
+  ///
+  /// In ko, this message translates to:
+  /// **'관심사는 최대 {max}개까지 선택할 수 있어요.'**
+  String interestsEditLimit(int max);
+
+  /// No description provided for @regionsEditTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'지역 선택'**
+  String get regionsEditTitle;
+
+  /// No description provided for @regionsEditSubtitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'국가와 지역을 선택해주세요. (최대 {max}곳)'**
+  String regionsEditSubtitle(int max);
+
+  /// No description provided for @regionsEditOfCountry.
+  ///
+  /// In ko, this message translates to:
+  /// **'의 주요 지역'**
+  String get regionsEditOfCountry;
+
+  /// No description provided for @regionsEditSelected.
+  ///
+  /// In ko, this message translates to:
+  /// **'선택한 지역'**
+  String get regionsEditSelected;
+
+  /// No description provided for @regionsEditApply.
+  ///
+  /// In ko, this message translates to:
+  /// **'적용하기'**
+  String get regionsEditApply;
+
+  /// No description provided for @regionsEditLimit.
+  ///
+  /// In ko, this message translates to:
+  /// **'활동 지역은 최대 {max}곳까지 선택할 수 있어요.'**
+  String regionsEditLimit(int max);
+
+  /// No description provided for @commonNone.
+  ///
+  /// In ko, this message translates to:
+  /// **'없음'**
+  String get commonNone;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

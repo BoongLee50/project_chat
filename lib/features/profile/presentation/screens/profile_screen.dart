@@ -14,8 +14,9 @@ import '../../data/models/profile_catalog.dart';
 import '../widgets/interests_edit_sheet.dart';
 import '../widgets/intro_edit_dialog.dart';
 import '../widgets/regions_edit_sheet.dart';
+import '../../../../l10n/app_localizations.dart';
 
-/// 프로필 — 메인 셸의 '프로필' 탭 본문. (기획서 7장)
+/// 프로필 — 메인 셸의 l10n.profileTitle 탭 본문. (기획서 7장)
 ///
 /// `GET /me` 응답(세션이 보유)을 그대로 표시한다. 사진/관심사/소개/지역 **편집**은
 /// 서버 엔드포인트는 있으나 아직 화면 미구현(다음 단계).
@@ -24,6 +25,7 @@ class ProfileScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = L10n.of(context);
     final profile = ref.watch(sessionProvider).profile;
 
     if (profile == null) {
@@ -55,11 +57,11 @@ class ProfileScreen extends ConsumerWidget {
             const SizedBox(height: AppDimens.gapLg),
             _SectionCard(
               icon: Icons.favorite_border,
-              title: '관심사',
+              title: l10n.profileInterests,
               onEdit: () =>
                   InterestsEditSheet.show(context, profile.interests),
               child: profile.interests.isEmpty
-                  ? const _EmptyHint('관심사를 등록하면 더 잘 맞는 사람을 만날 수 있어요.')
+                  ? _EmptyHint(l10n.profileInterestsEmpty)
                   : Wrap(
                       spacing: 8,
                       runSpacing: 8,
@@ -72,11 +74,11 @@ class ProfileScreen extends ConsumerWidget {
             const SizedBox(height: AppDimens.gapMd),
             _SectionCard(
               icon: Icons.format_quote,
-              title: '소개 한마디',
+              title: l10n.profileIntro,
               onEdit: () =>
                   IntroEditDialog.show(context, initial: profile.intro),
               child: (profile.intro == null || profile.intro!.isEmpty)
-                  ? const _EmptyHint('나를 소개하는 한마디를 남겨보세요. (최대 50자)')
+                  ? _EmptyHint(l10n.profileIntroEmpty)
                   : Text(
                       profile.intro!,
                       style: const TextStyle(
@@ -89,14 +91,14 @@ class ProfileScreen extends ConsumerWidget {
             const SizedBox(height: AppDimens.gapMd),
             _SectionCard(
               icon: Icons.location_on_outlined,
-              title: '활동 지역',
+              title: l10n.profileRegions,
               onEdit: () => RegionsEditSheet.show(
                 context,
                 initial: profile.regions,
                 homeCountry: profile.country,
               ),
               child: profile.regions.isEmpty
-                  ? const _EmptyHint('활동 지역은 최대 2곳까지 선택할 수 있어요.')
+                  ? _EmptyHint(l10n.profileRegionsEmpty)
                   : Wrap(
                       spacing: 8,
                       runSpacing: 8,
@@ -122,10 +124,11 @@ class _Header extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = L10n.of(context);
     return Row(
       children: [
-        const Text(
-          '프로필',
+        Text(
+          l10n.profileTitle,
           style: TextStyle(
             color: AppColors.textPrimary,
             fontSize: 24,
@@ -143,11 +146,11 @@ class _Header extends ConsumerWidget {
               ref.read(sessionProvider.notifier).signOut();
             }
           },
-          itemBuilder: (context) => const [
+          itemBuilder: (context) => [
             PopupMenuItem(
               value: 'signOut',
               child: Text(
-                '로그아웃',
+                l10n.profileLogout,
                 style: TextStyle(color: AppColors.textPrimary, fontSize: 15),
               ),
             ),
@@ -211,16 +214,17 @@ class _PhotoPlaceholder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     return Container(
       color: AppColors.surface,
       alignment: Alignment.center,
       child: Column(
         mainAxisSize: MainAxisSize.min,
-        children: const [
+        children: [
           Icon(Icons.person_outline, color: AppColors.textMuted, size: 56),
           SizedBox(height: 12),
           Text(
-            '프로필 사진을 등록해 주세요',
+            l10n.profilePhotoPrompt,
             style: TextStyle(color: AppColors.textMuted, fontSize: 14),
           ),
         ],
@@ -422,6 +426,7 @@ class _StoreEntry extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = L10n.of(context);
     final wallet = ref.watch(walletProvider).valueOrNull ?? Wallet.empty;
 
     return Column(
@@ -437,8 +442,8 @@ class _StoreEntry extends ConsumerWidget {
             children: [
               const Icon(Icons.star_rounded, color: AppColors.gold, size: 24),
               const SizedBox(width: 8),
-              const Text(
-                '보유 루나',
+              Text(
+                l10n.profileLunaBalance,
                 style: TextStyle(
                   color: AppColors.textSecondary,
                   fontSize: 14,
@@ -462,7 +467,7 @@ class _StoreEntry extends ConsumerWidget {
                 ),
                 onPressed: () =>
                     Navigator.of(context).push(LunaStoreScreen.route()),
-                child: const Text('루나상점'),
+                child: Text(l10n.profileLunaStore),
               ),
             ],
           ),
@@ -473,7 +478,7 @@ class _StoreEntry extends ConsumerWidget {
             Expanded(
               child: _StoreShortcut(
                 icon: Icons.bolt,
-                label: '포스트 부스트',
+                label: l10n.profileBoostPost,
                 badge: wallet.stockOf(StoreKind.postBoost),
                 onTap: () => Navigator.of(context)
                     .push(BoostScreen.route(StoreKind.postBoost)),
@@ -483,7 +488,7 @@ class _StoreEntry extends ConsumerWidget {
             Expanded(
               child: _StoreShortcut(
                 icon: Icons.star_border_rounded,
-                label: '스포트라이트',
+                label: l10n.profileSpotlight,
                 badge: wallet.stockOf(StoreKind.spotlightBoost),
                 onTap: () => Navigator.of(context)
                     .push(BoostScreen.route(StoreKind.spotlightBoost)),
@@ -511,6 +516,7 @@ class _StoreShortcut extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     return InkWell(
       borderRadius: BorderRadius.circular(AppDimens.radiusMd),
       onTap: onTap,
@@ -538,7 +544,7 @@ class _StoreShortcut extends StatelessWidget {
               ),
             ),
             Text(
-              '$badge매',
+              l10n.profileBoostCount(badge),
               style: const TextStyle(
                 color: AppColors.textSecondary,
                 fontSize: 12,
@@ -556,6 +562,7 @@ class _PremiumBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(18),
@@ -584,12 +591,12 @@ class _PremiumBanner extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 12),
-              const Expanded(
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '프라임으로 더 특별하게 ✨',
+                      l10n.profilePrimeTitle,
                       style: TextStyle(
                         color: AppColors.textPrimary,
                         fontSize: 16,
@@ -598,7 +605,7 @@ class _PremiumBanner extends StatelessWidget {
                     ),
                     SizedBox(height: 4),
                     Text(
-                      '포스트 8장·부스트·무제한 대화·자동 번역',
+                      l10n.profilePrimeBenefits,
                       style: TextStyle(
                         color: AppColors.textSecondary,
                         fontSize: 12,
@@ -623,19 +630,19 @@ class _PremiumBanner extends StatelessWidget {
                   borderRadius: BorderRadius.circular(AppDimens.radiusMd),
                 ),
               ),
-              child: const Text(
-                '자세히 보기',
+              child: Text(
+                l10n.profileSeeDetail,
                 style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
               ),
             ),
           ),
           const SizedBox(height: AppDimens.gapMd),
           Row(
-            children: const [
-              _Feature(icon: Icons.bolt, label: '매칭 부스트'),
-              _Feature(icon: Icons.cloud_upload_outlined, label: '무료 업로드'),
-              _Feature(icon: Icons.visibility_outlined, label: '방문자 확인'),
-              _Feature(icon: Icons.block, label: '광고 제거'),
+            children: [
+              _Feature(icon: Icons.bolt, label: l10n.profileBoostMatch),
+              _Feature(icon: Icons.cloud_upload_outlined, label: l10n.profileFreeUpload),
+              _Feature(icon: Icons.visibility_outlined, label: l10n.profileVisitors),
+              _Feature(icon: Icons.block, label: l10n.profileNoAds),
             ],
           ),
         ],

@@ -9,8 +9,9 @@ import '../../../chat/presentation/screens/chat_screen.dart';
 import '../../data/models/friend_models.dart';
 import '../providers/friend_provider.dart';
 import '../widgets/friend_post_sheet.dart';
+import '../../../../l10n/app_localizations.dart';
 
-/// 친구 목록. 메인 셸의 '친구' 탭 본문. (기획서 6장)
+/// 친구 목록. 메인 셸의 l10n.friendsTitle 탭 본문. (기획서 6장)
 ///
 /// 친구는 양방향 — 요청을 보내고 상대가 수락해야 성립한다. 수락하면 상시 대화방이
 /// 생겨 운영시간(17~06시) 밖에도 계속 대화할 수 있다.
@@ -19,6 +20,7 @@ class FriendsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = L10n.of(context);
     final friends = ref.watch(friendsProvider);
     final requests = ref.watch(friendRequestsProvider);
     final onlineCount =
@@ -39,8 +41,8 @@ class FriendsScreen extends ConsumerWidget {
             children: [
               Row(
                 children: [
-                  const Text(
-                    '친구',
+                  Text(
+                    l10n.friendsTitle,
                     style: TextStyle(
                       color: AppColors.textPrimary,
                       fontSize: 24,
@@ -63,15 +65,15 @@ class FriendsScreen extends ConsumerWidget {
               ),
               Row(
                 children: [
-                  const Text(
-                    '지금 접속 중 ',
+                  Text(
+                    l10n.friendsOnlineNowLabel,
                     style: TextStyle(
                       color: AppColors.textSecondary,
                       fontSize: 13,
                     ),
                   ),
                   Text(
-                    '$onlineCount명',
+                    l10n.friendsOnlineCount(onlineCount),
                     style: const TextStyle(
                       color: AppColors.moonlight,
                       fontSize: 13,
@@ -115,7 +117,7 @@ class FriendsScreen extends ConsumerWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  '받은 친구 요청 ${list.length}',
+                                  l10n.friendsRequestsReceived(list.length),
                                   style: const TextStyle(
                                     color: AppColors.textSecondary,
                                     fontSize: 13,
@@ -144,17 +146,17 @@ class FriendsScreen extends ConsumerWidget {
                   error: (error, _) => SliverToBoxAdapter(
                     child: _Message(
                       icon: Icons.error_outline,
-                      title: '친구 목록을 불러오지 못했어요.',
+                      title: l10n.friendsLoadFailed,
                       subtitle: '$error',
                     ),
                   ),
                   data: (list) => list.isEmpty
-                      ? const SliverToBoxAdapter(
+                      ? SliverToBoxAdapter(
                           child: _Message(
                             icon: Icons.people_outline,
-                            title: '아직 친구가 없어요.',
+                            title: l10n.friendsEmpty,
                             subtitle:
-                                '대화를 나눈 상대에게 채팅창 메뉴에서 친구 요청을 보내보세요.',
+                                l10n.friendsEmptyHint,
                           ),
                         )
                       : SliverPadding(
@@ -195,12 +197,13 @@ class _FriendCard extends ConsumerWidget {
   final Friend friend;
 
   void _openRoom(BuildContext context) {
+    final l10n = L10n.of(context);
     final roomId = friend.roomId;
     if (roomId == null) {
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
         ..showSnackBar(
-          const SnackBar(content: Text('대화방을 찾을 수 없어요. 새로고침해 주세요.')),
+          SnackBar(content: Text(l10n.friendsRoomNotFound)),
         );
       return;
     }
@@ -223,29 +226,30 @@ class _FriendCard extends ConsumerWidget {
   }
 
   Future<void> _confirmRemove(BuildContext context, WidgetRef ref) async {
+    final l10n = L10n.of(context);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
         backgroundColor: AppColors.surfaceHigh,
         title: Text(
-          '${friend.nickname}님을 친구에서 삭제할까요?',
+          l10n.friendsDeleteConfirm(friend.nickname),
           style: const TextStyle(color: AppColors.textPrimary, fontSize: 17),
         ),
-        content: const Text(
-          '상시 대화방도 함께 종료돼요.',
+        content: Text(
+          l10n.friendsDeleteDetail,
           style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: const Text(
-              '취소',
+            child: Text(
+              l10n.commonCancel,
               style: TextStyle(color: AppColors.textSecondary),
             ),
           ),
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: const Text('삭제', style: TextStyle(color: AppColors.gold)),
+            child: Text(l10n.commonDelete, style: TextStyle(color: AppColors.gold)),
           ),
         ],
       ),
@@ -263,6 +267,7 @@ class _FriendCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = L10n.of(context);
     return InkWell(
       // 카드를 누르면 오늘의 포스트를 먼저 보여준다(기획서 화면 19).
       // 대화방은 그 안의 메시지 버튼으로 간다.
@@ -363,7 +368,7 @@ class _FriendCard extends ConsumerWidget {
               const SizedBox(width: 4),
               Flexible(
                 child: Text(
-                  friend.online ? '온라인' : '오프라인',
+                  friend.online ? l10n.statusOnline : l10n.statusOffline,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
@@ -392,6 +397,7 @@ class _RequestCard extends ConsumerWidget {
     WidgetRef ref, {
     required bool accept,
   }) async {
+    final l10n = L10n.of(context);
     final actions = ref.read(friendActionsProvider);
     final error = accept
         ? await actions.accept(request.id)
@@ -402,7 +408,7 @@ class _RequestCard extends ConsumerWidget {
       ..showSnackBar(
         SnackBar(
           content: Text(
-            error ?? (accept ? '친구가 되었어요. 이제 언제든 대화할 수 있어요.' : '요청을 거절했어요.'),
+            error ?? (accept ? l10n.friendsAccepted : l10n.friendsRejected),
           ),
         ),
       );
@@ -410,6 +416,7 @@ class _RequestCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = L10n.of(context);
     return Container(
       margin: const EdgeInsets.only(bottom: AppDimens.gapSm),
       padding: const EdgeInsets.all(14),
@@ -462,8 +469,8 @@ class _RequestCard extends ConsumerWidget {
                   ],
                 ),
                 const SizedBox(height: 2),
-                const Text(
-                  '친구 요청을 보냈어요.',
+                Text(
+                  l10n.friendsRequestSent,
                   style: TextStyle(
                     color: AppColors.textSecondary,
                     fontSize: 13,
@@ -474,8 +481,8 @@ class _RequestCard extends ConsumerWidget {
           ),
           TextButton(
             onPressed: () => _respond(context, ref, accept: false),
-            child: const Text(
-              '거절',
+            child: Text(
+              l10n.commonReject,
               style: TextStyle(color: AppColors.textSecondary),
             ),
           ),
@@ -485,7 +492,7 @@ class _RequestCard extends ConsumerWidget {
               padding: const EdgeInsets.symmetric(horizontal: 16),
             ),
             onPressed: () => _respond(context, ref, accept: true),
-            child: const Text('수락'),
+            child: Text(l10n.commonAccept),
           ),
         ],
       ),
@@ -499,6 +506,7 @@ class _FilterBar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = L10n.of(context);
     final filter = ref.watch(friendFilterProvider);
     final notifier = ref.read(friendFilterProvider.notifier);
 
@@ -507,7 +515,7 @@ class _FilterBar extends ConsumerWidget {
         Expanded(
           child: _FilterChip(
             leading: const Icon(Icons.female, size: 18),
-            label: filter.gender == 'MALE' ? '남자' : '여자',
+            label: filter.gender == 'MALE' ? l10n.genderMale : l10n.genderFemale,
             selected: filter.gender != null,
             onTap: () => notifier.state = switch (filter.gender) {
               null => filter.copyWith(gender: 'FEMALE'),
@@ -520,7 +528,7 @@ class _FilterBar extends ConsumerWidget {
         Expanded(
           child: _FilterChip(
             leading: const Icon(Icons.person_outline, size: 18),
-            label: filter.ageMin == null ? '나이' : '${filter.ageMin}대',
+            label: filter.ageMin == null ? l10n.filterAge : l10n.ageDecade(filter.ageMin!),
             selected: filter.ageMin != null,
             onTap: () => notifier.state = switch (filter.ageMin) {
               null => filter.copyWith(ageMin: 20, ageMax: 29),
@@ -537,9 +545,9 @@ class _FilterBar extends ConsumerWidget {
               style: const TextStyle(fontSize: 15),
             ),
             label: switch (filter.country) {
-              'KR' => '한국',
-              'JP' => '일본',
-              _ => '국가',
+              'KR' => l10n.countryKorea,
+              'JP' => l10n.countryJapan,
+              _ => l10n.filterCountry,
             },
             selected: filter.country != null,
             onTap: () => notifier.state = switch (filter.country) {

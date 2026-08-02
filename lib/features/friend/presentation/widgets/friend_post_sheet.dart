@@ -7,6 +7,7 @@ import '../../../../core/error/api_exception.dart';
 import '../../../../core/providers.dart';
 import '../../../../shared/widgets/authed_image.dart';
 import '../../data/models/friend_models.dart';
+import '../../../../l10n/app_localizations.dart';
 
 /// 친구의 오늘 포스트. (기획서 화면 19)
 ///
@@ -53,6 +54,7 @@ class _FriendPostSheetState extends ConsumerState<FriendPostSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     return Padding(
       padding: const EdgeInsets.all(AppDimens.pagePad),
       child: Container(
@@ -87,7 +89,7 @@ class _FriendPostSheetState extends ConsumerState<FriendPostSheet> {
                       // 아직 공유 전이면 서버가 404 + 안내 문구를 준다.
                       text: snapshot.error is ApiException
                           ? (snapshot.error as ApiException).message
-                          : '포스트를 불러오지 못했어요.',
+                          : l10n.friendPostLoadFailed,
                       onOpenChat: widget.onOpenChat,
                     );
                   }
@@ -114,6 +116,7 @@ class _Header extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     return Padding(
       padding: const EdgeInsets.fromLTRB(8, 10, 8, 6),
       child: Row(
@@ -122,9 +125,9 @@ class _Header extends StatelessWidget {
             icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
             onPressed: onClose,
           ),
-          const Expanded(
+          Expanded(
             child: Text(
-              '오늘의 포스트',
+              l10n.friendPostTitle,
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: AppColors.textPrimary,
@@ -155,6 +158,7 @@ class _Content extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     final photos = post.photoUrls;
     final hasPhoto = photos.isNotEmpty;
     // 사진이 없으면 clamp 상한이 -1이 되어 ArgumentError가 난다(함정 #17).
@@ -306,7 +310,7 @@ class _Content extends StatelessWidget {
                   onOpenChat();
                 },
                 icon: const Icon(Icons.mail_outline, size: 18),
-                label: const Text('메시지'),
+                label: Text(l10n.friendPostMessage),
               ),
             ],
           ),
@@ -325,6 +329,7 @@ class _Message extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     return Padding(
       padding: const EdgeInsets.fromLTRB(
         AppDimens.pagePad,
@@ -363,7 +368,7 @@ class _Message extends StatelessWidget {
                 onOpenChat();
               },
               icon: const Icon(Icons.mail_outline, size: 18),
-              label: const Text('메시지 보내기'),
+              label: Text(l10n.friendPostSendMessage),
             ),
           ),
         ],

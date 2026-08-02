@@ -374,4 +374,199 @@ class L10nKo extends L10n {
   String chatBlockDone(String nickname) {
     return '$nickname님을 차단했어요.';
   }
+
+  @override
+  String get friendsTitle => '친구';
+
+  @override
+  String get friendsOnlineNowLabel => '지금 접속 중 ';
+
+  @override
+  String friendsOnlineCount(int count) {
+    return '$count명';
+  }
+
+  @override
+  String friendsRequestsReceived(int count) {
+    return '받은 친구 요청 $count';
+  }
+
+  @override
+  String get friendsLoadFailed => '친구 목록을 불러오지 못했어요.';
+
+  @override
+  String get friendsEmpty => '아직 친구가 없어요.';
+
+  @override
+  String get friendsEmptyHint => '대화를 나눈 상대에게 채팅창 메뉴에서 친구 요청을 보내보세요.';
+
+  @override
+  String get friendsAccepted => '친구가 되었어요. 이제 언제든 대화할 수 있어요.';
+
+  @override
+  String get friendsRejected => '요청을 거절했어요.';
+
+  @override
+  String get friendsRequestSent => '친구 요청을 보냈어요.';
+
+  @override
+  String get friendsRoomNotFound => '대화방을 찾을 수 없어요. 새로고침해 주세요.';
+
+  @override
+  String friendsDeleteConfirm(String nickname) {
+    return '$nickname님을 친구에서 삭제할까요?';
+  }
+
+  @override
+  String get friendsDeleteDetail => '상시 대화방도 함께 종료돼요.';
+
+  @override
+  String get filterAge => '나이';
+
+  @override
+  String get filterCountry => '국가';
+
+  @override
+  String get statusOnline => '온라인';
+
+  @override
+  String get statusOffline => '오프라인';
+
+  @override
+  String get friendPostTitle => '오늘의 포스트';
+
+  @override
+  String get friendPostLoadFailed => '포스트를 불러오지 못했어요.';
+
+  @override
+  String get friendPostMessage => '메시지';
+
+  @override
+  String get friendPostSendMessage => '메시지 보내기';
+
+  @override
+  String get profileTitle => '프로필';
+
+  @override
+  String get profilePhotoPrompt => '프로필 사진을 등록해 주세요';
+
+  @override
+  String get profileLunaBalance => '보유 루나';
+
+  @override
+  String get profileLunaStore => '루나상점';
+
+  @override
+  String get profilePrimeTitle => '프라임으로 더 특별하게 ✨';
+
+  @override
+  String get profilePrimeBenefits => '포스트 8장·부스트·무제한 대화·자동 번역';
+
+  @override
+  String get profileSeeDetail => '자세히 보기';
+
+  @override
+  String get profileBoostPost => '포스트 부스트';
+
+  @override
+  String get profileBoostMatch => '매칭 부스트';
+
+  @override
+  String profileBoostCount(int count) {
+    return '$count매';
+  }
+
+  @override
+  String get profileSpotlight => '스포트라이트';
+
+  @override
+  String get profileFreeUpload => '무료 업로드';
+
+  @override
+  String get profileNoAds => '광고 제거';
+
+  @override
+  String get profileVisitors => '방문자 확인';
+
+  @override
+  String get profileIntro => '소개 한마디';
+
+  @override
+  String get profileIntroEmpty => '나를 소개하는 한마디를 남겨보세요. (최대 50자)';
+
+  @override
+  String get profileInterests => '관심사';
+
+  @override
+  String get profileInterestsEmpty => '관심사를 등록하면 더 잘 맞는 사람을 만날 수 있어요.';
+
+  @override
+  String get profileRegions => '활동 지역';
+
+  @override
+  String get profileRegionsEmpty => '활동 지역은 최대 2곳까지 선택할 수 있어요.';
+
+  @override
+  String get profileLogout => '로그아웃';
+
+  @override
+  String get introEditTitle => '소개 한마디';
+
+  @override
+  String get introEditHint => '자신의 취미, 성격, 또는\n하고 싶은 말을 자유롭게 적어보세요.';
+
+  @override
+  String get introEditCounter => '최대 50자까지 가능합니다.';
+
+  @override
+  String get interestsEditTitle => '관심사 등록';
+
+  @override
+  String get interestsEditSubtitle => '요즘 어떤 것에 꽂혀 계시나요? 취향을 공유해 보세요!';
+
+  @override
+  String interestsEditSelected(int count, int max) {
+    return '선택된 관심사 ($count/$max)';
+  }
+
+  @override
+  String get interestsEditEmpty => '관심사를 선택해 주세요.';
+
+  @override
+  String get interestsEditReset => '전체 초기화';
+
+  @override
+  String interestsEditSave(int count, int max) {
+    return '저장하기 ($count/$max)';
+  }
+
+  @override
+  String interestsEditLimit(int max) {
+    return '관심사는 최대 $max개까지 선택할 수 있어요.';
+  }
+
+  @override
+  String get regionsEditTitle => '지역 선택';
+
+  @override
+  String regionsEditSubtitle(int max) {
+    return '국가와 지역을 선택해주세요. (최대 $max곳)';
+  }
+
+  @override
+  String get regionsEditOfCountry => '의 주요 지역';
+
+  @override
+  String get regionsEditSelected => '선택한 지역';
+
+  @override
+  String get regionsEditApply => '적용하기';
+
+  @override
+  String regionsEditLimit(int max) {
+    return '활동 지역은 최대 $max곳까지 선택할 수 있어요.';
+  }
+
+  @override
+  String get commonNone => '없음';
 }

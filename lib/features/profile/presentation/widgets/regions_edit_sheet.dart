@@ -5,6 +5,7 @@ import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimens.dart';
 import '../../data/models/profile_catalog.dart';
 import '../providers/profile_edit_provider.dart';
+import '../../../../l10n/app_localizations.dart';
 
 /// 지역 선택. (기획서 화면 24)
 ///
@@ -60,11 +61,12 @@ class _RegionsEditSheetState extends ConsumerState<RegionsEditSheet> {
       } else if (_selected.length < ProfileCatalog.maxRegions) {
         _selected.add(code);
       } else {
+        final l10n = L10n.of(context);
         ScaffoldMessenger.of(context)
           ..hideCurrentSnackBar()
           ..showSnackBar(
             SnackBar(
-              content: Text('활동 지역은 최대 ${ProfileCatalog.maxRegions}곳까지 선택할 수 있어요.'),
+              content: Text(l10n.regionsEditLimit(ProfileCatalog.maxRegions)),
             ),
           );
       }
@@ -90,6 +92,7 @@ class _RegionsEditSheetState extends ConsumerState<RegionsEditSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     final regions = ProfileCatalog.regionsByCountry[_country] ?? const [];
 
     return SizedBox(
@@ -106,8 +109,8 @@ class _RegionsEditSheetState extends ConsumerState<RegionsEditSheet> {
             ),
           ),
           const SizedBox(height: 16),
-          const Text(
-            '지역 선택',
+          Text(
+            l10n.regionsEditTitle,
             style: TextStyle(
               color: AppColors.textPrimary,
               fontSize: 20,
@@ -116,7 +119,7 @@ class _RegionsEditSheetState extends ConsumerState<RegionsEditSheet> {
           ),
           const SizedBox(height: 6),
           Text(
-            '국가와 지역을 선택해주세요. (최대 ${ProfileCatalog.maxRegions}곳)',
+            l10n.regionsEditSubtitle(ProfileCatalog.maxRegions),
             style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
           ),
           const SizedBox(height: AppDimens.gapMd),
@@ -158,7 +161,7 @@ class _RegionsEditSheetState extends ConsumerState<RegionsEditSheet> {
                           text: ProfileCatalog.countryLabel(_country),
                           style: const TextStyle(color: AppColors.moonlight),
                         ),
-                        const TextSpan(text: '의 주요 지역'),
+                        TextSpan(text: l10n.regionsEditOfCountry),
                       ],
                     ),
                     style: const TextStyle(
@@ -194,15 +197,15 @@ class _RegionsEditSheetState extends ConsumerState<RegionsEditSheet> {
             ),
             child: Row(
               children: [
-                const Text(
-                  '선택한 지역',
+                Text(
+                  l10n.regionsEditSelected,
                   style: TextStyle(color: AppColors.textMuted, fontSize: 13),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
                     _selected.isEmpty
-                        ? '없음'
+                        ? l10n.commonNone
                         : _selected.map(ProfileCatalog.regionLabel).join(' · '),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -243,8 +246,8 @@ class _RegionsEditSheetState extends ConsumerState<RegionsEditSheet> {
                           color: Colors.white,
                         ),
                       )
-                    : const Text(
-                        '적용하기',
+                    : Text(
+                        l10n.regionsEditApply,
                         style: TextStyle(
                           fontSize: 17,
                           fontWeight: FontWeight.w800,

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimens.dart';
 import '../providers/profile_edit_provider.dart';
+import '../../../../l10n/app_localizations.dart';
 
 /// 소개 한마디 편집. (기획서 화면 23)
 class IntroEditDialog extends ConsumerStatefulWidget {
@@ -51,6 +52,7 @@ class _IntroEditDialogState extends ConsumerState<IntroEditDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     return Dialog(
       backgroundColor: AppColors.surfaceHigh,
       insetPadding: const EdgeInsets.symmetric(
@@ -65,8 +67,8 @@ class _IntroEditDialogState extends ConsumerState<IntroEditDialog> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text(
-              '소개 한마디',
+            Text(
+              l10n.introEditTitle,
               style: TextStyle(
                 color: AppColors.textPrimary,
                 fontSize: 19,
@@ -74,8 +76,8 @@ class _IntroEditDialogState extends ConsumerState<IntroEditDialog> {
               ),
             ),
             const SizedBox(height: 10),
-            const Text(
-              '자신의 취미, 성격, 또는\n하고 싶은 말을 자유롭게 적어보세요.',
+            Text(
+              l10n.introEditHint,
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: AppColors.textSecondary,
@@ -99,7 +101,7 @@ class _IntroEditDialogState extends ConsumerState<IntroEditDialog> {
                 height: 1.5,
               ),
               decoration: InputDecoration(
-                hintText: '최대 50자까지 가능합니다.',
+                hintText: l10n.introEditCounter,
                 hintStyle: const TextStyle(
                   color: AppColors.textMuted,
                   fontSize: 14,
@@ -132,8 +134,8 @@ class _IntroEditDialogState extends ConsumerState<IntroEditDialog> {
                       ),
                       onPressed:
                           _busy ? null : () => Navigator.of(context).pop(false),
-                      child: const Text(
-                        '취소',
+                      child: Text(
+                        l10n.commonCancel,
                         style: TextStyle(
                           color: AppColors.textSecondary,
                           fontWeight: FontWeight.w700,
@@ -164,8 +166,8 @@ class _IntroEditDialogState extends ConsumerState<IntroEditDialog> {
                                 color: Colors.white,
                               ),
                             )
-                          : const Text(
-                              '저장하기',
+                          : Text(
+                              l10n.commonSave,
                               style: TextStyle(fontWeight: FontWeight.w800),
                             ),
                     ),
