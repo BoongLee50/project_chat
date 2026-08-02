@@ -69,6 +69,7 @@ public class ChatService {
     /** 대화 신청 생성 — 무료 2회 소진 후 루나 5 차감. 성공 시 상대에게 소켓 알림. */
     @Transactional
     public void createRequest(String userId, String targetUserId, String message) {
+        requireGateOpen();
         if (userId.equals(targetUserId)) {
             throw new ApiException(ErrorCode.VALIDATION_FAILED, HttpStatus.BAD_REQUEST,
                     "자신에게는 대화를 신청할 수 없어요.");
@@ -124,6 +125,8 @@ public class ChatService {
     /** 신청 수락 → 대화방 생성. 양쪽에 방 상태를 알린다. */
     @Transactional
     public String acceptRequest(String userId, String requestId) {
+        // 수락하면 매칭 대화방이 생기므로 운영시간 안에서만 가능하다.
+        requireGateOpen();
         ChatRequestEntity request = requireRequest(requestId);
         if (!request.getToUser().equals(userId)) {
             throw new ApiException(ErrorCode.VALIDATION_FAILED, HttpStatus.FORBIDDEN,
@@ -227,6 +230,10 @@ public class ChatService {
     @Transactional
     public ChatMessageDto sendMessage(String userId, String roomId, String body) {
         ChatRoom room = requireMemberRoom(userId, roomId);
+        // 친구 상시 대화방은 24시간 예외라 매칭 대화만 운영시간을 따진다(02 §4).
+        if (!"FRIEND".equals(room.getType())) {
+            requireGateOpen();
+        }
 
         ChatMessage message = new ChatMessage();
         message.setId(UUID.randomUUID().toString());
@@ -256,6 +263,20 @@ public class ChatService {
     }
 
     // ── 내부 ────────────────────────────────────────────────
+
+    /**
+     * 운영시간(17~06시) 밖이면 막는다. 클라가 화면을 가리는 것만으로는 규칙이 되지 않으므로
+     * 서버에서 판정한다(post/garden 도메인과 같은 패턴).
+     *
+     * <p>거절·나가기·읽음·목록 조회는 막지 않는다 — 이미 벌어진 일을 정리하는 동작이라
+     * 시간대와 무관하게 할 수 있어야 한다. 친구 관련 동작도 24시간 예외다.
+     */
+    private void requireGateOpen() {
+        if (!gateService.isOpenNow()) {
+            throw new ApiException(ErrorCode.VALIDATION_FAILED, HttpStatus.CONFLICT,
+                    "달빛이 찾아오는 오후 5시부터 다음날 오전 6시까지 대화할 수 있어요.");
+        }
+    }
 
     private void notifyRoomState(ChatRoom room, String state) {
         Packet packet = Packet.of(Opcodes.ROOM_STATE, Map.of(
