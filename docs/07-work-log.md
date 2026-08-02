@@ -181,6 +181,9 @@ flutter build apk --debug --dart-define=API_BASE_URL=http://<PC의 LAN IP>:8080
 | 20 | **MariaDB는 다중 테이블 DELETE에 LIMIT 불가** | `DELETE a FROM a JOIN b ... LIMIT n`이 문법 오류. 배치로 나눠 지우려면 **id를 먼저 SELECT한 뒤 `DELETE ... WHERE id IN (...)`** |
 | 22 | **`supportedLocales`의 첫 항목이 폴백이다** | ARB 파일이 알파벳순이라 `ja`가 먼저 와서, **영어 기기 사용자가 일본어를 보게 된다.** `localeResolutionCallback`으로 원문 언어(한국어) 폴백을 명시할 것 |
 | 21 | **`@Transactional`은 같은 빈 안에서 호출하면 안 먹는다** | 프록시 기반이라 self-invocation은 우회된다. 반복 호출하는 쪽과 트랜잭션 단위를 **다른 빈으로 분리**할 것(`MessageRetentionPurger` 사례) |
+| 23 | **l10n 이전에서 `const`가 깨지는 방식이 세 가지다** | 위젯은 `invalid_constant`지만 **맵은 `non_constant_map_key`, 레코드는 `non_constant_record_field`** 로 뜬다. `invalid_constant`만 훑는 자동화는 `const {…}` 맵과 `static const items = <(IconData, String)>[…]` 를 놓친다 |
+| 24 | **프로바이더·네트워크 계층엔 `BuildContext`가 없다** | `L10n.of(context)`를 못 쓴다. 전역 인스턴스를 두면 언어 전환·테스트가 어려워지므로, **프로바이더는 코드를 반환하고 화면이 문구로 바꾼다**(서버 `ErrorCode` 세분화와 같은 작업) |
+| 25 | **문구를 식별자로 쓰면 언어를 못 바꾼다** | 관심사 시트의 펼침 상태 `Set`이 그룹 **제목 문자열**을 키로 쓰고 있었다. 문구가 언어를 타는 순간 상태가 어긋난다 — 상태 키는 **항상 코드**로 |
 
 ---
 
@@ -206,6 +209,56 @@ flutter build apk --debug --dart-define=API_BASE_URL=http://<PC의 LAN IP>:8080
 > - **게이트 조회 실패 시엔 열린 것으로 본다** — 못 읽었다고 잠그면 서버가 허용하는 동작까지 막는다. 차단은 서버가 하고 클라는 안내만.
 >
 > **서버가 없어서 같이 만든 것 2개**: moderation 도메인, 친구 오늘의 포스트 API. 둘 다 01 문서에만 있고 미구현이었다.
+
+### 2026-08-02(16) — 다국어 ①-2: 화면 전량 이전 완료 (ARB 378키)
+
+첫 슬라이스(로그인·닉네임) 이후 남은 화면을 **6개 슬라이스로 나눠** 커밋했다.
+한 번에 하지 않은 이유는 (15)에 적어 둔 그대로 — 회귀가 나면 어느 화면인지 바로 좁히기 위해서다.
+
+| 슬라이스 | 대상 | 커밋 |
+|---|---|---|
+| ① | 달빛가든 · 댓글 시트 · 게이트 안내(`GateClosedView`/`GateBanner`) | `feat(l10n): 달빛가든…` |
+| ② | 대화방 목록 · 채팅창 | `feat(l10n): 대화방 목록…` |
+| ③ | 친구 · 오늘의 포스트 시트 · 프로필 · 편집 시트 3종 | `feat(l10n): 친구·프로필…` |
+| ④ | 상점 6화면(루나상점·부스트·앨범/번역 패스·프라임·충전) | `feat(l10n): 상점 6화면…` |
+| ⑤ | 신고·차단 팝업 · 하단 5탭 · 신청 상태 문구 | `feat(l10n): 신고·차단 팝업…` |
+| ⑥ | `ProfileCatalog` 관심사 37종 · 지역 20곳 | `feat(l10n): ProfileCatalog…` |
+
+**결과**: `app_ko.arb` / `app_ja.arb` 각 **378키**(양쪽 동수). `flutter analyze lib` 0건, 테스트 통과.
+
+**모델·enum에 박혀 있던 문구를 어떻게 뺐나** — 이번 작업에서 제일 손이 많이 간 부분이다.
+문구를 들고 있던 자료구조들은 `BuildContext`를 알 수 없으니, **호출하는 화면이 `L10n`을 넘겨주는** 모양으로 바꿨다.
+
+| 대상 | 전 | 후 |
+|---|---|---|
+| `StoreKind` | `label(kind)` / `description(kind)` | `label(l10n, kind)` / `description(l10n, kind)` |
+| `LunaProduct` | `String get optionLabel` | `String optionLabel(L10n)` |
+| `ReportReason` | `enum illegalAd('ILLEGAL_AD', '불법 광고…')` | `enum illegalAd('ILLEGAL_AD')` + `label(L10n)` |
+| `ChatRequest` | `String get sentStatusLabel` | `String sentStatusLabel(L10n)` |
+| `InterestItem` / `InterestGroup` | `(code, label, icon)` / `(title, icon, items)` | `(code, icon)` / `(code, icon, items)` |
+| `MainBottomNav.items` | `static const <(IconData, String)>[…]` | 아이콘 const 리스트 + `_labels(L10n)` |
+
+**서버에 저장되는 값은 전부 코드**(`ReportReason.code`, `user_interests.code`, `user_regions.code`)라
+문구만 떼어내도 **기존 데이터에 아무 영향이 없다.** 처음부터 코드로 저장해 둔 게 여기서 값을 했다.
+
+**겪은 것들**
+- `const` 맵/레코드는 `invalid_constant`가 아니라 **`non_constant_map_key` / `non_constant_record_field`** 로 뜬다.
+  자동 스크립트가 `invalid_constant`만 보고 있어서 이 둘은 손으로 풀어야 했다(가든 필터 맵, 하단 탭 리스트).
+- `_preview`·`_timeAgo`·`_benefits`·`_discountBadge` 같은 **static/헬퍼 메서드**도 `L10n`을 인자로 받게 바꿨다.
+- `interests_edit_sheet`의 펼침 상태 `Set`이 **그룹 제목 문자열을 키로** 쓰고 있었다. 제목이 언어를 타면
+  언어를 바꿀 때 펼침이 초기화되므로 `group.code`로 바꿨다.
+- 스타일이 다른 `TextSpan`으로 쪼개진 문구는 합칠 수 없어 prefix/suffix 키로 남겼다
+  (`"지금 접속 중 " + "N명"`, `"{국가}" + "의 주요 지역"`, `"루나 " + "N" + " 개"`).
+  셋 다 한·일 어순이 같아 문제가 없음을 확인하고 둔 것이다. **어순이 다른 문구였다면 placeholder로 합쳐야 한다.**
+
+**아직 한국어로 남은 것** — 의도적으로 남긴 것과 ②단계 대상이 섞여 있다.
+- 그대로 둘 것: 국기 이모지(`🇰🇷`/`🇯🇵`), `—`, ` · ` 구분자, `debugPrint` 로그(개발자용)
+- ②단계 대상: **프로바이더·네트워크 계층의 에러 문구 9개**
+  (`dio_client` 4, `chat_provider` 2, `onboarding_provider` 2, `session_provider` 1).
+  이 계층은 `BuildContext`가 없어 `L10n.of(context)`를 쓸 수 없다. 억지로 전역 인스턴스를 두기보다,
+  **프로바이더는 코드를 반환하고 화면이 문구로 바꾸는** 정공법으로 간다 — 서버 `ErrorCode` 세분화와 같은 작업이라 ②단계에서 함께 처리한다.
+
+**일본어 번역 품질**: 전부 초벌이다. 매칭 앱 문구는 뉘앙스가 매출로 이어지므로 **원어민 검수 전에는 확정이 아니다.**
 
 ### 2026-08-02(15) — 다국어 ①: l10n 뼈대 + 첫 슬라이스
 **정한 것**
@@ -545,21 +598,22 @@ final index = _index.clamp(0, _photos.length - 1);   // 사진 0장이면 clamp(
 
 ## 5. 다음 작업 후보 (이 순서로 이어가면 됨)
 
-1. **다국어(한↔일) l10n** — 기획서 화면은 전부 구현됐다. 한·일 매칭 앱인데 UI가 한국어 하드코딩이라 이게 남은 가장 큰 기능 작업.
+1. **다국어 ②단계 — 서버 `ErrorCode` 세분화 + 클라 매핑** ← 여기부터
+   ①단계(화면 전량 ARB 이전)는 끝났다. 지금 남은 건 **오류 문구**다.
 
-   **실측 규모(2026-08-02)**: 클라 **한글 문자열 462개 / 38개 파일**, 서버 **사용자 노출 메시지 54개**(ApiException).
-   ⚠️ **절반이 서버에 있다.** 클라가 `e.message`를 그대로 스낵바에 띄우는 곳이 22군데라, 클라만 번역하면
-   일본 사용자가 버튼은 일본어인데 오류는 한국어인 화면을 보게 된다.
+   - 서버 `ApiException` 메시지 **54개**가 한국어 하드코딩이고, 클라는 `e.message`를 **22군데**에서 그대로 스낵바에 띄운다.
+     → 일본 사용자에게 **버튼은 일본어인데 오류는 한국어**인 화면이 나온다.
+   - 방식은 **(A)안 확정**: 서버는 코드만 주고 클라가 번역. 에러 응답에 `code`가 이미 있으나 `ErrorCode`가 **9종뿐**이라
+     상황별로 쪼개야 한다(54개 → 30~40개).
+   - 같은 작업으로 **클라 프로바이더 계층 에러 문구 9개**도 함께 정리된다
+     (`dio_client` 4, `chat_provider` 2, `onboarding_provider` 2, `session_provider` 1).
+     이 계층은 `BuildContext`가 없어 `L10n.of(context)`를 못 쓴다 — 프로바이더는 코드를 반환하고 **화면이 문구로 바꾼다**.
 
-   **착수 전 정할 것**
-   - 서버 메시지 처리: **(A)** 서버는 코드만 주고 클라가 번역 — 에러 응답에 `code`가 이미 있으나 `ErrorCode`가 9종뿐이라 상황별로 쪼개야 함(54개 → 30~40개) / **(B)** 서버가 `Accept-Language`로 번역해 내려줌. 번역 자원이 한곳에 모이는 **(A) 권장**.
-   - 언어 선택 기준: 기기 언어 vs 프로필 `country`(KR/JP) vs 설정에서 직접. 한국 거주 일본인은 기기가 한국어일 수 있어 갈린다.
-   - 데이터 문구: 관심사·지역 라벨(`ProfileCatalog`)에 일본어 추가 필요. 코드로 저장해둔 게 여기서 값을 한다.
-   - 폰트: 일본어 한자 중 한국 폰트에 없는 글자가 두부(□)로 보일 수 있음 → Noto Sans JP 추가 여부([08 체크리스트](08-assets-checklist.md) 미결 항목).
-   - 번역 품질: AI가 낼 수 있는 건 초벌 수준. 매칭 앱 문구는 뉘앙스가 중요해 **원어민 검수** 권장.
-
-   **권장 진행 순서**(한 번에 하면 커밋이 거대해지고 회귀 확인이 어렵다)
-   ① 뼈대 + 한국어 이전(ARB 도입, 462개를 키로 옮기고 한국어만) → ② 서버 ErrorCode 세분화 + 클라 매핑 → ③ 일본어 채우기 + 폰트 + 언어 전환 UI
+   **그다음 ③단계**
+   - 일본어 번역 **원어민 검수** (지금 `app_ja.arb` 378키는 전부 초벌이다)
+   - 폰트: 일본어 한자 중 한국 폰트에 없는 글자가 두부(□)로 보일 수 있음 → Noto Sans JP 추가 여부([08 체크리스트](08-assets-checklist.md) 미결 항목)
+   - (선택) 앱 안 언어 전환 UI. 지금은 **기기 언어를 따르고**, 지원하지 않는 언어는 **한국어로 폴백**한다.
+     설정을 붙이려면 `MaterialApp.locale`에 주입하면 되도록 자리는 열어 뒀다.
 
 2. **실시간 번역(사용자가 쓴 글)** — UI 다국어와 **완전히 별개**다. 껍데기만 있고 알맹이가 없다.
    - `POST /translate`는 패스스루(원문 그대로), **클라에서 호출하는 곳이 0곳**(번역 버튼이 없다)
