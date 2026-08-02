@@ -988,4 +988,85 @@ class L10nKo extends L10n {
   String chargeDone(int total) {
     return '루나 $total개가 충전됐어요.';
   }
+
+  @override
+  String get navPost => '포스트';
+
+  @override
+  String get navGarden => '달빛가든';
+
+  @override
+  String get navChat => '대화방';
+
+  @override
+  String get navFriend => '친구';
+
+  @override
+  String get navProfile => '프로필';
+
+  @override
+  String get chatRequestPending => '대화 대기 중';
+
+  @override
+  String get chatRequestClosed => '대화 종료';
+
+  @override
+  String get blockConfirmSuffix => '님을 차단하시겠습니까?';
+
+  @override
+  String get blockDescription =>
+      '차단하면 상대방과의 채팅이 중단되고,\n상대방은 더 이상 나에게 메시지를 보낼 수 없습니다.';
+
+  @override
+  String get blockEffectChat => '채팅 차단';
+
+  @override
+  String get blockEffectChatDesc => '상대방과의 채팅이 중단되며,\n더 이상 메시지를 주고받을 수 없습니다.';
+
+  @override
+  String get blockEffectProfile => '프로필 비공개';
+
+  @override
+  String get blockEffectProfileDesc => '상대방이 내 프로필과 소식을\n볼 수 없게 됩니다.';
+
+  @override
+  String get blockAction => '차단하기';
+
+  @override
+  String get reportSelectReason => '신고 이유를 선택해주세요.';
+
+  @override
+  String get reportPrivacyNotice => '공유해 주신 내용은 안전을 위해\n철저히 비밀로 유지됩니다.';
+
+  @override
+  String get reportDetailHint => '어떤 점이 문제였는지 알려주세요.';
+
+  @override
+  String reportWarning(String nickname) {
+    return '신고하면 $nickname님과의 대화가 종료되고 친구 관계도 해제돼요.';
+  }
+
+  @override
+  String get reportAction => '신고하기';
+
+  @override
+  String get reportReasonIllegalAd => '불법 광고 및 홍보';
+
+  @override
+  String get reportReasonRomanceScam => '로맨스 스캠 (연애 사기)';
+
+  @override
+  String get reportReasonSexualDeepfake => '허위 합성/편집한 성인물';
+
+  @override
+  String get reportReasonAbusive => '욕설 및 비매너';
+
+  @override
+  String get reportReasonCoercion => '강요 및 협박';
+
+  @override
+  String get reportReasonPrivacyLeak => '개인정보 유출';
+
+  @override
+  String get reportReasonOther => '기타';
 }

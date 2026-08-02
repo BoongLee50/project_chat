@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimens.dart';
 import '../providers/moderation_provider.dart';
+import '../../../../l10n/app_localizations.dart';
 
 /// 차단 팝업. (기획서 화면 17)
 class BlockDialog extends ConsumerStatefulWidget {
@@ -55,6 +56,7 @@ class _BlockDialogState extends ConsumerState<BlockDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     return Dialog(
       backgroundColor: AppColors.surfaceHigh,
       insetPadding: const EdgeInsets.symmetric(
@@ -78,7 +80,7 @@ class _BlockDialogState extends ConsumerState<BlockDialog> {
                         text: widget.targetNickname,
                         style: const TextStyle(color: AppColors.moonlight),
                       ),
-                      const TextSpan(text: '님을 차단하시겠습니까?'),
+                      TextSpan(text: l10n.blockConfirmSuffix),
                     ],
                   ),
                   textAlign: TextAlign.center,
@@ -89,9 +91,8 @@ class _BlockDialogState extends ConsumerState<BlockDialog> {
                   ),
                 ),
                 const SizedBox(height: 12),
-                const Text(
-                  '차단하면 상대방과의 채팅이 중단되고,\n'
-                  '상대방은 더 이상 나에게 메시지를 보낼 수 없습니다.',
+                Text(
+                  l10n.blockDescription,
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: AppColors.textSecondary,
@@ -104,20 +105,20 @@ class _BlockDialogState extends ConsumerState<BlockDialog> {
           ),
           const SizedBox(height: 18),
           const Divider(color: AppColors.border, height: 1),
-          const Padding(
+          Padding(
             padding: EdgeInsets.fromLTRB(20, 16, 20, 8),
             child: Column(
               children: [
                 _BlockEffect(
                   icon: Icons.forum_outlined,
-                  title: '채팅 차단',
-                  description: '상대방과의 채팅이 중단되며,\n더 이상 메시지를 주고받을 수 없습니다.',
+                  title: l10n.blockEffectChat,
+                  description: l10n.blockEffectChatDesc,
                 ),
                 SizedBox(height: 18),
                 _BlockEffect(
                   icon: Icons.person_off_outlined,
-                  title: '프로필 비공개',
-                  description: '상대방이 내 프로필과 소식을\n볼 수 없게 됩니다.',
+                  title: l10n.blockEffectProfile,
+                  description: l10n.blockEffectProfileDesc,
                 ),
               ],
             ),
@@ -141,8 +142,8 @@ class _BlockDialogState extends ConsumerState<BlockDialog> {
                       onPressed: _busy
                           ? null
                           : () => Navigator.of(context).pop(false),
-                      child: const Text(
-                        '취소',
+                      child: Text(
+                        l10n.commonCancel,
                         style: TextStyle(
                           color: AppColors.textSecondary,
                           fontWeight: FontWeight.w700,
@@ -173,8 +174,8 @@ class _BlockDialogState extends ConsumerState<BlockDialog> {
                                 color: Colors.white,
                               ),
                             )
-                          : const Text(
-                              '차단하기',
+                          : Text(
+                              l10n.blockAction,
                               style: TextStyle(fontWeight: FontWeight.w800),
                             ),
                     ),

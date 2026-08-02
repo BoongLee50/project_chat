@@ -699,5 +699,38 @@
         "type": "int"
       }
     }
-  }
+  },
+  "navPost": "포스트",
+  "navGarden": "달빛가든",
+  "navChat": "대화방",
+  "navFriend": "친구",
+  "navProfile": "프로필",
+  "chatRequestPending": "대화 대기 중",
+  "chatRequestClosed": "대화 종료",
+  "blockConfirmSuffix": "님을 차단하시겠습니까?",
+  "blockDescription": "차단하면 상대방과의 채팅이 중단되고,\n상대방은 더 이상 나에게 메시지를 보낼 수 없습니다.",
+  "blockEffectChat": "채팅 차단",
+  "blockEffectChatDesc": "상대방과의 채팅이 중단되며,\n더 이상 메시지를 주고받을 수 없습니다.",
+  "blockEffectProfile": "프로필 비공개",
+  "blockEffectProfileDesc": "상대방이 내 프로필과 소식을\n볼 수 없게 됩니다.",
+  "blockAction": "차단하기",
+  "reportSelectReason": "신고 이유를 선택해주세요.",
+  "reportPrivacyNotice": "공유해 주신 내용은 안전을 위해\n철저히 비밀로 유지됩니다.",
+  "reportDetailHint": "어떤 점이 문제였는지 알려주세요.",
+  "reportWarning": "신고하면 {nickname}님과의 대화가 종료되고 친구 관계도 해제돼요.",
+  "@reportWarning": {
+    "placeholders": {
+      "nickname": {
+        "type": "String"
+      }
+    }
+  },
+  "reportAction": "신고하기",
+  "reportReasonIllegalAd": "불법 광고 및 홍보",
+  "reportReasonRomanceScam": "로맨스 스캠 (연애 사기)",
+  "reportReasonSexualDeepfake": "허위 합성/편집한 성인물",
+  "reportReasonAbusive": "욕설 및 비매너",
+  "reportReasonCoercion": "강요 및 협박",
+  "reportReasonPrivacyLeak": "개인정보 유출",
+  "reportReasonOther": "기타"
 }

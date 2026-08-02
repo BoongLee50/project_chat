@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_dimens.dart';
+import '../../l10n/app_localizations.dart';
 
 /// 메인 5탭 하단 내비게이션 (포스트·달빛가든·대화방·친구·프로필).
 class MainBottomNav extends StatelessWidget {
@@ -10,16 +11,26 @@ class MainBottomNav extends StatelessWidget {
   final int selected;
   final ValueChanged<int> onTap;
 
-  static const items = <(IconData, String)>[
-    (Icons.photo_camera_rounded, '포스트'),
-    (Icons.nightlight_round, '달빛가든'),
-    (Icons.chat_bubble_outline, '대화방'),
-    (Icons.people_outline, '친구'),
-    (Icons.person_outline, '프로필'),
+  /// 아이콘은 고정, 라벨은 언어에 따라 달라져 const로 둘 수 없다.
+  static const _icons = <IconData>[
+    Icons.photo_camera_rounded,
+    Icons.nightlight_round,
+    Icons.chat_bubble_outline,
+    Icons.people_outline,
+    Icons.person_outline,
+  ];
+
+  static List<String> _labels(L10n l10n) => [
+    l10n.navPost,
+    l10n.navGarden,
+    l10n.navChat,
+    l10n.navFriend,
+    l10n.navProfile,
   ];
 
   @override
   Widget build(BuildContext context) {
+    final labels = _labels(L10n.of(context));
     return Container(
       margin: const EdgeInsets.fromLTRB(12, 0, 12, 8),
       padding: const EdgeInsets.symmetric(vertical: 10),
@@ -31,10 +42,10 @@ class MainBottomNav extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          for (var i = 0; i < items.length; i++)
+          for (var i = 0; i < _icons.length; i++)
             _NavItem(
-              icon: items[i].$1,
-              label: items[i].$2,
+              icon: _icons[i],
+              label: labels[i],
               active: i == selected,
               onTap: () => onTap(i),
             ),

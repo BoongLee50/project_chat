@@ -1836,6 +1836,162 @@ abstract class L10n {
   /// In ko, this message translates to:
   /// **'루나 {total}개가 충전됐어요.'**
   String chargeDone(int total);
+
+  /// No description provided for @navPost.
+  ///
+  /// In ko, this message translates to:
+  /// **'포스트'**
+  String get navPost;
+
+  /// No description provided for @navGarden.
+  ///
+  /// In ko, this message translates to:
+  /// **'달빛가든'**
+  String get navGarden;
+
+  /// No description provided for @navChat.
+  ///
+  /// In ko, this message translates to:
+  /// **'대화방'**
+  String get navChat;
+
+  /// No description provided for @navFriend.
+  ///
+  /// In ko, this message translates to:
+  /// **'친구'**
+  String get navFriend;
+
+  /// No description provided for @navProfile.
+  ///
+  /// In ko, this message translates to:
+  /// **'프로필'**
+  String get navProfile;
+
+  /// No description provided for @chatRequestPending.
+  ///
+  /// In ko, this message translates to:
+  /// **'대화 대기 중'**
+  String get chatRequestPending;
+
+  /// No description provided for @chatRequestClosed.
+  ///
+  /// In ko, this message translates to:
+  /// **'대화 종료'**
+  String get chatRequestClosed;
+
+  /// No description provided for @blockConfirmSuffix.
+  ///
+  /// In ko, this message translates to:
+  /// **'님을 차단하시겠습니까?'**
+  String get blockConfirmSuffix;
+
+  /// No description provided for @blockDescription.
+  ///
+  /// In ko, this message translates to:
+  /// **'차단하면 상대방과의 채팅이 중단되고,\n상대방은 더 이상 나에게 메시지를 보낼 수 없습니다.'**
+  String get blockDescription;
+
+  /// No description provided for @blockEffectChat.
+  ///
+  /// In ko, this message translates to:
+  /// **'채팅 차단'**
+  String get blockEffectChat;
+
+  /// No description provided for @blockEffectChatDesc.
+  ///
+  /// In ko, this message translates to:
+  /// **'상대방과의 채팅이 중단되며,\n더 이상 메시지를 주고받을 수 없습니다.'**
+  String get blockEffectChatDesc;
+
+  /// No description provided for @blockEffectProfile.
+  ///
+  /// In ko, this message translates to:
+  /// **'프로필 비공개'**
+  String get blockEffectProfile;
+
+  /// No description provided for @blockEffectProfileDesc.
+  ///
+  /// In ko, this message translates to:
+  /// **'상대방이 내 프로필과 소식을\n볼 수 없게 됩니다.'**
+  String get blockEffectProfileDesc;
+
+  /// No description provided for @blockAction.
+  ///
+  /// In ko, this message translates to:
+  /// **'차단하기'**
+  String get blockAction;
+
+  /// No description provided for @reportSelectReason.
+  ///
+  /// In ko, this message translates to:
+  /// **'신고 이유를 선택해주세요.'**
+  String get reportSelectReason;
+
+  /// No description provided for @reportPrivacyNotice.
+  ///
+  /// In ko, this message translates to:
+  /// **'공유해 주신 내용은 안전을 위해\n철저히 비밀로 유지됩니다.'**
+  String get reportPrivacyNotice;
+
+  /// No description provided for @reportDetailHint.
+  ///
+  /// In ko, this message translates to:
+  /// **'어떤 점이 문제였는지 알려주세요.'**
+  String get reportDetailHint;
+
+  /// No description provided for @reportWarning.
+  ///
+  /// In ko, this message translates to:
+  /// **'신고하면 {nickname}님과의 대화가 종료되고 친구 관계도 해제돼요.'**
+  String reportWarning(String nickname);
+
+  /// No description provided for @reportAction.
+  ///
+  /// In ko, this message translates to:
+  /// **'신고하기'**
+  String get reportAction;
+
+  /// No description provided for @reportReasonIllegalAd.
+  ///
+  /// In ko, this message translates to:
+  /// **'불법 광고 및 홍보'**
+  String get reportReasonIllegalAd;
+
+  /// No description provided for @reportReasonRomanceScam.
+  ///
+  /// In ko, this message translates to:
+  /// **'로맨스 스캠 (연애 사기)'**
+  String get reportReasonRomanceScam;
+
+  /// No description provided for @reportReasonSexualDeepfake.
+  ///
+  /// In ko, this message translates to:
+  /// **'허위 합성/편집한 성인물'**
+  String get reportReasonSexualDeepfake;
+
+  /// No description provided for @reportReasonAbusive.
+  ///
+  /// In ko, this message translates to:
+  /// **'욕설 및 비매너'**
+  String get reportReasonAbusive;
+
+  /// No description provided for @reportReasonCoercion.
+  ///
+  /// In ko, this message translates to:
+  /// **'강요 및 협박'**
+  String get reportReasonCoercion;
+
+  /// No description provided for @reportReasonPrivacyLeak.
+  ///
+  /// In ko, this message translates to:
+  /// **'개인정보 유출'**
+  String get reportReasonPrivacyLeak;
+
+  /// No description provided for @reportReasonOther.
+  ///
+  /// In ko, this message translates to:
+  /// **'기타'**
+  String get reportReasonOther;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

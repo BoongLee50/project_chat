@@ -215,7 +215,7 @@ class _SentList extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Text(
-                request.sentStatusLabel,
+                request.sentStatusLabel(l10n),
                 style: TextStyle(
                   color: request.status == 'PENDING'
                       ? AppColors.gold

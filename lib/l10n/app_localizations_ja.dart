@@ -985,4 +985,85 @@ class L10nJa extends L10n {
   String chargeDone(int total) {
     return 'ルナ$total個をチャージしました。';
   }
+
+  @override
+  String get navPost => 'ポスト';
+
+  @override
+  String get navGarden => '月光ガーデン';
+
+  @override
+  String get navChat => 'チャット';
+
+  @override
+  String get navFriend => '友だち';
+
+  @override
+  String get navProfile => 'プロフィール';
+
+  @override
+  String get chatRequestPending => '返事待ち';
+
+  @override
+  String get chatRequestClosed => '会話終了';
+
+  @override
+  String get blockConfirmSuffix => 'さんをブロックしますか？';
+
+  @override
+  String get blockDescription =>
+      'ブロックすると相手とのチャットが停止し、\n相手はこれ以上あなたにメッセージを送れなくなります。';
+
+  @override
+  String get blockEffectChat => 'チャットのブロック';
+
+  @override
+  String get blockEffectChatDesc => '相手とのチャットが停止し、\nこれ以上メッセージのやりとりができなくなります。';
+
+  @override
+  String get blockEffectProfile => 'プロフィールの非公開';
+
+  @override
+  String get blockEffectProfileDesc => '相手はあなたのプロフィールと投稿を\n見られなくなります。';
+
+  @override
+  String get blockAction => 'ブロックする';
+
+  @override
+  String get reportSelectReason => '通報の理由を選んでください。';
+
+  @override
+  String get reportPrivacyNotice => 'お知らせいただいた内容は、安全のため\n厳重に秘密として扱われます。';
+
+  @override
+  String get reportDetailHint => 'どのような点が問題だったか教えてください。';
+
+  @override
+  String reportWarning(String nickname) {
+    return '通報すると$nicknameさんとの会話が終了し、友だち関係も解除されます。';
+  }
+
+  @override
+  String get reportAction => '通報する';
+
+  @override
+  String get reportReasonIllegalAd => '違法な広告・宣伝';
+
+  @override
+  String get reportReasonRomanceScam => 'ロマンス詐欺';
+
+  @override
+  String get reportReasonSexualDeepfake => '偽造・加工された性的コンテンツ';
+
+  @override
+  String get reportReasonAbusive => '暴言・マナー違反';
+
+  @override
+  String get reportReasonCoercion => '強要・脅迫';
+
+  @override
+  String get reportReasonPrivacyLeak => '個人情報の流出';
+
+  @override
+  String get reportReasonOther => 'その他';
 }

@@ -5,6 +5,7 @@ import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimens.dart';
 import '../../data/models/report_reason.dart';
 import '../providers/moderation_provider.dart';
+import '../../../../l10n/app_localizations.dart';
 
 /// 신고 팝업. (기획서 화면 16)
 ///
@@ -80,6 +81,7 @@ class _ReportDialogState extends ConsumerState<ReportDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     return Dialog(
       backgroundColor: AppColors.surfaceHigh,
       insetPadding: const EdgeInsets.symmetric(
@@ -92,12 +94,12 @@ class _ReportDialogState extends ConsumerState<ReportDialog> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Padding(
+          Padding(
             padding: EdgeInsets.fromLTRB(20, 24, 20, 0),
             child: Column(
               children: [
                 Text(
-                  '신고 이유를 선택해주세요.',
+                  l10n.reportSelectReason,
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: AppColors.textPrimary,
@@ -107,7 +109,7 @@ class _ReportDialogState extends ConsumerState<ReportDialog> {
                 ),
                 SizedBox(height: 10),
                 Text(
-                  '공유해 주신 내용은 안전을 위해\n철저히 비밀로 유지됩니다.',
+                  l10n.reportPrivacyNotice,
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: AppColors.textSecondary,
@@ -145,7 +147,7 @@ class _ReportDialogState extends ConsumerState<ReportDialog> {
                           fontSize: 14,
                         ),
                         decoration: InputDecoration(
-                          hintText: '어떤 점이 문제였는지 알려주세요.',
+                          hintText: l10n.reportDetailHint,
                           hintStyle: const TextStyle(
                             color: AppColors.textMuted,
                             fontSize: 13,
@@ -168,7 +170,7 @@ class _ReportDialogState extends ConsumerState<ReportDialog> {
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
             child: Text(
-              '신고하면 ${widget.targetNickname}님과의 대화가 종료되고 친구 관계도 해제돼요.',
+              l10n.reportWarning(widget.targetNickname),
               textAlign: TextAlign.center,
               style: const TextStyle(
                 color: AppColors.textMuted,
@@ -195,8 +197,8 @@ class _ReportDialogState extends ConsumerState<ReportDialog> {
                       onPressed: _busy
                           ? null
                           : () => Navigator.of(context).pop(false),
-                      child: const Text(
-                        '취소',
+                      child: Text(
+                        l10n.commonCancel,
                         style: TextStyle(
                           color: AppColors.textSecondary,
                           fontWeight: FontWeight.w700,
@@ -228,8 +230,8 @@ class _ReportDialogState extends ConsumerState<ReportDialog> {
                                 color: Colors.white,
                               ),
                             )
-                          : const Text(
-                              '신고하기',
+                          : Text(
+                              l10n.reportAction,
                               style: TextStyle(fontWeight: FontWeight.w800),
                             ),
                     ),
@@ -257,6 +259,7 @@ class _ReasonTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     return InkWell(
       onTap: onTap,
       child: Padding(
@@ -281,7 +284,7 @@ class _ReasonTile extends StatelessWidget {
             const SizedBox(width: 14),
             Expanded(
               child: Text(
-                reason.label,
+                reason.label(l10n),
                 style: TextStyle(
                   color: selected
                       ? AppColors.moonlight
