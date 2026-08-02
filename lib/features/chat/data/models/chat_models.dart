@@ -1,5 +1,7 @@
 // 채팅 DTO. (docs/01-protocol-api-spec.md §1.5~1.6)
 
+import '../../../../core/util/server_time.dart';
+
 class ChatRoomSummary {
   const ChatRoomSummary({
     required this.roomId,
@@ -46,7 +48,7 @@ class ChatRoomSummary {
         lastMessage: json['lastMessage'] as String?,
         lastMessageAt: json['lastMessageAt'] == null
             ? null
-            : DateTime.tryParse(json['lastMessageAt'] as String),
+            : parseServerTime(json['lastMessageAt']),
         unreadCount: json['unreadCount'] as int? ?? 0,
       );
 }
@@ -117,9 +119,7 @@ class ChatMessage {
     roomId: json['roomId'] as String? ?? '',
     senderId: json['senderId'] as String? ?? '',
     body: json['body'] as String? ?? '',
-    createdAt:
-        DateTime.tryParse(json['createdAt'] as String? ?? '') ??
-        DateTime.now(),
+    createdAt: parseServerTimeOr(json['createdAt']),
     read: json['read'] as bool? ?? false,
   );
 }

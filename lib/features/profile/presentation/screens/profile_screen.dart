@@ -4,6 +4,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimens.dart';
 import '../../../auth/presentation/providers/session_provider.dart';
+import '../../../store/data/models/store_models.dart';
+import '../../../store/presentation/providers/store_provider.dart';
+import '../../../store/presentation/screens/boost_screen.dart';
+import '../../../store/presentation/screens/luna_store_screen.dart';
+import '../../../store/presentation/screens/prime_screen.dart';
 import '../../data/models/me_profile.dart';
 
 /// 프로필 — 메인 셸의 '프로필' 탭 본문. (기획서 7장)
@@ -87,6 +92,8 @@ class ProfileScreen extends ConsumerWidget {
                     ),
             ),
             const SizedBox(height: AppDimens.gapLg),
+            const _StoreEntry(),
+            const SizedBox(height: AppDimens.gapMd),
             if (!profile.premium) const _PremiumBanner(),
           ],
         ),
@@ -385,6 +392,141 @@ class _Chip extends StatelessWidget {
   }
 }
 
+/// 루나 잔액 + 상점/부스트 진입. 프로필에서 BM 화면들로 들어가는 문이다.
+class _StoreEntry extends ConsumerWidget {
+  const _StoreEntry();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final wallet = ref.watch(walletProvider).valueOrNull ?? Wallet.empty;
+
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(AppDimens.radiusLg),
+            border: Border.all(color: AppColors.border),
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.star_rounded, color: AppColors.gold, size: 24),
+              const SizedBox(width: 8),
+              const Text(
+                '보유 루나',
+                style: TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Text(
+                '${wallet.luna}',
+                style: const TextStyle(
+                  color: AppColors.moonlight,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              const Spacer(),
+              FilledButton(
+                style: FilledButton.styleFrom(
+                  backgroundColor: AppColors.moonlight,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                ),
+                onPressed: () =>
+                    Navigator.of(context).push(LunaStoreScreen.route()),
+                child: const Text('루나상점'),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: AppDimens.gapSm),
+        Row(
+          children: [
+            Expanded(
+              child: _StoreShortcut(
+                icon: Icons.bolt,
+                label: '포스트 부스트',
+                badge: wallet.stockOf(StoreKind.postBoost),
+                onTap: () => Navigator.of(context)
+                    .push(BoostScreen.route(StoreKind.postBoost)),
+              ),
+            ),
+            const SizedBox(width: AppDimens.gapSm),
+            Expanded(
+              child: _StoreShortcut(
+                icon: Icons.star_border_rounded,
+                label: '스포트라이트',
+                badge: wallet.stockOf(StoreKind.spotlightBoost),
+                onTap: () => Navigator.of(context)
+                    .push(BoostScreen.route(StoreKind.spotlightBoost)),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _StoreShortcut extends StatelessWidget {
+  const _StoreShortcut({
+    required this.icon,
+    required this.label,
+    required this.badge,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final int badge;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(AppDimens.radiusMd),
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(AppDimens.radiusMd),
+          border: Border.all(color: AppColors.border),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, color: AppColors.moonlight, size: 20),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+            Text(
+              '$badge매',
+              style: const TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 12,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _PremiumBanner extends StatelessWidget {
   const _PremiumBanner();
 
@@ -448,7 +590,8 @@ class _PremiumBanner extends StatelessWidget {
             width: double.infinity,
             height: 46,
             child: FilledButton(
-              onPressed: () {},
+              onPressed: () =>
+                  Navigator.of(context).push(PrimeScreen.route()),
               style: FilledButton.styleFrom(
                 backgroundColor: AppColors.moonlightDeep,
                 foregroundColor: Colors.white,

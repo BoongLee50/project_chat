@@ -1,5 +1,7 @@
 // 인증 관련 DTO. (docs/01-protocol-api-spec.md §1.1)
 
+import '../../../../core/util/server_time.dart';
+
 /// 소셜 로그인 결과 상태.
 enum AuthStatus {
   /// 신규 가입 — 프로필 작성 필요
@@ -77,6 +79,6 @@ class GateState {
     open: json['open'] as bool? ?? false,
     nextOpenAt: json['nextOpenAt'] == null
         ? null
-        : DateTime.tryParse(json['nextOpenAt'] as String),
+        : parseServerTime(json['nextOpenAt']),
   );
 }

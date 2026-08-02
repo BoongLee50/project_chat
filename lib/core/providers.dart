@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../features/auth/data/datasources/auth_api.dart';
 import '../features/chat/data/datasources/chat_api.dart';
 import '../features/friend/data/datasources/friend_api.dart';
+import '../features/store/data/datasources/store_api.dart';
 import '../features/garden/data/datasources/garden_api.dart';
 import '../features/post/data/datasources/post_api.dart';
 import '../features/profile/data/datasources/profile_api.dart';
@@ -41,6 +42,10 @@ final chatApiProvider = Provider<ChatApi>(
 
 final friendApiProvider = Provider<FriendApi>(
   (ref) => FriendApi(ref.watch(dioClientProvider)),
+);
+
+final storeApiProvider = Provider<StoreApi>(
+  (ref) => StoreApi(ref.watch(dioClientProvider)),
 );
 
 /// 실시간 소켓. 로그인 후 연결하고 로그아웃 시 끊는다(session_provider).

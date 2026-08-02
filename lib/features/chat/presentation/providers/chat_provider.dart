@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/error/api_exception.dart';
 import '../../../../core/network/packet.dart';
 import '../../../../core/providers.dart';
+import '../../../../core/util/server_time.dart';
 import '../../data/models/chat_models.dart';
 
 /// 대화방 목록(매칭 대화). 소켓 이벤트가 오면 자동 갱신된다.
@@ -122,9 +123,7 @@ class ChatMessagesController
         roomId: arg,
         senderId: myUserId,
         body: text,
-        createdAt:
-            DateTime.tryParse(ack.data['createdAt'] as String? ?? '') ??
-            DateTime.now(),
+        createdAt: parseServerTimeOr(ack.data['createdAt']),
       ),
     );
     return null;
