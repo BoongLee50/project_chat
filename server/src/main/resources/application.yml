@@ -27,6 +27,32 @@ app:
   gate:
     open-hour: 17
     close-hour: 6
+  store:
+    # ⚠️ 잠정값 — BM 기획의 최종 가격표가 오면 여기만 바꾼다(코드 변경 불필요).
+    #    현금 가격은 스토어 콘솔이 권위이고, 여기 price는 "루나" 단위다.
+    luna-products:
+      POST_BOOST_1:      { type: BOOST,       kind: POST_BOOST,      price: 30,  quantity: 1,  reason: BUY_BOOST }
+      POST_BOOST_5:      { type: BOOST,       kind: POST_BOOST,      price: 130, quantity: 5,  reason: BUY_BOOST }
+      SPOTLIGHT_BOOST_1: { type: BOOST,       kind: SPOTLIGHT_BOOST, price: 50,  quantity: 1,  reason: BUY_BOOST }
+      ALBUM_PASS_30D:    { type: ENTITLEMENT, kind: ALBUM_PASS,      price: 200, duration-days: 30, reason: BUY_ALBUM_PASS }
+      TRANSLATE_PASS_30D: { type: ENTITLEMENT, kind: TRANSLATE_PASS, price: 150, duration-days: 30, reason: BUY_TRANSLATE_PASS }
+    luna-packs:
+      LUNA_100:  { luna: 100,  bonus: 0 }
+      LUNA_550:  { luna: 500,  bonus: 50 }
+      LUNA_1200: { luna: 1000, bonus: 200 }
+    prime-plans:
+      PRIME_1M:
+        product: PRIME_1M
+        duration-days: 30
+        luna: 100
+        entitlements: [ALBUM_PASS, TRANSLATE_PASS, UNLIMITED_CHAT_REQ, NO_ADS]
+        boosts: { POST_BOOST: 5, SPOTLIGHT_BOOST: 2 }
+      PRIME_6M:
+        product: PRIME_6M
+        duration-days: 180
+        luna: 700
+        entitlements: [ALBUM_PASS, TRANSLATE_PASS, UNLIMITED_CHAT_REQ, NO_ADS]
+        boosts: { POST_BOOST: 35, SPOTLIGHT_BOOST: 14 }
   chat:
     # 메시지 보관 기간. 방 타입 기준으로 판정한다(친구를 끊어 ENDED가 된 방도 FRIEND 기준).
     retention-days: 30

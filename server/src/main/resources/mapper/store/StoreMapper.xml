@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.moonlighttalk.server.store.mapper.StoreMapper">
+
+    <resultMap id="SubscriptionResultMap" type="com.moonlighttalk.server.store.entity.Subscription">
+        <id property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="product" column="product"/>
+        <result property="status" column="status"/>
+        <result property="startedAt" column="started_at"/>
+        <result property="expiresAt" column="expires_at"/>
+        <result property="autoRenew" column="auto_renew"/>
+        <result property="storeTxn" column="store_txn"/>
+        <result property="createdAt" column="created_at"/>
+    </resultMap>
+
+    <resultMap id="EntitlementResultMap" type="com.moonlighttalk.server.store.entity.Entitlement">
+        <result property="userId" column="user_id"/>
+        <result property="kind" column="kind"/>
+        <result property="source" column="source"/>
+        <result property="startedAt" column="started_at"/>
+        <result property="expiresAt" column="expires_at"/>
+    </resultMap>
+
+    <resultMap id="BoostStockResultMap" type="com.moonlighttalk.server.store.entity.BoostStock">
+        <result property="userId" column="user_id"/>
+        <result property="kind" column="kind"/>
+        <result property="quantity" column="quantity"/>
+    </resultMap>
+
+    <resultMap id="BoostActivationResultMap" type="com.moonlighttalk.server.store.entity.BoostActivation">
+        <id property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="kind" column="kind"/>
+        <result property="sessionDate" column="session_date"/>
+        <result property="startedAt" column="started_at"/>
+        <result property="expiresAt" column="expires_at"/>
+    </resultMap>
+
+    <!-- ── 구독 ── -->
+    <insert id="insertSubscription">
+        INSERT INTO subscriptions
+            (id, user_id, product, status, started_at, expires_at, auto_renew, store_txn, active_user_id, created_at)
+        VALUES (#{id}, #{userId}, #{product}, #{status}, #{startedAt}, #{expiresAt},
+                #{autoRenew}, #{storeTxn}, #{userId}, NOW())
+    </insert>
+
+    <!-- CANCELLED도 만료 전까지는 혜택이 유효하다(자동갱신만 끈 상태). -->
+    <select id="selectCurrentSubscription" resultMap="SubscriptionResultMap">
+        SELECT * FROM subscriptions
+        WHERE user_id = #{userId}
+          AND status IN ('ACTIVE','CANCELLED')
+          AND expires_at &gt; #{now}
+        ORDER BY expires_at DESC
+        LIMIT 1
+    </select>
+
+    <update id="cancelAutoRenew">
+        UPDATE subscriptions SET status = 'CANCELLED', auto_renew = 0 WHERE id = #{id}
+    </update>
+
+    <!-- active_user_id를 비워야 다음 구독을 새로 만들 수 있다(부분 유니크 트릭). -->
+    <update id="expireSubscriptions">
+        UPDATE subscriptions
+        SET status = 'EXPIRED', active_user_id = NULL
+        WHERE status IN ('ACTIVE','CANCELLED') AND expires_at &lt;= #{now}
+    </update>
+
+    <!-- ── 엔티틀먼트 ── -->
+    <!--
+      연장 규칙: 아직 살아 있으면 남은 기간에 더하고, 이미 만료됐으면 지금부터 새로 센다.
+      (남은 기간을 버리지 않으면서, 오래 전에 끝난 권리가 소급되지도 않게)
+    -->
+    <insert id="upsertEntitlement">
+        INSERT INTO user_entitlements (user_id, kind, source, started_at, expires_at, created_at)
+        VALUES (#{userId}, #{kind}, #{source}, #{now},
+                DATE_ADD(#{now}, INTERVAL #{days} DAY), NOW())
+        ON DUPLICATE KEY UPDATE
+            source     = VALUES(source),
+            expires_at = DATE_ADD(
+                CASE WHEN expires_at &gt; #{now} THEN expires_at ELSE #{now} END,
+                INTERVAL #{days} DAY)
+    </insert>
+
+    <select id="selectActiveEntitlements" resultMap="EntitlementResultMap">
+        SELECT * FROM user_entitlements WHERE user_id = #{userId} AND expires_at &gt; #{now}
+    </select>
+
+    <select id="existsActiveEntitlement" resultType="boolean">
+        SELECT EXISTS (SELECT 1 FROM user_entitlements
+                       WHERE user_id = #{userId} AND kind = #{kind} AND expires_at &gt; #{now})
+    </select>
+
+    <delete id="deleteExpiredEntitlements">
+        DELETE FROM user_entitlements WHERE expires_at &lt;= #{now}
+    </delete>
+
+    <!-- ── 부스트 ── -->
+    <insert id="addBoostStock">
+        INSERT INTO boost_inventory (user_id, kind, quantity)
+        VALUES (#{userId}, #{kind}, #{quantity})
+        ON DUPLICATE KEY UPDATE quantity = quantity + VALUES(quantity)
+    </insert>
+
+    <!-- quantity > 0 조건을 WHERE에 두어 음수가 되지 않게 한다(경합에도 안전). -->
+    <update id="consumeBoostStock">
+        UPDATE boost_inventory SET quantity = quantity - 1
+        WHERE user_id = #{userId} AND kind = #{kind} AND quantity &gt; 0
+    </update>
+
+    <select id="selectBoostStocks" resultMap="BoostStockResultMap">
+        SELECT * FROM boost_inventory WHERE user_id = #{userId}
+    </select>
+
+    <insert id="insertBoostActivation">
+        INSERT INTO boost_activations (id, user_id, kind, session_date, started_at, expires_at, created_at)
+        VALUES (#{id}, #{userId}, #{kind}, #{sessionDate}, #{startedAt}, #{expiresAt}, NOW())
+    </insert>
+
+    <select id="selectActiveBoosts" resultMap="BoostActivationResultMap">
+        SELECT * FROM boost_activations WHERE user_id = #{userId} AND expires_at &gt; #{now}
+    </select>
+
+    <select id="selectBoostedUserIds" resultType="string">
+        SELECT DISTINCT user_id FROM boost_activations WHERE expires_at &gt; #{now}
+    </select>
+
+    <delete id="deleteExpiredBoostActivations">
+        DELETE FROM boost_activations WHERE expires_at &lt;= #{now}
+    </delete>
+
+    <!-- ── 인앱결제 영수증 ── -->
+    <insert id="insertPurchase">
+        INSERT INTO store_purchases
+            (id, user_id, platform, product_id, purchase_token, token_hash, status, created_at)
+        VALUES (#{id}, #{userId}, #{platform}, #{productId}, #{purchaseToken}, #{tokenHash}, 'GRANTED', NOW())
+    </insert>
+
+    <select id="existsPurchase" resultType="boolean">
+        SELECT EXISTS (SELECT 1 FROM store_purchases
+                       WHERE platform = #{platform} AND token_hash = #{tokenHash})
+    </select>
+
+</mapper>

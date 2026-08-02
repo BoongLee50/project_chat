@@ -34,12 +34,19 @@ public class LunaService {
      */
     @Transactional
     public void deduct(String userId, int amount, String reason, String refId) {
+        deduct(userId, amount, reason, refId, "루나가 부족해요.");
+    }
+
+    /** 부족할 때 보여줄 문구는 호출부가 정한다(대화 신청 / 상점 구매 등 맥락이 다르다). */
+    @Transactional
+    public void deduct(String userId, int amount, String reason, String refId,
+                        String insufficientMessage) {
         lunaMapper.ensureWallet(userId);
         Integer balance = lunaMapper.selectBalanceForUpdate(userId);
         int current = balance == null ? 0 : balance;
         if (current < amount) {
             throw new ApiException(ErrorCode.LUNA_INSUFFICIENT, HttpStatus.CONFLICT,
-                    "대화 신청에 필요한 루나가 부족해요.");
+                    insufficientMessage);
         }
         lunaMapper.addBalance(userId, -amount);
         lunaMapper.insertTransaction(UUID.randomUUID().toString(), userId, -amount, reason, refId);

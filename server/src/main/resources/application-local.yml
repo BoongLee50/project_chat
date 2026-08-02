@@ -10,6 +10,10 @@ spring:
       port: 6379
 
 app:
+  store:
+    # 스토어 개발자 계정이 없어 영수증 검증을 흉내낸다. dev- 로 시작하는 토큰만 통과.
+    # 운영에서는 절대 켜지 말 것(MockAuthProvider와 같은 성격).
+    mock-purchase-enabled: true
   scheduler:
     # 06시 cron을 기다릴 수 없으므로 로컬에서는 수동 실행 엔드포인트를 연다.
     dev-trigger-enabled: true

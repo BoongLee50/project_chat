@@ -14,6 +14,7 @@ import com.moonlighttalk.server.common.response.ErrorCode;
 import com.moonlighttalk.server.common.storage.FileStorageService;
 import com.moonlighttalk.server.garden.mapper.GardenMapper;
 import com.moonlighttalk.server.luna.service.LunaService;
+import com.moonlighttalk.server.store.service.EntitlementService;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -30,7 +31,7 @@ import java.util.UUID;
  * 대화 신청 / 대화방 / 메시지 (기획서 4-3·5장, 01 문서 §1.5~1.6, §2).
  *
  * <p>대화 신청은 <b>하이브리드</b>: 생성은 REST(루나 차감 트랜잭션), 상대에게 도착 알림은 소켓.
- * 하루 무료 2회 후 건당 루나 5 차감(프리미엄은 무제한·무차감).
+ * 하루 무료 2회 후 건당 루나 5 차감. 무제한 대화신청 권리(UNLIMITED_CHAT_REQ)가 있으면 무차감.
  */
 @Service
 public class ChatService {
@@ -47,6 +48,7 @@ public class ChatService {
     private final GateService gateService;
     private final SocketRegistry socketRegistry;
     private final FileStorageService fileStorageService;
+    private final EntitlementService entitlementService;
 
     public ChatService(ChatMapper chatMapper,
                         UserMapper userMapper,
@@ -54,7 +56,8 @@ public class ChatService {
                         LunaService lunaService,
                         GateService gateService,
                         SocketRegistry socketRegistry,
-                        FileStorageService fileStorageService) {
+                        FileStorageService fileStorageService,
+                        EntitlementService entitlementService) {
         this.chatMapper = chatMapper;
         this.userMapper = userMapper;
         this.gardenMapper = gardenMapper;
@@ -62,6 +65,7 @@ public class ChatService {
         this.gateService = gateService;
         this.socketRegistry = socketRegistry;
         this.fileStorageService = fileStorageService;
+        this.entitlementService = entitlementService;
     }
 
     // ── 대화 신청 ───────────────────────────────────────────
@@ -84,7 +88,8 @@ public class ChatService {
         }
 
         User me = getUserOrThrow(userId);
-        boolean premium = Boolean.TRUE.equals(me.getPremium());
+        // 무제한 대화신청 권리(프라임 번들 또는 개별 구매) — 02 §1.7
+        boolean premium = entitlementService.hasUnlimitedChatRequests(userId);
         int cost = 0;
 
         if (!premium) {
@@ -96,7 +101,8 @@ public class ChatService {
 
         String requestId = UUID.randomUUID().toString();
         if (cost > 0) {
-            lunaService.deduct(userId, cost, USAGE_CHAT_REQUEST, requestId);
+            lunaService.deduct(userId, cost, USAGE_CHAT_REQUEST, requestId,
+                    "대화 신청에 필요한 루나가 부족해요.");
         }
         if (!premium) {
             lunaService.useDaily(userId, gateService.currentSessionDate(), USAGE_CHAT_REQUEST);

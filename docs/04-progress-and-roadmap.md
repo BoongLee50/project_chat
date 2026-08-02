@@ -24,7 +24,7 @@
 - 인증(소셜 로그인 추상화)·프로필 도메인 실동작, 공통 인프라(JWT 인터셉터·스토리지 추상화·예외/CORS), Flyway V1 스키마, MyBatis.
 - **로컬 풀스택 구동 완료(2026-08)**: JDK 17 + Gradle 8.10.2 + **로컬 MariaDB 11.4.5** → Flyway V1 스키마 적용, **Spring Boot 8080 구동 성공**(`/system/gate` 200, 인증 401). 세팅 절차 = [06 개발환경](06-dev-environment-setup.md).
   - MariaDB 11.4 호환 이슈 1건 수정: `chat_rooms.active_pair_key` 생성컬럼→앱세팅(커밋 `40d9130`). REST 날짜=ISO-8601 확인.
-- 구현 완료(서버): auth/profile · post · garden · **chat(+WebSocket)**. 남은 것: friend/luna/store(BM)/scheduler.
+- 구현 완료(서버): auth/profile · post · garden · chat(+WebSocket) · friend · luna · **store(BM)** · scheduler. Flyway **V6**까지 적용.
 
 **앱 UI — 화면 11개** (정적, 다크 테마 고정, Android 에뮬레이터 검증 완료)
 - 로그인 → 온보딩 3단계(닉네임 · 출생년도 · 성별/국가)
@@ -66,13 +66,14 @@
 - [x] **garden(달빛가든) 도메인** (2026-08, V3 post_comments 포함 — 피드 스코어·필터·좋아요·스킵·댓글·번역)
 - [x] **chat 도메인 + WebSocket** (2026-08, V4 — 메시지 500자·`chat_rooms.type`·`daily_usage`. 대화 신청 무료 2회/일 후 루나 5, 방 생성 중복 방지, 소켓 봉투 `{op,seq,ts,data}`)
 - [x] **friend 도메인** (2026-08, V5 — friendships 양방향 재생성. 요청/수락/거절/취소/삭제, 수락 시 상시 대화방(FRIEND) 생성 또는 기존 MATCH 방 승격, 최대 친구 수 설정화)
-- [ ] 남은 도메인: luna → store(BM) → scheduler
-- [ ] **Plan_2 반영**: `store`(결제·구독·부스트·패스=BM) 도메인, 친구 양방향+상시 대화방(`chat_rooms.type`) — `daily_usage`·`chat_rooms.type`은 **V4에서 완료**(01 §1.8 / 02 §1.7)
-- [x] 서버 프로젝트 스캐폴딩 + DB 스키마 구현(MyBatis Mapper) (2026-07~08, Flyway V1~V4)
+- [x] **store(BM) 도메인** (2026-08, V6 — 카탈로그(설정 기반)·지갑·루나 개별구매·부스트 사용/1시간 활성·프라임 구독·영수증 검증(멱등)·구독 해지. 혜택 판정을 EntitlementService로 일원화해 post·garden·chat의 임시 프리미엄 판정을 교체)
+- [x] **Plan_2 반영 완료**: `store`(결제·구독·부스트·패스) V6, 친구 양방향+상시 대화방 V5, `daily_usage`·`chat_rooms.type` V4
+- [x] 서버 프로젝트 스캐폴딩 + DB 스키마 구현(MyBatis Mapper) (2026-07~08, Flyway V1~V6)
 - [x] 소셜 인증(추상화 + 개발용 Mock) · REST API · WebSocket(채팅/프레즌스) (2026-08)
 - [x] **스케줄러 1차** (2026-08) — 17시 개방 / 06시 매칭방 일괄 종료 + `SYSTEM_CLOSE`(친구 방 제외) / 06:05 지난 영업일 정리(사진+스토리지·스코어·스킵·daily_usage, posts는 최신 1건 유지) / presence 인메모리 청소. 개발용 수동 실행 엔드포인트 포함
 - [x] **스케줄러 2차(메시지 보관)** (2026-08) — `chat_messages` FIFO 삭제. **방 타입 기준: 매칭 30일 / 친구 1년**(끊은 친구 방도 FRIEND 기준). 배치 크기로 끊어 삭제
-- [ ] 스케줄러 3차 — BM 엔타이틀먼트·구독 만료 정리(V6 이후)
+- [x] **스케줄러 3차** (2026-08) — 만료된 구독·엔티틀먼트·부스트 정리(10분 주기)
+- [ ] 구독 자동 갱신 — 스토어 웹훅 **서명 검증**이 있어야 가능(계정 발급 후)
 - [x] Redis 옵션 구성(`app.redis.enabled` + `@ConditionalOnProperty`, 인메모리 폴백 `InMemoryPresenceServiceImpl`) (2026-07)
 - [ ] 이미지 Object Storage + CDN — 스토리지 **추상화·로컬 구현만 완료**, S3 실연동(presigned)은 미착수(`S3Config`는 `app.storage.type=s3`일 때만 활성)
 - [x] UI에 실제 데이터 연결 — 홈·달빛가든·대화방/채팅·친구·프로필 **전 화면 완료** (2026-08)
@@ -107,7 +108,7 @@
 | 4 | 프로필 화면 테마 | 다크로 통일 적용 · 시안대로 **라이트로 되돌릴지** |
 | 5 | 인프라/호스팅 | 미정 (AWS RDS(MariaDB) · 자체 서버 · ElastiCache(Redis, 선택) 등) |
 | 6 | 소셜 로그인 키 | 미발급 (개발자 계정 필요) |
-| 7 | 결제 정책 | 미정 (루나 가격 · 인앱결제 상품 구성) |
+| 7 | 결제 정책 | ⏳ **잠정값으로 구현됨** — 가격·구성은 `app.store.*` 설정(코드 아님). BM 최종 가격표가 오면 설정만 교체 |
 | 8 | 타겟 범위 | 폰 세로 전용 · 태블릿/iOS 포함 시점 |
 
 ---

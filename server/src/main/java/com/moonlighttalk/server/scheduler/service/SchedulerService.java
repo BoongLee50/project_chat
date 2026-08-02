@@ -7,6 +7,7 @@ import com.moonlighttalk.server.chat.socket.Packet;
 import com.moonlighttalk.server.chat.socket.SocketRegistry;
 import com.moonlighttalk.server.common.storage.FileStorageService;
 import com.moonlighttalk.server.scheduler.mapper.SchedulerMapper;
+import com.moonlighttalk.server.store.mapper.StoreMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -35,6 +36,7 @@ public class SchedulerService {
     private final FileStorageService fileStorageService;
     private final GateService gateService;
     private final MessageRetentionPurger messageRetentionPurger;
+    private final StoreMapper storeMapper;
 
     private final int retentionDays;
     private final int retentionDaysFriend;
@@ -45,6 +47,7 @@ public class SchedulerService {
                              FileStorageService fileStorageService,
                              GateService gateService,
                              MessageRetentionPurger messageRetentionPurger,
+                             StoreMapper storeMapper,
                              @Value("${app.chat.retention-days:30}") int retentionDays,
                              @Value("${app.chat.retention-days-friend:365}") int retentionDaysFriend,
                              @Value("${app.chat.retention-batch-size:1000}") int retentionBatchSize) {
@@ -53,6 +56,7 @@ public class SchedulerService {
         this.fileStorageService = fileStorageService;
         this.gateService = gateService;
         this.messageRetentionPurger = messageRetentionPurger;
+        this.storeMapper = storeMapper;
         this.retentionDays = retentionDays;
         this.retentionDaysFriend = retentionDaysFriend;
         this.retentionBatchSize = retentionBatchSize;
@@ -117,6 +121,21 @@ public class SchedulerService {
 
         log.info("[배치] 지난 영업일 정리(<{}) 사진 {}건(파일 실패 {}) · 스코어 {} · 스킵 {} · 일일사용량 {} · 포스트 {}",
                 today, photos, failed, stats, skips, usage, posts);
+    }
+
+    /**
+     * BM 만료 정리 — 기간이 끝난 구독·엔티틀먼트·부스트를 치운다.
+     *
+     * <p>혜택 판정 자체는 {@code expires_at > now}로 하므로 이 배치가 늦어도 권한이 새지는 않는다.
+     * 다만 구독은 {@code active_user_id}를 비워 줘야 다음 구독을 만들 수 있어 이쪽이 중요하다.
+     */
+    @Transactional
+    public void expireBenefits() {
+        LocalDateTime now = LocalDateTime.now();
+        int subscriptions = storeMapper.expireSubscriptions(now);
+        int entitlements = storeMapper.deleteExpiredEntitlements(now);
+        int boosts = storeMapper.deleteExpiredBoostActivations(now);
+        log.info("[배치] BM 만료 정리 구독 {} · 권리 {} · 부스트 {}", subscriptions, entitlements, boosts);
     }
 
     /**

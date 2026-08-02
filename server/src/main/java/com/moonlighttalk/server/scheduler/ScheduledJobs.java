@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
  * (게이트 판정은 GateService, 배치 시각은 cron이라 두 곳에 있다).
  *
  * <p>범위: 게이트 개방/종료 + 지난 영업일 정리 + 메시지 보관 만료 + 프레즌스 청소.
- * BM(부스트·엔타이틀먼트·구독) 만료 정리는 아직 없다 — 07 문서 §5 참고.
+ * BM(부스트·엔티틀먼트·구독) 만료 정리까지 포함한다.
  */
 @Component
 public class ScheduledJobs {
@@ -54,5 +54,14 @@ public class ScheduledJobs {
     @Scheduled(cron = "${app.scheduler.message-retention-cron:0 20 6 * * *}", zone = KST)
     public void purgeExpiredMessages() {
         schedulerService.purgeExpiredMessages();
+    }
+
+    /**
+     * BM 만료 정리(구독·엔티틀먼트·부스트). 부스트는 1시간짜리라 하루 한 번으로는 느려
+     * 10분마다 돈다. 판정은 expires_at으로 하므로 늦어도 권한이 새지는 않는다.
+     */
+    @Scheduled(fixedDelayString = "${app.scheduler.benefit-expiry-ms:600000}")
+    public void expireBenefits() {
+        schedulerService.expireBenefits();
     }
 }

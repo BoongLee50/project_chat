@@ -37,6 +37,13 @@ public class SchedulerDevController {
         return Map.of("ok", true);
     }
 
+    /** BM 만료 정리(구독·엔티틀먼트·부스트). */
+    @PostMapping("/internal/scheduler/expire-benefits")
+    public Map<String, Object> expireBenefits(@CurrentUserId String userId) {
+        schedulerService.expireBenefits();
+        return Map.of("ok", true);
+    }
+
     /** 보관 만료 메시지 삭제(매칭 30일 / 친구 1년). */
     @PostMapping("/internal/scheduler/purge-messages")
     public Map<String, Object> purgeMessages(@CurrentUserId String userId) {

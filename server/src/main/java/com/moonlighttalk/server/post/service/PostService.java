@@ -12,6 +12,7 @@ import com.moonlighttalk.server.post.dto.UploadUrlResponse;
 import com.moonlighttalk.server.post.entity.Post;
 import com.moonlighttalk.server.post.entity.PostPhoto;
 import com.moonlighttalk.server.post.mapper.PostMapper;
+import com.moonlighttalk.server.store.service.EntitlementService;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,7 +34,8 @@ import java.util.UUID;
  *   <li>하루 한 마디는 1건만 유지(갱신), 최대 25자 — 06시 초기화 때도 유지</li>
  * </ul>
  *
- * <p>현재 프리미엄 판정은 {@code users.is_premium} 기준. 앨범패스 등 개별 엔티틀먼트는
+ * <p>혜택 판정은 앨범패스 엔티틀먼트 기준(EntitlementService). 프라임 구독 시 함께 발급된다.
+ * <p>(과거 메모) 개별 엔티틀먼트는
  * BM 테이블(02 문서 §1.7) 도입 후 반영한다.
  */
 @Service
@@ -49,15 +51,18 @@ public class PostService {
     private final UserMapper userMapper;
     private final GateService gateService;
     private final FileStorageService fileStorageService;
+    private final EntitlementService entitlementService;
 
     public PostService(PostMapper postMapper,
                         UserMapper userMapper,
                         GateService gateService,
-                        FileStorageService fileStorageService) {
+                        FileStorageService fileStorageService,
+                        EntitlementService entitlementService) {
         this.postMapper = postMapper;
         this.userMapper = userMapper;
         this.gateService = gateService;
         this.fileStorageService = fileStorageService;
+        this.entitlementService = entitlementService;
     }
 
     /** 오늘의 포스트 상태 조회. 첫 조회 시 등록 가능 창(1시간)이 시작된다. */
@@ -201,12 +206,13 @@ public class PostService {
         return created;
     }
 
+    /**
+     * 사진 8장·시간 무제한·갤러리 업로드 대상인지. 판정 기준은 <b>앨범패스 엔티틀먼트</b>다
+     * (프라임 구독 시 source=PRIME으로 함께 발급되므로 구독 여부를 따로 볼 필요가 없다 — 02 §1.7).
+     * {@code users.is_premium}은 캐시/호환용이라 여기서 보지 않는다.
+     */
     private boolean isUnlimited(String userId) {
-        User user = userMapper.findById(userId);
-        if (user == null) {
-            throw new ApiException(ErrorCode.NOT_FOUND, HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다.");
-        }
-        return Boolean.TRUE.equals(user.getPremium());
+        return entitlementService.hasAlbumPass(userId);
     }
 
     private boolean isUploadWindowExpired(Post post) {

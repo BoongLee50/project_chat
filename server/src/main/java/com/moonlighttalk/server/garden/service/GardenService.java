@@ -10,6 +10,7 @@ import com.moonlighttalk.server.garden.entity.PostComment;
 import com.moonlighttalk.server.garden.mapper.GardenMapper;
 import com.moonlighttalk.server.garden.translate.TranslationProvider;
 import com.moonlighttalk.server.presence.PresenceService;
+import com.moonlighttalk.server.store.service.EntitlementService;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,7 +25,7 @@ import java.util.*;
  *
  * <p><b>Post Score</b> = Pick + Online + Recency + Engage
  * <ul>
- *   <li>Pick(부스팅) 50 — 부스트 테이블은 BM(V4 예정) 도입 전이라 <b>임시로 프리미엄 여부</b>로 대체</li>
+ *   <li>Pick(부스팅) 50 — <b>부스트를 켜 둔 사용자</b>(boost_activations 미만료, 02 §1.7)</li>
  *   <li>Online 접속 중 10 / 미접속 0</li>
  *   <li>Recency 등록 1시간 이내 20 / 1~3시간 10 / 3시간 초과 0</li>
  *   <li>Engage 전환율 = (좋아요+대화신청)/노출×100×2 → 20%↑ 20, 15~19.9% 15, 10~14.9% 10, 5~9.9% 5, 그 외 0</li>
@@ -45,17 +46,20 @@ public class GardenService {
     private final PresenceService presenceService;
     private final FileStorageService fileStorageService;
     private final TranslationProvider translationProvider;
+    private final EntitlementService entitlementService;
 
     public GardenService(GardenMapper gardenMapper,
                           GateService gateService,
                           PresenceService presenceService,
                           FileStorageService fileStorageService,
-                          TranslationProvider translationProvider) {
+                          TranslationProvider translationProvider,
+                          EntitlementService entitlementService) {
         this.gardenMapper = gardenMapper;
         this.gateService = gateService;
         this.presenceService = presenceService;
         this.fileStorageService = fileStorageService;
         this.translationProvider = translationProvider;
+        this.entitlementService = entitlementService;
     }
 
     /**
@@ -76,10 +80,13 @@ public class GardenService {
         List<FeedCandidate> candidates = gardenMapper.selectFeedCandidates(
                 userId, sessionDate, emptyToNull(gender), emptyToNull(country), ageMin, ageMax, spotlight);
 
+        // Pick Point는 "지금 부스트를 켠 사람"에게 준다(02 §1.7). 한 번만 조회해 재사용.
+        Set<String> boosted = new HashSet<>(entitlementService.boostedUserIds());
+
         // 스코어 계산 후 내림차순 정렬(동점은 랜덤).
         Map<String, Integer> scores = new HashMap<>();
         for (FeedCandidate c : candidates) {
-            scores.put(c.getUserId(), score(c));
+            scores.put(c.getUserId(), score(c, boosted.contains(c.getUserId())));
         }
         Collections.shuffle(candidates);
         candidates.sort(Comparator.comparingInt(
@@ -91,7 +98,7 @@ public class GardenService {
         List<FeedItemDto> items = new ArrayList<>();
         for (FeedCandidate c : page) {
             gardenMapper.incrementStat(c.getUserId(), sessionDate, "exposures", 1);
-            items.add(toItem(c, scores.get(c.getUserId())));
+            items.add(toItem(c, scores.get(c.getUserId()), boosted.contains(c.getUserId())));
         }
 
         boolean hasMore = offset + page.size() < candidates.size();
@@ -146,7 +153,7 @@ public class GardenService {
 
     // ── 내부 ────────────────────────────────────────────────
 
-    private FeedItemDto toItem(FeedCandidate c, int score) {
+    private FeedItemDto toItem(FeedCandidate c, int score, boolean boosted) {
         List<String> photoUrls = gardenMapper.selectPhotoKeys(c.getPostId()).stream()
                 .map(fileStorageService::issueDownloadUrl)
                 .toList();
@@ -156,7 +163,7 @@ public class GardenService {
                 c.getNickname(),
                 c.getBirthYear() == null ? null : gateService.nowKst().getYear() - c.getBirthYear(),
                 c.getCountry(),
-                c.isPremium(),
+                boosted, // PICK 마크 = 부스트 활성 여부
                 presenceService.isOnline(c.getUserId()),
                 c.getOneLiner(),
                 photoUrls,
@@ -167,8 +174,8 @@ public class GardenService {
         );
     }
 
-    private int score(FeedCandidate c) {
-        int pick = c.isPremium() ? SCORE_PICK : 0;
+    private int score(FeedCandidate c, boolean boosted) {
+        int pick = boosted ? SCORE_PICK : 0;
         int online = presenceService.isOnline(c.getUserId()) ? SCORE_ONLINE : 0;
         return pick + online + recencyScore(c.getPublishedAt()) + engageScore(c);
     }

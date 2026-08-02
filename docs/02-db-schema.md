@@ -200,15 +200,15 @@ subscriptions              -- 프라임 멤버십(구독, 8-1)
   -- 중복결제 방지: 같은 user의 ACTIVE 구독은 1개만(부분 유니크, §1.5 chat_rooms와 동일 트릭)
 
 user_entitlements          -- 시간제 권리(앨범패스/번역패스/대화무제한/광고제거) (8-2,8-4,8-5)
-  id          uuid PK
-  user_id     uuid FK
+  user_id     uuid FK                            -- V6 구현: (user_id, kind)가 PK
   kind        enum(ALBUM_PASS, TRANSLATE_PASS, UNLIMITED_CHAT_REQ, NO_ADS)
   source      enum(PRIME, LUNA_PURCHASE)         -- 프라임 번들 / 루나 개별구매
   started_at  timestamptz
   expires_at  timestamptz
   created_at  timestamptz
-  KEY(user_id, kind, expires_at)                 -- "지금 이 기능 활성?" = kind + expires_at > now 조회
-  -- 중복구매 불가(같은 kind 활성 1개) — 연장 시 expires_at 갱신
+  PK(user_id, kind)                              -- "같은 kind 활성 1개" 제약을 구조로 보장(설계의 id PK 대신)
+  KEY(expires_at)                                -- 만료 정리 배치용
+  -- 연장은 UPSERT: 아직 살아 있으면 남은 기간에 더하고, 만료됐으면 지금부터 다시 센다
 
 boost_inventory            -- 부스트 보유 매수 (8-3)
   user_id   uuid FK
@@ -233,7 +233,19 @@ daily_usage                -- 일일 무료 쿼터 카운터
   PK(user_id, session_date, kind)
   -- 대화신청 2회 / 댓글번역 2회 / 채팅번역 2명(무료). 원자적 UPSERT로 증가(§1.4 패턴). 06시 배치가 지난 날짜 정리
 ```
-> **루나 개별구매**는 `luna_transactions`(§1.2) 차감 + 대상 엔티틀먼트/재고 갱신을 **단일 트랜잭션**으로. `reason` enum에 `BUY_BOOST, BUY_ALBUM_PASS, BUY_TRANSLATE_PASS` 추가 예정(대화신청 소비는 기존 `CHAT_REQUEST`).
+```
+store_purchases            -- 인앱결제 영수증(V6 추가 — 01 §1.8의 "중복 지급 방지" 저장소)
+  id             uuid PK
+  user_id        uuid FK
+  platform       enum(GOOGLE, APPLE)
+  product_id     text
+  purchase_token text
+  token_hash     char(64)                        -- purchase_token은 길어 인덱스가 안 걸려 SHA-256으로
+  status         enum(GRANTED, REFUNDED)
+  created_at     timestamptz
+  UNIQUE(platform, token_hash)                   -- 같은 영수증 재전송 시 유니크 위반 → 두 번 지급 안 됨
+```
+> **루나 개별구매**는 `luna_transactions`(§1.2) 차감 + 대상 엔티틀먼트/재고 갱신을 **단일 트랜잭션**으로. `reason` enum에 `BUY_BOOST, BUY_ALBUM_PASS, BUY_TRANSLATE_PASS` **추가됨(V6)**(대화신청 소비는 기존 `CHAT_REQUEST`).
 > **프리미엄 판정**: `users.is_premium`(§1.1)은 캐시/호환용이고, 실제 혜택 판정은 `subscriptions`(ACTIVE) + `user_entitlements`(kind별 미만료)로 한다. 프라임 구독 시 앨범패스/대화무제한/번역무제한/광고제거 엔티틀먼트를 `source=PRIME`으로 발급하고, 부스트는 매수를 `boost_inventory`에 충전.
 
 ---
@@ -270,6 +282,7 @@ daily_usage                -- 일일 무료 쿼터 카운터
 - **06:00** 지난 영업일 posts/post_photos + post_stats/feed_skips + daily_usage + Storage + score 키 초기화. **하루 한마디(posts.one_liner)는 유지**(초기화 제외).
 - **06:20** `chat_messages` 보관 만료 FIFO 삭제 — **방 타입 기준**(MATCH 30일 / FRIEND 1년).
 - **5분** presence 만료 항목 청소(Redis 비활성 시. Redis면 TTL이 처리).
-- **미구현** 만료된 `boost_activations`/`user_entitlements` 정리, presence TTL 만료(Redis) — BM 도입 후.
+- **10분** 만료된 `subscriptions`(→EXPIRED, `active_user_id` 해제) · `user_entitlements` · `boost_activations` 정리. 부스트가 1시간짜리라 주기를 짧게 뒀다.
+- **미구현** 구독 자동 갱신(스토어 웹훅 서명 검증이 있어야 가능).
 - ⚠️ `ended_at+30분`은 **목록 표시 규칙**이지 삭제 작업이 아니다(§1.5). `chat_messages`가 `chat_rooms`에 `ON DELETE CASCADE`라 방을 지우면 메시지까지 사라져 보관 정책과 충돌하므로, 배치로 방을 지우지 않는다.
 - **구독**: `subscriptions` 만료 시 `auto_renew=true`면 자동 갱신(결제 연동), `CANCELLED`이면 `EXPIRED` 처리 + 연동 엔티틀먼트 만료.
