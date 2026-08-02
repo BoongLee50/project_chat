@@ -9,8 +9,9 @@ import '../../data/models/chat_models.dart';
 import '../../../auth/presentation/providers/gate_provider.dart';
 import '../providers/chat_provider.dart';
 import 'chat_screen.dart';
+import '../../../../l10n/app_localizations.dart';
 
-/// 대화방 — 메인 셸의 '대화방' 탭 본문. (기획서 5장)
+/// 대화방 — 메인 셸의 l10n.chatRoomsTitle 탭 본문. (기획서 5장)
 ///
 /// [매칭 대화] 진행 중인 방 + 받은 신청 / [보낸 신청] 목록을 전환해 보여준다.
 /// 새 메시지·신청·방 상태 변화는 소켓 이벤트로 자동 갱신된다.
@@ -26,6 +27,7 @@ class _ChatRoomsScreenState extends ConsumerState<ChatRoomsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     final rooms = ref.watch(chatRoomsProvider);
     final received = ref.watch(receivedRequestsProvider);
     final sent = ref.watch(sentRequestsProvider);
@@ -44,9 +46,9 @@ class _ChatRoomsScreenState extends ConsumerState<ChatRoomsScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
-                children: const [
+                children: [
                   Text(
-                    '대화방',
+                    l10n.chatRoomsTitle,
                     style: TextStyle(
                       color: AppColors.textPrimary,
                       fontSize: 24,
@@ -58,15 +60,15 @@ class _ChatRoomsScreenState extends ConsumerState<ChatRoomsScreen> {
                 ],
               ),
               const SizedBox(height: 4),
-              const Text(
-                '마음이 통하는 사람들과 이야기를 나눠보세요.',
+              Text(
+                l10n.chatRoomsSubtitle,
                 style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
               ),
               const SizedBox(height: AppDimens.gapMd),
               // 운영시간 밖에는 매칭 대화만 막힌다 — 친구 방은 24시간이라 그대로 쓸 수 있다.
               if (!ref.watch(gateOpenProvider))
-                const GateBanner(
-                  message: '지금은 매칭 대화를 나눌 수 있는 시간이 아니에요.\n친구와의 대화는 언제든 가능해요.',
+                GateBanner(
+                  message: l10n.chatGateClosed,
                 ),
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
@@ -74,7 +76,7 @@ class _ChatRoomsScreenState extends ConsumerState<ChatRoomsScreen> {
                   children: [
                     _Pill(
                       icon: Icons.chat_bubble_outline,
-                      label: '매칭 대화',
+                      label: l10n.chatTabMatch,
                       count:
                           (rooms.valueOrNull?.length ?? 0) +
                           (received.valueOrNull?.length ?? 0),
@@ -84,7 +86,7 @@ class _ChatRoomsScreenState extends ConsumerState<ChatRoomsScreen> {
                     const SizedBox(width: 10),
                     _Pill(
                       icon: Icons.send_outlined,
-                      label: '보낸 신청',
+                      label: l10n.chatTabSent,
                       count: sent.valueOrNull?.length ?? 0,
                       active: _showSent,
                       onTap: () => setState(() => _showSent = true),
@@ -124,6 +126,7 @@ class _MatchedList extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = L10n.of(context);
     final roomList = rooms.valueOrNull ?? const <ChatRoomSummary>[];
     final requestList = received.valueOrNull ?? const <ChatRequest>[];
 
@@ -131,7 +134,7 @@ class _MatchedList extends ConsumerWidget {
       return const _Loading();
     }
     if (roomList.isEmpty && requestList.isEmpty) {
-      return const _Empty('아직 대화가 없어요.\n달빛가든에서 마음에 드는 사람에게 말을 걸어보세요.');
+      return _Empty(l10n.chatRoomsEmpty);
     }
 
     return ListView(
@@ -144,11 +147,11 @@ class _MatchedList extends ConsumerWidget {
       ),
       children: [
         if (requestList.isNotEmpty) ...[
-          const _SectionLabel('받은 신청'),
+          _SectionLabel(l10n.chatTabReceived),
           for (final request in requestList)
             _RequestTile(request: request),
           const SizedBox(height: AppDimens.gapMd),
-          const _SectionLabel('대화 중'),
+          _SectionLabel(l10n.chatRoomsOngoing),
         ],
         for (final room in roomList) _RoomTile(room: room),
       ],
@@ -163,9 +166,10 @@ class _SentList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     final list = sent.valueOrNull ?? const <ChatRequest>[];
     if (sent.isLoading && list.isEmpty) return const _Loading();
-    if (list.isEmpty) return const _Empty('보낸 대화 신청이 없어요.');
+    if (list.isEmpty) return _Empty(l10n.chatRoomsEmptySent);
 
     return ListView.separated(
       physics: const AlwaysScrollableScrollPhysics(),
@@ -235,6 +239,7 @@ class _RequestTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = L10n.of(context);
     Future<void> run(Future<String?> Function() action) async {
       final error = await action();
       if (error != null && context.mounted) {
@@ -287,7 +292,7 @@ class _RequestTile extends ConsumerWidget {
                 Expanded(
                   child: OutlinedButton(
                     onPressed: () => run(() => actions.reject(request.id)),
-                    child: const Text('거절'),
+                    child: Text(l10n.commonReject),
                   ),
                 ),
                 const SizedBox(width: 10),
@@ -297,7 +302,7 @@ class _RequestTile extends ConsumerWidget {
                     style: FilledButton.styleFrom(
                       backgroundColor: AppColors.moonlight,
                     ),
-                    child: const Text('수락'),
+                    child: Text(l10n.commonAccept),
                   ),
                 ),
               ],
@@ -316,6 +321,7 @@ class _RoomTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     return Padding(
       padding: const EdgeInsets.only(bottom: AppDimens.gapSm),
       child: Material(
@@ -365,8 +371,8 @@ class _RoomTile extends StatelessWidget {
                                 ),
                                 borderRadius: BorderRadius.circular(6),
                               ),
-                              child: const Text(
-                                '친구',
+                              child: Text(
+                                l10n.chatTabFriend,
                                 style: TextStyle(
                                   color: AppColors.moonlight,
                                   fontSize: 11,
@@ -377,7 +383,7 @@ class _RoomTile extends StatelessWidget {
                           ],
                           const SizedBox(width: 8),
                           Text(
-                            _timeAgo(room.lastMessageAt),
+                            _timeAgo(l10n, room.lastMessageAt),
                             style: const TextStyle(
                               color: AppColors.textMuted,
                               fontSize: 12,
@@ -388,7 +394,7 @@ class _RoomTile extends StatelessWidget {
                       const SizedBox(height: 6),
                       Text(
                         // 목록 미리보기는 25자까지만(기획서 5장)
-                        _preview(room.lastMessage),
+                        _preview(l10n, room.lastMessage),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
@@ -427,19 +433,19 @@ class _RoomTile extends StatelessWidget {
     );
   }
 
-  static String _preview(String? text) {
-    if (text == null || text.isEmpty) return '대화를 시작해보세요.';
+  static String _preview(L10n l10n, String? text) {
+    if (text == null || text.isEmpty) return l10n.chatRoomsStart;
     final chars = text.characters;
     return chars.length <= 25 ? text : '${chars.take(25)}…';
   }
 
-  static String _timeAgo(DateTime? at) {
+  static String _timeAgo(L10n l10n, DateTime? at) {
     if (at == null) return '';
     final diff = DateTime.now().difference(at);
-    if (diff.inMinutes < 1) return '방금';
-    if (diff.inMinutes < 60) return '${diff.inMinutes}분 전';
-    if (diff.inHours < 24) return '${diff.inHours}시간 전';
-    return '${diff.inDays}일 전';
+    if (diff.inMinutes < 1) return l10n.timeJustNow;
+    if (diff.inMinutes < 60) return l10n.timeMinutesAgo(diff.inMinutes);
+    if (diff.inHours < 24) return l10n.timeHoursAgo(diff.inHours);
+    return l10n.timeDaysAgo(diff.inDays);
   }
 }
 

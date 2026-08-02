@@ -275,4 +275,101 @@ class L10nJa extends L10n {
   String durationSecond(int seconds) {
     return '$seconds秒';
   }
+
+  @override
+  String get chatRoomsTitle => 'チャットルーム';
+
+  @override
+  String get chatRoomsSubtitle => '心が通じ合う人と話してみましょう。';
+
+  @override
+  String get chatTabMatch => 'マッチトーク';
+
+  @override
+  String get chatTabFriend => '友だち';
+
+  @override
+  String get chatTabReceived => '受け取ったリクエスト';
+
+  @override
+  String get chatTabSent => '送ったリクエスト';
+
+  @override
+  String get chatRoomsEmpty => 'まだ会話がありません。\n月光ガーデンで気になる人に話しかけてみましょう。';
+
+  @override
+  String get chatRoomsEmptySent => '送った会話リクエストはありません。';
+
+  @override
+  String get chatRoomsStart => '会話を始めてみましょう。';
+
+  @override
+  String get chatRoomsOngoing => '会話中';
+
+  @override
+  String get chatGateClosed => '今はマッチトークができる時間ではありません。\n友だちとの会話はいつでも可能です。';
+
+  @override
+  String get commonAccept => '承認';
+
+  @override
+  String get commonReject => '拒否';
+
+  @override
+  String get timeJustNow => 'たった今';
+
+  @override
+  String timeMinutesAgo(int minutes) {
+    return '$minutes分前';
+  }
+
+  @override
+  String timeHoursAgo(int hours) {
+    return '$hours時間前';
+  }
+
+  @override
+  String timeDaysAgo(int days) {
+    return '$days日前';
+  }
+
+  @override
+  String ageYears(int age) {
+    return '$age歳';
+  }
+
+  @override
+  String get chatLoadFailed => '会話を読み込めませんでした。';
+
+  @override
+  String get chatInputHint => 'メッセージを入力してください...';
+
+  @override
+  String get chatMatchedNotice => 'マッチしました。礼儀正しく素敵な会話を楽しみましょう。';
+
+  @override
+  String get chatMenuProfile => 'プロフィールを見る';
+
+  @override
+  String get chatMenuFriendRequest => '友だちリクエスト';
+
+  @override
+  String get chatMenuReport => '通報する';
+
+  @override
+  String get chatMenuBlock => 'ブロックする';
+
+  @override
+  String get chatMenuLeave => 'チャットルームを出る';
+
+  @override
+  String get chatFriendRequestSent => '友だちリクエストを送りました。相手が承認すると友だちになります。';
+
+  @override
+  String get chatReportDone => '通報を受け付けました。会話は終了します。';
+
+  @override
+  String chatBlockDone(String nickname) {
+    return '$nicknameさんをブロックしました。';
+  }
 }

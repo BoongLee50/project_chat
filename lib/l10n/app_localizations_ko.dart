@@ -276,4 +276,102 @@ class L10nKo extends L10n {
   String durationSecond(int seconds) {
     return '$seconds초';
   }
+
+  @override
+  String get chatRoomsTitle => '대화방';
+
+  @override
+  String get chatRoomsSubtitle => '마음이 통하는 사람들과 이야기를 나눠보세요.';
+
+  @override
+  String get chatTabMatch => '매칭 대화';
+
+  @override
+  String get chatTabFriend => '친구';
+
+  @override
+  String get chatTabReceived => '받은 신청';
+
+  @override
+  String get chatTabSent => '보낸 신청';
+
+  @override
+  String get chatRoomsEmpty => '아직 대화가 없어요.\n달빛가든에서 마음에 드는 사람에게 말을 걸어보세요.';
+
+  @override
+  String get chatRoomsEmptySent => '보낸 대화 신청이 없어요.';
+
+  @override
+  String get chatRoomsStart => '대화를 시작해보세요.';
+
+  @override
+  String get chatRoomsOngoing => '대화 중';
+
+  @override
+  String get chatGateClosed =>
+      '지금은 매칭 대화를 나눌 수 있는 시간이 아니에요.\n친구와의 대화는 언제든 가능해요.';
+
+  @override
+  String get commonAccept => '수락';
+
+  @override
+  String get commonReject => '거절';
+
+  @override
+  String get timeJustNow => '방금';
+
+  @override
+  String timeMinutesAgo(int minutes) {
+    return '$minutes분 전';
+  }
+
+  @override
+  String timeHoursAgo(int hours) {
+    return '$hours시간 전';
+  }
+
+  @override
+  String timeDaysAgo(int days) {
+    return '$days일 전';
+  }
+
+  @override
+  String ageYears(int age) {
+    return '$age세';
+  }
+
+  @override
+  String get chatLoadFailed => '대화를 불러오지 못했어요.';
+
+  @override
+  String get chatInputHint => '메시지를 입력하세요...';
+
+  @override
+  String get chatMatchedNotice => '매칭되었습니다. 예의 있는 멋진 대화를 나눠보세요.';
+
+  @override
+  String get chatMenuProfile => '프로필 보기';
+
+  @override
+  String get chatMenuFriendRequest => '친구 요청';
+
+  @override
+  String get chatMenuReport => '신고하기';
+
+  @override
+  String get chatMenuBlock => '차단하기';
+
+  @override
+  String get chatMenuLeave => '대화방 나가기';
+
+  @override
+  String get chatFriendRequestSent => '친구 요청을 보냈어요. 상대가 수락하면 친구가 돼요.';
+
+  @override
+  String get chatReportDone => '신고가 접수됐어요. 대화가 종료됩니다.';
+
+  @override
+  String chatBlockDone(String nickname) {
+    return '$nickname님을 차단했어요.';
+  }
 }

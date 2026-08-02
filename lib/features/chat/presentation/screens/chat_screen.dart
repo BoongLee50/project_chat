@@ -10,6 +10,7 @@ import '../../../moderation/presentation/widgets/block_dialog.dart';
 import '../../../moderation/presentation/widgets/report_dialog.dart';
 import '../../data/models/chat_models.dart';
 import '../providers/chat_provider.dart';
+import '../../../../l10n/app_localizations.dart';
 
 /// 채팅창 — 대화방에서 항목을 선택하면 열린다. (기획서 5-1)
 ///
@@ -68,6 +69,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   /// 친구 요청 — 상대가 수락하면 상시 대화방이 되어 운영시간 밖에도 대화가 이어진다.
   Future<void> _requestFriend() async {
+    final l10n = L10n.of(context);
     final error = await ref
         .read(friendActionsProvider)
         .request(widget.room.partnerId);
@@ -77,7 +79,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       ..showSnackBar(
         SnackBar(
           content: Text(
-            error ?? '친구 요청을 보냈어요. 상대가 수락하면 친구가 돼요.',
+            error ?? l10n.chatFriendRequestSent,
           ),
         ),
       );
@@ -85,6 +87,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   /// 신고·차단은 서버가 대화방을 종료시키므로, 성공하면 화면을 닫고 목록으로 돌아간다.
   Future<void> _report() async {
+    final l10n = L10n.of(context);
     final done = await ReportDialog.show(
       context,
       targetUserId: widget.room.partnerId,
@@ -93,11 +96,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     if (done != true || !mounted) return;
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
-      ..showSnackBar(const SnackBar(content: Text('신고가 접수됐어요. 대화가 종료됩니다.')));
+      ..showSnackBar(SnackBar(content: Text(l10n.chatReportDone)));
     Navigator.of(context).pop();
   }
 
   Future<void> _block() async {
+    final l10n = L10n.of(context);
     final done = await BlockDialog.show(
       context,
       targetUserId: widget.room.partnerId,
@@ -107,7 +111,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(
-        SnackBar(content: Text('${widget.room.partnerNickname}님을 차단했어요.')),
+        SnackBar(content: Text(l10n.chatBlockDone(widget.room.partnerNickname))),
       );
     Navigator.of(context).pop();
   }
@@ -128,6 +132,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     final messages = ref.watch(chatMessagesProvider(widget.room.roomId));
     final myId = ref.watch(sessionProvider).profile?.id;
 
@@ -155,7 +160,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 ),
                 error: (error, _) => Center(
                   child: Text(
-                    '대화를 불러오지 못했어요.',
+                    l10n.chatLoadFailed,
                     style: const TextStyle(color: AppColors.textMuted),
                   ),
                 ),
@@ -163,7 +168,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   controller: _scrollController,
                   padding: const EdgeInsets.all(AppDimens.pagePad),
                   children: [
-                    const _SystemMessage('매칭되었습니다. 예의 있는 멋진 대화를 나눠보세요.'),
+                    _SystemMessage(l10n.chatMatchedNotice),
                     const SizedBox(height: AppDimens.gapMd),
                     for (final message in list)
                       _Bubble(
@@ -203,6 +208,7 @@ class _ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     return AppBar(
       backgroundColor: AppColors.night,
       titleSpacing: 0,
@@ -246,7 +252,7 @@ class _ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
               ),
               if (room.partnerAge != null)
                 Text(
-                  '${room.partnerAge}세',
+                  l10n.ageYears(room.partnerAge!),
                   style: const TextStyle(
                     color: AppColors.textSecondary,
                     fontSize: 12,
@@ -269,25 +275,25 @@ class _ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
           itemBuilder: (context) => [
             // 이미 친구인 방(FRIEND)에서는 요청 항목을 숨긴다.
             if (room.type != 'FRIEND')
-              const PopupMenuItem(
+              PopupMenuItem(
                 value: 'friend',
-                child: _MenuRow(Icons.person_add_alt, '친구 요청'),
+                child: _MenuRow(Icons.person_add_alt, l10n.chatMenuFriendRequest),
               ),
-            const PopupMenuItem(
+            PopupMenuItem(
               value: 'profile',
-              child: _MenuRow(Icons.person_outline, '프로필 보기'),
+              child: _MenuRow(Icons.person_outline, l10n.chatMenuProfile),
             ),
-            const PopupMenuItem(
+            PopupMenuItem(
               value: 'report',
-              child: _MenuRow(Icons.flag_outlined, '신고하기'),
+              child: _MenuRow(Icons.flag_outlined, l10n.chatMenuReport),
             ),
-            const PopupMenuItem(
+            PopupMenuItem(
               value: 'block',
-              child: _MenuRow(Icons.block, '차단하기'),
+              child: _MenuRow(Icons.block, l10n.chatMenuBlock),
             ),
-            const PopupMenuItem(
+            PopupMenuItem(
               value: 'leave',
-              child: _MenuRow(Icons.logout, '대화방 나가기'),
+              child: _MenuRow(Icons.logout, l10n.chatMenuLeave),
             ),
           ],
         ),
@@ -466,6 +472,7 @@ class _InputBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     return Padding(
       padding: EdgeInsets.fromLTRB(
         12,
@@ -483,7 +490,7 @@ class _InputBar extends StatelessWidget {
               textInputAction: TextInputAction.send,
               onSubmitted: (_) => onSend(),
               decoration: InputDecoration(
-                hintText: '메시지를 입력하세요...',
+                hintText: l10n.chatInputHint,
                 hintStyle: const TextStyle(color: AppColors.textMuted),
                 filled: true,
                 fillColor: AppColors.surface,

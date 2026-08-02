@@ -173,5 +173,69 @@
         "type": "int"
       }
     }
+  },
+  "chatRoomsTitle": "대화방",
+  "chatRoomsSubtitle": "마음이 통하는 사람들과 이야기를 나눠보세요.",
+  "chatTabMatch": "매칭 대화",
+  "chatTabFriend": "친구",
+  "chatTabReceived": "받은 신청",
+  "chatTabSent": "보낸 신청",
+  "chatRoomsEmpty": "아직 대화가 없어요.\n달빛가든에서 마음에 드는 사람에게 말을 걸어보세요.",
+  "chatRoomsEmptySent": "보낸 대화 신청이 없어요.",
+  "chatRoomsStart": "대화를 시작해보세요.",
+  "chatRoomsOngoing": "대화 중",
+  "chatGateClosed": "지금은 매칭 대화를 나눌 수 있는 시간이 아니에요.\n친구와의 대화는 언제든 가능해요.",
+  "commonAccept": "수락",
+  "commonReject": "거절",
+  "timeJustNow": "방금",
+  "timeMinutesAgo": "{minutes}분 전",
+  "@timeMinutesAgo": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "timeHoursAgo": "{hours}시간 전",
+  "@timeHoursAgo": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "timeDaysAgo": "{days}일 전",
+  "@timeDaysAgo": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "ageYears": "{age}세",
+  "@ageYears": {
+    "placeholders": {
+      "age": {
+        "type": "int"
+      }
+    }
+  },
+  "chatLoadFailed": "대화를 불러오지 못했어요.",
+  "chatInputHint": "메시지를 입력하세요...",
+  "chatMatchedNotice": "매칭되었습니다. 예의 있는 멋진 대화를 나눠보세요.",
+  "chatMenuProfile": "프로필 보기",
+  "chatMenuFriendRequest": "친구 요청",
+  "chatMenuReport": "신고하기",
+  "chatMenuBlock": "차단하기",
+  "chatMenuLeave": "대화방 나가기",
+  "chatFriendRequestSent": "친구 요청을 보냈어요. 상대가 수락하면 친구가 돼요.",
+  "chatReportDone": "신고가 접수됐어요. 대화가 종료됩니다.",
+  "chatBlockDone": "{nickname}님을 차단했어요.",
+  "@chatBlockDone": {
+    "placeholders": {
+      "nickname": {
+        "type": "String"
+      }
+    }
   }
 }

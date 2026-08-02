@@ -588,6 +588,180 @@ abstract class L10n {
   /// In ko, this message translates to:
   /// **'{seconds}초'**
   String durationSecond(int seconds);
+
+  /// No description provided for @chatRoomsTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'대화방'**
+  String get chatRoomsTitle;
+
+  /// No description provided for @chatRoomsSubtitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'마음이 통하는 사람들과 이야기를 나눠보세요.'**
+  String get chatRoomsSubtitle;
+
+  /// No description provided for @chatTabMatch.
+  ///
+  /// In ko, this message translates to:
+  /// **'매칭 대화'**
+  String get chatTabMatch;
+
+  /// No description provided for @chatTabFriend.
+  ///
+  /// In ko, this message translates to:
+  /// **'친구'**
+  String get chatTabFriend;
+
+  /// No description provided for @chatTabReceived.
+  ///
+  /// In ko, this message translates to:
+  /// **'받은 신청'**
+  String get chatTabReceived;
+
+  /// No description provided for @chatTabSent.
+  ///
+  /// In ko, this message translates to:
+  /// **'보낸 신청'**
+  String get chatTabSent;
+
+  /// No description provided for @chatRoomsEmpty.
+  ///
+  /// In ko, this message translates to:
+  /// **'아직 대화가 없어요.\n달빛가든에서 마음에 드는 사람에게 말을 걸어보세요.'**
+  String get chatRoomsEmpty;
+
+  /// No description provided for @chatRoomsEmptySent.
+  ///
+  /// In ko, this message translates to:
+  /// **'보낸 대화 신청이 없어요.'**
+  String get chatRoomsEmptySent;
+
+  /// No description provided for @chatRoomsStart.
+  ///
+  /// In ko, this message translates to:
+  /// **'대화를 시작해보세요.'**
+  String get chatRoomsStart;
+
+  /// No description provided for @chatRoomsOngoing.
+  ///
+  /// In ko, this message translates to:
+  /// **'대화 중'**
+  String get chatRoomsOngoing;
+
+  /// No description provided for @chatGateClosed.
+  ///
+  /// In ko, this message translates to:
+  /// **'지금은 매칭 대화를 나눌 수 있는 시간이 아니에요.\n친구와의 대화는 언제든 가능해요.'**
+  String get chatGateClosed;
+
+  /// No description provided for @commonAccept.
+  ///
+  /// In ko, this message translates to:
+  /// **'수락'**
+  String get commonAccept;
+
+  /// No description provided for @commonReject.
+  ///
+  /// In ko, this message translates to:
+  /// **'거절'**
+  String get commonReject;
+
+  /// No description provided for @timeJustNow.
+  ///
+  /// In ko, this message translates to:
+  /// **'방금'**
+  String get timeJustNow;
+
+  /// No description provided for @timeMinutesAgo.
+  ///
+  /// In ko, this message translates to:
+  /// **'{minutes}분 전'**
+  String timeMinutesAgo(int minutes);
+
+  /// No description provided for @timeHoursAgo.
+  ///
+  /// In ko, this message translates to:
+  /// **'{hours}시간 전'**
+  String timeHoursAgo(int hours);
+
+  /// No description provided for @timeDaysAgo.
+  ///
+  /// In ko, this message translates to:
+  /// **'{days}일 전'**
+  String timeDaysAgo(int days);
+
+  /// No description provided for @ageYears.
+  ///
+  /// In ko, this message translates to:
+  /// **'{age}세'**
+  String ageYears(int age);
+
+  /// No description provided for @chatLoadFailed.
+  ///
+  /// In ko, this message translates to:
+  /// **'대화를 불러오지 못했어요.'**
+  String get chatLoadFailed;
+
+  /// No description provided for @chatInputHint.
+  ///
+  /// In ko, this message translates to:
+  /// **'메시지를 입력하세요...'**
+  String get chatInputHint;
+
+  /// No description provided for @chatMatchedNotice.
+  ///
+  /// In ko, this message translates to:
+  /// **'매칭되었습니다. 예의 있는 멋진 대화를 나눠보세요.'**
+  String get chatMatchedNotice;
+
+  /// No description provided for @chatMenuProfile.
+  ///
+  /// In ko, this message translates to:
+  /// **'프로필 보기'**
+  String get chatMenuProfile;
+
+  /// No description provided for @chatMenuFriendRequest.
+  ///
+  /// In ko, this message translates to:
+  /// **'친구 요청'**
+  String get chatMenuFriendRequest;
+
+  /// No description provided for @chatMenuReport.
+  ///
+  /// In ko, this message translates to:
+  /// **'신고하기'**
+  String get chatMenuReport;
+
+  /// No description provided for @chatMenuBlock.
+  ///
+  /// In ko, this message translates to:
+  /// **'차단하기'**
+  String get chatMenuBlock;
+
+  /// No description provided for @chatMenuLeave.
+  ///
+  /// In ko, this message translates to:
+  /// **'대화방 나가기'**
+  String get chatMenuLeave;
+
+  /// No description provided for @chatFriendRequestSent.
+  ///
+  /// In ko, this message translates to:
+  /// **'친구 요청을 보냈어요. 상대가 수락하면 친구가 돼요.'**
+  String get chatFriendRequestSent;
+
+  /// No description provided for @chatReportDone.
+  ///
+  /// In ko, this message translates to:
+  /// **'신고가 접수됐어요. 대화가 종료됩니다.'**
+  String get chatReportDone;
+
+  /// No description provided for @chatBlockDone.
+  ///
+  /// In ko, this message translates to:
+  /// **'{nickname}님을 차단했어요.'**
+  String chatBlockDone(String nickname);
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {
