@@ -69,7 +69,8 @@
 - [ ] **Plan_2 반영**: `store`(결제·구독·부스트·패스=BM) 도메인, 친구 양방향+상시 대화방(`chat_rooms.type`) — `daily_usage`·`chat_rooms.type`은 **V4에서 완료**(01 §1.8 / 02 §1.7)
 - [x] 서버 프로젝트 스캐폴딩 + DB 스키마 구현(MyBatis Mapper) (2026-07~08, Flyway V1~V4)
 - [x] 소셜 인증(추상화 + 개발용 Mock) · REST API · WebSocket(채팅/프레즌스) (2026-08)
-- [ ] 스케줄러(17시 오픈 / 06시 초기화 / 채팅 30일 FIFO / 종료 방 정리)
+- [x] **스케줄러 1차** (2026-08) — 17시 개방 / 06시 매칭방 일괄 종료 + `SYSTEM_CLOSE`(친구 방 제외) / 06:05 지난 영업일 정리(사진+스토리지·스코어·스킵·daily_usage, posts는 최신 1건 유지) / presence 인메모리 청소. 개발용 수동 실행 엔드포인트 포함
+- [ ] 스케줄러 2차 — `chat_messages` 30일 FIFO 삭제(**친구 방 적용 여부 미결**), BM 엔타이틀먼트·구독 만료 정리(V6 이후)
 - [x] Redis 옵션 구성(`app.redis.enabled` + `@ConditionalOnProperty`, 인메모리 폴백 `InMemoryPresenceServiceImpl`) (2026-07)
 - [ ] 이미지 Object Storage + CDN — 스토리지 **추상화·로컬 구현만 완료**, S3 실연동(presigned)은 미착수(`S3Config`는 `app.storage.type=s3`일 때만 활성)
 - [x] UI에 실제 데이터 연결 — 홈·달빛가든·대화방/채팅·친구·프로필 **전 화면 완료** (2026-08)

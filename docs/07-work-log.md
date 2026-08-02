@@ -26,11 +26,11 @@
 | 기획 | **Plan_2** 기준 (`D:\MyProject\Plan_Chat\Plan_2` — BM 추가, 운영시간 17~06시). Plan_1은 구버전 |
 | 클라 UI | 로그인·온보딩3·홈·달빛가든·대화방·채팅창·친구·프로필 (11화면, 다크 테마) |
 | 클라 데이터 | **Riverpod + go_router + Dio + secure storage + image_picker + web_socket_channel**. **전 화면 실연동 완료**(하드코딩 화면 없음) |
-| 서버 | Spring Boot. **auth(mock 포함) / profile / post / garden / chat(+WebSocket) / friend / luna(내부용) 도메인 구현**. store(BM)·scheduler 미구현 |
+| 서버 | Spring Boot. **auth(mock 포함) / profile / post / garden / chat(+WebSocket) / friend / luna(내부용) / scheduler(1차) 구현**. store(BM) 미구현 |
 | DB | 로컬 MariaDB 11.4.5, Flyway **V5까지 적용**(V1 초기 + V2 posts 등록창/교체 + V3 post_comments + V4 chat + V5 friendships 양방향). BM 테이블은 **DDL 미반영 → 다음은 V6** |
 | 실기기 검증 | 에뮬 2대(Pixel_10 · Pixel_B) → 로컬 서버 → DB/디스크 **end-to-end 성공**: 자동 로그인, 프로필, 카메라 촬영→업로드→표시, 가든 피드/좋아요/댓글, **양방향 실시간 채팅**, **친구 요청→수락→상시 대화방→삭제** |
 
-**남은 화면/기능 한눈에**: BM 화면 6종(25~30) · 신고/차단 팝업 · 관심사/지역/소개 편집 팝업 · 친구 오늘의 포스트 팝업 · 시간 게이트 UI · 다국어(한↔일) · 스케줄러.
+**남은 화면/기능 한눈에**: BM 화면 6종(25~30) · 신고/차단 팝업 · 관심사/지역/소개 편집 팝업 · 친구 오늘의 포스트 팝업 · 시간 게이트 UI · 다국어(한↔일) · 스케줄러 2차(30일 FIFO·BM 만료).
 
 **작업 분담**: 서버 개발자(abombspy) = 초기 뼈대 + 추후 클라우드(AWS) 배포. 그 사이 실제 개발(서버 도메인 + 클라 연동 + 로컬 통합)은 이 저장소에서 직접 진행.
 
@@ -114,6 +114,31 @@ flutter emulators --launch Pixel_10          # 두 번째 → emulator-5556
 ---
 
 ## 4. 세션 로그
+
+### 2026-08-02(3) — 스케줄러 1차
+**한 일**
+1. **17:00 개방 / 06:00 종료** — 종료 시 매칭 대화방을 일괄 `ENDED` 처리하고 참여자에게 `ROOM_STATE(ended)`, 접속자 전체에 `SYSTEM_CLOSE` 브로드캐스트. **친구 방(`type=FRIEND`)은 제외**.
+2. **06:05 지난 영업일 정리** — `post_photos`(+스토리지 파일) · `post_stats` · `feed_skips` · `daily_usage` 삭제.
+3. **presence 인메모리 청소**(5분) — Redis면 TTL이 하지만 인메모리 맵은 계속 쌓이기만 했다.
+4. **개발용 수동 실행 엔드포인트** — `POST /internal/scheduler/{gate-close,daily-cleanup}`. `app.scheduler.dev-trigger-enabled=true`(local만).
+5. docs/05의 배치 시각표가 **18:00/05:00 옛 값**이라 17:00/06:00으로 정정.
+
+**설계 판단**
+- **posts는 전부 지우지 않고 사용자별 최신 1건을 남긴다.** 하루 한 마디(`one_liner`)가 posts row에 있고 `getOrCreateTodayPost()`가 이전 row에서 값을 이어받는다. 다 지우면 "하루 한 마디는 유지"(기획서 3-1)가 깨진다.
+- **사진은 스토리지 파일 → DB 행 순서로 지운다.** 반대로 하면 행만 사라지고 파일이 고아로 남는다. 파일 삭제 실패는 로그만 남기고 계속 진행(파일 하나 때문에 배치를 멈추지 않는다).
+- **정리 배치는 06:05**. 06:00 종료와 같은 시각에 돌리면 `currentSessionDate()`가 막 넘어가는 순간과 부딪힌다.
+- cron은 `app.scheduler.*`로 설정하되 **`app.gate.*`와 같은 값이어야 한다**(판정과 배치가 두 곳에 있음). 이 중복은 docs/05에 명시해 뒀다.
+
+**검증**(수동 트리거 + DB 대조)
+- 매칭방 ACTIVE 1 → 0, **친구방 ACTIVE 1은 그대로 유지**.
+- 사진 6 → 0(스토리지 파일도 삭제, 실패 0) · 스코어 6 → 1(당일만) · posts 08-01 5 → 3(08-02 row가 있는 2명분만 삭제) · `one_liner` 보유 row 5건 유지.
+
+**하지 않은 것 — 문서 충돌 발견**
+`ended_at+30분` 지난 방/메시지 정리는 **넣지 않았다**. docs/02에 상충하는 두 문장이 있다.
+- §4: "`ended_at+30분` 지난 대화방/**메시지** 정리"
+- §1.5: "방이 ENDED되면 예전 방은 이력으로만 남음(**메시지도 그대로 30일 보관 정책을 따름**)"
+
+`chat_messages`는 `chat_rooms`에 `ON DELETE CASCADE`라 방을 지우면 메시지가 함께 사라진다 → 30일 보관 확정과 직접 충돌. 게다가 방 목록 쿼리는 이미 `status='ACTIVE'`만 보므로 종료 방은 바로 사라진다(30분 잔류 UX는 애초에 구현돼 있지 않음). **파괴적인 쪽을 임의로 고르지 않고 남겨 둠** — 30일 FIFO를 정할 때 같이 정리할 것.
 
 ### 2026-08-02(2) — friend 도메인 + 친구 탭 실연동 (V5)
 **한 일**
@@ -230,7 +255,8 @@ final index = _index.clamp(0, _photos.length - 1);   // 사진 0장이면 clamp(
 1. **luna / store(BM) 도메인** + **V6 마이그레이션** — BM 테이블(`subscriptions`/`user_entitlements`/`boost_inventory`/`boost_activations`) + `luna_transactions.reason` 값 추가. `daily_usage`와 `chat_rooms.type`은 **V4에서 이미 생성됨**. ([02 §1.7](02-db-schema.md))
    - 결제는 `POST /store/purchases:verify`(서버 영수증 검증 + purchaseToken 멱등) + 스토어 웹훅. IAP 대상은 **루나 충전·프라임 구독만**([01 §1.8](01-protocol-api-spec.md)).
 3. **BM 화면 6종 신규** — 루나상점·프라임 멤버십·루나 충전샵·포스트 부스트·앨범 패스·자동 번역 패스 (Plan_2 화면 25~30).
-4. **scheduler** — 17시 오픈/06시 초기화(포스트·스코어·daily_usage), 채팅 30일 FIFO 삭제, 종료 방 정리.
+4. **scheduler 2차** — `chat_messages` 30일 FIFO 삭제 + BM 엔타이틀먼트/구독 만료 정리. (1차는 2026-08-02 완료 — 게이트·지난 영업일 정리·presence 청소)
+   - ⚠️ 착수 전 결정 필요: **친구 방 메시지에도 30일 FIFO를 적용할지**, 그리고 **`ended_at+30분` 방/메시지 정리와 30일 보관의 문서 충돌**(세션 로그 2026-08-02(3) 참고).
 
 **같이 정리하면 좋은 잔여 항목**
 - 채팅창 팝업 미구현분: 프로필 보기 / 신고하기 / 차단하기 (현재 메뉴만 있고 동작은 "나가기"만).

@@ -39,7 +39,7 @@ project_chat/                   (레포 루트)
    │  ├─ moderation/             # 신고/차단
    │  ├─ luna/                   # 재화(원장) 잔액/충전/차감
    │  ├─ presence/                # 온라인 상태 (Redis 선택 구성)
-   │  └─ scheduler/               # 18/05/06시 배치, 30일 FIFO, 30분 방 정리
+   │  └─ scheduler/               # 17/06시 배치, 지난 영업일 정리 (30일 FIFO는 2차)
    ├─ src/main/resources/
    │  ├─ application.yml          # 공통 설정 (+ -local / -dev / -prod 프로필)
    │  ├─ mapper/**/*.xml          # MyBatis SQL, java 패키지와 1:1 대응
@@ -107,12 +107,22 @@ presence/
 
 `scheduler/`에 `@Scheduled` 기반 배치 정의, [02 스키마 §4](02-db-schema.md#4-스케줄러배치가-건드리는-데이터)와 대응:
 
-| 시각/주기 | 작업 |
-|-----------|------|
-| 18:00 | `system:gate` 오픈 처리 |
-| 05:00 | 시스템 종료 + `SYSTEM_CLOSE` 소켓 브로드캐스트 |
-| 06:00 | 지난 영업일 `posts`/`post_photos`/`post_stats`/`feed_skips` + Storage + 스코어 키 초기화 |
-| 상시(주기 실행) | `ended_at+30분` 지난 대화방 정리, `chat_messages` 30일 초과분 FIFO 삭제, presence TTL 자연 만료(Redis 비활성 시 인메모리 청소 잡 별도 필요) |
+> 시각은 **Plan_2 기준 17:00 개방 / 06:00 종료**(KST). 아래 표의 cron은 `app.scheduler.*`로 설정하며
+> **`app.gate.open-hour`/`close-hour`와 같은 값이어야 한다**(게이트 판정과 배치 시각이 두 곳에 있음).
+
+| 시각/주기 | 작업 | 상태 |
+|-----------|------|------|
+| 17:00 | 서비스 개방(게이트 판정은 시간 계산이라 상태 변경 없음 — 기록만) | ✅ |
+| 06:00 | 매칭 대화방 일괄 종료 + `ROOM_STATE(ended)` · `SYSTEM_CLOSE` 브로드캐스트. **친구 방(`type=FRIEND`)은 제외** | ✅ |
+| 06:05 | 지난 영업일 `post_photos`(+Storage 파일) / `post_stats` / `feed_skips` / `daily_usage` 삭제, `posts`는 **사용자별 최신 1건만 남기고** 삭제 | ✅ |
+| 5분 | presence 인메모리 만료 항목 청소(Redis 비활성 시 필요 — Redis면 TTL이 처리) | ✅ |
+| 상시 | `chat_messages` 30일 초과분 FIFO 삭제 | ⏸ 2차(친구 방 적용 여부 미결) |
+| 상시 | 만료된 `boost_activations`/`user_entitlements` 정리, 구독 갱신·만료 | ⏸ 2차(BM 테이블 미생성) |
+
+**왜 posts를 다 지우지 않는가**: 하루 한 마디(`posts.one_liner`)가 이 row에 있고 다음 영업일 첫 진입 때 값을 이어받는다. 전부 지우면 "하루 한 마디는 유지"(기획서 3-1)가 깨지므로 **사용자별 최신 1건은 남긴다**.
+
+**개발용 수동 실행**: `app.scheduler.dev-trigger-enabled=true`(local 프로필만)일 때
+`POST /internal/scheduler/gate-close`, `POST /internal/scheduler/daily-cleanup`으로 06시를 기다리지 않고 확인할 수 있다.
 
 ---
 

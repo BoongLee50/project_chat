@@ -86,6 +86,25 @@ public class SocketRegistry {
         }
     }
 
+    /** 접속 중인 모든 사용자에게 전송(시스템 종료 안내 등). */
+    public void broadcast(Packet packet) {
+        String payload;
+        try {
+            payload = objectMapper.writeValueAsString(packet);
+        } catch (IOException e) {
+            log.warn("패킷 직렬화 실패: {}", packet.op(), e);
+            return;
+        }
+        int count = 0;
+        for (Set<WebSocketSession> sessions : sessionsByUser.values()) {
+            for (WebSocketSession session : sessions) {
+                send(session, payload);
+                count++;
+            }
+        }
+        log.debug("브로드캐스트 op={} 세션수={}", packet.op(), count);
+    }
+
     /** 핸들러가 받은 원본 세션으로도 보낼 수 있게 래퍼를 찾아 사용한다. */
     public void send(WebSocketSession session, Packet packet) {
         try {

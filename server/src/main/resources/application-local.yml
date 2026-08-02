@@ -10,6 +10,9 @@ spring:
       port: 6379
 
 app:
+  scheduler:
+    # 06시 cron을 기다릴 수 없으므로 로컬에서는 수동 실행 엔드포인트를 연다.
+    dev-trigger-enabled: true
   redis:
     enabled: false
   storage:

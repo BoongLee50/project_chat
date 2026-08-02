@@ -27,6 +27,14 @@ app:
   gate:
     open-hour: 17
     close-hour: 6
+  scheduler:
+    # ⚠️ gate-open/close cron은 app.gate.open-hour/close-hour와 같은 값이어야 한다.
+    gate-open-cron: "0 0 17 * * *"
+    gate-close-cron: "0 0 6 * * *"
+    daily-cleanup-cron: "0 5 6 * * *"
+    presence-sweep-ms: 300000
+    # 배치를 수동 실행하는 개발용 엔드포인트(운영에서는 절대 켜지 말 것).
+    dev-trigger-enabled: false
   friend:
     # 기획서에 20과 30이 함께 적혀 있어(보완 문서 대기) 설정으로 뺐다.
     # 프리미엄이 더 많이 가질 수 있다는 해석으로 잡아 둔 잠정값.
