@@ -216,6 +216,84 @@ abstract class L10n {
   /// In ko, this message translates to:
   /// **'욕설, 혐오 표현 등 부적절한 닉네임은 사용할 수 없습니다.'**
   String get nicknameGuideNoProfanity;
+
+  /// No description provided for @onboardingBack.
+  ///
+  /// In ko, this message translates to:
+  /// **'뒤로'**
+  String get onboardingBack;
+
+  /// No description provided for @onboardingNext.
+  ///
+  /// In ko, this message translates to:
+  /// **'완료'**
+  String get onboardingNext;
+
+  /// No description provided for @onboardingPrivateNotice.
+  ///
+  /// In ko, this message translates to:
+  /// **'* 이 정보는 다른 사용자에게 공개되지 않습니다.'**
+  String get onboardingPrivateNotice;
+
+  /// No description provided for @birthYearTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'출생년도 설정'**
+  String get birthYearTitle;
+
+  /// No description provided for @birthYearSubtitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'정확한 나이 확인을 위해 출생년도를 선택해주세요.'**
+  String get birthYearSubtitle;
+
+  /// No description provided for @genderCountryTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'성별 및 나라 설정'**
+  String get genderCountryTitle;
+
+  /// No description provided for @genderCountrySubtitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'정확한 매칭을 위해 성별과 나라를 선택해주세요.'**
+  String get genderCountrySubtitle;
+
+  /// No description provided for @genderSectionTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'성별 선택'**
+  String get genderSectionTitle;
+
+  /// No description provided for @genderMale.
+  ///
+  /// In ko, this message translates to:
+  /// **'남자'**
+  String get genderMale;
+
+  /// No description provided for @genderFemale.
+  ///
+  /// In ko, this message translates to:
+  /// **'여자'**
+  String get genderFemale;
+
+  /// No description provided for @countrySectionTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'나라 선택'**
+  String get countrySectionTitle;
+
+  /// No description provided for @countryKorea.
+  ///
+  /// In ko, this message translates to:
+  /// **'한국'**
+  String get countryKorea;
+
+  /// No description provided for @countryJapan.
+  ///
+  /// In ko, this message translates to:
+  /// **'일본'**
+  String get countryJapan;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

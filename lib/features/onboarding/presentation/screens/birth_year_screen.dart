@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../app/router.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimens.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../providers/onboarding_provider.dart';
 import '../widgets/onboarding_scaffold.dart';
 
@@ -30,11 +31,13 @@ class _BirthYearScreenState extends ConsumerState<BirthYearScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
+
     return OnboardingScaffold(
       backgroundAsset: 'assets/images/onboarding_2.jpg',
-      title: '출생년도 설정',
-      subtitle: '정확한 나이 확인을 위해 출생년도를 선택해주세요.',
-      note: '* 이 정보는 다른 사용자에게 공개되지 않습니다.',
+      title: l10n.birthYearTitle,
+      subtitle: l10n.birthYearSubtitle,
+      note: l10n.onboardingPrivateNotice,
       onSubmit: () {
         ref
             .read(onboardingProvider.notifier)

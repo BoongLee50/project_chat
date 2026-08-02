@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimens.dart';
+import '../../../../l10n/app_localizations.dart';
 
 /// 온보딩 3단계(닉네임·출생년도·성별/국가)가 공유하는 공통 레이아웃.
 ///
@@ -15,7 +16,7 @@ class OnboardingScaffold extends StatelessWidget {
     required this.child,
     required this.onSubmit,
     this.note,
-    this.submitLabel = '완료',
+    this.submitLabel,
     this.submitEnabled = true,
   });
 
@@ -25,11 +26,13 @@ class OnboardingScaffold extends StatelessWidget {
   final String? note;
   final Widget child;
   final VoidCallback onSubmit;
-  final String submitLabel;
+  /// 완료 버튼 문구. 없으면 기본값(l10n.onboardingNext)을 쓴다.
+  final String? submitLabel;
   final bool submitEnabled;
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     final h = MediaQuery.of(context).size.height;
 
     return Scaffold(
@@ -107,7 +110,7 @@ class OnboardingScaffold extends StatelessWidget {
                         Expanded(child: SingleChildScrollView(child: child)),
                         const SizedBox(height: AppDimens.gapMd),
                         _SubmitButton(
-                          label: submitLabel,
+                          label: submitLabel ?? l10n.onboardingNext,
                           enabled: submitEnabled,
                           onPressed: onSubmit,
                         ),
@@ -128,9 +131,9 @@ class OnboardingScaffold extends StatelessWidget {
                     Icons.chevron_left,
                     color: AppColors.textPrimary,
                   ),
-                  label: const Text(
-                    '뒤로',
-                    style: TextStyle(
+                  label: Text(
+                    l10n.onboardingBack,
+                    style: const TextStyle(
                       color: AppColors.textPrimary,
                       fontSize: 16,
                     ),

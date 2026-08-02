@@ -1,27 +1,36 @@
 {
   "@@locale": "ja",
-
   "appTitle": "月光トーク",
-
   "commonSave": "保存する",
   "commonCancel": "キャンセル",
   "commonConfirm": "確認",
   "commonDelete": "削除",
   "commonRetry": "再試行",
   "commonClose": "閉じる",
-
   "loginTagline": "夜だけ開くチャットの時間",
   "loginHours": "午後5時 〜 午前6時",
   "loginWithLine": "LINEでログイン",
   "loginWithKakao": "カカオトークでログイン",
   "loginWithGoogle": "Googleでログイン",
   "loginTermsNotice": "ログインすると、利用規約およびプライバシーポリシーに同意したものとみなされます。",
-
   "nicknameTitle": "ニックネーム設定",
   "nicknameSubtitle": "月光トークで使うニックネームを入力してください。",
   "nicknameHint": "ニックネームを入力してください",
   "nicknameGuideTitle": "ニックネームのガイド",
   "nicknameGuideLength": "2文字以上10文字以下で入力してください。",
   "nicknameGuideNoSpecialChars": "特殊文字と絵文字は使用できません。",
-  "nicknameGuideNoProfanity": "暴言・差別表現など不適切なニックネームは使用できません。"
+  "nicknameGuideNoProfanity": "暴言・差別表現など不適切なニックネームは使用できません。",
+  "onboardingBack": "戻る",
+  "onboardingNext": "完了",
+  "onboardingPrivateNotice": "※ この情報は他のユーザーには公開されません。",
+  "birthYearTitle": "生年設定",
+  "birthYearSubtitle": "年齢確認のため生まれた年を選択してください。",
+  "genderCountryTitle": "性別・国の設定",
+  "genderCountrySubtitle": "より合う相手と出会えるよう性別と国を選択してください。",
+  "genderSectionTitle": "性別を選択",
+  "genderMale": "男性",
+  "genderFemale": "女性",
+  "countrySectionTitle": "国を選択",
+  "countryKorea": "韓国",
+  "countryJapan": "日本"
 }

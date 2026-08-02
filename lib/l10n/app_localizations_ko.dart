@@ -67,4 +67,43 @@ class L10nKo extends L10n {
 
   @override
   String get nicknameGuideNoProfanity => '욕설, 혐오 표현 등 부적절한 닉네임은 사용할 수 없습니다.';
+
+  @override
+  String get onboardingBack => '뒤로';
+
+  @override
+  String get onboardingNext => '완료';
+
+  @override
+  String get onboardingPrivateNotice => '* 이 정보는 다른 사용자에게 공개되지 않습니다.';
+
+  @override
+  String get birthYearTitle => '출생년도 설정';
+
+  @override
+  String get birthYearSubtitle => '정확한 나이 확인을 위해 출생년도를 선택해주세요.';
+
+  @override
+  String get genderCountryTitle => '성별 및 나라 설정';
+
+  @override
+  String get genderCountrySubtitle => '정확한 매칭을 위해 성별과 나라를 선택해주세요.';
+
+  @override
+  String get genderSectionTitle => '성별 선택';
+
+  @override
+  String get genderMale => '남자';
+
+  @override
+  String get genderFemale => '여자';
+
+  @override
+  String get countrySectionTitle => '나라 선택';
+
+  @override
+  String get countryKorea => '한국';
+
+  @override
+  String get countryJapan => '일본';
 }

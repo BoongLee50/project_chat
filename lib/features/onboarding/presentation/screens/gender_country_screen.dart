@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+
+import '../../../../l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/theme/app_colors.dart';
@@ -36,6 +38,8 @@ class _GenderCountryScreenState extends ConsumerState<GenderCountryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
+
     final form = ref.watch(onboardingProvider);
 
     ref.listen(onboardingProvider, (previous, next) {
@@ -49,22 +53,22 @@ class _GenderCountryScreenState extends ConsumerState<GenderCountryScreen> {
 
     return OnboardingScaffold(
       backgroundAsset: 'assets/images/onboarding_3.jpg',
-      title: '성별 및 나라 설정',
-      subtitle: '정확한 매칭을 위해 성별과 나라를 선택해주세요.',
-      note: '* 이 정보는 다른 사용자에게 공개되지 않습니다.',
+      title: l10n.genderCountryTitle,
+      subtitle: l10n.genderCountrySubtitle,
+      note: l10n.onboardingPrivateNotice,
       submitEnabled: _valid && !form.busy,
       onSubmit: _finish,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const _SectionLabel('성별 선택'),
+          _SectionLabel(l10n.genderSectionTitle),
           const SizedBox(height: AppDimens.gapMd),
           Row(
             children: [
               Expanded(
                 child: _SelectCard(
                   leading: const Icon(Icons.person_outline, size: 24),
-                  label: '남자',
+                  label: l10n.genderMale,
                   selected: _gender == 'MALE',
                   onTap: () => setState(() => _gender = 'MALE'),
                 ),
@@ -73,7 +77,7 @@ class _GenderCountryScreenState extends ConsumerState<GenderCountryScreen> {
               Expanded(
                 child: _SelectCard(
                   leading: const Icon(Icons.person_outline, size: 24),
-                  label: '여자',
+                  label: l10n.genderFemale,
                   selected: _gender == 'FEMALE',
                   onTap: () => setState(() => _gender = 'FEMALE'),
                 ),
@@ -81,14 +85,14 @@ class _GenderCountryScreenState extends ConsumerState<GenderCountryScreen> {
             ],
           ),
           const SizedBox(height: AppDimens.gapXl),
-          const _SectionLabel('나라 선택'),
+          _SectionLabel(l10n.countrySectionTitle),
           const SizedBox(height: AppDimens.gapMd),
           Row(
             children: [
               Expanded(
                 child: _SelectCard(
                   leading: const Text('🇰🇷', style: TextStyle(fontSize: 22)),
-                  label: '한국',
+                  label: l10n.countryKorea,
                   selected: _country == 'KR',
                   onTap: () => setState(() => _country = 'KR'),
                 ),
@@ -97,7 +101,7 @@ class _GenderCountryScreenState extends ConsumerState<GenderCountryScreen> {
               Expanded(
                 child: _SelectCard(
                   leading: const Text('🇯🇵', style: TextStyle(fontSize: 22)),
-                  label: '일본',
+                  label: l10n.countryJapan,
                   selected: _country == 'JP',
                   onTap: () => setState(() => _country = 'JP'),
                 ),

@@ -67,4 +67,43 @@ class L10nJa extends L10n {
 
   @override
   String get nicknameGuideNoProfanity => '暴言・差別表現など不適切なニックネームは使用できません。';
+
+  @override
+  String get onboardingBack => '戻る';
+
+  @override
+  String get onboardingNext => '完了';
+
+  @override
+  String get onboardingPrivateNotice => '※ この情報は他のユーザーには公開されません。';
+
+  @override
+  String get birthYearTitle => '生年設定';
+
+  @override
+  String get birthYearSubtitle => '年齢確認のため生まれた年を選択してください。';
+
+  @override
+  String get genderCountryTitle => '性別・国の設定';
+
+  @override
+  String get genderCountrySubtitle => 'より合う相手と出会えるよう性別と国を選択してください。';
+
+  @override
+  String get genderSectionTitle => '性別を選択';
+
+  @override
+  String get genderMale => '男性';
+
+  @override
+  String get genderFemale => '女性';
+
+  @override
+  String get countrySectionTitle => '国を選択';
+
+  @override
+  String get countryKorea => '韓国';
+
+  @override
+  String get countryJapan => '日本';
 }
