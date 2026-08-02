@@ -7,6 +7,7 @@ import '../../../../core/error/api_exception.dart';
 import '../../../../core/providers.dart';
 import '../../data/models/feed_item.dart';
 import '../providers/garden_provider.dart';
+import '../../../../l10n/app_localizations.dart';
 
 /// 포스트 댓글 시트(기획서 4-2). 대댓글 없음, 최대 25자.
 Future<void> showCommentsSheet(BuildContext context, FeedItem item) {
@@ -62,6 +63,7 @@ class _CommentsSheetState extends ConsumerState<_CommentsSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     final comments = ref.watch(commentsProvider(widget.item.userId));
 
     return Padding(
@@ -87,7 +89,7 @@ class _CommentsSheetState extends ConsumerState<_CommentsSheet> {
               child: Row(
                 children: [
                   Text(
-                    '${widget.item.nickname}님의 포스트',
+                    l10n.commentsTitle(widget.item.nickname),
                     style: const TextStyle(
                       color: AppColors.textPrimary,
                       fontSize: 16,
@@ -95,8 +97,8 @@ class _CommentsSheetState extends ConsumerState<_CommentsSheet> {
                     ),
                   ),
                   const Spacer(),
-                  const Text(
-                    '댓글',
+                  Text(
+                    l10n.commentsSection,
                     style: TextStyle(
                       color: AppColors.textSecondary,
                       fontSize: 13,
@@ -110,16 +112,16 @@ class _CommentsSheetState extends ConsumerState<_CommentsSheet> {
                 loading: () => const Center(
                   child: CircularProgressIndicator(color: AppColors.moonlight),
                 ),
-                error: (error, _) => const Center(
+                error: (error, _) => Center(
                   child: Text(
-                    '댓글을 불러오지 못했어요.',
+                    l10n.commentsLoadFailed,
                     style: TextStyle(color: AppColors.textMuted),
                   ),
                 ),
                 data: (list) => list.isEmpty
-                    ? const Center(
+                    ? Center(
                         child: Text(
-                          '첫 댓글을 남겨보세요.',
+                          l10n.commentsEmpty,
                           style: TextStyle(color: AppColors.textMuted),
                         ),
                       )
@@ -169,7 +171,7 @@ class _CommentsSheetState extends ConsumerState<_CommentsSheet> {
                       style: const TextStyle(color: AppColors.textPrimary),
                       decoration: InputDecoration(
                         counterText: '',
-                        hintText: '댓글을 남겨보세요 (최대 25자)',
+                        hintText: l10n.commentsHint,
                         hintStyle: const TextStyle(color: AppColors.textMuted),
                         filled: true,
                         fillColor: AppColors.surface,

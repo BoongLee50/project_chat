@@ -93,5 +93,85 @@
   "homeOneLinerWrite": "작성",
   "homeShare": "포스트 공유하기",
   "homeShareAgain": "공유됨 · 다시 공유하기",
-  "homeShared": "포스트를 공유했어요 🌙"
+  "homeShared": "포스트를 공유했어요 🌙",
+  "commonAll": "전체",
+  "commonSend": "보내기",
+  "commonOnline": "접속 중",
+  "ageDecade": "{decade}대",
+  "@ageDecade": {
+    "placeholders": {
+      "decade": {
+        "type": "int"
+      }
+    }
+  },
+  "gardenTitle": "달빛가든",
+  "gardenSubtitle": "달빛 아래, 우리의 하루를 나누는 공간 ✨",
+  "gardenSpotlight": "스포트라이트",
+  "gardenLoadFailed": "피드를 불러오지 못했어요.",
+  "gardenEmptyTitle": "지금은 보여줄 포스트가 없어요.",
+  "gardenEmptyDetail": "필터를 바꾸거나 잠시 후 다시 확인해 주세요.",
+  "gardenGateTitle": "달빛가든은 아직 문을 열지 않았어요.",
+  "gardenGateDescription": "달빛이 찾아오는 오후 5시부터\n다음날 오전 6시까지 이용할 수 있어요.",
+  "gardenChatRequestTitle": "{nickname}님에게 대화 신청",
+  "@gardenChatRequestTitle": {
+    "placeholders": {
+      "nickname": {
+        "type": "String"
+      }
+    }
+  },
+  "gardenChatRequestHint": "첫 인사를 남겨보세요 (최대 100자)",
+  "gardenChatRequestSent": "대화 신청을 보냈어요. 상대의 응답을 기다려 주세요.",
+  "commentsTitle": "{nickname}님의 포스트",
+  "@commentsTitle": {
+    "placeholders": {
+      "nickname": {
+        "type": "String"
+      }
+    }
+  },
+  "commentsSection": "댓글",
+  "commentsHint": "댓글을 남겨보세요 (최대 25자)",
+  "commentsEmpty": "첫 댓글을 남겨보세요.",
+  "commentsLoadFailed": "댓글을 불러오지 못했어요.",
+  "gateOpensIn": "문 열리기까지",
+  "gateOpensAfter": "{remaining} 뒤에 열려요.",
+  "@gateOpensAfter": {
+    "placeholders": {
+      "remaining": {
+        "type": "String"
+      }
+    }
+  },
+  "durationHourMinute": "{hours}시간 {minutes}분",
+  "@durationHourMinute": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "durationMinuteSecond": "{minutes}분 {seconds}초",
+  "@durationMinuteSecond": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      },
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "durationSecond": "{seconds}초",
+  "@durationSecond": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  }
 }

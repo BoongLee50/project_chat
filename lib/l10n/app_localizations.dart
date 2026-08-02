@@ -438,6 +438,156 @@ abstract class L10n {
   /// In ko, this message translates to:
   /// **'포스트를 공유했어요 🌙'**
   String get homeShared;
+
+  /// No description provided for @commonAll.
+  ///
+  /// In ko, this message translates to:
+  /// **'전체'**
+  String get commonAll;
+
+  /// No description provided for @commonSend.
+  ///
+  /// In ko, this message translates to:
+  /// **'보내기'**
+  String get commonSend;
+
+  /// No description provided for @commonOnline.
+  ///
+  /// In ko, this message translates to:
+  /// **'접속 중'**
+  String get commonOnline;
+
+  /// No description provided for @ageDecade.
+  ///
+  /// In ko, this message translates to:
+  /// **'{decade}대'**
+  String ageDecade(int decade);
+
+  /// No description provided for @gardenTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'달빛가든'**
+  String get gardenTitle;
+
+  /// No description provided for @gardenSubtitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'달빛 아래, 우리의 하루를 나누는 공간 ✨'**
+  String get gardenSubtitle;
+
+  /// No description provided for @gardenSpotlight.
+  ///
+  /// In ko, this message translates to:
+  /// **'스포트라이트'**
+  String get gardenSpotlight;
+
+  /// No description provided for @gardenLoadFailed.
+  ///
+  /// In ko, this message translates to:
+  /// **'피드를 불러오지 못했어요.'**
+  String get gardenLoadFailed;
+
+  /// No description provided for @gardenEmptyTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'지금은 보여줄 포스트가 없어요.'**
+  String get gardenEmptyTitle;
+
+  /// No description provided for @gardenEmptyDetail.
+  ///
+  /// In ko, this message translates to:
+  /// **'필터를 바꾸거나 잠시 후 다시 확인해 주세요.'**
+  String get gardenEmptyDetail;
+
+  /// No description provided for @gardenGateTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'달빛가든은 아직 문을 열지 않았어요.'**
+  String get gardenGateTitle;
+
+  /// No description provided for @gardenGateDescription.
+  ///
+  /// In ko, this message translates to:
+  /// **'달빛이 찾아오는 오후 5시부터\n다음날 오전 6시까지 이용할 수 있어요.'**
+  String get gardenGateDescription;
+
+  /// No description provided for @gardenChatRequestTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'{nickname}님에게 대화 신청'**
+  String gardenChatRequestTitle(String nickname);
+
+  /// No description provided for @gardenChatRequestHint.
+  ///
+  /// In ko, this message translates to:
+  /// **'첫 인사를 남겨보세요 (최대 100자)'**
+  String get gardenChatRequestHint;
+
+  /// No description provided for @gardenChatRequestSent.
+  ///
+  /// In ko, this message translates to:
+  /// **'대화 신청을 보냈어요. 상대의 응답을 기다려 주세요.'**
+  String get gardenChatRequestSent;
+
+  /// No description provided for @commentsTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'{nickname}님의 포스트'**
+  String commentsTitle(String nickname);
+
+  /// No description provided for @commentsSection.
+  ///
+  /// In ko, this message translates to:
+  /// **'댓글'**
+  String get commentsSection;
+
+  /// No description provided for @commentsHint.
+  ///
+  /// In ko, this message translates to:
+  /// **'댓글을 남겨보세요 (최대 25자)'**
+  String get commentsHint;
+
+  /// No description provided for @commentsEmpty.
+  ///
+  /// In ko, this message translates to:
+  /// **'첫 댓글을 남겨보세요.'**
+  String get commentsEmpty;
+
+  /// No description provided for @commentsLoadFailed.
+  ///
+  /// In ko, this message translates to:
+  /// **'댓글을 불러오지 못했어요.'**
+  String get commentsLoadFailed;
+
+  /// No description provided for @gateOpensIn.
+  ///
+  /// In ko, this message translates to:
+  /// **'문 열리기까지'**
+  String get gateOpensIn;
+
+  /// No description provided for @gateOpensAfter.
+  ///
+  /// In ko, this message translates to:
+  /// **'{remaining} 뒤에 열려요.'**
+  String gateOpensAfter(String remaining);
+
+  /// No description provided for @durationHourMinute.
+  ///
+  /// In ko, this message translates to:
+  /// **'{hours}시간 {minutes}분'**
+  String durationHourMinute(int hours, int minutes);
+
+  /// No description provided for @durationMinuteSecond.
+  ///
+  /// In ko, this message translates to:
+  /// **'{minutes}분 {seconds}초'**
+  String durationMinuteSecond(int minutes, int seconds);
+
+  /// No description provided for @durationSecond.
+  ///
+  /// In ko, this message translates to:
+  /// **'{seconds}초'**
+  String durationSecond(int seconds);
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_dimens.dart';
 import '../../features/auth/presentation/providers/gate_provider.dart';
+import '../../l10n/app_localizations.dart';
 
 /// 운영시간 밖 안내. 남은 시간을 1초마다 갱신한다.
 ///
@@ -48,12 +49,15 @@ class _CountdownState extends ConsumerState<_Countdown> {
     final left = nextOpen.difference(DateTime.now());
     if (left.isNegative) return widget.builder(context, null);
 
+    final l10n = L10n.of(context);
     final hours = left.inHours;
     final minutes = left.inMinutes % 60;
     final seconds = left.inSeconds % 60;
     final text = hours > 0
-        ? '$hours시간 $minutes분'
-        : (minutes > 0 ? '$minutes분 $seconds초' : '$seconds초');
+        ? l10n.durationHourMinute(hours, minutes)
+        : (minutes > 0
+            ? l10n.durationMinuteSecond(minutes, seconds)
+            : l10n.durationSecond(seconds));
     return widget.builder(context, text);
   }
 }
@@ -71,6 +75,7 @@ class GateClosedView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     return _Countdown(
       builder: (context, remaining) => Center(
         child: Padding(
@@ -125,9 +130,9 @@ class GateClosedView extends StatelessWidget {
                   ),
                   child: Column(
                     children: [
-                      const Text(
-                        '문 열리기까지',
-                        style: TextStyle(
+                      Text(
+                        l10n.gateOpensIn,
+                        style: const TextStyle(
                           color: AppColors.textSecondary,
                           fontSize: 12,
                         ),
@@ -161,6 +166,7 @@ class GateBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     return _Countdown(
       builder: (context, remaining) => Container(
         width: double.infinity,
@@ -194,7 +200,7 @@ class GateBanner extends StatelessWidget {
                     Padding(
                       padding: const EdgeInsets.only(top: 3),
                       child: Text(
-                        '$remaining 뒤에 열려요.',
+                        l10n.gateOpensAfter(remaining),
                         style: const TextStyle(
                           color: AppColors.moonlight,
                           fontSize: 12,

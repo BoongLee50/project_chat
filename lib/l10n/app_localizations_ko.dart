@@ -186,4 +186,94 @@ class L10nKo extends L10n {
 
   @override
   String get homeShared => '포스트를 공유했어요 🌙';
+
+  @override
+  String get commonAll => '전체';
+
+  @override
+  String get commonSend => '보내기';
+
+  @override
+  String get commonOnline => '접속 중';
+
+  @override
+  String ageDecade(int decade) {
+    return '$decade대';
+  }
+
+  @override
+  String get gardenTitle => '달빛가든';
+
+  @override
+  String get gardenSubtitle => '달빛 아래, 우리의 하루를 나누는 공간 ✨';
+
+  @override
+  String get gardenSpotlight => '스포트라이트';
+
+  @override
+  String get gardenLoadFailed => '피드를 불러오지 못했어요.';
+
+  @override
+  String get gardenEmptyTitle => '지금은 보여줄 포스트가 없어요.';
+
+  @override
+  String get gardenEmptyDetail => '필터를 바꾸거나 잠시 후 다시 확인해 주세요.';
+
+  @override
+  String get gardenGateTitle => '달빛가든은 아직 문을 열지 않았어요.';
+
+  @override
+  String get gardenGateDescription =>
+      '달빛이 찾아오는 오후 5시부터\n다음날 오전 6시까지 이용할 수 있어요.';
+
+  @override
+  String gardenChatRequestTitle(String nickname) {
+    return '$nickname님에게 대화 신청';
+  }
+
+  @override
+  String get gardenChatRequestHint => '첫 인사를 남겨보세요 (최대 100자)';
+
+  @override
+  String get gardenChatRequestSent => '대화 신청을 보냈어요. 상대의 응답을 기다려 주세요.';
+
+  @override
+  String commentsTitle(String nickname) {
+    return '$nickname님의 포스트';
+  }
+
+  @override
+  String get commentsSection => '댓글';
+
+  @override
+  String get commentsHint => '댓글을 남겨보세요 (최대 25자)';
+
+  @override
+  String get commentsEmpty => '첫 댓글을 남겨보세요.';
+
+  @override
+  String get commentsLoadFailed => '댓글을 불러오지 못했어요.';
+
+  @override
+  String get gateOpensIn => '문 열리기까지';
+
+  @override
+  String gateOpensAfter(String remaining) {
+    return '$remaining 뒤에 열려요.';
+  }
+
+  @override
+  String durationHourMinute(int hours, int minutes) {
+    return '$hours시간 $minutes분';
+  }
+
+  @override
+  String durationMinuteSecond(int minutes, int seconds) {
+    return '$minutes분 $seconds초';
+  }
+
+  @override
+  String durationSecond(int seconds) {
+    return '$seconds초';
+  }
 }

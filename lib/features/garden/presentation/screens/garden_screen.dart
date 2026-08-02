@@ -10,8 +10,9 @@ import '../../../chat/presentation/providers/chat_provider.dart';
 import '../../../auth/presentation/providers/gate_provider.dart';
 import '../providers/garden_provider.dart';
 import '../widgets/comments_sheet.dart';
+import '../../../../l10n/app_localizations.dart';
 
-/// 달빛가든 — 포스트 사진 피드. 메인 셸의 '달빛가든' 탭 본문. (기획서 4장)
+/// 달빛가든 — 포스트 사진 피드. 메인 셸의 l10n.gardenTitle 탭 본문. (기획서 4장)
 ///
 /// 필터(성별·연령대·국가)·스포트라이트·좋아요·스킵(스와이프)·댓글을 서버와 연동한다.
 /// 대화 신청은 chat 도메인 구현 후 연결 예정.
@@ -20,12 +21,13 @@ class GardenScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = L10n.of(context);
     // 달빛가든은 운영시간 밖이면 서버가 피드 자체를 막는다(가든 서비스 전 메서드).
     // 그래서 에러 화면 대신 안내를 보여주고, 열리면 자동으로 되돌아온다.
     if (!ref.watch(gateOpenProvider)) {
-      return const GateClosedView(
-        title: '달빛가든은 아직 문을 열지 않았어요.',
-        description: '달빛이 찾아오는 오후 5시부터\n다음날 오전 6시까지 이용할 수 있어요.',
+      return GateClosedView(
+        title: l10n.gardenGateTitle,
+        description: l10n.gardenGateDescription,
       );
     }
 
@@ -52,15 +54,15 @@ class GardenScreen extends ConsumerWidget {
               ),
               error: (error, _) => _Message(
                 icon: Icons.cloud_off,
-                title: '피드를 불러오지 못했어요.',
+                title: l10n.gardenLoadFailed,
                 detail: '$error',
                 onRetry: () => ref.read(feedProvider.notifier).refresh(),
               ),
               data: (items) => items.isEmpty
                   ? _Message(
                       icon: Icons.nightlight_round,
-                      title: '지금은 보여줄 포스트가 없어요.',
-                      detail: '필터를 바꾸거나 잠시 후 다시 확인해 주세요.',
+                      title: l10n.gardenEmptyTitle,
+                      detail: l10n.gardenEmptyDetail,
                       onRetry: () => ref.read(feedProvider.notifier).refresh(),
                     )
                   : _FeedPager(items: items),
@@ -78,6 +80,7 @@ class _GardenHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -86,9 +89,9 @@ class _GardenHeader extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
-                children: const [
+                children: [
                   Text(
-                    '달빛가든',
+                    l10n.gardenTitle,
                     style: TextStyle(
                       color: AppColors.textPrimary,
                       fontSize: 24,
@@ -104,8 +107,8 @@ class _GardenHeader extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 4),
-              const Text(
-                '달빛 아래, 우리의 하루를 나누는 공간 ✨',
+              Text(
+                l10n.gardenSubtitle,
                 style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
               ),
             ],
@@ -129,6 +132,7 @@ class _FilterBar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = L10n.of(context);
     final filter = ref.watch(feedFilterProvider);
     final controller = ref.read(feedFilterProvider.notifier);
     final spotlight = ref.watch(spotlightProvider);
@@ -139,11 +143,11 @@ class _FilterBar extends ConsumerWidget {
         children: [
           _FilterMenu<String>(
             label: filter.gender == null
-                ? '전체'
-                : (filter.gender == 'FEMALE' ? '여자' : '남자'),
+                ? l10n.commonAll
+                : (filter.gender == 'FEMALE' ? l10n.genderFemale : l10n.genderMale),
             icon: Icons.wc,
             selected: filter.gender != null,
-            options: const {'전체': null, '여자': 'FEMALE', '남자': 'MALE'},
+            options: {l10n.commonAll: null, l10n.genderFemale: 'FEMALE', l10n.genderMale: 'MALE'},
             current: filter.gender,
             onPick: (value) => value == null
                 ? controller.toggleGender(filter.gender ?? '')
@@ -151,15 +155,15 @@ class _FilterBar extends ConsumerWidget {
           ),
           const SizedBox(width: 8),
           _FilterMenu<int>(
-            label: filter.ageDecade == null ? '전체' : '${filter.ageDecade}대',
+            label: filter.ageDecade == null ? l10n.commonAll : l10n.ageDecade(filter.ageDecade!),
             icon: Icons.person_outline,
             selected: filter.ageDecade != null,
-            options: const {
-              '전체': null,
-              '10대': 10,
-              '20대': 20,
-              '30대': 30,
-              '40대': 40,
+            options: {
+              l10n.commonAll: null,
+              l10n.ageDecade(10): 10,
+              l10n.ageDecade(20): 20,
+              l10n.ageDecade(30): 30,
+              l10n.ageDecade(40): 40,
             },
             current: filter.ageDecade,
             onPick: (value) => value == null
@@ -169,11 +173,11 @@ class _FilterBar extends ConsumerWidget {
           const SizedBox(width: 8),
           _FilterMenu<String>(
             label: filter.country == null
-                ? '전체'
-                : (filter.country == 'KR' ? '한국' : '일본'),
+                ? l10n.commonAll
+                : (filter.country == 'KR' ? l10n.countryKorea : l10n.countryJapan),
             icon: Icons.public,
             selected: filter.country != null,
-            options: const {'전체': null, '한국': 'KR', '일본': 'JP'},
+            options: {l10n.commonAll: null, l10n.countryKorea: 'KR', l10n.countryJapan: 'JP'},
             current: filter.country,
             onPick: (value) => value == null
                 ? controller.toggleCountry(filter.country ?? '')
@@ -275,6 +279,7 @@ class _SpotlightChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -297,7 +302,7 @@ class _SpotlightChip extends StatelessWidget {
             ),
             const SizedBox(width: 6),
             Text(
-              '스포트라이트',
+              l10n.gardenSpotlight,
               style: TextStyle(
                 color: active ? Colors.white : AppColors.textSecondary,
                 fontSize: 14,
@@ -347,13 +352,14 @@ class _FeedPagerState extends ConsumerState<_FeedPager> {
 
   /// 대화 신청 팝업 — 하루 무료 2회 후 루나 5 차감(서버 판정).
   Future<void> _requestChat(FeedItem item) async {
+    final l10n = L10n.of(context);
     final controller = TextEditingController();
     final message = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.surface,
         title: Text(
-          '${item.nickname}님에게 대화 신청',
+          l10n.gardenChatRequestTitle(item.nickname),
           style: const TextStyle(color: AppColors.textPrimary, fontSize: 18),
         ),
         content: TextField(
@@ -363,19 +369,19 @@ class _FeedPagerState extends ConsumerState<_FeedPager> {
           maxLines: 3,
           cursorColor: AppColors.moonlight,
           style: const TextStyle(color: AppColors.textPrimary),
-          decoration: const InputDecoration(
-            hintText: '첫 인사를 남겨보세요 (최대 100자)',
+          decoration: InputDecoration(
+            hintText: l10n.gardenChatRequestHint,
             hintStyle: TextStyle(color: AppColors.textMuted),
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('취소'),
+            child: Text(l10n.commonCancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, controller.text.trim()),
-            child: const Text('보내기'),
+            child: Text(l10n.commonSend),
           ),
         ],
       ),
@@ -386,7 +392,7 @@ class _FeedPagerState extends ConsumerState<_FeedPager> {
         .read(chatActionsProvider)
         .requestChat(item.userId, message);
     if (!mounted) return;
-    _toast(error ?? '대화 신청을 보냈어요. 상대의 응답을 기다려 주세요.');
+    _toast(error ?? l10n.gardenChatRequestSent);
   }
 
   void _toast(String message) {
@@ -647,6 +653,7 @@ class _OnlineBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
@@ -655,11 +662,11 @@ class _OnlineBadge extends StatelessWidget {
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
-        children: const [
+        children: [
           Icon(Icons.circle, color: Color(0xFF3FCF6B), size: 8),
           SizedBox(width: 4),
           Text(
-            '접속 중',
+            l10n.commonOnline,
             style: TextStyle(color: Color(0xFF3FCF6B), fontSize: 11),
           ),
         ],
@@ -683,6 +690,7 @@ class _Message extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(AppDimens.pagePad),
@@ -706,7 +714,7 @@ class _Message extends StatelessWidget {
               style: const TextStyle(color: AppColors.textMuted, fontSize: 13),
             ),
             const SizedBox(height: 16),
-            OutlinedButton(onPressed: onRetry, child: const Text('다시 시도')),
+            OutlinedButton(onPressed: onRetry, child: Text(l10n.commonRetry)),
           ],
         ),
       ),
