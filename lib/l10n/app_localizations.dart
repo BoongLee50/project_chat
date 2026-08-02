@@ -1992,6 +1992,378 @@ abstract class L10n {
   /// In ko, this message translates to:
   /// **'기타'**
   String get reportReasonOther;
+
+  /// No description provided for @interestGroupHobby.
+  ///
+  /// In ko, this message translates to:
+  /// **'취미'**
+  String get interestGroupHobby;
+
+  /// No description provided for @interestGroupLifestyle.
+  ///
+  /// In ko, this message translates to:
+  /// **'라이프스타일'**
+  String get interestGroupLifestyle;
+
+  /// No description provided for @interestGroupCulture.
+  ///
+  /// In ko, this message translates to:
+  /// **'문화/엔터테인먼트'**
+  String get interestGroupCulture;
+
+  /// No description provided for @interestGroupSports.
+  ///
+  /// In ko, this message translates to:
+  /// **'스포츠'**
+  String get interestGroupSports;
+
+  /// No description provided for @interestTravel.
+  ///
+  /// In ko, this message translates to:
+  /// **'여행'**
+  String get interestTravel;
+
+  /// No description provided for @interestPhoto.
+  ///
+  /// In ko, this message translates to:
+  /// **'사진'**
+  String get interestPhoto;
+
+  /// No description provided for @interestArt.
+  ///
+  /// In ko, this message translates to:
+  /// **'그림/미술'**
+  String get interestArt;
+
+  /// No description provided for @interestReading.
+  ///
+  /// In ko, this message translates to:
+  /// **'독서'**
+  String get interestReading;
+
+  /// No description provided for @interestMusic.
+  ///
+  /// In ko, this message translates to:
+  /// **'음악'**
+  String get interestMusic;
+
+  /// No description provided for @interestMovie.
+  ///
+  /// In ko, this message translates to:
+  /// **'영화'**
+  String get interestMovie;
+
+  /// No description provided for @interestDrama.
+  ///
+  /// In ko, this message translates to:
+  /// **'드라마'**
+  String get interestDrama;
+
+  /// No description provided for @interestGame.
+  ///
+  /// In ko, this message translates to:
+  /// **'게임'**
+  String get interestGame;
+
+  /// No description provided for @interestWorkout.
+  ///
+  /// In ko, this message translates to:
+  /// **'운동'**
+  String get interestWorkout;
+
+  /// No description provided for @interestCooking.
+  ///
+  /// In ko, this message translates to:
+  /// **'요리'**
+  String get interestCooking;
+
+  /// No description provided for @interestCafe.
+  ///
+  /// In ko, this message translates to:
+  /// **'카페 탐방'**
+  String get interestCafe;
+
+  /// No description provided for @interestPet.
+  ///
+  /// In ko, this message translates to:
+  /// **'반려동물'**
+  String get interestPet;
+
+  /// No description provided for @interestCamping.
+  ///
+  /// In ko, this message translates to:
+  /// **'자연/캠핑'**
+  String get interestCamping;
+
+  /// No description provided for @interestExhibition.
+  ///
+  /// In ko, this message translates to:
+  /// **'공연/전시'**
+  String get interestExhibition;
+
+  /// No description provided for @interestSinging.
+  ///
+  /// In ko, this message translates to:
+  /// **'노래/악기'**
+  String get interestSinging;
+
+  /// No description provided for @interestSelfDev.
+  ///
+  /// In ko, this message translates to:
+  /// **'자기계발'**
+  String get interestSelfDev;
+
+  /// No description provided for @interestFinance.
+  ///
+  /// In ko, this message translates to:
+  /// **'재테크'**
+  String get interestFinance;
+
+  /// No description provided for @interestIt.
+  ///
+  /// In ko, this message translates to:
+  /// **'IT/기술'**
+  String get interestIt;
+
+  /// No description provided for @interestFashion.
+  ///
+  /// In ko, this message translates to:
+  /// **'패션'**
+  String get interestFashion;
+
+  /// No description provided for @interestBeauty.
+  ///
+  /// In ko, this message translates to:
+  /// **'뷰티'**
+  String get interestBeauty;
+
+  /// No description provided for @interestWellbeing.
+  ///
+  /// In ko, this message translates to:
+  /// **'건강/웰빙'**
+  String get interestWellbeing;
+
+  /// No description provided for @interestMinimal.
+  ///
+  /// In ko, this message translates to:
+  /// **'정리/미니멀'**
+  String get interestMinimal;
+
+  /// No description provided for @interestSustainable.
+  ///
+  /// In ko, this message translates to:
+  /// **'지속가능성'**
+  String get interestSustainable;
+
+  /// No description provided for @interestKpop.
+  ///
+  /// In ko, this message translates to:
+  /// **'K-POP'**
+  String get interestKpop;
+
+  /// No description provided for @interestJpop.
+  ///
+  /// In ko, this message translates to:
+  /// **'J-POP'**
+  String get interestJpop;
+
+  /// No description provided for @interestAnime.
+  ///
+  /// In ko, this message translates to:
+  /// **'애니메이션'**
+  String get interestAnime;
+
+  /// No description provided for @interestWebtoon.
+  ///
+  /// In ko, this message translates to:
+  /// **'웹툰/만화'**
+  String get interestWebtoon;
+
+  /// No description provided for @interestMusical.
+  ///
+  /// In ko, this message translates to:
+  /// **'뮤지컬/연극'**
+  String get interestMusical;
+
+  /// No description provided for @interestFestival.
+  ///
+  /// In ko, this message translates to:
+  /// **'페스티벌'**
+  String get interestFestival;
+
+  /// No description provided for @interestSoccer.
+  ///
+  /// In ko, this message translates to:
+  /// **'축구'**
+  String get interestSoccer;
+
+  /// No description provided for @interestBaseball.
+  ///
+  /// In ko, this message translates to:
+  /// **'야구'**
+  String get interestBaseball;
+
+  /// No description provided for @interestBasketball.
+  ///
+  /// In ko, this message translates to:
+  /// **'농구'**
+  String get interestBasketball;
+
+  /// No description provided for @interestGolf.
+  ///
+  /// In ko, this message translates to:
+  /// **'골프'**
+  String get interestGolf;
+
+  /// No description provided for @interestTennis.
+  ///
+  /// In ko, this message translates to:
+  /// **'테니스'**
+  String get interestTennis;
+
+  /// No description provided for @interestSwimming.
+  ///
+  /// In ko, this message translates to:
+  /// **'수영'**
+  String get interestSwimming;
+
+  /// No description provided for @interestClimbing.
+  ///
+  /// In ko, this message translates to:
+  /// **'등산/클라이밍'**
+  String get interestClimbing;
+
+  /// No description provided for @interestCycling.
+  ///
+  /// In ko, this message translates to:
+  /// **'자전거'**
+  String get interestCycling;
+
+  /// No description provided for @cityKrSeoul.
+  ///
+  /// In ko, this message translates to:
+  /// **'서울'**
+  String get cityKrSeoul;
+
+  /// No description provided for @cityKrBusan.
+  ///
+  /// In ko, this message translates to:
+  /// **'부산'**
+  String get cityKrBusan;
+
+  /// No description provided for @cityKrDaegu.
+  ///
+  /// In ko, this message translates to:
+  /// **'대구'**
+  String get cityKrDaegu;
+
+  /// No description provided for @cityKrIncheon.
+  ///
+  /// In ko, this message translates to:
+  /// **'인천'**
+  String get cityKrIncheon;
+
+  /// No description provided for @cityKrGwangju.
+  ///
+  /// In ko, this message translates to:
+  /// **'광주'**
+  String get cityKrGwangju;
+
+  /// No description provided for @cityKrDaejeon.
+  ///
+  /// In ko, this message translates to:
+  /// **'대전'**
+  String get cityKrDaejeon;
+
+  /// No description provided for @cityKrUlsan.
+  ///
+  /// In ko, this message translates to:
+  /// **'울산'**
+  String get cityKrUlsan;
+
+  /// No description provided for @cityKrSejong.
+  ///
+  /// In ko, this message translates to:
+  /// **'세종'**
+  String get cityKrSejong;
+
+  /// No description provided for @cityKrSuwon.
+  ///
+  /// In ko, this message translates to:
+  /// **'수원'**
+  String get cityKrSuwon;
+
+  /// No description provided for @cityKrGoyang.
+  ///
+  /// In ko, this message translates to:
+  /// **'고양'**
+  String get cityKrGoyang;
+
+  /// No description provided for @cityKrSeongnam.
+  ///
+  /// In ko, this message translates to:
+  /// **'성남'**
+  String get cityKrSeongnam;
+
+  /// No description provided for @cityJpTokyo.
+  ///
+  /// In ko, this message translates to:
+  /// **'도쿄'**
+  String get cityJpTokyo;
+
+  /// No description provided for @cityJpOsaka.
+  ///
+  /// In ko, this message translates to:
+  /// **'오사카'**
+  String get cityJpOsaka;
+
+  /// No description provided for @cityJpKyoto.
+  ///
+  /// In ko, this message translates to:
+  /// **'교토'**
+  String get cityJpKyoto;
+
+  /// No description provided for @cityJpNagoya.
+  ///
+  /// In ko, this message translates to:
+  /// **'나고야'**
+  String get cityJpNagoya;
+
+  /// No description provided for @cityJpYokohama.
+  ///
+  /// In ko, this message translates to:
+  /// **'요코하마'**
+  String get cityJpYokohama;
+
+  /// No description provided for @cityJpFukuoka.
+  ///
+  /// In ko, this message translates to:
+  /// **'후쿠오카'**
+  String get cityJpFukuoka;
+
+  /// No description provided for @cityJpSapporo.
+  ///
+  /// In ko, this message translates to:
+  /// **'삿포로'**
+  String get cityJpSapporo;
+
+  /// No description provided for @cityJpKobe.
+  ///
+  /// In ko, this message translates to:
+  /// **'고베'**
+  String get cityJpKobe;
+
+  /// No description provided for @cityJpSendai.
+  ///
+  /// In ko, this message translates to:
+  /// **'센다이'**
+  String get cityJpSendai;
+
+  /// No description provided for @regionLabelFormat.
+  ///
+  /// In ko, this message translates to:
+  /// **'{country}, {city}'**
+  String regionLabelFormat(String country, String city);
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

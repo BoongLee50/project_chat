@@ -158,7 +158,7 @@ class _RegionsEditSheetState extends ConsumerState<RegionsEditSheet> {
                     TextSpan(
                       children: [
                         TextSpan(
-                          text: ProfileCatalog.countryLabel(_country),
+                          text: ProfileCatalog.countryLabel(l10n, _country),
                           style: const TextStyle(color: AppColors.moonlight),
                         ),
                         TextSpan(text: l10n.regionsEditOfCountry),
@@ -177,7 +177,7 @@ class _RegionsEditSheetState extends ConsumerState<RegionsEditSheet> {
                     children: [
                       for (final region in regions)
                         _RegionChip(
-                          label: region.label,
+                          label: ProfileCatalog.cityLabel(l10n, region.code),
                           selected: _selected.contains(region.code),
                           onTap: () => _toggle(region.code),
                         ),
@@ -206,7 +206,7 @@ class _RegionsEditSheetState extends ConsumerState<RegionsEditSheet> {
                   child: Text(
                     _selected.isEmpty
                         ? l10n.commonNone
-                        : _selected.map(ProfileCatalog.regionLabel).join(' · '),
+                        : _selected.map((c) => ProfileCatalog.regionLabel(l10n, c)).join(' · '),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
@@ -275,6 +275,7 @@ class _CountryTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     return InkWell(
       borderRadius: BorderRadius.circular(AppDimens.radiusMd),
       onTap: onTap,
@@ -299,7 +300,7 @@ class _CountryTab extends StatelessWidget {
             ),
             const SizedBox(width: 8),
             Text(
-              ProfileCatalog.countryLabel(code),
+              ProfileCatalog.countryLabel(l10n, code),
               style: TextStyle(
                 color: selected ? AppColors.moonlight : AppColors.textPrimary,
                 fontSize: 15,

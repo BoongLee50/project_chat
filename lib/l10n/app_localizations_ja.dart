@@ -1066,4 +1066,192 @@ class L10nJa extends L10n {
 
   @override
   String get reportReasonOther => 'その他';
+
+  @override
+  String get interestGroupHobby => '趣味';
+
+  @override
+  String get interestGroupLifestyle => 'ライフスタイル';
+
+  @override
+  String get interestGroupCulture => 'カルチャー・エンタメ';
+
+  @override
+  String get interestGroupSports => 'スポーツ';
+
+  @override
+  String get interestTravel => '旅行';
+
+  @override
+  String get interestPhoto => '写真';
+
+  @override
+  String get interestArt => '絵・アート';
+
+  @override
+  String get interestReading => '読書';
+
+  @override
+  String get interestMusic => '音楽';
+
+  @override
+  String get interestMovie => '映画';
+
+  @override
+  String get interestDrama => 'ドラマ';
+
+  @override
+  String get interestGame => 'ゲーム';
+
+  @override
+  String get interestWorkout => '運動';
+
+  @override
+  String get interestCooking => '料理';
+
+  @override
+  String get interestCafe => 'カフェめぐり';
+
+  @override
+  String get interestPet => 'ペット';
+
+  @override
+  String get interestCamping => '自然・キャンプ';
+
+  @override
+  String get interestExhibition => 'ライブ・展示';
+
+  @override
+  String get interestSinging => '歌・楽器';
+
+  @override
+  String get interestSelfDev => '自己啓発';
+
+  @override
+  String get interestFinance => '資産運用';
+
+  @override
+  String get interestIt => 'IT・テクノロジー';
+
+  @override
+  String get interestFashion => 'ファッション';
+
+  @override
+  String get interestBeauty => 'ビューティー';
+
+  @override
+  String get interestWellbeing => '健康・ウェルビーイング';
+
+  @override
+  String get interestMinimal => '整理・ミニマル';
+
+  @override
+  String get interestSustainable => 'サステナビリティ';
+
+  @override
+  String get interestKpop => 'K-POP';
+
+  @override
+  String get interestJpop => 'J-POP';
+
+  @override
+  String get interestAnime => 'アニメ';
+
+  @override
+  String get interestWebtoon => 'ウェブトゥーン・漫画';
+
+  @override
+  String get interestMusical => 'ミュージカル・演劇';
+
+  @override
+  String get interestFestival => 'フェス';
+
+  @override
+  String get interestSoccer => 'サッカー';
+
+  @override
+  String get interestBaseball => '野球';
+
+  @override
+  String get interestBasketball => 'バスケットボール';
+
+  @override
+  String get interestGolf => 'ゴルフ';
+
+  @override
+  String get interestTennis => 'テニス';
+
+  @override
+  String get interestSwimming => '水泳';
+
+  @override
+  String get interestClimbing => '登山・クライミング';
+
+  @override
+  String get interestCycling => '自転車';
+
+  @override
+  String get cityKrSeoul => 'ソウル';
+
+  @override
+  String get cityKrBusan => '釜山';
+
+  @override
+  String get cityKrDaegu => '大邱';
+
+  @override
+  String get cityKrIncheon => '仁川';
+
+  @override
+  String get cityKrGwangju => '光州';
+
+  @override
+  String get cityKrDaejeon => '大田';
+
+  @override
+  String get cityKrUlsan => '蔚山';
+
+  @override
+  String get cityKrSejong => '世宗';
+
+  @override
+  String get cityKrSuwon => '水原';
+
+  @override
+  String get cityKrGoyang => '高陽';
+
+  @override
+  String get cityKrSeongnam => '城南';
+
+  @override
+  String get cityJpTokyo => '東京';
+
+  @override
+  String get cityJpOsaka => '大阪';
+
+  @override
+  String get cityJpKyoto => '京都';
+
+  @override
+  String get cityJpNagoya => '名古屋';
+
+  @override
+  String get cityJpYokohama => '横浜';
+
+  @override
+  String get cityJpFukuoka => '福岡';
+
+  @override
+  String get cityJpSapporo => '札幌';
+
+  @override
+  String get cityJpKobe => '神戸';
+
+  @override
+  String get cityJpSendai => '仙台';
+
+  @override
+  String regionLabelFormat(String country, String city) {
+    return '$country、$city';
+  }
 }

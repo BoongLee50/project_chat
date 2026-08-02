@@ -34,8 +34,8 @@ class _InterestsEditSheetState extends ConsumerState<InterestsEditSheet> {
   late final Set<String> _selected = {...widget.initial};
   late final Set<String> _expanded = {
     // 처음엔 앞의 두 그룹만 펼쳐 둔다(시안과 동일).
-    ProfileCatalog.interestGroups[0].title,
-    ProfileCatalog.interestGroups[1].title,
+    ProfileCatalog.interestGroups[0].code,
+    ProfileCatalog.interestGroups[1].code,
   };
   bool _busy = false;
 
@@ -124,11 +124,11 @@ class _InterestsEditSheetState extends ConsumerState<InterestsEditSheet> {
                 for (final group in ProfileCatalog.interestGroups)
                   _Group(
                     group: group,
-                    expanded: _expanded.contains(group.title),
+                    expanded: _expanded.contains(group.code),
                     selected: _selected,
                     onToggleGroup: () => setState(() {
-                      if (!_expanded.remove(group.title)) {
-                        _expanded.add(group.title);
+                      if (!_expanded.remove(group.code)) {
+                        _expanded.add(group.code);
                       }
                     }),
                     onToggleItem: _toggle,
@@ -255,7 +255,7 @@ class _SelectedBar extends StatelessWidget {
                         ),
                         const SizedBox(width: 6),
                         Text(
-                          ProfileCatalog.interestLabel(code),
+                          ProfileCatalog.interestLabel(l10n, code),
                           style: const TextStyle(
                             color: AppColors.moonlight,
                             fontSize: 13,
@@ -299,6 +299,7 @@ class _Group extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     final pickedInGroup =
         group.items.where((item) => selected.contains(item.code)).length;
 
@@ -321,7 +322,7 @@ class _Group extends StatelessWidget {
                   Icon(group.icon, color: AppColors.moonlight, size: 20),
                   const SizedBox(width: 10),
                   Text(
-                    group.title,
+                    ProfileCatalog.groupTitle(l10n, group.code),
                     style: const TextStyle(
                       color: AppColors.textPrimary,
                       fontSize: 16,
@@ -391,6 +392,7 @@ class _InterestChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     return InkWell(
       borderRadius: BorderRadius.circular(AppDimens.radiusMd),
       onTap: onTap,
@@ -416,7 +418,7 @@ class _InterestChip extends StatelessWidget {
             ),
             const SizedBox(width: 7),
             Text(
-              item.label,
+              ProfileCatalog.interestLabel(l10n, item.code),
               style: TextStyle(
                 color: selected ? AppColors.moonlight : AppColors.textPrimary,
                 fontSize: 14,

@@ -67,7 +67,7 @@ class ProfileScreen extends ConsumerWidget {
                       runSpacing: 8,
                       children: [
                         for (final code in profile.interests)
-                          _Chip(label: ProfileCatalog.interestLabel(code)),
+                          _Chip(label: ProfileCatalog.interestLabel(l10n, code)),
                       ],
                     ),
             ),
@@ -104,7 +104,7 @@ class ProfileScreen extends ConsumerWidget {
                       runSpacing: 8,
                       children: [
                         for (final code in profile.regions)
-                          _Chip(label: ProfileCatalog.regionLabel(code)),
+                          _Chip(label: ProfileCatalog.regionLabel(l10n, code)),
                       ],
                     ),
             ),
