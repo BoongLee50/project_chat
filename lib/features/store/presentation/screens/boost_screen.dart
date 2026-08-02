@@ -7,6 +7,7 @@ import '../../data/models/store_models.dart';
 import '../providers/store_provider.dart';
 import '../widgets/store_widgets.dart';
 import 'luna_store_screen.dart';
+import '../../../../l10n/app_localizations.dart';
 
 /// 화면 28 — 보유 부스트. 보유 매수를 보고 1매를 써서 1시간 노출을 올린다.
 ///
@@ -31,6 +32,7 @@ class _BoostScreenState extends ConsumerState<BoostScreen> {
       : AppColors.moonlight;
 
   Future<void> _use() async {
+    final l10n = L10n.of(context);
     setState(() => _busy = true);
     final error = await ref.read(storeActionsProvider).useBoost(widget.kind);
     if (!mounted) return;
@@ -38,12 +40,13 @@ class _BoostScreenState extends ConsumerState<BoostScreen> {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(
-        SnackBar(content: Text(error ?? '부스트를 사용했어요. 1시간 동안 우선 노출됩니다!')),
+        SnackBar(content: Text(error ?? l10n.boostUsed)),
       );
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     final wallet = ref.watch(walletProvider).valueOrNull ?? Wallet.empty;
     final stock = wallet.stockOf(widget.kind);
     final active = wallet.activeBoost(widget.kind);
@@ -53,7 +56,7 @@ class _BoostScreenState extends ConsumerState<BoostScreen> {
       appBar: AppBar(
         backgroundColor: AppColors.night,
         title: Text(
-          '보유 ${StoreKind.label(widget.kind)}',
+          l10n.boostOwnedTitle(StoreKind.label(l10n, widget.kind)),
           style: const TextStyle(
             color: AppColors.textPrimary,
             fontSize: 19,
@@ -89,7 +92,7 @@ class _BoostScreenState extends ConsumerState<BoostScreen> {
                 const SizedBox(width: 14),
                 Expanded(
                   child: Text(
-                    '${StoreKind.label(widget.kind)} (1시간)',
+                    l10n.boostItemHour(StoreKind.label(l10n, widget.kind)),
                     style: const TextStyle(
                       color: AppColors.textPrimary,
                       fontSize: 16,
@@ -97,7 +100,7 @@ class _BoostScreenState extends ConsumerState<BoostScreen> {
                     ),
                   ),
                 ),
-                StatusPill(label: '보유 $stock매', color: _accent, filled: false),
+                StatusPill(label: l10n.boostStock(stock), color: _accent, filled: false),
               ],
             ),
           ),
@@ -111,7 +114,7 @@ class _BoostScreenState extends ConsumerState<BoostScreen> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      '사용 중 — ${_remainingLabel(active)} 남음',
+                      l10n.boostActiveRemaining(_remainingLabel(l10n, active)),
                       style: TextStyle(
                         color: _accent,
                         fontSize: 15,
@@ -125,11 +128,11 @@ class _BoostScreenState extends ConsumerState<BoostScreen> {
           ],
           const SizedBox(height: AppDimens.gapLg),
           Row(
-            children: const [
+            children: [
               Icon(Icons.auto_awesome, color: AppColors.moonlight, size: 22),
               SizedBox(width: 8),
               Text(
-                '예상 효과',
+                l10n.boostEffectTitle,
                 style: TextStyle(
                   color: AppColors.textPrimary,
                   fontSize: 18,
@@ -143,11 +146,11 @@ class _BoostScreenState extends ConsumerState<BoostScreen> {
             TextSpan(
               children: [
                 TextSpan(
-                  text: '1시간',
+                  text: l10n.boostHourHighlight,
                   style: TextStyle(color: _accent, fontWeight: FontWeight.w800),
                 ),
-                const TextSpan(
-                  text: ' 동안 추천 우선순위가 올라가\n더 많은 사용자에게 노출돼요!',
+                TextSpan(
+                  text: l10n.boostHourSuffix,
                 ),
               ],
             ),
@@ -159,30 +162,30 @@ class _BoostScreenState extends ConsumerState<BoostScreen> {
           ),
           const SizedBox(height: AppDimens.gapMd),
           Row(
-            children: const [
+            children: [
               Expanded(
                 child: _EffectCard(
-                  badge: '최대 노출 증가',
-                  value: '약 3배',
-                  description: '더 많은 사용자에게 노출돼요',
+                  badge: l10n.boostEffectExposure,
+                  value: l10n.boostEffectExposureValue,
+                  description: l10n.boostEffectExposureDetail,
                   icon: Icons.trending_up,
                 ),
               ),
               SizedBox(width: 8),
               Expanded(
                 child: _EffectCard(
-                  badge: '프로필 방문 증가',
-                  value: '약 2.5배',
-                  description: '프로필 방문 및 유입이 늘어나요',
+                  badge: l10n.boostEffectVisit,
+                  value: l10n.boostEffectVisitValue,
+                  description: l10n.boostEffectVisitDetail,
                   icon: Icons.person_add_alt,
                 ),
               ),
               SizedBox(width: 8),
               Expanded(
                 child: _EffectCard(
-                  badge: '좋아요 증가',
-                  value: '약 2배',
-                  description: '좋아요와 관심을 더 많이 받아요',
+                  badge: l10n.boostEffectLike,
+                  value: l10n.boostEffectLikeValue,
+                  description: l10n.boostEffectLikeDetail,
                   icon: Icons.favorite_border,
                 ),
               ),
@@ -194,8 +197,8 @@ class _BoostScreenState extends ConsumerState<BoostScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    '보유한 부스트가 없어요.',
+                  Text(
+                    l10n.boostNone,
                     style: TextStyle(
                       color: AppColors.textPrimary,
                       fontSize: 15,
@@ -203,8 +206,8 @@ class _BoostScreenState extends ConsumerState<BoostScreen> {
                     ),
                   ),
                   const SizedBox(height: 6),
-                  const Text(
-                    '루나상점에서 부스트를 구매할 수 있어요.',
+                  Text(
+                    l10n.boostBuyHint,
                     style: TextStyle(
                       color: AppColors.textSecondary,
                       fontSize: 13,
@@ -214,7 +217,7 @@ class _BoostScreenState extends ConsumerState<BoostScreen> {
                   TextButton(
                     onPressed: () => Navigator.of(context)
                         .pushReplacement(LunaStoreScreen.route()),
-                    child: const Text('루나상점 가기'),
+                    child: Text(l10n.boostGoStore),
                   ),
                 ],
               ),
@@ -224,8 +227,8 @@ class _BoostScreenState extends ConsumerState<BoostScreen> {
       ),
       bottomNavigationBar: StoreBottomButton(
         label: active != null
-            ? '사용 중이에요'
-            : (stock == 0 ? '보유한 부스트가 없어요' : '부스트 사용하기 (1매)'),
+            ? l10n.boostInUse
+            : (stock == 0 ? l10n.boostNoneShort : l10n.boostUse),
         icon: active == null && stock > 0 ? Icons.bolt : null,
         color: _accent,
         busy: _busy,
@@ -234,13 +237,13 @@ class _BoostScreenState extends ConsumerState<BoostScreen> {
     );
   }
 
-  String _remainingLabel(ActiveBoost boost) {
+  String _remainingLabel(L10n l10n, ActiveBoost boost) {
     final remaining = boost.remaining;
-    if (remaining.inMinutes < 1) return '1분 미만';
+    if (remaining.inMinutes < 1) return l10n.boostRemainUnderMinute;
     if (remaining.inHours >= 1) {
-      return '${remaining.inHours}시간 ${remaining.inMinutes % 60}분';
+      return l10n.boostRemainHourMinute(remaining.inHours, remaining.inMinutes % 60);
     }
-    return '${remaining.inMinutes}분';
+    return l10n.boostRemainMinute(remaining.inMinutes);
   }
 }
 

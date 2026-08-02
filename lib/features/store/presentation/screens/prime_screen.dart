@@ -6,6 +6,7 @@ import '../../../../app/theme/app_dimens.dart';
 import '../../data/models/store_models.dart';
 import '../providers/store_provider.dart';
 import '../widgets/store_widgets.dart';
+import '../../../../l10n/app_localizations.dart';
 
 /// 화면 26 — 프라임 멤버십.
 ///
@@ -25,6 +26,7 @@ class _PrimeScreenState extends ConsumerState<PrimeScreen> {
   bool _busy = false;
 
   Future<void> _subscribe(PrimePlan plan) async {
+    final l10n = L10n.of(context);
     setState(() => _busy = true);
     // 스토어 결제창이 붙기 전까지는 개발용 토큰으로 서버 검증을 태운다(01 §1.8).
     final error = await ref.read(storeActionsProvider).verifyPurchase(
@@ -36,32 +38,33 @@ class _PrimeScreenState extends ConsumerState<PrimeScreen> {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(
-        SnackBar(content: Text(error ?? 'PRIME 멤버십이 시작됐어요!')),
+        SnackBar(content: Text(error ?? l10n.primeStarted)),
       );
   }
 
   Future<void> _cancel() async {
+    final l10n = L10n.of(context);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
         backgroundColor: AppColors.surfaceHigh,
-        title: const Text(
-          '자동 갱신을 해지할까요?',
+        title: Text(
+          l10n.primeCancelConfirm,
           style: TextStyle(color: AppColors.textPrimary, fontSize: 17),
         ),
-        content: const Text(
-          '남은 기간 동안은 혜택이 그대로 유지되고, 만료일에 갱신되지 않아요.',
+        content: Text(
+          l10n.primeCancelDetail,
           style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: const Text('취소',
+            child: Text(l10n.commonCancel,
                 style: TextStyle(color: AppColors.textSecondary)),
           ),
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: const Text('해지', style: TextStyle(color: AppColors.gold)),
+            child: Text(l10n.commonUnsubscribe, style: TextStyle(color: AppColors.gold)),
           ),
         ],
       ),
@@ -73,28 +76,29 @@ class _PrimeScreenState extends ConsumerState<PrimeScreen> {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(
-        SnackBar(content: Text(error ?? '자동 갱신을 해지했어요.')),
+        SnackBar(content: Text(error ?? l10n.primeCancelDone)),
       );
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     final catalog = ref.watch(catalogProvider);
     final wallet = ref.watch(walletProvider).valueOrNull ?? Wallet.empty;
 
     return Scaffold(
       backgroundColor: AppColors.night,
-      appBar: const StoreAppBar(
+      appBar: StoreAppBar(
         icon: Icons.workspace_premium,
-        title: 'PRIME 멤버십',
-        subtitle: 'PRIME으로 더 특별한 경험을 즐겨보세요.',
+        title: l10n.primeTitle,
+        subtitle: l10n.primeSubtitle,
       ),
       body: catalog.when(
         loading: () => const Center(
           child: CircularProgressIndicator(color: AppColors.moonlight),
         ),
-        error: (error, _) => const Center(
-          child: Text('상품을 불러오지 못했어요.',
+        error: (error, _) => Center(
+          child: Text(l10n.storeLoadFailed,
               style: TextStyle(color: AppColors.textSecondary)),
         ),
         data: (data) {
@@ -116,7 +120,7 @@ class _PrimeScreenState extends ConsumerState<PrimeScreen> {
               if (wallet.prime)
                 _CurrentSubscription(wallet: wallet, onCancel: _cancel)
               else ...[
-                const _SectionTitle('요금제 선택하기'),
+                _SectionTitle(l10n.primePlanSection),
                 const SizedBox(height: AppDimens.gapSm),
                 for (var i = 0; i < plans.length; i++)
                   _PlanTile(
@@ -126,14 +130,14 @@ class _PrimeScreenState extends ConsumerState<PrimeScreen> {
                     onTap: () => setState(() => _selected = i),
                   ),
                 const SizedBox(height: 6),
-                const Text(
-                  '* PRIME은 선택하신 기간 동안 혜택이 자동 갱신됩니다.',
+                Text(
+                  l10n.primeAutoRenewNotice,
                   textAlign: TextAlign.center,
                   style: TextStyle(color: AppColors.textMuted, fontSize: 12),
                 ),
               ],
               const SizedBox(height: AppDimens.gapLg),
-              const _SectionTitle('프라임 혜택'),
+              _SectionTitle(l10n.primeBenefitsSection),
               const SizedBox(height: AppDimens.gapSm),
               if (plan != null) _Benefits(plan: plan),
               const SizedBox(height: AppDimens.gapMd),
@@ -145,7 +149,7 @@ class _PrimeScreenState extends ConsumerState<PrimeScreen> {
       bottomNavigationBar: wallet.prime || catalog.valueOrNull == null
           ? null
           : StoreBottomButton(
-              label: '결제하기',
+              label: l10n.primePay,
               busy: _busy,
               icon: Icons.workspace_premium,
               onPressed: () {
@@ -163,6 +167,7 @@ class _PrimeBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -192,8 +197,8 @@ class _PrimeBanner extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 10),
-                const Text(
-                  '모든 기능을 제한 없이!',
+                Text(
+                  l10n.primeHeadlineDetail,
                   style: TextStyle(
                     color: AppColors.textPrimary,
                     fontSize: 18,
@@ -201,8 +206,8 @@ class _PrimeBanner extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 4),
-                const Text(
-                  '달빛톡을 완벽하게 즐기는 방법',
+                Text(
+                  l10n.primeHeadline,
                   style: TextStyle(
                     color: AppColors.textSecondary,
                     fontSize: 13,
@@ -232,6 +237,7 @@ class _PlanTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     return Padding(
       padding: const EdgeInsets.only(bottom: AppDimens.gapSm),
       child: Stack(
@@ -267,7 +273,7 @@ class _PlanTile extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          '${plan.months}개월',
+                          l10n.primeMonths(plan.months),
                           style: const TextStyle(
                             color: AppColors.textPrimary,
                             fontSize: 18,
@@ -276,7 +282,7 @@ class _PlanTile extends StatelessWidget {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          _benefitSummary(plan),
+                          _benefitSummary(l10n, plan),
                           style: const TextStyle(
                             color: AppColors.textSecondary,
                             fontSize: 12,
@@ -286,8 +292,8 @@ class _PlanTile extends StatelessWidget {
                     ),
                   ),
                   // 현금 가격은 스토어 SDK가 준다(계정 발급 후). 그전까진 자리만 비워 둔다.
-                  const Text(
-                    '스토어 가격',
+                  Text(
+                    l10n.primeStorePrice,
                     style: TextStyle(color: AppColors.textMuted, fontSize: 12),
                   ),
                 ],
@@ -295,20 +301,20 @@ class _PlanTile extends StatelessWidget {
             ),
           ),
           if (best)
-            const Positioned(
+            Positioned(
               left: 14,
               top: -9,
-              child: StatusPill(label: '가성비 끝판왕'),
+              child: StatusPill(label: l10n.primeBestValue),
             ),
         ],
       ),
     );
   }
 
-  String _benefitSummary(PrimePlan plan) {
+  String _benefitSummary(L10n l10n, PrimePlan plan) {
     final parts = <String>[];
     plan.boosts.forEach((kind, count) {
-      parts.add('${StoreKind.label(kind)} $count매');
+      parts.add(l10n.primeBoostSummary(StoreKind.label(l10n, kind), count));
     });
     return parts.join(' · ');
   }
@@ -322,6 +328,7 @@ class _CurrentSubscription extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     final expires = wallet.subscriptionExpiresAt;
     final remaining = expires?.difference(DateTime.now()).inDays;
 
@@ -332,11 +339,11 @@ class _CurrentSubscription extends StatelessWidget {
         children: [
           Row(
             children: [
-              const StatusPill(label: '현재 적용 중'),
+              StatusPill(label: l10n.primeCurrentPlan),
               const Spacer(),
               if (remaining != null)
                 Text(
-                  '남은 기간 $remaining일',
+                  l10n.primeRemainingDays(remaining),
                   style: const TextStyle(
                     color: AppColors.moonlight,
                     fontSize: 13,
@@ -349,7 +356,7 @@ class _CurrentSubscription extends StatelessWidget {
           Row(
             children: [
               Text(
-                _productLabel(wallet.subscriptionProduct),
+                _productLabel(l10n, wallet.subscriptionProduct),
                 style: const TextStyle(
                   color: AppColors.textPrimary,
                   fontSize: 20,
@@ -358,7 +365,7 @@ class _CurrentSubscription extends StatelessWidget {
               ),
               const SizedBox(width: 10),
               StatusPill(
-                label: wallet.autoRenew ? '자동 갱신' : '갱신 안 함',
+                label: wallet.autoRenew ? l10n.primeAutoRenew : l10n.primeAutoRenewOff,
                 color: wallet.autoRenew ? AppColors.moonlight : AppColors.gold,
                 filled: false,
               ),
@@ -368,8 +375,8 @@ class _CurrentSubscription extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               wallet.autoRenew
-                  ? '다음 결제 예정일  ${_date(expires)}'
-                  : '이용 종료일  ${_date(expires)}',
+                  ? l10n.primeNextBilling(_date(expires))
+                  : l10n.primeEndDate(_date(expires)),
               style: const TextStyle(
                 color: AppColors.textSecondary,
                 fontSize: 13,
@@ -389,8 +396,8 @@ class _CurrentSubscription extends StatelessWidget {
                   ),
                 ),
                 onPressed: onCancel,
-                child: const Text(
-                  '자동 갱신 해지',
+                child: Text(
+                  l10n.primeCancelRenew,
                   style: TextStyle(
                     color: AppColors.textSecondary,
                     fontWeight: FontWeight.w700,
@@ -404,10 +411,10 @@ class _CurrentSubscription extends StatelessWidget {
     );
   }
 
-  String _productLabel(String? product) => switch (product) {
-    'PRIME_1M' => '1개월 이용 중',
-    'PRIME_6M' => '6개월 이용 중',
-    _ => 'PRIME 이용 중',
+  String _productLabel(L10n l10n, String? product) => switch (product) {
+    'PRIME_1M' => l10n.primeActiveMonths(1),
+    'PRIME_6M' => l10n.primeActiveMonths(6),
+    _ => l10n.primeActive,
   };
 
   String _date(DateTime value) =>
@@ -422,6 +429,7 @@ class _Benefits extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     return StoreCard(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       child: Column(
@@ -429,27 +437,27 @@ class _Benefits extends StatelessWidget {
           if (plan.entitlements.contains(StoreKind.albumPass))
             BenefitRow(
               icon: Icons.photo_camera_outlined,
-              title: '포스트 사진 앨범 패스 ${plan.durationDays}일',
-              description: '하루에 여러 장의 사진을 자유롭게 업로드!',
+              title: l10n.primeAlbumBenefit(plan.durationDays),
+              description: l10n.primeAlbumBenefitDesc,
             ),
           for (final entry in plan.boosts.entries)
             BenefitRow(
               icon: entry.key == StoreKind.postBoost
                   ? Icons.trending_up
                   : Icons.star_border_rounded,
-              title: '${StoreKind.label(entry.key)} 1시간, ${entry.value}매',
+              title: l10n.primeBoostBenefit(StoreKind.label(l10n, entry.key), entry.value),
               description: entry.key == StoreKind.postBoost
-                  ? '내 포스트를 더 많은 사람에게 노출! (일일제한 없음)'
-                  : '오늘의 주인공이 되어 더 많은 관심을! (일일제한 없음)',
+                  ? l10n.primePostBoostDesc
+                  : l10n.primeSpotlightDesc,
               accent: entry.key == StoreKind.postBoost
                   ? const Color(0xFFE8386D)
                   : AppColors.moonlight,
             ),
           if (plan.entitlements.contains(StoreKind.unlimitedChatReq))
-            const BenefitRow(
+            BenefitRow(
               icon: Icons.chat_bubble_outline,
-              title: '대화 신청 무제한',
-              description: '하루 무료 횟수에 관계없이 대화를 신청할 수 있어요.',
+              title: l10n.primeUnlimitedChat,
+              description: l10n.primeUnlimitedChatDesc,
             ),
         ],
       ),
@@ -480,16 +488,16 @@ class _RenewalNote extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Icon(Icons.verified_user_outlined,
             color: AppColors.textMuted, size: 18),
         const SizedBox(width: 10),
-        const Expanded(
+        Expanded(
           child: Text(
-            '구독 서비스는 동일한 기간, 동일한 가격으로 자동 갱신되며,\n'
-            '언제든 구독을 해지할 수 있습니다.',
+            l10n.primeSubscriptionNotice,
             style: TextStyle(
               color: AppColors.textMuted,
               fontSize: 12,

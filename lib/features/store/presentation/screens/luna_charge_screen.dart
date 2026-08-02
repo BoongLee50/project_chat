@@ -6,6 +6,7 @@ import '../../../../app/theme/app_dimens.dart';
 import '../../data/models/store_models.dart';
 import '../providers/store_provider.dart';
 import '../widgets/store_widgets.dart';
+import '../../../../l10n/app_localizations.dart';
 
 /// 화면 27 — 루나 충전샵. 인앱결제로 루나를 산다.
 ///
@@ -26,6 +27,7 @@ class _LunaChargeScreenState extends ConsumerState<LunaChargeScreen> {
   String? _busyProductId;
 
   Future<void> _charge(LunaPack pack) async {
+    final l10n = L10n.of(context);
     setState(() => _busyProductId = pack.productId);
 
     // 스토어 결제창(in_app_purchase)이 붙기 전까지는 개발용 토큰으로 서버에 검증을 요청한다.
@@ -40,30 +42,31 @@ class _LunaChargeScreenState extends ConsumerState<LunaChargeScreen> {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(
-        SnackBar(content: Text(error ?? '루나 ${pack.total}개가 충전됐어요.')),
+        SnackBar(content: Text(error ?? l10n.chargeDone(pack.total))),
       );
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     final catalog = ref.watch(catalogProvider);
     final wallet = ref.watch(walletProvider);
 
     return Scaffold(
       backgroundColor: AppColors.night,
-      appBar: const StoreAppBar(
+      appBar: StoreAppBar(
         icon: Icons.star_rounded,
-        title: '루나 충전',
-        subtitle: '루나로 더 특별한 경험을 즐겨보세요.',
+        title: l10n.chargeTitle,
+        subtitle: l10n.chargeSubtitle,
         iconColor: AppColors.gold,
       ),
       body: catalog.when(
         loading: () => const Center(
           child: CircularProgressIndicator(color: AppColors.moonlight),
         ),
-        error: (error, _) => const Center(
+        error: (error, _) => Center(
           child: Text(
-            '상품을 불러오지 못했어요.',
+            l10n.storeLoadFailed,
             style: TextStyle(color: AppColors.textSecondary),
           ),
         ),
@@ -101,6 +104,7 @@ class _PackCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     return Padding(
       padding: const EdgeInsets.only(bottom: AppDimens.gapSm),
       child: Stack(
@@ -132,8 +136,8 @@ class _PackCard extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.baseline,
                         textBaseline: TextBaseline.alphabetic,
                         children: [
-                          const Text(
-                            '루나 ',
+                          Text(
+                            l10n.chargeLunaPrefix,
                             style: TextStyle(
                               color: AppColors.textPrimary,
                               fontSize: 15,
@@ -148,8 +152,8 @@ class _PackCard extends StatelessWidget {
                               fontWeight: FontWeight.w800,
                             ),
                           ),
-                          const Text(
-                            ' 개',
+                          Text(
+                            l10n.chargeLunaSuffix,
                             style: TextStyle(
                               color: AppColors.textPrimary,
                               fontSize: 15,
@@ -162,7 +166,7 @@ class _PackCard extends StatelessWidget {
                         Padding(
                           padding: const EdgeInsets.only(top: 4),
                           child: Text(
-                            '기본 ${pack.luna}개 + 보너스 ${pack.bonus}개',
+                            l10n.chargeBaseBonus(pack.luna, pack.bonus),
                             style: const TextStyle(
                               color: AppColors.textSecondary,
                               fontSize: 12,
@@ -194,8 +198,8 @@ class _PackCard extends StatelessWidget {
                               color: Colors.white,
                             ),
                           )
-                        : const Text(
-                            '구매',
+                        : Text(
+                            l10n.chargeBuy,
                             style: TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.w800,
@@ -211,7 +215,7 @@ class _PackCard extends StatelessWidget {
               left: 12,
               top: -8,
               child: StatusPill(
-                label: '보너스 ${pack.bonus}',
+                label: l10n.chargeBonusBadge(pack.bonus),
                 color: AppColors.gold,
               ),
             ),
@@ -226,6 +230,7 @@ class _SafePaymentNote extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     return StoreCard(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -236,9 +241,9 @@ class _SafePaymentNote extends StatelessWidget {
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
+              children: [
                 Text(
-                  '안전한 결제',
+                  l10n.chargeSecure,
                   style: TextStyle(
                     color: AppColors.moonlight,
                     fontSize: 14,
@@ -247,8 +252,7 @@ class _SafePaymentNote extends StatelessWidget {
                 ),
                 SizedBox(height: 4),
                 Text(
-                  '결제는 스토어를 통해 처리되며, 구매한 루나는 즉시 지급됩니다.\n'
-                  '가격은 스토어 연동 후 표시됩니다.',
+                  l10n.chargeNotice,
                   style: TextStyle(
                     color: AppColors.textSecondary,
                     fontSize: 12,

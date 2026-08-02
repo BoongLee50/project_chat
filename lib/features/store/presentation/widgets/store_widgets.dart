@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimens.dart';
+import '../../../../l10n/app_localizations.dart';
 
 /// 상점 화면들이 공유하는 조각들.
 ///
@@ -97,6 +98,7 @@ class LunaBalanceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
       decoration: BoxDecoration(
@@ -106,8 +108,8 @@ class LunaBalanceCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const Text(
-            '보유 루나',
+          Text(
+            l10n.storeLunaBalance,
             style: TextStyle(
               color: AppColors.textSecondary,
               fontSize: 15,
@@ -134,7 +136,7 @@ class LunaBalanceCard extends StatelessWidget {
               ),
               onPressed: onCharge,
               icon: const Icon(Icons.add_circle_outline, size: 18),
-              label: const Text('충전하기'),
+              label: Text(l10n.storeCharge),
             ),
         ],
       ),

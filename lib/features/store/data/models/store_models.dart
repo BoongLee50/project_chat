@@ -4,6 +4,7 @@
 // BM 값이 바뀌면 서버 설정만 고치면 되도록 만들어 뒀다.
 
 import '../../../../core/util/server_time.dart';
+import '../../../../l10n/app_localizations.dart';
 
 /// 루나로 사는 상품 하나. 부스트면 [quantity], 패스면 [durationDays]를 쓴다.
 class LunaProduct {
@@ -31,8 +32,12 @@ class LunaProduct {
   bool get isBoost => type == 'BOOST';
 
   /// "1시간, 5매" / "30일" 같은 구성 문구.
-  String get optionLabel =>
-      isBoost ? '1시간, $quantity매' : '$durationDays일';
+  ///
+  /// 문구가 언어마다 달라 L10n을 받는다 — 모델이 BuildContext를 알 수는 없으니
+  /// 호출하는 화면이 넘겨준다.
+  String optionLabel(L10n l10n) => isBoost
+      ? l10n.storeOptionBoost(quantity)
+      : l10n.storeOptionDays(durationDays);
 
   factory LunaProduct.fromJson(Map<String, dynamic> json) => LunaProduct(
     id: json['id'] as String,
@@ -239,19 +244,19 @@ abstract final class StoreKind {
   static const unlimitedChatReq = 'UNLIMITED_CHAT_REQ';
   static const noAds = 'NO_ADS';
 
-  static String label(String kind) => switch (kind) {
-    postBoost => '포스트 부스트',
-    spotlightBoost => '스포트라이트 부스트',
-    albumPass => '포스트 앨범 패스',
-    translatePass => '자동 번역 패스',
+  static String label(L10n l10n, String kind) => switch (kind) {
+    postBoost => l10n.storeKindPostBoost,
+    spotlightBoost => l10n.storeKindSpotlightBoost,
+    albumPass => l10n.storeKindAlbumPass,
+    translatePass => l10n.storeKindTranslatePass,
     _ => kind,
   };
 
-  static String description(String kind) => switch (kind) {
-    postBoost => '다른 사람보다 우선적으로 포스트 사진을 추천해드려요!',
-    spotlightBoost => '프리미엄 유저만 이용 가능한 특별 추천 공간!',
-    albumPass => '여러 장의 사진을 자유롭게 업로드! 시간 제한 없이, 카메라와 갤러리 사진 모두 사용할 수 있어요.',
-    translatePass => '모든 메시지를 자동으로 번역해 언어 장벽 없이 소통!',
+  static String description(L10n l10n, String kind) => switch (kind) {
+    postBoost => l10n.storeDescPostBoost,
+    spotlightBoost => l10n.storeDescSpotlightBoost,
+    albumPass => l10n.storeDescAlbumPass,
+    translatePass => l10n.storeDescTranslatePass,
     _ => '',
   };
 }

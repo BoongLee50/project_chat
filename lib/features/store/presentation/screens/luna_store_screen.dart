@@ -8,6 +8,7 @@ import '../providers/store_provider.dart';
 import '../widgets/store_widgets.dart';
 import 'luna_charge_screen.dart';
 import 'pass_screen.dart';
+import '../../../../l10n/app_localizations.dart';
 
 /// 화면 25 — 루나상점. 보유 루나 + 루나로 사는 상품 4종.
 ///
@@ -20,15 +21,16 @@ class LunaStoreScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = L10n.of(context);
     final catalog = ref.watch(catalogProvider);
     final wallet = ref.watch(walletProvider);
 
     return Scaffold(
       backgroundColor: AppColors.night,
-      appBar: const StoreAppBar(
+      appBar: StoreAppBar(
         icon: Icons.star_rounded,
-        title: '루나상점',
-        subtitle: '루나로 더 특별한 경험을 만들어보세요.',
+        title: l10n.lunaStoreTitle,
+        subtitle: l10n.lunaStoreSubtitle,
         iconColor: AppColors.gold,
       ),
       body: catalog.when(
@@ -36,7 +38,7 @@ class LunaStoreScreen extends ConsumerWidget {
           child: CircularProgressIndicator(color: AppColors.moonlight),
         ),
         error: (error, _) => _ErrorView(
-          message: '상품을 불러오지 못했어요.',
+          message: l10n.storeLoadFailed,
           onRetry: () => ref.invalidate(catalogProvider),
         ),
         data: (data) => RefreshIndicator(
@@ -122,6 +124,7 @@ class _ProductSectionState extends ConsumerState<_ProductSection> {
   bool _busy = false;
 
   Future<void> _purchase() async {
+    final l10n = L10n.of(context);
     if (widget.options.isEmpty) return;
     final product = widget.options[_selected];
 
@@ -138,7 +141,7 @@ class _ProductSectionState extends ConsumerState<_ProductSection> {
         SnackBar(
           content: Text(
             error ??
-                '${StoreKind.label(widget.kind)} ${product.optionLabel} 구매 완료!',
+                l10n.storePurchased(StoreKind.label(l10n, widget.kind), product.optionLabel(l10n)),
           ),
         ),
       );
@@ -146,6 +149,7 @@ class _ProductSectionState extends ConsumerState<_ProductSection> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     if (widget.options.isEmpty) return const SizedBox.shrink();
 
     // 가장 비싼(=많이 담긴) 옵션에 할인 배지. 시안에서 20% 할인이 붙던 자리.
@@ -172,7 +176,7 @@ class _ProductSectionState extends ConsumerState<_ProductSection> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    StoreKind.label(widget.kind),
+                    StoreKind.label(l10n, widget.kind),
                     style: TextStyle(
                       color: widget.accent,
                       fontSize: 18,
@@ -183,8 +187,8 @@ class _ProductSectionState extends ConsumerState<_ProductSection> {
                 if (widget.onDetail != null)
                   TextButton(
                     onPressed: widget.onDetail,
-                    child: const Text(
-                      '자세히',
+                    child: Text(
+                      l10n.storeDetail,
                       style: TextStyle(color: AppColors.textSecondary),
                     ),
                   ),
@@ -192,7 +196,7 @@ class _ProductSectionState extends ConsumerState<_ProductSection> {
             ),
             const SizedBox(height: 8),
             Text(
-              StoreKind.description(widget.kind),
+              StoreKind.description(l10n, widget.kind),
               style: const TextStyle(
                 color: AppColors.textSecondary,
                 fontSize: 13,
@@ -202,12 +206,12 @@ class _ProductSectionState extends ConsumerState<_ProductSection> {
             const SizedBox(height: AppDimens.gapMd),
             for (var i = 0; i < widget.options.length; i++)
               PriceOptionTile(
-                label: widget.options[i].optionLabel,
+                label: widget.options[i].optionLabel(l10n),
                 price: widget.options[i].price,
                 selected: i == _selected,
                 accent: widget.accent,
                 badge: i == maxIndex && widget.options.length > 1
-                    ? _discountBadge(widget.options)
+                    ? _discountBadge(l10n, widget.options)
                     : null,
                 onTap: () => setState(() => _selected = i),
               ),
@@ -232,8 +236,8 @@ class _ProductSectionState extends ConsumerState<_ProductSection> {
                           color: Colors.white,
                         ),
                       )
-                    : const Text(
-                        '구매하기',
+                    : Text(
+                        l10n.storeBuy,
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w800,
@@ -248,7 +252,7 @@ class _ProductSectionState extends ConsumerState<_ProductSection> {
   }
 
   /// 단가 기준 할인율. 서버가 가격만 주므로 화면에서 계산한다(가격이 바뀌어도 따라간다).
-  String? _discountBadge(List<LunaProduct> options) {
+  String? _discountBadge(L10n l10n, List<LunaProduct> options) {
     final base = options.first;
     final top = options.last;
     final baseUnit = base.isBoost ? base.quantity : base.durationDays;
@@ -260,7 +264,7 @@ class _ProductSectionState extends ConsumerState<_ProductSection> {
     if (topPerUnit >= basePerUnit) return null;
 
     final percent = ((1 - topPerUnit / basePerUnit) * 100).round();
-    return percent <= 0 ? null : '$percent% 할인';
+    return percent <= 0 ? null : l10n.storeDiscount(percent);
   }
 }
 
@@ -272,6 +276,7 @@ class _ErrorView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -283,7 +288,7 @@ class _ErrorView extends StatelessWidget {
             style: const TextStyle(color: AppColors.textPrimary, fontSize: 15),
           ),
           const SizedBox(height: AppDimens.gapMd),
-          TextButton(onPressed: onRetry, child: const Text('다시 시도')),
+          TextButton(onPressed: onRetry, child: Text(l10n.commonRetry)),
         ],
       ),
     );

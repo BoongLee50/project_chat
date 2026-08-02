@@ -1116,6 +1116,726 @@ abstract class L10n {
   /// In ko, this message translates to:
   /// **'없음'**
   String get commonNone;
+
+  /// No description provided for @storeKindPostBoost.
+  ///
+  /// In ko, this message translates to:
+  /// **'포스트 부스트'**
+  String get storeKindPostBoost;
+
+  /// No description provided for @storeKindSpotlightBoost.
+  ///
+  /// In ko, this message translates to:
+  /// **'스포트라이트 부스트'**
+  String get storeKindSpotlightBoost;
+
+  /// No description provided for @storeKindAlbumPass.
+  ///
+  /// In ko, this message translates to:
+  /// **'포스트 앨범 패스'**
+  String get storeKindAlbumPass;
+
+  /// No description provided for @storeKindTranslatePass.
+  ///
+  /// In ko, this message translates to:
+  /// **'자동 번역 패스'**
+  String get storeKindTranslatePass;
+
+  /// No description provided for @storeDescPostBoost.
+  ///
+  /// In ko, this message translates to:
+  /// **'다른 사람보다 우선적으로 포스트 사진을 추천해드려요!'**
+  String get storeDescPostBoost;
+
+  /// No description provided for @storeDescSpotlightBoost.
+  ///
+  /// In ko, this message translates to:
+  /// **'프리미엄 유저만 이용 가능한 특별 추천 공간!'**
+  String get storeDescSpotlightBoost;
+
+  /// No description provided for @storeDescAlbumPass.
+  ///
+  /// In ko, this message translates to:
+  /// **'여러 장의 사진을 자유롭게 업로드! 시간 제한 없이, 카메라와 갤러리 사진 모두 사용할 수 있어요.'**
+  String get storeDescAlbumPass;
+
+  /// No description provided for @storeDescTranslatePass.
+  ///
+  /// In ko, this message translates to:
+  /// **'모든 메시지를 자동으로 번역해 언어 장벽 없이 소통!'**
+  String get storeDescTranslatePass;
+
+  /// No description provided for @storeOptionBoost.
+  ///
+  /// In ko, this message translates to:
+  /// **'1시간, {quantity}매'**
+  String storeOptionBoost(int quantity);
+
+  /// No description provided for @storeOptionDays.
+  ///
+  /// In ko, this message translates to:
+  /// **'{days}일'**
+  String storeOptionDays(int days);
+
+  /// No description provided for @lunaStoreTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'루나상점'**
+  String get lunaStoreTitle;
+
+  /// No description provided for @lunaStoreSubtitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'루나로 더 특별한 경험을 만들어보세요.'**
+  String get lunaStoreSubtitle;
+
+  /// No description provided for @storeLoadFailed.
+  ///
+  /// In ko, this message translates to:
+  /// **'상품을 불러오지 못했어요.'**
+  String get storeLoadFailed;
+
+  /// No description provided for @storeBuy.
+  ///
+  /// In ko, this message translates to:
+  /// **'구매하기'**
+  String get storeBuy;
+
+  /// No description provided for @storeDetail.
+  ///
+  /// In ko, this message translates to:
+  /// **'자세히'**
+  String get storeDetail;
+
+  /// No description provided for @storeDiscount.
+  ///
+  /// In ko, this message translates to:
+  /// **'{percent}% 할인'**
+  String storeDiscount(int percent);
+
+  /// No description provided for @storePurchased.
+  ///
+  /// In ko, this message translates to:
+  /// **'{item} {option} 구매 완료!'**
+  String storePurchased(String item, String option);
+
+  /// No description provided for @storeLunaBalance.
+  ///
+  /// In ko, this message translates to:
+  /// **'보유 루나'**
+  String get storeLunaBalance;
+
+  /// No description provided for @storeCharge.
+  ///
+  /// In ko, this message translates to:
+  /// **'충전하기'**
+  String get storeCharge;
+
+  /// No description provided for @boostOwnedTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'보유 {item}'**
+  String boostOwnedTitle(String item);
+
+  /// No description provided for @boostItemHour.
+  ///
+  /// In ko, this message translates to:
+  /// **'{item} (1시간)'**
+  String boostItemHour(String item);
+
+  /// No description provided for @boostStock.
+  ///
+  /// In ko, this message translates to:
+  /// **'보유 {count}매'**
+  String boostStock(int count);
+
+  /// No description provided for @boostActiveRemaining.
+  ///
+  /// In ko, this message translates to:
+  /// **'사용 중 — {remaining} 남음'**
+  String boostActiveRemaining(String remaining);
+
+  /// No description provided for @boostRemainHourMinute.
+  ///
+  /// In ko, this message translates to:
+  /// **'{hours}시간 {minutes}분'**
+  String boostRemainHourMinute(int hours, int minutes);
+
+  /// No description provided for @boostRemainMinute.
+  ///
+  /// In ko, this message translates to:
+  /// **'{minutes}분'**
+  String boostRemainMinute(int minutes);
+
+  /// No description provided for @boostRemainUnderMinute.
+  ///
+  /// In ko, this message translates to:
+  /// **'1분 미만'**
+  String get boostRemainUnderMinute;
+
+  /// No description provided for @boostEffectTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'예상 효과'**
+  String get boostEffectTitle;
+
+  /// No description provided for @boostEffectExposure.
+  ///
+  /// In ko, this message translates to:
+  /// **'최대 노출 증가'**
+  String get boostEffectExposure;
+
+  /// No description provided for @boostEffectExposureValue.
+  ///
+  /// In ko, this message translates to:
+  /// **'약 3배'**
+  String get boostEffectExposureValue;
+
+  /// No description provided for @boostEffectExposureDetail.
+  ///
+  /// In ko, this message translates to:
+  /// **'더 많은 사용자에게 노출돼요'**
+  String get boostEffectExposureDetail;
+
+  /// No description provided for @boostEffectVisit.
+  ///
+  /// In ko, this message translates to:
+  /// **'프로필 방문 증가'**
+  String get boostEffectVisit;
+
+  /// No description provided for @boostEffectVisitValue.
+  ///
+  /// In ko, this message translates to:
+  /// **'약 2.5배'**
+  String get boostEffectVisitValue;
+
+  /// No description provided for @boostEffectVisitDetail.
+  ///
+  /// In ko, this message translates to:
+  /// **'프로필 방문 및 유입이 늘어나요'**
+  String get boostEffectVisitDetail;
+
+  /// No description provided for @boostEffectLike.
+  ///
+  /// In ko, this message translates to:
+  /// **'좋아요 증가'**
+  String get boostEffectLike;
+
+  /// No description provided for @boostEffectLikeValue.
+  ///
+  /// In ko, this message translates to:
+  /// **'약 2배'**
+  String get boostEffectLikeValue;
+
+  /// No description provided for @boostEffectLikeDetail.
+  ///
+  /// In ko, this message translates to:
+  /// **'좋아요와 관심을 더 많이 받아요'**
+  String get boostEffectLikeDetail;
+
+  /// No description provided for @boostHourHighlight.
+  ///
+  /// In ko, this message translates to:
+  /// **'1시간'**
+  String get boostHourHighlight;
+
+  /// No description provided for @boostHourSuffix.
+  ///
+  /// In ko, this message translates to:
+  /// **' 동안 추천 우선순위가 올라가\n더 많은 사용자에게 노출돼요!'**
+  String get boostHourSuffix;
+
+  /// No description provided for @boostUse.
+  ///
+  /// In ko, this message translates to:
+  /// **'부스트 사용하기 (1매)'**
+  String get boostUse;
+
+  /// No description provided for @boostInUse.
+  ///
+  /// In ko, this message translates to:
+  /// **'사용 중이에요'**
+  String get boostInUse;
+
+  /// No description provided for @boostNoneShort.
+  ///
+  /// In ko, this message translates to:
+  /// **'보유한 부스트가 없어요'**
+  String get boostNoneShort;
+
+  /// No description provided for @boostNone.
+  ///
+  /// In ko, this message translates to:
+  /// **'보유한 부스트가 없어요.'**
+  String get boostNone;
+
+  /// No description provided for @boostBuyHint.
+  ///
+  /// In ko, this message translates to:
+  /// **'루나상점에서 부스트를 구매할 수 있어요.'**
+  String get boostBuyHint;
+
+  /// No description provided for @boostGoStore.
+  ///
+  /// In ko, this message translates to:
+  /// **'루나상점 가기'**
+  String get boostGoStore;
+
+  /// No description provided for @boostUsed.
+  ///
+  /// In ko, this message translates to:
+  /// **'부스트를 사용했어요. 1시간 동안 우선 노출됩니다!'**
+  String get boostUsed;
+
+  /// No description provided for @passBuy.
+  ///
+  /// In ko, this message translates to:
+  /// **'{item} 구매'**
+  String passBuy(String item);
+
+  /// No description provided for @passExtend.
+  ///
+  /// In ko, this message translates to:
+  /// **'{item} 연장'**
+  String passExtend(String item);
+
+  /// No description provided for @passPurchased.
+  ///
+  /// In ko, this message translates to:
+  /// **'{item} {days}일 구매 완료!'**
+  String passPurchased(String item, int days);
+
+  /// No description provided for @passPeriodSection.
+  ///
+  /// In ko, this message translates to:
+  /// **'기간 선택'**
+  String get passPeriodSection;
+
+  /// No description provided for @passDays.
+  ///
+  /// In ko, this message translates to:
+  /// **'{days}일'**
+  String passDays(int days);
+
+  /// No description provided for @passDaysPass.
+  ///
+  /// In ko, this message translates to:
+  /// **'{days}일 패스'**
+  String passDaysPass(int days);
+
+  /// No description provided for @passPriceLuna.
+  ///
+  /// In ko, this message translates to:
+  /// **'{price} 루나'**
+  String passPriceLuna(int price);
+
+  /// No description provided for @passAmount.
+  ///
+  /// In ko, this message translates to:
+  /// **'구매 금액'**
+  String get passAmount;
+
+  /// No description provided for @passUsageInfo.
+  ///
+  /// In ko, this message translates to:
+  /// **'이용 정보'**
+  String get passUsageInfo;
+
+  /// No description provided for @passStatus.
+  ///
+  /// In ko, this message translates to:
+  /// **'보유 상태'**
+  String get passStatus;
+
+  /// No description provided for @passStatusActive.
+  ///
+  /// In ko, this message translates to:
+  /// **'이용 중'**
+  String get passStatusActive;
+
+  /// No description provided for @passStatusNone.
+  ///
+  /// In ko, this message translates to:
+  /// **'미보유'**
+  String get passStatusNone;
+
+  /// No description provided for @passStatusPending.
+  ///
+  /// In ko, this message translates to:
+  /// **'구매 대기'**
+  String get passStatusPending;
+
+  /// No description provided for @passRemaining.
+  ///
+  /// In ko, this message translates to:
+  /// **'남은 기간'**
+  String get passRemaining;
+
+  /// No description provided for @passValidUntil.
+  ///
+  /// In ko, this message translates to:
+  /// **'{date}까지'**
+  String passValidUntil(String date);
+
+  /// No description provided for @passValidPeriod.
+  ///
+  /// In ko, this message translates to:
+  /// **'유효 기간'**
+  String get passValidPeriod;
+
+  /// No description provided for @passExtendNotice.
+  ///
+  /// In ko, this message translates to:
+  /// **'이미 이용 중이에요. 지금 구매하면 남은 기간에 이어서 연장됩니다.'**
+  String get passExtendNotice;
+
+  /// No description provided for @passAlbumHeadline.
+  ///
+  /// In ko, this message translates to:
+  /// **'더 많은 포스트 사진을 등록하고 다양한 매력을 보여주세요!'**
+  String get passAlbumHeadline;
+
+  /// No description provided for @passAlbumBenefit1.
+  ///
+  /// In ko, this message translates to:
+  /// **'포스트 사진 최대 8장까지 등록'**
+  String get passAlbumBenefit1;
+
+  /// No description provided for @passAlbumBenefit1Desc.
+  ///
+  /// In ko, this message translates to:
+  /// **'기본 1장에서 최대 8장까지 여러 장의 사진을 등록할 수 있어요.'**
+  String get passAlbumBenefit1Desc;
+
+  /// No description provided for @passAlbumBenefit2.
+  ///
+  /// In ko, this message translates to:
+  /// **'등록 시간 제한 없음 (24시간 자유롭게)'**
+  String get passAlbumBenefit2;
+
+  /// No description provided for @passAlbumBenefit2Desc.
+  ///
+  /// In ko, this message translates to:
+  /// **'시간 제약 없이 언제든지 자유롭게 포스트를 등록할 수 있어요.'**
+  String get passAlbumBenefit2Desc;
+
+  /// No description provided for @passAlbumBenefit3.
+  ///
+  /// In ko, this message translates to:
+  /// **'휴대폰 갤러리 사진까지 업로드 가능'**
+  String get passAlbumBenefit3;
+
+  /// No description provided for @passAlbumBenefit3Desc.
+  ///
+  /// In ko, this message translates to:
+  /// **'카메라로 찍은 사진뿐만 아니라 갤러리 사진도 올릴 수 있어요.'**
+  String get passAlbumBenefit3Desc;
+
+  /// No description provided for @passTranslateHeadline.
+  ///
+  /// In ko, this message translates to:
+  /// **'언어의 장벽 없이 더 많은 사람과 대화해보세요!'**
+  String get passTranslateHeadline;
+
+  /// No description provided for @passTranslateBenefit1.
+  ///
+  /// In ko, this message translates to:
+  /// **'채팅 자동 번역 무제한'**
+  String get passTranslateBenefit1;
+
+  /// No description provided for @passTranslateBenefit1Desc.
+  ///
+  /// In ko, this message translates to:
+  /// **'상대방의 메시지를 자동으로 번역해 실시간으로 소통할 수 있어요.'**
+  String get passTranslateBenefit1Desc;
+
+  /// No description provided for @passTranslateBenefit2.
+  ///
+  /// In ko, this message translates to:
+  /// **'댓글 자동 번역 무제한'**
+  String get passTranslateBenefit2;
+
+  /// No description provided for @passTranslateBenefit2Desc.
+  ///
+  /// In ko, this message translates to:
+  /// **'달빛가든과 포스트의 댓글을 자동으로 번역해줘요.'**
+  String get passTranslateBenefit2Desc;
+
+  /// No description provided for @passTranslateBenefit3.
+  ///
+  /// In ko, this message translates to:
+  /// **'프로필 자동 번역 무제한'**
+  String get passTranslateBenefit3;
+
+  /// No description provided for @passTranslateBenefit3Desc.
+  ///
+  /// In ko, this message translates to:
+  /// **'상대방의 프로필 정보와 하루 한마디를 자동으로 번역해줘요.'**
+  String get passTranslateBenefit3Desc;
+
+  /// No description provided for @primeTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'PRIME 멤버십'**
+  String get primeTitle;
+
+  /// No description provided for @primeSubtitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'PRIME으로 더 특별한 경험을 즐겨보세요.'**
+  String get primeSubtitle;
+
+  /// No description provided for @primeHeadline.
+  ///
+  /// In ko, this message translates to:
+  /// **'달빛톡을 완벽하게 즐기는 방법'**
+  String get primeHeadline;
+
+  /// No description provided for @primeHeadlineDetail.
+  ///
+  /// In ko, this message translates to:
+  /// **'모든 기능을 제한 없이!'**
+  String get primeHeadlineDetail;
+
+  /// No description provided for @primePlanSection.
+  ///
+  /// In ko, this message translates to:
+  /// **'요금제 선택하기'**
+  String get primePlanSection;
+
+  /// No description provided for @primeMonths.
+  ///
+  /// In ko, this message translates to:
+  /// **'{months}개월'**
+  String primeMonths(int months);
+
+  /// No description provided for @primeBestValue.
+  ///
+  /// In ko, this message translates to:
+  /// **'가성비 끝판왕'**
+  String get primeBestValue;
+
+  /// No description provided for @primeStorePrice.
+  ///
+  /// In ko, this message translates to:
+  /// **'스토어 가격'**
+  String get primeStorePrice;
+
+  /// No description provided for @primePay.
+  ///
+  /// In ko, this message translates to:
+  /// **'결제하기'**
+  String get primePay;
+
+  /// No description provided for @primeStarted.
+  ///
+  /// In ko, this message translates to:
+  /// **'PRIME 멤버십이 시작됐어요!'**
+  String get primeStarted;
+
+  /// No description provided for @primeActive.
+  ///
+  /// In ko, this message translates to:
+  /// **'PRIME 이용 중'**
+  String get primeActive;
+
+  /// No description provided for @primeActiveMonths.
+  ///
+  /// In ko, this message translates to:
+  /// **'{months}개월 이용 중'**
+  String primeActiveMonths(int months);
+
+  /// No description provided for @primeRemainingDays.
+  ///
+  /// In ko, this message translates to:
+  /// **'남은 기간 {days}일'**
+  String primeRemainingDays(int days);
+
+  /// No description provided for @primeNextBilling.
+  ///
+  /// In ko, this message translates to:
+  /// **'다음 결제 예정일  {date}'**
+  String primeNextBilling(String date);
+
+  /// No description provided for @primeEndDate.
+  ///
+  /// In ko, this message translates to:
+  /// **'이용 종료일  {date}'**
+  String primeEndDate(String date);
+
+  /// No description provided for @primeAutoRenew.
+  ///
+  /// In ko, this message translates to:
+  /// **'자동 갱신'**
+  String get primeAutoRenew;
+
+  /// No description provided for @primeAutoRenewOff.
+  ///
+  /// In ko, this message translates to:
+  /// **'갱신 안 함'**
+  String get primeAutoRenewOff;
+
+  /// No description provided for @primeCancelRenew.
+  ///
+  /// In ko, this message translates to:
+  /// **'자동 갱신 해지'**
+  String get primeCancelRenew;
+
+  /// No description provided for @primeCancelConfirm.
+  ///
+  /// In ko, this message translates to:
+  /// **'자동 갱신을 해지할까요?'**
+  String get primeCancelConfirm;
+
+  /// No description provided for @primeCancelDetail.
+  ///
+  /// In ko, this message translates to:
+  /// **'남은 기간 동안은 혜택이 그대로 유지되고, 만료일에 갱신되지 않아요.'**
+  String get primeCancelDetail;
+
+  /// No description provided for @primeCancelDone.
+  ///
+  /// In ko, this message translates to:
+  /// **'자동 갱신을 해지했어요.'**
+  String get primeCancelDone;
+
+  /// No description provided for @commonUnsubscribe.
+  ///
+  /// In ko, this message translates to:
+  /// **'해지'**
+  String get commonUnsubscribe;
+
+  /// No description provided for @primeBenefitsSection.
+  ///
+  /// In ko, this message translates to:
+  /// **'프라임 혜택'**
+  String get primeBenefitsSection;
+
+  /// No description provided for @primeCurrentPlan.
+  ///
+  /// In ko, this message translates to:
+  /// **'현재 적용 중'**
+  String get primeCurrentPlan;
+
+  /// No description provided for @primeAlbumBenefit.
+  ///
+  /// In ko, this message translates to:
+  /// **'포스트 사진 앨범 패스 {days}일'**
+  String primeAlbumBenefit(int days);
+
+  /// No description provided for @primeAlbumBenefitDesc.
+  ///
+  /// In ko, this message translates to:
+  /// **'하루에 여러 장의 사진을 자유롭게 업로드!'**
+  String get primeAlbumBenefitDesc;
+
+  /// No description provided for @primeBoostBenefit.
+  ///
+  /// In ko, this message translates to:
+  /// **'{item} 1시간, {count}매'**
+  String primeBoostBenefit(String item, int count);
+
+  /// No description provided for @primeBoostSummary.
+  ///
+  /// In ko, this message translates to:
+  /// **'{item} {count}매'**
+  String primeBoostSummary(String item, int count);
+
+  /// No description provided for @primePostBoostDesc.
+  ///
+  /// In ko, this message translates to:
+  /// **'내 포스트를 더 많은 사람에게 노출! (일일제한 없음)'**
+  String get primePostBoostDesc;
+
+  /// No description provided for @primeSpotlightDesc.
+  ///
+  /// In ko, this message translates to:
+  /// **'오늘의 주인공이 되어 더 많은 관심을! (일일제한 없음)'**
+  String get primeSpotlightDesc;
+
+  /// No description provided for @primeUnlimitedChat.
+  ///
+  /// In ko, this message translates to:
+  /// **'대화 신청 무제한'**
+  String get primeUnlimitedChat;
+
+  /// No description provided for @primeUnlimitedChatDesc.
+  ///
+  /// In ko, this message translates to:
+  /// **'하루 무료 횟수에 관계없이 대화를 신청할 수 있어요.'**
+  String get primeUnlimitedChatDesc;
+
+  /// No description provided for @primeAutoRenewNotice.
+  ///
+  /// In ko, this message translates to:
+  /// **'* PRIME은 선택하신 기간 동안 혜택이 자동 갱신됩니다.'**
+  String get primeAutoRenewNotice;
+
+  /// No description provided for @primeSubscriptionNotice.
+  ///
+  /// In ko, this message translates to:
+  /// **'구독 서비스는 동일한 기간, 동일한 가격으로 자동 갱신되며,\n언제든 구독을 해지할 수 있습니다.'**
+  String get primeSubscriptionNotice;
+
+  /// No description provided for @chargeTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'루나 충전'**
+  String get chargeTitle;
+
+  /// No description provided for @chargeSubtitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'루나로 더 특별한 경험을 즐겨보세요.'**
+  String get chargeSubtitle;
+
+  /// No description provided for @chargeLunaPrefix.
+  ///
+  /// In ko, this message translates to:
+  /// **'루나 '**
+  String get chargeLunaPrefix;
+
+  /// No description provided for @chargeLunaSuffix.
+  ///
+  /// In ko, this message translates to:
+  /// **' 개'**
+  String get chargeLunaSuffix;
+
+  /// No description provided for @chargeBaseBonus.
+  ///
+  /// In ko, this message translates to:
+  /// **'기본 {luna}개 + 보너스 {bonus}개'**
+  String chargeBaseBonus(int luna, int bonus);
+
+  /// No description provided for @chargeBonusBadge.
+  ///
+  /// In ko, this message translates to:
+  /// **'보너스 {bonus}'**
+  String chargeBonusBadge(int bonus);
+
+  /// No description provided for @chargeBuy.
+  ///
+  /// In ko, this message translates to:
+  /// **'구매'**
+  String get chargeBuy;
+
+  /// No description provided for @chargeSecure.
+  ///
+  /// In ko, this message translates to:
+  /// **'안전한 결제'**
+  String get chargeSecure;
+
+  /// No description provided for @chargeNotice.
+  ///
+  /// In ko, this message translates to:
+  /// **'결제는 스토어를 통해 처리되며, 구매한 루나는 즉시 지급됩니다.\n가격은 스토어 연동 후 표시됩니다.'**
+  String get chargeNotice;
+
+  /// No description provided for @chargeDone.
+  ///
+  /// In ko, this message translates to:
+  /// **'루나 {total}개가 충전됐어요.'**
+  String chargeDone(int total);
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

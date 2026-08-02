@@ -567,4 +567,422 @@ class L10nJa extends L10n {
 
   @override
   String get commonNone => 'なし';
+
+  @override
+  String get storeKindPostBoost => 'ポストブースト';
+
+  @override
+  String get storeKindSpotlightBoost => 'スポットライトブースト';
+
+  @override
+  String get storeKindAlbumPass => 'ポストアルバムパス';
+
+  @override
+  String get storeKindTranslatePass => '自動翻訳パス';
+
+  @override
+  String get storeDescPostBoost => '他の人より優先してポスト写真をおすすめします！';
+
+  @override
+  String get storeDescSpotlightBoost => 'プレミアムユーザーだけが使える特別なおすすめ枠！';
+
+  @override
+  String get storeDescAlbumPass =>
+      '複数の写真を自由にアップロード！時間制限なしで、カメラとギャラリーの写真どちらも使えます。';
+
+  @override
+  String get storeDescTranslatePass => 'すべてのメッセージを自動翻訳して、言葉の壁なくやりとり！';
+
+  @override
+  String storeOptionBoost(int quantity) {
+    return '1時間、$quantity枚';
+  }
+
+  @override
+  String storeOptionDays(int days) {
+    return '$days日';
+  }
+
+  @override
+  String get lunaStoreTitle => 'ルナストア';
+
+  @override
+  String get lunaStoreSubtitle => 'ルナでもっと特別な体験を作りましょう。';
+
+  @override
+  String get storeLoadFailed => '商品を読み込めませんでした。';
+
+  @override
+  String get storeBuy => '購入する';
+
+  @override
+  String get storeDetail => '詳細';
+
+  @override
+  String storeDiscount(int percent) {
+    return '$percent%オフ';
+  }
+
+  @override
+  String storePurchased(String item, String option) {
+    return '$item $option を購入しました！';
+  }
+
+  @override
+  String get storeLunaBalance => '保有ルナ';
+
+  @override
+  String get storeCharge => 'チャージする';
+
+  @override
+  String boostOwnedTitle(String item) {
+    return '保有中の$item';
+  }
+
+  @override
+  String boostItemHour(String item) {
+    return '$item（1時間）';
+  }
+
+  @override
+  String boostStock(int count) {
+    return '保有$count枚';
+  }
+
+  @override
+  String boostActiveRemaining(String remaining) {
+    return '使用中 — 残り$remaining';
+  }
+
+  @override
+  String boostRemainHourMinute(int hours, int minutes) {
+    return '$hours時間$minutes分';
+  }
+
+  @override
+  String boostRemainMinute(int minutes) {
+    return '$minutes分';
+  }
+
+  @override
+  String get boostRemainUnderMinute => '1分未満';
+
+  @override
+  String get boostEffectTitle => '期待できる効果';
+
+  @override
+  String get boostEffectExposure => '最大表示回数アップ';
+
+  @override
+  String get boostEffectExposureValue => '約3倍';
+
+  @override
+  String get boostEffectExposureDetail => 'より多くのユーザーに表示されます';
+
+  @override
+  String get boostEffectVisit => 'プロフィール訪問アップ';
+
+  @override
+  String get boostEffectVisitValue => '約2.5倍';
+
+  @override
+  String get boostEffectVisitDetail => 'プロフィールへの訪問と流入が増えます';
+
+  @override
+  String get boostEffectLike => 'いいねアップ';
+
+  @override
+  String get boostEffectLikeValue => '約2倍';
+
+  @override
+  String get boostEffectLikeDetail => 'いいねと関心をより多く集められます';
+
+  @override
+  String get boostHourHighlight => '1時間';
+
+  @override
+  String get boostHourSuffix => 'のあいだおすすめの優先度が上がり\nより多くのユーザーに表示されます！';
+
+  @override
+  String get boostUse => 'ブーストを使う（1枚）';
+
+  @override
+  String get boostInUse => '使用中です';
+
+  @override
+  String get boostNoneShort => '保有中のブーストがありません';
+
+  @override
+  String get boostNone => '保有中のブーストがありません。';
+
+  @override
+  String get boostBuyHint => 'ルナストアでブーストを購入できます。';
+
+  @override
+  String get boostGoStore => 'ルナストアへ';
+
+  @override
+  String get boostUsed => 'ブーストを使いました。1時間のあいだ優先表示されます！';
+
+  @override
+  String passBuy(String item) {
+    return '$itemを購入';
+  }
+
+  @override
+  String passExtend(String item) {
+    return '$itemを延長';
+  }
+
+  @override
+  String passPurchased(String item, int days) {
+    return '$item $days日分を購入しました！';
+  }
+
+  @override
+  String get passPeriodSection => '期間を選択';
+
+  @override
+  String passDays(int days) {
+    return '$days日';
+  }
+
+  @override
+  String passDaysPass(int days) {
+    return '$days日パス';
+  }
+
+  @override
+  String passPriceLuna(int price) {
+    return '$price ルナ';
+  }
+
+  @override
+  String get passAmount => '購入金額';
+
+  @override
+  String get passUsageInfo => '利用情報';
+
+  @override
+  String get passStatus => '保有状況';
+
+  @override
+  String get passStatusActive => '利用中';
+
+  @override
+  String get passStatusNone => '未保有';
+
+  @override
+  String get passStatusPending => '購入待ち';
+
+  @override
+  String get passRemaining => '残り期間';
+
+  @override
+  String passValidUntil(String date) {
+    return '$dateまで';
+  }
+
+  @override
+  String get passValidPeriod => '有効期間';
+
+  @override
+  String get passExtendNotice => 'すでに利用中です。今購入すると、残り期間に続けて延長されます。';
+
+  @override
+  String get passAlbumHeadline => 'もっと多くのポスト写真を登録して、いろいろな魅力を見せましょう！';
+
+  @override
+  String get passAlbumBenefit1 => 'ポスト写真を最大8枚まで登録';
+
+  @override
+  String get passAlbumBenefit1Desc => '基本1枚から最大8枚まで、複数の写真を登録できます。';
+
+  @override
+  String get passAlbumBenefit2 => '登録時間の制限なし（24時間いつでも）';
+
+  @override
+  String get passAlbumBenefit2Desc => '時間の制約なく、いつでも自由にポストを登録できます。';
+
+  @override
+  String get passAlbumBenefit3 => 'スマホのギャラリー写真もアップロード可能';
+
+  @override
+  String get passAlbumBenefit3Desc => 'カメラで撮った写真だけでなく、ギャラリーの写真も投稿できます。';
+
+  @override
+  String get passTranslateHeadline => '言葉の壁なく、もっと多くの人と話してみましょう！';
+
+  @override
+  String get passTranslateBenefit1 => 'チャット自動翻訳が無制限';
+
+  @override
+  String get passTranslateBenefit1Desc => '相手のメッセージを自動翻訳して、リアルタイムでやりとりできます。';
+
+  @override
+  String get passTranslateBenefit2 => 'コメント自動翻訳が無制限';
+
+  @override
+  String get passTranslateBenefit2Desc => '月光ガーデンとポストのコメントを自動で翻訳します。';
+
+  @override
+  String get passTranslateBenefit3 => 'プロフィール自動翻訳が無制限';
+
+  @override
+  String get passTranslateBenefit3Desc => '相手のプロフィール情報と今日のひとことを自動で翻訳します。';
+
+  @override
+  String get primeTitle => 'PRIMEメンバーシップ';
+
+  @override
+  String get primeSubtitle => 'PRIMEでもっと特別な体験を楽しみましょう。';
+
+  @override
+  String get primeHeadline => '月光トークを完璧に楽しむ方法';
+
+  @override
+  String get primeHeadlineDetail => 'すべての機能を制限なく！';
+
+  @override
+  String get primePlanSection => 'プランを選ぶ';
+
+  @override
+  String primeMonths(int months) {
+    return '$monthsか月';
+  }
+
+  @override
+  String get primeBestValue => 'コスパ最強';
+
+  @override
+  String get primeStorePrice => 'ストア価格';
+
+  @override
+  String get primePay => '支払う';
+
+  @override
+  String get primeStarted => 'PRIMEメンバーシップが始まりました！';
+
+  @override
+  String get primeActive => 'PRIME利用中';
+
+  @override
+  String primeActiveMonths(int months) {
+    return '$monthsか月プラン利用中';
+  }
+
+  @override
+  String primeRemainingDays(int days) {
+    return '残り$days日';
+  }
+
+  @override
+  String primeNextBilling(String date) {
+    return '次回のお支払い予定日  $date';
+  }
+
+  @override
+  String primeEndDate(String date) {
+    return '利用終了日  $date';
+  }
+
+  @override
+  String get primeAutoRenew => '自動更新';
+
+  @override
+  String get primeAutoRenewOff => '更新しない';
+
+  @override
+  String get primeCancelRenew => '自動更新を解約';
+
+  @override
+  String get primeCancelConfirm => '自動更新を解約しますか？';
+
+  @override
+  String get primeCancelDetail => '残りの期間は特典がそのまま維持され、満了日に更新されません。';
+
+  @override
+  String get primeCancelDone => '自動更新を解約しました。';
+
+  @override
+  String get commonUnsubscribe => '解約';
+
+  @override
+  String get primeBenefitsSection => 'プライム特典';
+
+  @override
+  String get primeCurrentPlan => '適用中';
+
+  @override
+  String primeAlbumBenefit(int days) {
+    return 'ポスト写真アルバムパス $days日';
+  }
+
+  @override
+  String get primeAlbumBenefitDesc => '1日に複数の写真を自由にアップロード！';
+
+  @override
+  String primeBoostBenefit(String item, int count) {
+    return '$item 1時間、$count枚';
+  }
+
+  @override
+  String primeBoostSummary(String item, int count) {
+    return '$item $count枚';
+  }
+
+  @override
+  String get primePostBoostDesc => '自分のポストをより多くの人に表示！（1日の制限なし）';
+
+  @override
+  String get primeSpotlightDesc => '今日の主役になって、もっと注目を！（1日の制限なし）';
+
+  @override
+  String get primeUnlimitedChat => '会話リクエスト無制限';
+
+  @override
+  String get primeUnlimitedChatDesc => '1日の無料回数に関係なく、会話をリクエストできます。';
+
+  @override
+  String get primeAutoRenewNotice => '※ PRIMEは選択した期間のあいだ、特典が自動更新されます。';
+
+  @override
+  String get primeSubscriptionNotice => '定期購読は同じ期間・同じ価格で自動更新され、\nいつでも解約できます。';
+
+  @override
+  String get chargeTitle => 'ルナチャージ';
+
+  @override
+  String get chargeSubtitle => 'ルナでもっと特別な体験を楽しみましょう。';
+
+  @override
+  String get chargeLunaPrefix => 'ルナ ';
+
+  @override
+  String get chargeLunaSuffix => ' 個';
+
+  @override
+  String chargeBaseBonus(int luna, int bonus) {
+    return '基本$luna個 + ボーナス$bonus個';
+  }
+
+  @override
+  String chargeBonusBadge(int bonus) {
+    return 'ボーナス $bonus';
+  }
+
+  @override
+  String get chargeBuy => '購入';
+
+  @override
+  String get chargeSecure => '安全なお支払い';
+
+  @override
+  String get chargeNotice =>
+      'お支払いはストアを通じて処理され、購入したルナはすぐに付与されます。\n価格はストア連携後に表示されます。';
+
+  @override
+  String chargeDone(int total) {
+    return 'ルナ$total個をチャージしました。';
+  }
 }

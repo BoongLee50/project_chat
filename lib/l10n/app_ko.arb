@@ -365,5 +365,339 @@
       }
     }
   },
-  "commonNone": "없음"
+  "commonNone": "없음",
+  "storeKindPostBoost": "포스트 부스트",
+  "storeKindSpotlightBoost": "스포트라이트 부스트",
+  "storeKindAlbumPass": "포스트 앨범 패스",
+  "storeKindTranslatePass": "자동 번역 패스",
+  "storeDescPostBoost": "다른 사람보다 우선적으로 포스트 사진을 추천해드려요!",
+  "storeDescSpotlightBoost": "프리미엄 유저만 이용 가능한 특별 추천 공간!",
+  "storeDescAlbumPass": "여러 장의 사진을 자유롭게 업로드! 시간 제한 없이, 카메라와 갤러리 사진 모두 사용할 수 있어요.",
+  "storeDescTranslatePass": "모든 메시지를 자동으로 번역해 언어 장벽 없이 소통!",
+  "storeOptionBoost": "1시간, {quantity}매",
+  "@storeOptionBoost": {
+    "placeholders": {
+      "quantity": {
+        "type": "int"
+      }
+    }
+  },
+  "storeOptionDays": "{days}일",
+  "@storeOptionDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "lunaStoreTitle": "루나상점",
+  "lunaStoreSubtitle": "루나로 더 특별한 경험을 만들어보세요.",
+  "storeLoadFailed": "상품을 불러오지 못했어요.",
+  "storeBuy": "구매하기",
+  "storeDetail": "자세히",
+  "storeDiscount": "{percent}% 할인",
+  "@storeDiscount": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "storePurchased": "{item} {option} 구매 완료!",
+  "@storePurchased": {
+    "placeholders": {
+      "item": {
+        "type": "String"
+      },
+      "option": {
+        "type": "String"
+      }
+    }
+  },
+  "storeLunaBalance": "보유 루나",
+  "storeCharge": "충전하기",
+  "boostOwnedTitle": "보유 {item}",
+  "@boostOwnedTitle": {
+    "placeholders": {
+      "item": {
+        "type": "String"
+      }
+    }
+  },
+  "boostItemHour": "{item} (1시간)",
+  "@boostItemHour": {
+    "placeholders": {
+      "item": {
+        "type": "String"
+      }
+    }
+  },
+  "boostStock": "보유 {count}매",
+  "@boostStock": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "boostActiveRemaining": "사용 중 — {remaining} 남음",
+  "@boostActiveRemaining": {
+    "placeholders": {
+      "remaining": {
+        "type": "String"
+      }
+    }
+  },
+  "boostRemainHourMinute": "{hours}시간 {minutes}분",
+  "@boostRemainHourMinute": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "boostRemainMinute": "{minutes}분",
+  "@boostRemainMinute": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "boostRemainUnderMinute": "1분 미만",
+  "boostEffectTitle": "예상 효과",
+  "boostEffectExposure": "최대 노출 증가",
+  "boostEffectExposureValue": "약 3배",
+  "boostEffectExposureDetail": "더 많은 사용자에게 노출돼요",
+  "boostEffectVisit": "프로필 방문 증가",
+  "boostEffectVisitValue": "약 2.5배",
+  "boostEffectVisitDetail": "프로필 방문 및 유입이 늘어나요",
+  "boostEffectLike": "좋아요 증가",
+  "boostEffectLikeValue": "약 2배",
+  "boostEffectLikeDetail": "좋아요와 관심을 더 많이 받아요",
+  "boostHourHighlight": "1시간",
+  "boostHourSuffix": " 동안 추천 우선순위가 올라가\n더 많은 사용자에게 노출돼요!",
+  "boostUse": "부스트 사용하기 (1매)",
+  "boostInUse": "사용 중이에요",
+  "boostNoneShort": "보유한 부스트가 없어요",
+  "boostNone": "보유한 부스트가 없어요.",
+  "boostBuyHint": "루나상점에서 부스트를 구매할 수 있어요.",
+  "boostGoStore": "루나상점 가기",
+  "boostUsed": "부스트를 사용했어요. 1시간 동안 우선 노출됩니다!",
+  "passBuy": "{item} 구매",
+  "@passBuy": {
+    "placeholders": {
+      "item": {
+        "type": "String"
+      }
+    }
+  },
+  "passExtend": "{item} 연장",
+  "@passExtend": {
+    "placeholders": {
+      "item": {
+        "type": "String"
+      }
+    }
+  },
+  "passPurchased": "{item} {days}일 구매 완료!",
+  "@passPurchased": {
+    "placeholders": {
+      "item": {
+        "type": "String"
+      },
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "passPeriodSection": "기간 선택",
+  "passDays": "{days}일",
+  "@passDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "passDaysPass": "{days}일 패스",
+  "@passDaysPass": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "passPriceLuna": "{price} 루나",
+  "@passPriceLuna": {
+    "placeholders": {
+      "price": {
+        "type": "int"
+      }
+    }
+  },
+  "passAmount": "구매 금액",
+  "passUsageInfo": "이용 정보",
+  "passStatus": "보유 상태",
+  "passStatusActive": "이용 중",
+  "passStatusNone": "미보유",
+  "passStatusPending": "구매 대기",
+  "passRemaining": "남은 기간",
+  "passValidUntil": "{date}까지",
+  "@passValidUntil": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "passValidPeriod": "유효 기간",
+  "passExtendNotice": "이미 이용 중이에요. 지금 구매하면 남은 기간에 이어서 연장됩니다.",
+  "passAlbumHeadline": "더 많은 포스트 사진을 등록하고 다양한 매력을 보여주세요!",
+  "passAlbumBenefit1": "포스트 사진 최대 8장까지 등록",
+  "passAlbumBenefit1Desc": "기본 1장에서 최대 8장까지 여러 장의 사진을 등록할 수 있어요.",
+  "passAlbumBenefit2": "등록 시간 제한 없음 (24시간 자유롭게)",
+  "passAlbumBenefit2Desc": "시간 제약 없이 언제든지 자유롭게 포스트를 등록할 수 있어요.",
+  "passAlbumBenefit3": "휴대폰 갤러리 사진까지 업로드 가능",
+  "passAlbumBenefit3Desc": "카메라로 찍은 사진뿐만 아니라 갤러리 사진도 올릴 수 있어요.",
+  "passTranslateHeadline": "언어의 장벽 없이 더 많은 사람과 대화해보세요!",
+  "passTranslateBenefit1": "채팅 자동 번역 무제한",
+  "passTranslateBenefit1Desc": "상대방의 메시지를 자동으로 번역해 실시간으로 소통할 수 있어요.",
+  "passTranslateBenefit2": "댓글 자동 번역 무제한",
+  "passTranslateBenefit2Desc": "달빛가든과 포스트의 댓글을 자동으로 번역해줘요.",
+  "passTranslateBenefit3": "프로필 자동 번역 무제한",
+  "passTranslateBenefit3Desc": "상대방의 프로필 정보와 하루 한마디를 자동으로 번역해줘요.",
+  "primeTitle": "PRIME 멤버십",
+  "primeSubtitle": "PRIME으로 더 특별한 경험을 즐겨보세요.",
+  "primeHeadline": "달빛톡을 완벽하게 즐기는 방법",
+  "primeHeadlineDetail": "모든 기능을 제한 없이!",
+  "primePlanSection": "요금제 선택하기",
+  "primeMonths": "{months}개월",
+  "@primeMonths": {
+    "placeholders": {
+      "months": {
+        "type": "int"
+      }
+    }
+  },
+  "primeBestValue": "가성비 끝판왕",
+  "primeStorePrice": "스토어 가격",
+  "primePay": "결제하기",
+  "primeStarted": "PRIME 멤버십이 시작됐어요!",
+  "primeActive": "PRIME 이용 중",
+  "primeActiveMonths": "{months}개월 이용 중",
+  "@primeActiveMonths": {
+    "placeholders": {
+      "months": {
+        "type": "int"
+      }
+    }
+  },
+  "primeRemainingDays": "남은 기간 {days}일",
+  "@primeRemainingDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "primeNextBilling": "다음 결제 예정일  {date}",
+  "@primeNextBilling": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "primeEndDate": "이용 종료일  {date}",
+  "@primeEndDate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "primeAutoRenew": "자동 갱신",
+  "primeAutoRenewOff": "갱신 안 함",
+  "primeCancelRenew": "자동 갱신 해지",
+  "primeCancelConfirm": "자동 갱신을 해지할까요?",
+  "primeCancelDetail": "남은 기간 동안은 혜택이 그대로 유지되고, 만료일에 갱신되지 않아요.",
+  "primeCancelDone": "자동 갱신을 해지했어요.",
+  "commonUnsubscribe": "해지",
+  "primeBenefitsSection": "프라임 혜택",
+  "primeCurrentPlan": "현재 적용 중",
+  "primeAlbumBenefit": "포스트 사진 앨범 패스 {days}일",
+  "@primeAlbumBenefit": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "primeAlbumBenefitDesc": "하루에 여러 장의 사진을 자유롭게 업로드!",
+  "primeBoostBenefit": "{item} 1시간, {count}매",
+  "@primeBoostBenefit": {
+    "placeholders": {
+      "item": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "primeBoostSummary": "{item} {count}매",
+  "@primeBoostSummary": {
+    "placeholders": {
+      "item": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "primePostBoostDesc": "내 포스트를 더 많은 사람에게 노출! (일일제한 없음)",
+  "primeSpotlightDesc": "오늘의 주인공이 되어 더 많은 관심을! (일일제한 없음)",
+  "primeUnlimitedChat": "대화 신청 무제한",
+  "primeUnlimitedChatDesc": "하루 무료 횟수에 관계없이 대화를 신청할 수 있어요.",
+  "primeAutoRenewNotice": "* PRIME은 선택하신 기간 동안 혜택이 자동 갱신됩니다.",
+  "primeSubscriptionNotice": "구독 서비스는 동일한 기간, 동일한 가격으로 자동 갱신되며,\n언제든 구독을 해지할 수 있습니다.",
+  "chargeTitle": "루나 충전",
+  "chargeSubtitle": "루나로 더 특별한 경험을 즐겨보세요.",
+  "chargeLunaPrefix": "루나 ",
+  "chargeLunaSuffix": " 개",
+  "chargeBaseBonus": "기본 {luna}개 + 보너스 {bonus}개",
+  "@chargeBaseBonus": {
+    "placeholders": {
+      "luna": {
+        "type": "int"
+      },
+      "bonus": {
+        "type": "int"
+      }
+    }
+  },
+  "chargeBonusBadge": "보너스 {bonus}",
+  "@chargeBonusBadge": {
+    "placeholders": {
+      "bonus": {
+        "type": "int"
+      }
+    }
+  },
+  "chargeBuy": "구매",
+  "chargeSecure": "안전한 결제",
+  "chargeNotice": "결제는 스토어를 통해 처리되며, 구매한 루나는 즉시 지급됩니다.\n가격은 스토어 연동 후 표시됩니다.",
+  "chargeDone": "루나 {total}개가 충전됐어요.",
+  "@chargeDone": {
+    "placeholders": {
+      "total": {
+        "type": "int"
+      }
+    }
+  }
 }

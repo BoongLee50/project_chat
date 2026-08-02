@@ -6,6 +6,7 @@ import '../../../../app/theme/app_dimens.dart';
 import '../../data/models/store_models.dart';
 import '../providers/store_provider.dart';
 import '../widgets/store_widgets.dart';
+import '../../../../l10n/app_localizations.dart';
 
 /// 화면 29(포스트 앨범 패스) · 30(자동 번역 패스).
 ///
@@ -33,6 +34,7 @@ class _PassScreenState extends ConsumerState<PassScreen> {
       _isAlbum ? const Color(0xFF2F7BF6) : const Color(0xFF23A455);
 
   Future<void> _purchase(LunaProduct product) async {
+    final l10n = L10n.of(context);
     setState(() => _busy = true);
     final error = await ref
         .read(storeActionsProvider)
@@ -44,7 +46,7 @@ class _PassScreenState extends ConsumerState<PassScreen> {
       ..showSnackBar(
         SnackBar(
           content: Text(
-            error ?? '${StoreKind.label(widget.kind)} ${product.durationDays}일 구매 완료!',
+            error ?? l10n.passPurchased(StoreKind.label(l10n, widget.kind), product.durationDays),
           ),
         ),
       );
@@ -52,6 +54,7 @@ class _PassScreenState extends ConsumerState<PassScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     final catalog = ref.watch(catalogProvider);
     final wallet = ref.watch(walletProvider).valueOrNull ?? Wallet.empty;
 
@@ -63,18 +66,18 @@ class _PassScreenState extends ConsumerState<PassScreen> {
       backgroundColor: AppColors.night,
       appBar: StoreAppBar(
         icon: _isAlbum ? Icons.photo_library_outlined : Icons.language,
-        title: StoreKind.label(widget.kind),
+        title: StoreKind.label(l10n, widget.kind),
         subtitle: _isAlbum
-            ? '더 많은 포스트 사진을 등록하고 다양한 매력을 보여주세요!'
-            : '언어의 장벽 없이 더 많은 사람과 대화해보세요!',
+            ? l10n.passAlbumHeadline
+            : l10n.passTranslateHeadline,
         iconColor: _accent,
       ),
       body: catalog.when(
         loading: () => const Center(
           child: CircularProgressIndicator(color: AppColors.moonlight),
         ),
-        error: (error, _) => const Center(
-          child: Text('상품을 불러오지 못했어요.',
+        error: (error, _) => Center(
+          child: Text(l10n.storeLoadFailed,
               style: TextStyle(color: AppColors.textSecondary)),
         ),
         data: (data) {
@@ -99,7 +102,7 @@ class _PassScreenState extends ConsumerState<PassScreen> {
                     Row(
                       children: [
                         StatusPill(
-                          label: active ? '이용 중' : '구매 대기',
+                          label: active ? l10n.passStatusActive : l10n.passStatusPending,
                           color: _accent,
                           filled: active,
                         ),
@@ -111,8 +114,8 @@ class _PassScreenState extends ConsumerState<PassScreen> {
                     const SizedBox(height: AppDimens.gapMd),
                     Text(
                       selected == null
-                          ? StoreKind.label(widget.kind)
-                          : '${selected.durationDays}일 패스',
+                          ? StoreKind.label(l10n, widget.kind)
+                          : l10n.passDaysPass(selected.durationDays),
                       style: TextStyle(
                         color: _accent,
                         fontSize: 26,
@@ -122,23 +125,23 @@ class _PassScreenState extends ConsumerState<PassScreen> {
                     const SizedBox(height: AppDimens.gapMd),
                     const Divider(color: AppColors.border, height: 1),
                     const SizedBox(height: 6),
-                    ..._benefits(),
+                    ..._benefits(l10n),
                   ],
                 ),
               ),
               const SizedBox(height: AppDimens.gapMd),
-              const _SectionTitle('기간 선택'),
+              _SectionTitle(l10n.passPeriodSection),
               const SizedBox(height: AppDimens.gapSm),
               for (var i = 0; i < options.length; i++)
                 PriceOptionTile(
-                  label: '${options[i].durationDays}일',
+                  label: l10n.passDays(options[i].durationDays),
                   price: options[i].price,
                   selected: i == _selected,
                   accent: _accent,
                   onTap: () => setState(() => _selected = i),
                 ),
               const SizedBox(height: AppDimens.gapMd),
-              const _SectionTitle('이용 정보'),
+              _SectionTitle(l10n.passUsageInfo),
               const SizedBox(height: AppDimens.gapSm),
               StoreCard(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
@@ -146,21 +149,21 @@ class _PassScreenState extends ConsumerState<PassScreen> {
                   children: [
                     InfoRow(
                       icon: Icons.star_outline,
-                      label: '구매 금액',
-                      value: selected == null ? '-' : '${selected.price} 루나',
+                      label: l10n.passAmount,
+                      value: selected == null ? '-' : l10n.passPriceLuna(selected.price),
                       valueColor: AppColors.gold,
                     ),
                     const Divider(color: AppColors.border, height: 1),
                     InfoRow(
                       icon: Icons.schedule,
-                      label: '보유 상태',
-                      value: active ? '이용 중' : '미보유',
+                      label: l10n.passStatus,
+                      value: active ? l10n.passStatusActive : l10n.passStatusNone,
                     ),
                     const Divider(color: AppColors.border, height: 1),
                     InfoRow(
                       icon: Icons.event_available,
-                      label: '유효 기간',
-                      value: expires == null ? '-' : '${_date(expires)}까지',
+                      label: l10n.passValidPeriod,
+                      value: expires == null ? '-' : l10n.passValidUntil(_date(expires)),
                     ),
                   ],
                 ),
@@ -168,7 +171,7 @@ class _PassScreenState extends ConsumerState<PassScreen> {
               if (active) ...[
                 const SizedBox(height: AppDimens.gapSm),
                 Text(
-                  '이미 이용 중이에요. 지금 구매하면 남은 기간에 이어서 연장됩니다.',
+                  l10n.passExtendNotice,
                   style: TextStyle(color: _accent, fontSize: 12),
                 ),
               ],
@@ -186,8 +189,8 @@ class _PassScreenState extends ConsumerState<PassScreen> {
                     options[_selected.clamp(0, options.length - 1)];
                 return StoreBottomButton(
                   label: active
-                      ? '${StoreKind.label(widget.kind)} 연장'
-                      : '${StoreKind.label(widget.kind)} 구매',
+                      ? l10n.passExtend(StoreKind.label(l10n, widget.kind))
+                      : l10n.passBuy(StoreKind.label(l10n, widget.kind)),
                   price: selected.price,
                   color: _accent,
                   busy: _busy,
@@ -198,51 +201,51 @@ class _PassScreenState extends ConsumerState<PassScreen> {
     );
   }
 
-  List<Widget> _benefits() {
+  List<Widget> _benefits(L10n l10n) {
     if (_isAlbum) {
-      return const [
+      return [
         BenefitRow(
           icon: Icons.photo_library_outlined,
-          title: '포스트 사진 최대 8장까지 등록',
-          description: '기본 1장에서 최대 8장까지 여러 장의 사진을 등록할 수 있어요.',
+          title: l10n.passAlbumBenefit1,
+          description: l10n.passAlbumBenefit1Desc,
           accent: Color(0xFF2F7BF6),
           checked: false,
         ),
         BenefitRow(
           icon: Icons.photo_camera_back_outlined,
-          title: '휴대폰 갤러리 사진까지 업로드 가능',
-          description: '카메라로 찍은 사진뿐만 아니라 갤러리 사진도 올릴 수 있어요.',
+          title: l10n.passAlbumBenefit3,
+          description: l10n.passAlbumBenefit3Desc,
           accent: Color(0xFF2F7BF6),
           checked: false,
         ),
         BenefitRow(
           icon: Icons.access_time,
-          title: '등록 시간 제한 없음 (24시간 자유롭게)',
-          description: '시간 제약 없이 언제든지 자유롭게 포스트를 등록할 수 있어요.',
+          title: l10n.passAlbumBenefit2,
+          description: l10n.passAlbumBenefit2Desc,
           accent: Color(0xFF2F7BF6),
           checked: false,
         ),
       ];
     }
-    return const [
+    return [
       BenefitRow(
         icon: Icons.chat_bubble_outline,
-        title: '채팅 자동 번역 무제한',
-        description: '상대방의 메시지를 자동으로 번역해 실시간으로 소통할 수 있어요.',
+        title: l10n.passTranslateBenefit1,
+        description: l10n.passTranslateBenefit1Desc,
         accent: Color(0xFF23A455),
         checked: false,
       ),
       BenefitRow(
         icon: Icons.person_outline,
-        title: '프로필 자동 번역 무제한',
-        description: '상대방의 프로필 정보와 하루 한마디를 자동으로 번역해줘요.',
+        title: l10n.passTranslateBenefit3,
+        description: l10n.passTranslateBenefit3Desc,
         accent: Color(0xFF23A455),
         checked: false,
       ),
       BenefitRow(
         icon: Icons.forum_outlined,
-        title: '댓글 자동 번역 무제한',
-        description: '달빛가든과 포스트의 댓글을 자동으로 번역해줘요.',
+        title: l10n.passTranslateBenefit2,
+        description: l10n.passTranslateBenefit2Desc,
         accent: Color(0xFF23A455),
         checked: false,
       ),
@@ -263,6 +266,7 @@ class _RemainingBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     return Container(
       width: 84,
       height: 84,
@@ -274,12 +278,12 @@ class _RemainingBadge extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
-            '남은 기간',
+            l10n.passRemaining,
             style: TextStyle(color: accent, fontSize: 11),
           ),
           const SizedBox(height: 2),
           Text(
-            '$days일',
+            l10n.passDays(days),
             style: TextStyle(
               color: accent,
               fontSize: 20,
