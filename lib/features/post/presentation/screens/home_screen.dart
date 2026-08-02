@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
@@ -6,19 +8,35 @@ import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimens.dart';
 import '../../../../core/providers.dart';
 import '../../../auth/presentation/providers/session_provider.dart';
+import '../../../store/data/models/store_models.dart';
+import '../../../store/presentation/providers/store_provider.dart';
+import '../../../store/presentation/screens/boost_screen.dart';
+import '../../../store/presentation/screens/luna_store_screen.dart';
+import '../../../store/presentation/screens/prime_screen.dart';
 import '../../data/models/my_post.dart';
 import '../providers/post_provider.dart';
 
 /// 홈 — 오늘의 포스트. 메인 셸의 '포스트' 탭 본문. (기획서 3장, 01 문서 §1.3)
 ///
 /// 사진 등록/삭제, 하루 한 마디, 공유하기를 서버와 연동한다.
-/// 루나 잔액·달 위상·좋아요/댓글 수치는 해당 도메인(luna/garden) 구현 후 연결 예정.
+/// 상단 Prime 배지·루나 잔액과 앨범패스 배지·부스트 버튼은 store 도메인(지갑) 기준.
+/// 달 위상·좋아요/댓글 수치는 아직 미연결.
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final postState = ref.watch(myPostProvider);
+
+    // 앨범 패스를 사면 등록 규칙(사진 장수·시간 제한)이 달라진다. 서버가 판정하므로
+    // 패스 보유 여부가 바뀐 순간 포스트 상태를 다시 읽어야 화면이 따라온다.
+    ref.listen(walletProvider, (previous, next) {
+      final before = previous?.valueOrNull?.has(StoreKind.albumPass);
+      final after = next.valueOrNull?.has(StoreKind.albumPass);
+      if (before != null && after != null && before != after) {
+        ref.read(myPostProvider.notifier).refresh();
+      }
+    });
 
     return RefreshIndicator(
       color: AppColors.moonlight,
@@ -107,6 +125,8 @@ class _PostBody extends ConsumerWidget {
           _PostPhotoCard(post: post),
           const SizedBox(height: AppDimens.gapMd),
           const _NameLikeRow(),
+          const SizedBox(height: AppDimens.gapMd),
+          const _BoostRow(),
           const SizedBox(height: AppDimens.gapLg),
           _OneLiner(post: post),
           const SizedBox(height: AppDimens.gapLg),
@@ -118,11 +138,13 @@ class _PostBody extends ConsumerWidget {
 }
 
 // ── 상단 바 ──────────────────────────────────────────────
-class _TopBar extends StatelessWidget {
+class _TopBar extends ConsumerWidget {
   const _TopBar();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final wallet = ref.watch(walletProvider).valueOrNull ?? Wallet.empty;
+
     return Row(
       children: [
         const Text(
@@ -143,22 +165,47 @@ class _TopBar extends StatelessWidget {
           ),
         ),
         const Spacer(),
-        // 보유 루나 — luna 도메인 구현 후 실제 잔액 연결 예정.
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(AppDimens.radiusMd),
-            border: Border.all(color: AppColors.moonlight),
-          ),
+        // 프라임이면 배지, 아니면 가입 유도(둘 다 프라임 화면으로 간다).
+        _TopPill(
+          onTap: () => Navigator.of(context).push(PrimeScreen.route()),
+          borderColor: wallet.prime ? AppColors.moonlight : AppColors.border,
           child: Row(
-            children: const [
-              Icon(Icons.star_rounded, color: AppColors.gold, size: 22),
-              SizedBox(width: 8),
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.workspace_premium,
+                color: wallet.prime ? AppColors.moonlight : AppColors.textMuted,
+                size: 18,
+              ),
+              const SizedBox(width: 5),
               Text(
-                '—',
+                'Prime',
                 style: TextStyle(
+                  color: wallet.prime
+                      ? AppColors.moonlight
+                      : AppColors.textMuted,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(width: 8),
+        // 보유 루나 — 누르면 루나상점으로.
+        _TopPill(
+          onTap: () => Navigator.of(context).push(LunaStoreScreen.route()),
+          borderColor: AppColors.moonlight,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.star_rounded, color: AppColors.gold, size: 20),
+              const SizedBox(width: 6),
+              Text(
+                '${wallet.luna}',
+                style: const TextStyle(
                   color: AppColors.textPrimary,
-                  fontSize: 18,
+                  fontSize: 17,
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -166,6 +213,34 @@ class _TopBar extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _TopPill extends StatelessWidget {
+  const _TopPill({
+    required this.child,
+    required this.onTap,
+    required this.borderColor,
+  });
+
+  final Widget child;
+  final VoidCallback onTap;
+  final Color borderColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(AppDimens.radiusMd),
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(AppDimens.radiusMd),
+          border: Border.all(color: borderColor),
+        ),
+        child: child,
+      ),
     );
   }
 }
@@ -372,6 +447,26 @@ class _PostPhotoCardState extends ConsumerState<_PostPhotoCard> {
                 ),
               ),
 
+            // 앨범 패스 배지 — 보유 중일 때만. 남은 기간과 등록 가능 장수를 알려준다.
+            Consumer(
+              builder: (context, ref, _) {
+                final wallet =
+                    ref.watch(walletProvider).valueOrNull ?? Wallet.empty;
+                if (!wallet.has(StoreKind.albumPass)) {
+                  return const SizedBox.shrink();
+                }
+                final days = wallet.remainingDays(StoreKind.albumPass);
+                return Positioned(
+                  right: 12,
+                  top: 12,
+                  child: _AlbumPassBadge(
+                    remainingDays: days,
+                    maxPhotos: widget.post.maxPhotos,
+                  ),
+                );
+              },
+            ),
+
             // 삭제 버튼
             if (hasPhoto)
               Positioned(
@@ -428,6 +523,164 @@ class _PostPhotoCardState extends ConsumerState<_PostPhotoCard> {
         ),
       ),
     );
+  }
+}
+
+/// 앨범 패스 보유 배지. 시안 6의 사진 우상단 오버레이.
+class _AlbumPassBadge extends StatelessWidget {
+  const _AlbumPassBadge({required this.remainingDays, required this.maxPhotos});
+
+  final int? remainingDays;
+  final int maxPhotos;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.62),
+        borderRadius: BorderRadius.circular(AppDimens.radiusMd),
+        border: Border.all(color: AppColors.moonlight),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: const [
+              Icon(Icons.star_rounded, color: AppColors.moonlight, size: 16),
+              SizedBox(width: 4),
+              Text(
+                '포스트 앨범 패스',
+                style: TextStyle(
+                  color: AppColors.moonlight,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ],
+          ),
+          if (remainingDays != null) ...[
+            const SizedBox(height: 2),
+            Text(
+              '$remainingDays일 남음',
+              style: const TextStyle(
+                color: AppColors.textPrimary,
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+          const SizedBox(height: 4),
+          Container(
+            padding: const EdgeInsets.only(top: 4),
+            decoration: const BoxDecoration(
+              border: Border(
+                top: BorderSide(color: AppColors.border),
+              ),
+            ),
+            child: Text(
+              '최대 $maxPhotos장 등록 가능',
+              style: const TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 11,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// 부스트 버튼. 사용 중이면 남은 시간을 1초마다 갱신해 보여준다(시안 6-부스트 사용).
+class _BoostRow extends ConsumerStatefulWidget {
+  const _BoostRow();
+
+  @override
+  ConsumerState<_BoostRow> createState() => _BoostRowState();
+}
+
+class _BoostRowState extends ConsumerState<_BoostRow> {
+  Timer? _ticker;
+
+  @override
+  void initState() {
+    super.initState();
+    // 남은 시간이 흘러가는 걸 보여주기 위한 것. 활성 부스트가 없으면 굳이 돌지 않는다.
+    _ticker = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (!mounted) return;
+      final wallet = ref.read(walletProvider).valueOrNull;
+      if (wallet != null && wallet.activeBoosts.isNotEmpty) {
+        setState(() {});
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _ticker?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final wallet = ref.watch(walletProvider).valueOrNull ?? Wallet.empty;
+    final active = wallet.activeBoost(StoreKind.postBoost);
+    final stock = wallet.stockOf(StoreKind.postBoost);
+
+    return SizedBox(
+      width: double.infinity,
+      height: 52,
+      child: OutlinedButton(
+        style: OutlinedButton.styleFrom(
+          side: BorderSide(
+            color: active != null ? const Color(0xFFE8386D) : AppColors.border,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppDimens.radiusMd),
+          ),
+        ),
+        onPressed: () => Navigator.of(context)
+            .push(BoostScreen.route(StoreKind.postBoost)),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.bolt,
+              color: active != null ? const Color(0xFFE8386D) : AppColors.gold,
+              size: 22,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              active != null ? '부스트 사용 중' : '부스트',
+              style: TextStyle(
+                color: active != null
+                    ? const Color(0xFFE8386D)
+                    : AppColors.textPrimary,
+                fontSize: 16,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Text(
+              active != null ? _clock(active.remaining) : '보유 $stock매',
+              style: const TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _clock(Duration remaining) {
+    final mm = remaining.inMinutes.toString().padLeft(2, '0');
+    final ss = (remaining.inSeconds % 60).toString().padLeft(2, '0');
+    return '$mm:$ss';
   }
 }
 
