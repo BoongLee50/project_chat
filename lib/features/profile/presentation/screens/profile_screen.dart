@@ -10,6 +10,10 @@ import '../../../store/presentation/screens/boost_screen.dart';
 import '../../../store/presentation/screens/luna_store_screen.dart';
 import '../../../store/presentation/screens/prime_screen.dart';
 import '../../data/models/me_profile.dart';
+import '../../data/models/profile_catalog.dart';
+import '../widgets/interests_edit_sheet.dart';
+import '../widgets/intro_edit_dialog.dart';
+import '../widgets/regions_edit_sheet.dart';
 
 /// 프로필 — 메인 셸의 '프로필' 탭 본문. (기획서 7장)
 ///
@@ -52,13 +56,16 @@ class ProfileScreen extends ConsumerWidget {
             _SectionCard(
               icon: Icons.favorite_border,
               title: '관심사',
+              onEdit: () =>
+                  InterestsEditSheet.show(context, profile.interests),
               child: profile.interests.isEmpty
                   ? const _EmptyHint('관심사를 등록하면 더 잘 맞는 사람을 만날 수 있어요.')
                   : Wrap(
                       spacing: 8,
                       runSpacing: 8,
                       children: [
-                        for (final code in profile.interests) _Chip(label: code),
+                        for (final code in profile.interests)
+                          _Chip(label: ProfileCatalog.interestLabel(code)),
                       ],
                     ),
             ),
@@ -66,6 +73,8 @@ class ProfileScreen extends ConsumerWidget {
             _SectionCard(
               icon: Icons.format_quote,
               title: '소개 한마디',
+              onEdit: () =>
+                  IntroEditDialog.show(context, initial: profile.intro),
               child: (profile.intro == null || profile.intro!.isEmpty)
                   ? const _EmptyHint('나를 소개하는 한마디를 남겨보세요. (최대 50자)')
                   : Text(
@@ -81,13 +90,19 @@ class ProfileScreen extends ConsumerWidget {
             _SectionCard(
               icon: Icons.location_on_outlined,
               title: '활동 지역',
+              onEdit: () => RegionsEditSheet.show(
+                context,
+                initial: profile.regions,
+                homeCountry: profile.country,
+              ),
               child: profile.regions.isEmpty
                   ? const _EmptyHint('활동 지역은 최대 2곳까지 선택할 수 있어요.')
                   : Wrap(
                       spacing: 8,
                       runSpacing: 8,
                       children: [
-                        for (final code in profile.regions) _Chip(label: code),
+                        for (final code in profile.regions)
+                          _Chip(label: ProfileCatalog.regionLabel(code)),
                       ],
                     ),
             ),
@@ -310,11 +325,15 @@ class _SectionCard extends StatelessWidget {
     required this.icon,
     required this.title,
     required this.child,
+    this.onEdit,
   });
 
   final IconData icon;
   final String title;
   final Widget child;
+
+  /// 편집 버튼(+). 없으면 버튼을 숨긴다.
+  final VoidCallback? onEdit;
 
   @override
   Widget build(BuildContext context) {
@@ -342,19 +361,24 @@ class _SectionCard extends StatelessWidget {
                 ),
               ),
               const Spacer(),
-              Container(
-                width: 30,
-                height: 30,
-                decoration: BoxDecoration(
-                  color: AppColors.moonlight.withValues(alpha: 0.15),
-                  shape: BoxShape.circle,
+              if (onEdit != null)
+                InkWell(
+                  customBorder: const CircleBorder(),
+                  onTap: onEdit,
+                  child: Container(
+                    width: 30,
+                    height: 30,
+                    decoration: BoxDecoration(
+                      color: AppColors.moonlight.withValues(alpha: 0.15),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.edit,
+                      color: AppColors.moonlight,
+                      size: 16,
+                    ),
+                  ),
                 ),
-                child: const Icon(
-                  Icons.add,
-                  color: AppColors.moonlight,
-                  size: 18,
-                ),
-              ),
             ],
           ),
           const SizedBox(height: AppDimens.gapMd),
@@ -365,8 +389,8 @@ class _SectionCard extends StatelessWidget {
   }
 }
 
-/// 관심사·지역 태그. 현재는 서버가 준 코드 값을 그대로 표시한다
-/// (코드 → 표시명 매핑은 관심사/지역 카탈로그 API 도입 시 적용).
+/// 관심사·지역 태그. 서버는 코드를 주므로 카탈로그로 표시명을 찾아 그린다
+/// (카탈로그에 없는 코드는 코드 그대로 — 구버전 데이터 대비).
 class _Chip extends StatelessWidget {
   const _Chip({required this.label});
 

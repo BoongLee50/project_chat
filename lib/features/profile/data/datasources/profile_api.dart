@@ -39,4 +39,16 @@ class ProfileApi {
     final data = await _client.get('/me');
     return MeProfile.fromJson(Map<String, dynamic>.from(data as Map));
   }
+
+  /// 관심사 교체(최대 8). 서버가 전체를 덮어쓰므로 **선택된 전체 목록**을 보낸다.
+  Future<void> updateInterests(List<String> codes) =>
+      _client.put('/me/interests', body: {'codes': codes});
+
+  /// 소개 한마디(최대 50자). 빈 문자열을 보내면 지워진다.
+  Future<void> updateIntro(String intro) =>
+      _client.put('/me/intro', body: {'intro': intro});
+
+  /// 활동 지역 교체(최대 2). 관심사와 같은 전체 교체 방식.
+  Future<void> updateRegions(List<String> codes) =>
+      _client.put('/me/regions', body: {'codes': codes});
 }
