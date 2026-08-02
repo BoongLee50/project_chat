@@ -18,6 +18,7 @@ class ChatRoomsController extends AsyncNotifier<List<ChatRoomSummary>> {
           op == Op.roomState ||
           op == Op.unreadCount ||
           op == Op.chatReqIncoming ||
+          op == Op.friendState || // 친구 수락 → 상시 대화방 생성/삭제
           op == Op.authOk) {
         // AUTH_OK = 재연결 직후. 끊겨 있던 동안 놓친 변화를 여기서 따라잡는다.
         refresh();

@@ -344,6 +344,30 @@ class _RoomTile extends StatelessWidget {
                             room.flag,
                             style: const TextStyle(fontSize: 15),
                           ),
+                          // 친구 상시 대화방은 운영시간과 무관하게 유지되므로 구분해 준다.
+                          if (room.type == 'FRIEND') ...[
+                            const SizedBox(width: 6),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: AppColors.moonlight.withValues(
+                                  alpha: 0.18,
+                                ),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: const Text(
+                                '친구',
+                                style: TextStyle(
+                                  color: AppColors.moonlight,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                          ],
                           const SizedBox(width: 8),
                           Text(
                             _timeAgo(room.lastMessageAt),

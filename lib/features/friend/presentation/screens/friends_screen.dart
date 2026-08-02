@@ -1,90 +1,28 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimens.dart';
+import '../../../../shared/widgets/authed_image.dart';
+import '../../../chat/data/models/chat_models.dart';
+import '../../../chat/presentation/screens/chat_screen.dart';
+import '../../data/models/friend_models.dart';
+import '../providers/friend_provider.dart';
 
-/// 친구 목록 (정적 UI). 메인 셸의 '친구' 탭 본문.
-/// 친구 등록/삭제/필터는 서버 연동 단계에서 붙인다. (기획서 6장)
-class FriendsScreen extends StatelessWidget {
+/// 친구 목록. 메인 셸의 '친구' 탭 본문. (기획서 6장)
+///
+/// 친구는 양방향 — 요청을 보내고 상대가 수락해야 성립한다. 수락하면 상시 대화방이
+/// 생겨 운영시간(17~06시) 밖에도 계속 대화할 수 있다.
+class FriendsScreen extends ConsumerWidget {
   const FriendsScreen({super.key});
 
-  static const _friends = <_Friend>[
-    _Friend(
-      '지우',
-      27,
-      '🇰🇷',
-      'seoul',
-      _Status.online,
-      'assets/images/avatar1.jpg',
-    ),
-    _Friend(
-      '하루',
-      25,
-      '🇰🇷',
-      'busan',
-      _Status.online,
-      'assets/images/avatar2.jpg',
-    ),
-    _Friend(
-      'さくら',
-      23,
-      '🇯🇵',
-      'tokyo',
-      _Status.online,
-      'assets/images/avatar3.jpg',
-    ),
-    _Friend(
-      '렌',
-      24,
-      '🇯🇵',
-      'osaka',
-      _Status.away1,
-      'assets/images/avatar1.jpg',
-    ),
-    _Friend(
-      '유나',
-      26,
-      '🇰🇷',
-      'incheon',
-      _Status.online,
-      'assets/images/avatar2.jpg',
-    ),
-    _Friend(
-      'ひなた',
-      22,
-      '🇯🇵',
-      'fukuoka',
-      _Status.away2,
-      'assets/images/avatar3.jpg',
-    ),
-    _Friend(
-      '민서',
-      25,
-      '🇰🇷',
-      'daejeon',
-      _Status.online,
-      'assets/images/avatar1.jpg',
-    ),
-    _Friend(
-      'ゆうき',
-      24,
-      '🇯🇵',
-      'nagoya',
-      _Status.online,
-      'assets/images/avatar2.jpg',
-    ),
-    _Friend(
-      '채원',
-      27,
-      '🇰🇷',
-      'gwangju',
-      _Status.online,
-      'assets/images/avatar3.jpg',
-    ),
-  ];
-
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final friends = ref.watch(friendsProvider);
+    final requests = ref.watch(friendRequestsProvider);
+    final onlineCount =
+        friends.valueOrNull?.where((f) => f.online).length ?? 0;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -99,8 +37,8 @@ class FriendsScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
-                children: const [
-                  Text(
+                children: [
+                  const Text(
                     '친구',
                     style: TextStyle(
                       color: AppColors.textPrimary,
@@ -108,22 +46,23 @@ class FriendsScreen extends StatelessWidget {
                       fontWeight: FontWeight.w800,
                     ),
                   ),
-                  SizedBox(width: 8),
-                  _Dot(),
-                  Spacer(),
-                  Icon(Icons.search, color: AppColors.textPrimary, size: 26),
-                  SizedBox(width: 16),
-                  Icon(
-                    Icons.tune_rounded,
-                    color: AppColors.textPrimary,
-                    size: 26,
+                  const SizedBox(width: 8),
+                  const _Dot(),
+                  const Spacer(),
+                  IconButton(
+                    icon: const Icon(
+                      Icons.refresh,
+                      color: AppColors.textPrimary,
+                      size: 24,
+                    ),
+                    onPressed: () =>
+                        ref.read(friendsProvider.notifier).refresh(),
                   ),
                 ],
               ),
-              const SizedBox(height: 4),
               Row(
-                children: const [
-                  Text(
+                children: [
+                  const Text(
                     '지금 접속 중 ',
                     style: TextStyle(
                       color: AppColors.textSecondary,
@@ -131,8 +70,8 @@ class FriendsScreen extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    '36명',
-                    style: TextStyle(
+                    '$onlineCount명',
+                    style: const TextStyle(
                       color: AppColors.moonlight,
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
@@ -147,21 +86,100 @@ class FriendsScreen extends StatelessWidget {
           ),
         ),
         Expanded(
-          child: GridView.builder(
-            padding: const EdgeInsets.fromLTRB(
-              AppDimens.pagePad,
-              0,
-              AppDimens.pagePad,
-              AppDimens.gapMd,
+          child: RefreshIndicator(
+            color: AppColors.moonlight,
+            backgroundColor: AppColors.surface,
+            onRefresh: () async {
+              ref.invalidate(friendRequestsProvider);
+              await ref.read(friendsProvider.notifier).refresh();
+            },
+            child: CustomScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              slivers: [
+                // 받은 친구 요청
+                SliverToBoxAdapter(
+                  child: requests.when(
+                    loading: () => const SizedBox.shrink(),
+                    error: (_, _) => const SizedBox.shrink(),
+                    data: (list) => list.isEmpty
+                        ? const SizedBox.shrink()
+                        : Padding(
+                            padding: const EdgeInsets.fromLTRB(
+                              AppDimens.pagePad,
+                              0,
+                              AppDimens.pagePad,
+                              AppDimens.gapMd,
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  '받은 친구 요청 ${list.length}',
+                                  style: const TextStyle(
+                                    color: AppColors.textSecondary,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                                const SizedBox(height: AppDimens.gapSm),
+                                for (final request in list)
+                                  _RequestCard(request: request),
+                              ],
+                            ),
+                          ),
+                  ),
+                ),
+                friends.when(
+                  loading: () => const SliverToBoxAdapter(
+                    child: Padding(
+                      padding: EdgeInsets.only(top: 60),
+                      child: Center(
+                        child: CircularProgressIndicator(
+                          color: AppColors.moonlight,
+                        ),
+                      ),
+                    ),
+                  ),
+                  error: (error, _) => SliverToBoxAdapter(
+                    child: _Message(
+                      icon: Icons.error_outline,
+                      title: '친구 목록을 불러오지 못했어요.',
+                      subtitle: '$error',
+                    ),
+                  ),
+                  data: (list) => list.isEmpty
+                      ? const SliverToBoxAdapter(
+                          child: _Message(
+                            icon: Icons.people_outline,
+                            title: '아직 친구가 없어요.',
+                            subtitle:
+                                '대화를 나눈 상대에게 채팅창 메뉴에서 친구 요청을 보내보세요.',
+                          ),
+                        )
+                      : SliverPadding(
+                          padding: const EdgeInsets.fromLTRB(
+                            AppDimens.pagePad,
+                            0,
+                            AppDimens.pagePad,
+                            AppDimens.gapMd,
+                          ),
+                          sliver: SliverGrid(
+                            gridDelegate:
+                                const SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: 3,
+                                  crossAxisSpacing: 12,
+                                  mainAxisSpacing: 20,
+                                  mainAxisExtent: 180,
+                                ),
+                            delegate: SliverChildBuilderDelegate(
+                              (context, i) => _FriendCard(friend: list[i]),
+                              childCount: list.length,
+                            ),
+                          ),
+                        ),
+                ),
+              ],
             ),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 3,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 20,
-              mainAxisExtent: 180,
-            ),
-            itemCount: _friends.length,
-            itemBuilder: (context, i) => _FriendCard(friend: _friends[i]),
           ),
         ),
       ],
@@ -169,154 +187,359 @@ class FriendsScreen extends StatelessWidget {
   }
 }
 
-enum _Status { online, away1, away2 }
-
-class _Friend {
-  const _Friend(
-    this.name,
-    this.age,
-    this.flag,
-    this.city,
-    this.status,
-    this.avatar,
-  );
-  final String name;
-  final int age;
-  final String flag;
-  final String city;
-  final _Status status;
-  final String avatar;
-}
-
-class _FriendCard extends StatelessWidget {
+/// 친구 카드 — 누르면 상시 대화방으로, 길게 누르면 친구 삭제.
+class _FriendCard extends ConsumerWidget {
   const _FriendCard({required this.friend});
 
-  final _Friend friend;
+  final Friend friend;
+
+  void _openRoom(BuildContext context) {
+    final roomId = friend.roomId;
+    if (roomId == null) {
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          const SnackBar(content: Text('대화방을 찾을 수 없어요. 새로고침해 주세요.')),
+        );
+      return;
+    }
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => ChatScreen(
+          room: ChatRoomSummary(
+            roomId: roomId,
+            type: 'FRIEND',
+            partnerId: friend.userId,
+            partnerNickname: friend.nickname,
+            partnerAge: friend.age,
+            partnerCountry: friend.country,
+            partnerPhotoUrl: friend.photoUrl,
+            unreadCount: 0,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _confirmRemove(BuildContext context, WidgetRef ref) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: AppColors.surfaceHigh,
+        title: Text(
+          '${friend.nickname}님을 친구에서 삭제할까요?',
+          style: const TextStyle(color: AppColors.textPrimary, fontSize: 17),
+        ),
+        content: const Text(
+          '상시 대화방도 함께 종료돼요.',
+          style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text(
+              '취소',
+              style: TextStyle(color: AppColors.textSecondary),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: const Text('삭제', style: TextStyle(color: AppColors.gold)),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !context.mounted) return;
+
+    final error = await ref
+        .read(friendActionsProvider)
+        .remove(friend.friendshipId);
+    if (!context.mounted || error == null) return;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(error)));
+  }
 
   @override
-  Widget build(BuildContext context) {
-    final online = friend.status == _Status.online;
-    final statusText = switch (friend.status) {
-      _Status.online => '온라인',
-      _Status.away1 => '1시간 전 접속',
-      _Status.away2 => '2시간 전 접속',
-    };
-
-    return Column(
-      children: [
-        // 아바타 + 국기 배지
-        SizedBox(
-          width: 88,
-          height: 88,
-          child: Stack(
-            clipBehavior: Clip.none,
-            children: [
-              Container(
-                width: 88,
-                height: 88,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: AppColors.moonlight.withValues(alpha: 0.5),
+  Widget build(BuildContext context, WidgetRef ref) {
+    return InkWell(
+      onTap: () => _openRoom(context),
+      onLongPress: () => _confirmRemove(context, ref),
+      borderRadius: BorderRadius.circular(AppDimens.radiusMd),
+      child: Column(
+        children: [
+          SizedBox(
+            width: 88,
+            height: 88,
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Container(
+                  width: 88,
+                  height: 88,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: AppColors.moonlight.withValues(alpha: 0.5),
+                    ),
+                  ),
+                  child: ClipOval(
+                    child: friend.photoUrl == null
+                        ? const ColoredBox(
+                            color: AppColors.surfaceHigh,
+                            child: Icon(
+                              Icons.person,
+                              color: AppColors.textMuted,
+                              size: 36,
+                            ),
+                          )
+                        : AuthedImage(url: friend.photoUrl!),
                   ),
                 ),
-                child: ClipOval(
-                  child: Image.asset(friend.avatar, fit: BoxFit.cover),
-                ),
+                if (friend.flag.isNotEmpty)
+                  Positioned(
+                    bottom: -4,
+                    left: 0,
+                    right: 0,
+                    child: Center(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 5,
+                          vertical: 1,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.night,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          friend.flag,
+                          style: const TextStyle(fontSize: 14),
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            friend.age == null
+                ? friend.nickname
+                : '${friend.nickname} ${friend.age}',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              color: AppColors.textPrimary,
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            friend.intro ?? '',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: AppColors.gold, fontSize: 12),
+          ),
+          const SizedBox(height: 4),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.circle,
+                size: 8,
+                color: friend.online
+                    ? const Color(0xFF3FCF6B)
+                    : AppColors.textMuted,
               ),
-              Positioned(
-                bottom: -4,
-                left: 0,
-                right: 0,
-                child: Center(
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 5,
-                      vertical: 1,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.night,
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: Text(
-                      friend.flag,
-                      style: const TextStyle(fontSize: 14),
-                    ),
+              const SizedBox(width: 4),
+              Flexible(
+                child: Text(
+                  friend.online ? '온라인' : '오프라인',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: friend.online
+                        ? const Color(0xFF3FCF6B)
+                        : AppColors.textMuted,
+                    fontSize: 11,
                   ),
                 ),
               ),
             ],
           ),
-        ),
-        const SizedBox(height: 10),
-        Text(
-          '${friend.name} ${friend.age}',
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
-            color: AppColors.textPrimary,
-            fontSize: 14,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        const SizedBox(height: 2),
-        Text(
-          friend.city,
-          style: const TextStyle(color: AppColors.gold, fontSize: 12),
-        ),
-        const SizedBox(height: 4),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.circle,
-              size: 8,
-              color: online ? const Color(0xFF3FCF6B) : AppColors.textMuted,
-            ),
-            const SizedBox(width: 4),
-            Flexible(
-              child: Text(
-                statusText,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: online ? const Color(0xFF3FCF6B) : AppColors.gold,
-                  fontSize: 11,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
 
-class _FilterBar extends StatelessWidget {
+class _RequestCard extends ConsumerWidget {
+  const _RequestCard({required this.request});
+
+  final FriendRequest request;
+
+  Future<void> _respond(
+    BuildContext context,
+    WidgetRef ref, {
+    required bool accept,
+  }) async {
+    final actions = ref.read(friendActionsProvider);
+    final error = accept
+        ? await actions.accept(request.id)
+        : await actions.reject(request.id);
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(
+            error ?? (accept ? '친구가 되었어요. 이제 언제든 대화할 수 있어요.' : '요청을 거절했어요.'),
+          ),
+        ),
+      );
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: AppDimens.gapSm),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppDimens.radiusLg),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Row(
+        children: [
+          ClipOval(
+            child: SizedBox(
+              width: 44,
+              height: 44,
+              child: request.partnerPhotoUrl == null
+                  ? const ColoredBox(
+                      color: AppColors.surfaceHigh,
+                      child: Icon(
+                        Icons.person,
+                        color: AppColors.textMuted,
+                        size: 22,
+                      ),
+                    )
+                  : AuthedImage(url: request.partnerPhotoUrl!),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Flexible(
+                      child: Text(
+                        request.partnerAge == null
+                            ? request.partnerNickname
+                            : '${request.partnerNickname} ${request.partnerAge}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: AppColors.textPrimary,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(request.flag, style: const TextStyle(fontSize: 14)),
+                  ],
+                ),
+                const SizedBox(height: 2),
+                const Text(
+                  '친구 요청을 보냈어요.',
+                  style: TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 13,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          TextButton(
+            onPressed: () => _respond(context, ref, accept: false),
+            child: const Text(
+              '거절',
+              style: TextStyle(color: AppColors.textSecondary),
+            ),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.moonlight,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+            ),
+            onPressed: () => _respond(context, ref, accept: true),
+            child: const Text('수락'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// 성별·나이대·국가 필터. 다시 누르면 해제된다.
+class _FilterBar extends ConsumerWidget {
   const _FilterBar();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final filter = ref.watch(friendFilterProvider);
+    final notifier = ref.read(friendFilterProvider.notifier);
+
     return Row(
-      children: const [
+      children: [
         Expanded(
           child: _FilterChip(
-            leading: Icon(Icons.female, size: 18),
-            label: '여자',
+            leading: const Icon(Icons.female, size: 18),
+            label: filter.gender == 'MALE' ? '남자' : '여자',
+            selected: filter.gender != null,
+            onTap: () => notifier.state = switch (filter.gender) {
+              null => filter.copyWith(gender: 'FEMALE'),
+              'FEMALE' => filter.copyWith(gender: 'MALE'),
+              _ => filter.copyWith(clearGender: true),
+            },
           ),
         ),
-        SizedBox(width: 10),
+        const SizedBox(width: 10),
         Expanded(
           child: _FilterChip(
-            leading: Icon(Icons.person_outline, size: 18),
-            label: '20대',
+            leading: const Icon(Icons.person_outline, size: 18),
+            label: filter.ageMin == null ? '나이' : '${filter.ageMin}대',
+            selected: filter.ageMin != null,
+            onTap: () => notifier.state = switch (filter.ageMin) {
+              null => filter.copyWith(ageMin: 20, ageMax: 29),
+              20 => filter.copyWith(ageMin: 30, ageMax: 39),
+              _ => filter.copyWith(clearAge: true),
+            },
           ),
         ),
-        SizedBox(width: 10),
+        const SizedBox(width: 10),
         Expanded(
           child: _FilterChip(
-            leading: Text('🇰🇷', style: TextStyle(fontSize: 15)),
-            label: '한국',
+            leading: Text(
+              filter.country == 'JP' ? '🇯🇵' : '🇰🇷',
+              style: const TextStyle(fontSize: 15),
+            ),
+            label: switch (filter.country) {
+              'KR' => '한국',
+              'JP' => '일본',
+              _ => '국가',
+            },
+            selected: filter.country != null,
+            onTap: () => notifier.state = switch (filter.country) {
+              null => filter.copyWith(country: 'KR'),
+              'KR' => filter.copyWith(country: 'JP'),
+              _ => filter.copyWith(clearCountry: true),
+            },
           ),
         ),
       ],
@@ -325,33 +548,107 @@ class _FilterBar extends StatelessWidget {
 }
 
 class _FilterChip extends StatelessWidget {
-  const _FilterChip({required this.leading, required this.label});
+  const _FilterChip({
+    required this.leading,
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
 
   final Widget leading;
   final String label;
+  final bool selected;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 11),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          IconTheme(
-            data: const IconThemeData(color: AppColors.textSecondary),
-            child: leading,
+    return InkWell(
+      borderRadius: BorderRadius.circular(24),
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 11),
+        decoration: BoxDecoration(
+          color: selected
+              ? AppColors.moonlight.withValues(alpha: 0.18)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(
+            color: selected ? AppColors.moonlight : AppColors.border,
           ),
-          const SizedBox(width: 6),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            IconTheme(
+              data: IconThemeData(
+                color: selected
+                    ? AppColors.moonlight
+                    : AppColors.textSecondary,
+              ),
+              child: leading,
+            ),
+            const SizedBox(width: 6),
+            Flexible(
+              child: Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: selected
+                      ? AppColors.moonlight
+                      : AppColors.textPrimary,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _Message extends StatelessWidget {
+  const _Message({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppDimens.pagePad,
+        60,
+        AppDimens.pagePad,
+        0,
+      ),
+      child: Column(
+        children: [
+          Icon(icon, color: AppColors.textMuted, size: 48),
+          const SizedBox(height: AppDimens.gapMd),
           Text(
-            label,
+            title,
+            textAlign: TextAlign.center,
             style: const TextStyle(
               color: AppColors.textPrimary,
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            subtitle,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: 13,
             ),
           ),
         ],

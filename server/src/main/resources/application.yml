@@ -27,6 +27,11 @@ app:
   gate:
     open-hour: 17
     close-hour: 6
+  friend:
+    # 기획서에 20과 30이 함께 적혀 있어(보완 문서 대기) 설정으로 뺐다.
+    # 프리미엄이 더 많이 가질 수 있다는 해석으로 잡아 둔 잠정값.
+    max-count: 20
+    max-count-premium: 30
   redis:
     enabled: false
   storage:

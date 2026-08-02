@@ -154,6 +154,8 @@ friendships               -- 양방향(상호 동의). requester 요청 → addr
   created_at    timestamptz
   accepted_at   timestamptz null
   UNIQUE(pair_key)
+  -- V5에서 적용됨. pair_key는 생성 컬럼이 아니라 앱이 채운다(MariaDB err 1901 — 함정 #2).
+  -- 거절/취소/친구삭제는 status 값이 아니라 **행 삭제**다(REJECTED 상태가 없음) → 다시 요청 가능.
 
 reports
   id          uuid PK

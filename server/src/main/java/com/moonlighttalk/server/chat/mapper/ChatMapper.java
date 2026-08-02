@@ -36,6 +36,15 @@ public interface ChatMapper {
 
     void endRoom(@Param("id") String id, @Param("endedAt") LocalDateTime endedAt);
 
+    /** 두 사람 사이에 지금 살아있는 방(친구 수락 시 새로 만들지, 승격할지 판단용). */
+    ChatRoom selectActiveRoomByPairKey(@Param("pairKey") String pairKey);
+
+    void updateRoomType(@Param("id") String id, @Param("type") String type);
+
+    /** 친구 삭제 시 상시 대화방 종료용. */
+    ChatRoom selectActiveRoomByPairKeyAndType(@Param("pairKey") String pairKey,
+                                               @Param("type") String type);
+
     // ── 메시지 ──
     void insertMessage(ChatMessage message);
 

@@ -101,13 +101,15 @@
 ### 1.7 친구 / 신고·차단 / 루나
 | Method | Path | 설명 | 화면 |
 |--------|------|------|------|
-| GET | `/friends?gender=&age=&country=` | 친구 목록(최신순, ACCEPTED) | 18 |
+| GET | `/friends?gender=&ageMin=&ageMax=&country=` | 친구 목록(수락 최신순, ACCEPTED). 응답에 `roomId`(상시 대화방)·`online` 포함 | 18 |
 | GET | `/friends/requests` | 받은 친구 요청 목록(PENDING) | 18 |
+| GET | `/friends/requests/sent` | 보낸 친구 요청 목록(PENDING) | 18 |
 | POST | `/friends/requests` | 친구 **요청**(targetUserId) — 양방향, 상대 수락 필요 | 14,18 |
-| POST | `/friends/requests/:id:accept` | 친구 요청 수락 → **상시 대화방 생성** | 18 |
-| POST | `/friends/requests/:id:reject` | 친구 요청 거절 | 18 |
-| DELETE | `/friends/:id` | 친구 삭제 | 19 |
-| GET | `/friends/:id/today-post` | 친구 오늘의 포스트 팝업 | 19 |
+| POST | `/friends/requests/:id:accept` | 친구 요청 수락 → **상시 대화방 생성**(응답 `{friendshipId, roomId}`) | 18 |
+| POST | `/friends/requests/:id:reject` | 친구 요청 거절(행 삭제 — 다시 요청 가능) | 18 |
+| POST | `/friends/requests/:id:cancel` | 보낸 요청 취소 | 18 |
+| DELETE | `/friends/:id` | 친구 삭제 — 상시 대화방도 함께 종료 | 19 |
+| GET | `/friends/:id/today-post` | 친구 오늘의 포스트 팝업 **(미구현)** | 19 |
 | POST | `/reports` | 신고(targetUserId, reason) | 16 |
 | POST | `/blocks` | 차단(targetUserId) | 17 |
 | GET | `/luna/balance` | 보유 루나 | 6 |
@@ -171,6 +173,8 @@
 | C→S | `CHAT_READ` | `{ roomId, lastMessageId }` | 읽음 처리 |
 | S→C | `CHAT_READ_RECEIPT` | `{ roomId, readerId, lastMessageId }` | 읽음 수신 |
 | S→C | `CHAT_REQ_INCOMING` | `{ requestId, fromUser }` | 새 대화 신청 도착 |
+| S→C | `FRIEND_REQ_INCOMING` | `{ friendshipId, fromUserId, fromNickname }` | 새 친구 요청 도착 |
+| S→C | `FRIEND_STATE` | `{ friendshipId, state: accepted\|rejected\|cancelled\|removed, roomId? }` | 친구 관계 변화 |
 | S→C | `ROOM_STATE` | `{ roomId, state: accepted\|rejected\|ended }` | 대화방 상태 변화 |
 | S→C | `PRESENCE_UPDATE` | `{ userId, online }` | 상대 온/오프라인 |
 | S→C | `UNREAD_COUNT` | `{ roomId, count }` | 미확인 N 갱신 |
@@ -178,6 +182,6 @@
 | S→C | `ERROR` | `{ code, message, seq? }` | 오류 |
 
 ### 2.3 소켓 vs REST 요약
-- 🔌 소켓: 채팅 송수신, 대화방 상태변화, 대화신청 수신알림, 프레즌스, 미확인 카운트, 시스템 종료.
+- 🔌 소켓: 채팅 송수신, 대화방 상태변화, 대화신청·친구요청 수신알림, 친구 관계 변화, 프레즌스, 미확인 카운트, 시스템 종료.
 - 📦 REST: 인증, 프로필, 포스트(+사진 업로드), 피드/댓글, 대화신청 생성(루나), 목록/히스토리 조회, 친구, 신고·차단, 루나.
 - 하이브리드: **대화 신청**(생성 REST → 도착 소켓), **대화방 목록**(초기 REST → 갱신 소켓).

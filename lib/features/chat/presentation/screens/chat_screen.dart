@@ -5,6 +5,7 @@ import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimens.dart';
 import '../../../../shared/widgets/authed_image.dart';
 import '../../../auth/presentation/providers/session_provider.dart';
+import '../../../friend/presentation/providers/friend_provider.dart';
 import '../../data/models/chat_models.dart';
 import '../providers/chat_provider.dart';
 
@@ -63,6 +64,23 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     });
   }
 
+  /// 친구 요청 — 상대가 수락하면 상시 대화방이 되어 운영시간 밖에도 대화가 이어진다.
+  Future<void> _requestFriend() async {
+    final error = await ref
+        .read(friendActionsProvider)
+        .request(widget.room.partnerId);
+    if (!mounted) return;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(
+            error ?? '친구 요청을 보냈어요. 상대가 수락하면 친구가 돼요.',
+          ),
+        ),
+      );
+  }
+
   Future<void> _leave() async {
     final error = await ref
         .read(chatActionsProvider)
@@ -88,7 +106,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     });
 
     return Scaffold(
-      appBar: _ChatAppBar(room: widget.room, onLeave: _leave),
+      appBar: _ChatAppBar(
+        room: widget.room,
+        onLeave: _leave,
+        onRequestFriend: _requestFriend,
+      ),
       body: SafeArea(
         top: false,
         child: Column(
@@ -129,10 +151,15 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 }
 
 class _ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
-  const _ChatAppBar({required this.room, required this.onLeave});
+  const _ChatAppBar({
+    required this.room,
+    required this.onLeave,
+    required this.onRequestFriend,
+  });
 
   final ChatRoomSummary room;
   final VoidCallback onLeave;
+  final VoidCallback onRequestFriend;
 
   @override
   Size get preferredSize => const Size.fromHeight(64);
@@ -198,21 +225,28 @@ class _ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
           color: AppColors.surfaceHigh,
           onSelected: (value) {
             if (value == 'leave') onLeave();
+            if (value == 'friend') onRequestFriend();
           },
-          itemBuilder: (context) => const [
-            PopupMenuItem(
+          itemBuilder: (context) => [
+            // 이미 친구인 방(FRIEND)에서는 요청 항목을 숨긴다.
+            if (room.type != 'FRIEND')
+              const PopupMenuItem(
+                value: 'friend',
+                child: _MenuRow(Icons.person_add_alt, '친구 요청'),
+              ),
+            const PopupMenuItem(
               value: 'profile',
               child: _MenuRow(Icons.person_outline, '프로필 보기'),
             ),
-            PopupMenuItem(
+            const PopupMenuItem(
               value: 'report',
               child: _MenuRow(Icons.flag_outlined, '신고하기'),
             ),
-            PopupMenuItem(
+            const PopupMenuItem(
               value: 'block',
               child: _MenuRow(Icons.block, '차단하기'),
             ),
-            PopupMenuItem(
+            const PopupMenuItem(
               value: 'leave',
               child: _MenuRow(Icons.logout, '대화방 나가기'),
             ),

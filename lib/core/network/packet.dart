@@ -49,6 +49,8 @@ abstract final class Op {
   static const chatRecv = 'CHAT_RECV';
   static const chatReadReceipt = 'CHAT_READ_RECEIPT';
   static const chatReqIncoming = 'CHAT_REQ_INCOMING';
+  static const friendReqIncoming = 'FRIEND_REQ_INCOMING';
+  static const friendState = 'FRIEND_STATE';
   static const roomState = 'ROOM_STATE';
   static const presenceUpdate = 'PRESENCE_UPDATE';
   static const unreadCount = 'UNREAD_COUNT';

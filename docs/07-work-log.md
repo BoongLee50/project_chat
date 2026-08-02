@@ -17,20 +17,20 @@
 
 ---
 
-## 1. 현재 상태 스냅샷 (2026-08-02 기준, 커밋 `b6db067`)
+## 1. 현재 상태 스냅샷 (2026-08-02 기준)
 
-**한 줄 요약**: 화면 11개 완성. **로그인/온보딩 · 프로필 · 홈(오늘의 포스트) · 달빛가든 · 대화방/채팅창(WebSocket 실시간)** 까지 로컬 서버·DB와 실제 연동 완료. **친구 탭만 아직 더미**(friend 도메인 미구현).
+**한 줄 요약**: 화면 11개 완성. **전 화면이 로컬 서버·DB와 실제 연동 완료** — 로그인/온보딩 · 프로필 · 홈(오늘의 포스트) · 달빛가든 · 대화방/채팅창(WebSocket 실시간) · 친구. 남은 건 **BM(store)·스케줄러**와 세부 팝업 몇 개.
 
 | 영역 | 상태 |
 |------|------|
 | 기획 | **Plan_2** 기준 (`D:\MyProject\Plan_Chat\Plan_2` — BM 추가, 운영시간 17~06시). Plan_1은 구버전 |
 | 클라 UI | 로그인·온보딩3·홈·달빛가든·대화방·채팅창·친구·프로필 (11화면, 다크 테마) |
-| 클라 데이터 | **Riverpod + go_router + Dio + secure storage + image_picker + web_socket_channel**. 인증·프로필·포스트·달빛가든·**대화방/채팅** 실연동, **친구만 하드코딩** |
-| 서버 | Spring Boot. **auth(mock 포함) / profile / post / garden / chat(+WebSocket) / luna(내부용) 도메인 구현**. friend·store(BM)·scheduler 미구현 |
-| DB | 로컬 MariaDB 11.4.5, Flyway **V4까지 적용**(V1 초기 + V2 posts 등록창/교체 + V3 post_comments + V4 chat: 메시지 500자·`chat_rooms.type`·`daily_usage`). BM 테이블·친구 양방향은 **DDL 미반영 → 다음은 V5** |
-| 실기기 검증 | 에뮬(Pixel_10) → 로컬 서버 → DB/디스크 **end-to-end 성공**: 자동 로그인, 프로필, 카메라 촬영→업로드→표시, 가든 피드/좋아요/댓글, **에뮬 2대 양방향 실시간 채팅** |
+| 클라 데이터 | **Riverpod + go_router + Dio + secure storage + image_picker + web_socket_channel**. **전 화면 실연동 완료**(하드코딩 화면 없음) |
+| 서버 | Spring Boot. **auth(mock 포함) / profile / post / garden / chat(+WebSocket) / friend / luna(내부용) 도메인 구현**. store(BM)·scheduler 미구현 |
+| DB | 로컬 MariaDB 11.4.5, Flyway **V5까지 적용**(V1 초기 + V2 posts 등록창/교체 + V3 post_comments + V4 chat + V5 friendships 양방향). BM 테이블은 **DDL 미반영 → 다음은 V6** |
+| 실기기 검증 | 에뮬 2대(Pixel_10 · Pixel_B) → 로컬 서버 → DB/디스크 **end-to-end 성공**: 자동 로그인, 프로필, 카메라 촬영→업로드→표시, 가든 피드/좋아요/댓글, **양방향 실시간 채팅**, **친구 요청→수락→상시 대화방→삭제** |
 
-**남은 화면/기능 한눈에**: 친구(요청·수락·목록) · BM 화면 6종(25~30) · 신고/차단 팝업 · 관심사/지역/소개 편집 팝업 · 다국어(한↔일) · 스케줄러.
+**남은 화면/기능 한눈에**: BM 화면 6종(25~30) · 신고/차단 팝업 · 관심사/지역/소개 편집 팝업 · 친구 오늘의 포스트 팝업 · 시간 게이트 UI · 다국어(한↔일) · 스케줄러.
 
 **작업 분담**: 서버 개발자(abombspy) = 초기 뼈대 + 추후 클라우드(AWS) 배포. 그 사이 실제 개발(서버 도메인 + 클라 연동 + 로컬 통합)은 이 저장소에서 직접 진행.
 
@@ -114,6 +114,25 @@ flutter emulators --launch Pixel_10          # 두 번째 → emulator-5556
 ---
 
 ## 4. 세션 로그
+
+### 2026-08-02(2) — friend 도메인 + 친구 탭 실연동 (V5)
+**한 일**
+1. **문서 체크박스 정리** — docs/04에서 실제보다 뒤처져 있던 항목 정정(Riverpod·go_router 도입, 서버 스캐폴딩, 소셜 인증/REST/WebSocket, Redis 옵션 구성은 이미 완료였음). 반대로 미완료인데 묶여 있던 것(시간 게이트 UI, S3 실연동, 스케줄러)은 분리해 남겼다.
+2. **V5 마이그레이션** — `friendships`를 양방향으로 재생성(requester/addressee/status/pair_key/accepted_at). V1의 단방향 설계는 한 번도 동작한 적이 없어 비어 있으므로 DROP 후 재생성.
+3. **서버 friend 도메인** — 요청/수락/거절/취소/삭제, 필터(성별·나이대·국가) 친구 목록(+프레즌스), 최대 친구 수 검사.
+4. **클라 친구 탭 실연동** — 목록(접속 상태·필터 칩), 받은 요청 카드 수락/거절, 친구 카드 → 상시 대화방, 길게 눌러 삭제. 친구 요청 진입점은 **채팅창 팝업 메뉴**.
+5. **소켓 opcode 추가** — `FRIEND_REQ_INCOMING`, `FRIEND_STATE`.
+
+**설계 판단**
+- **상시 대화방**: 수락하면 `chat_rooms.type=FRIEND` 방이 생긴다. 단, 이미 살아있는 MATCH 방이 있으면 **새로 만들지 않고 FRIEND로 승격**한다. `active_pair_key`가 유니크라 같은 페어의 방을 새로 못 만들기도 하고, 나누던 대화를 이어가는 편이 자연스럽다. 대화방 목록에서는 **친구 배지**로 구분.
+- **거절/취소/삭제는 행 삭제**. status에 REJECTED가 없는 스키마라 상태값으로 남길 수 없고, 지워야 나중에 다시 요청할 수 있다.
+- **최대 친구 수는 설정으로** (`app.friend.max-count: 20`, `max-count-premium: 30`). 기획서에 20과 30이 함께 적혀 있어 확정 전까지 값만 바꾸면 되게 뺐다. 수락 시 **양쪽 모두** 슬롯을 검사한다(요청 시점엔 여유가 있었어도 그 사이 찼을 수 있음).
+
+**검증**
+- API 13케이스 통과: 요청 · 중복 차단 · 받은 목록 · 남의 요청 수락 시도(403) · 수락(방 생성/승격) · 양쪽 목록 · 대화방에 FRIEND 방 · 필터(국가/나이) · 이미 친구인데 재요청(409) · 자기 자신에게 요청(400) · 삭제 후 관계와 방 모두 정리됨.
+- 에뮬 2대 UI: A 채팅창 메뉴에서 친구 요청 → **B 친구 탭에 실시간 카드** → 수락 → 양쪽 친구 목록·온라인 표시 → A 대화방의 해당 방이 **친구 배지로 승격** → 친구 카드로 상시 대화방 진입·전송 → 삭제 시 **B 쪽도 즉시 반영**.
+
+**남은 것**: `GET /friends/:id/today-post`(친구 오늘의 포스트 팝업) 미구현.
 
 ### 2026-08-02 — 새 기기(랩탑) 환경 재현 + 홈 화면 빈 사진 버그 수정
 **한 일**
@@ -208,8 +227,7 @@ final index = _index.clamp(0, _photos.length - 1);   // 사진 0장이면 clamp(
 
 ## 5. 다음 작업 후보 (이 순서로 이어가면 됨)
 
-1. **friend 도메인 + 친구 탭 연동** — **양방향 동의** 방식(단방향 등록 아님). 요청→수락해야 친구 성립, 친구가 되면 **운영시간(17~06시) 밖에도 대화방 상시 유지**(`chat_rooms.type=FRIEND`은 게이트 예외). V5에 `friendships`(requester/addressee/status/pair_key) 필요.
-2. **luna / store(BM) 도메인** + **V5 마이그레이션** — BM 테이블(`subscriptions`/`user_entitlements`/`boost_inventory`/`boost_activations`) + `luna_transactions.reason` 값 추가. `daily_usage`와 `chat_rooms.type`은 **V4에서 이미 생성됨**. ([02 §1.7](02-db-schema.md))
+1. **luna / store(BM) 도메인** + **V6 마이그레이션** — BM 테이블(`subscriptions`/`user_entitlements`/`boost_inventory`/`boost_activations`) + `luna_transactions.reason` 값 추가. `daily_usage`와 `chat_rooms.type`은 **V4에서 이미 생성됨**. ([02 §1.7](02-db-schema.md))
    - 결제는 `POST /store/purchases:verify`(서버 영수증 검증 + purchaseToken 멱등) + 스토어 웹훅. IAP 대상은 **루나 충전·프라임 구독만**([01 §1.8](01-protocol-api-spec.md)).
 3. **BM 화면 6종 신규** — 루나상점·프라임 멤버십·루나 충전샵·포스트 부스트·앨범 패스·자동 번역 패스 (Plan_2 화면 25~30).
 4. **scheduler** — 17시 오픈/06시 초기화(포스트·스코어·daily_usage), 채팅 30일 FIFO 삭제, 종료 방 정리.

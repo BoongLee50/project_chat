@@ -21,6 +21,8 @@ public final class Opcodes {
     public static final String CHAT_RECV = "CHAT_RECV";
     public static final String CHAT_READ_RECEIPT = "CHAT_READ_RECEIPT";
     public static final String CHAT_REQ_INCOMING = "CHAT_REQ_INCOMING";
+    public static final String FRIEND_REQ_INCOMING = "FRIEND_REQ_INCOMING";
+    public static final String FRIEND_STATE = "FRIEND_STATE";
     public static final String ROOM_STATE = "ROOM_STATE";
     public static final String PRESENCE_UPDATE = "PRESENCE_UPDATE";
     public static final String UNREAD_COUNT = "UNREAD_COUNT";

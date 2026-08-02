@@ -131,6 +131,19 @@
         WHERE id = #{id}
     </update>
 
+    <select id="selectActiveRoomByPairKey" resultMap="RoomResultMap">
+        SELECT * FROM chat_rooms WHERE active_pair_key = #{pairKey} AND status = 'ACTIVE'
+    </select>
+
+    <select id="selectActiveRoomByPairKeyAndType" resultMap="RoomResultMap">
+        SELECT * FROM chat_rooms
+        WHERE active_pair_key = #{pairKey} AND status = 'ACTIVE' AND type = #{type}
+    </select>
+
+    <update id="updateRoomType">
+        UPDATE chat_rooms SET type = #{type} WHERE id = #{id}
+    </update>
+
     <!-- ── 메시지 ── -->
     <insert id="insertMessage">
         INSERT INTO chat_messages (id, room_id, sender_id, body, created_at)

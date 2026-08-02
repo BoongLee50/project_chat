@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.moonlighttalk.server.friend.mapper.FriendMapper">
+
+    <resultMap id="FriendshipResultMap" type="com.moonlighttalk.server.friend.entity.Friendship">
+        <id property="id" column="id"/>
+        <result property="requesterId" column="requester_id"/>
+        <result property="addresseeId" column="addressee_id"/>
+        <result property="status" column="status"/>
+        <result property="pairKey" column="pair_key"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="acceptedAt" column="accepted_at"/>
+        <result property="partnerNickname" column="partner_nickname"/>
+        <result property="partnerBirthYear" column="partner_birth_year"/>
+        <result property="partnerCountry" column="partner_country"/>
+        <result property="partnerPhotoKey" column="partner_photo_key"/>
+    </resultMap>
+
+    <resultMap id="FriendSummaryResultMap" type="com.moonlighttalk.server.friend.entity.FriendSummary">
+        <result property="friendshipId" column="friendship_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="nickname" column="nickname"/>
+        <result property="birthYear" column="birth_year"/>
+        <result property="gender" column="gender"/>
+        <result property="country" column="country"/>
+        <result property="intro" column="intro"/>
+        <result property="photoKey" column="photo_key"/>
+        <result property="roomId" column="room_id"/>
+        <result property="acceptedAt" column="accepted_at"/>
+    </resultMap>
+
+    <insert id="insert">
+        INSERT INTO friendships (id, requester_id, addressee_id, status, pair_key, created_at)
+        VALUES (#{id}, #{requesterId}, #{addresseeId}, #{status}, #{pairKey}, NOW())
+    </insert>
+
+    <select id="selectById" resultMap="FriendshipResultMap">
+        SELECT * FROM friendships WHERE id = #{id}
+    </select>
+
+    <select id="selectByPairKey" resultMap="FriendshipResultMap">
+        SELECT * FROM friendships WHERE pair_key = #{pairKey}
+    </select>
+
+    <update id="accept">
+        UPDATE friendships SET status = 'ACCEPTED', accepted_at = #{acceptedAt} WHERE id = #{id}
+    </update>
+
+    <delete id="delete">
+        DELETE FROM friendships WHERE id = #{id}
+    </delete>
+
+    <!-- 상대 = 내가 requester면 addressee, 아니면 requester. 상시 대화방(FRIEND)도 함께 붙인다. -->
+    <select id="selectFriends" resultMap="FriendSummaryResultMap">
+        SELECT f.id          AS friendship_id,
+               u.id          AS user_id,
+               u.nickname,
+               u.birth_year,
+               u.gender,
+               u.country,
+               p.intro,
+               p.photo_key,
+               f.accepted_at,
+               (SELECT r.id FROM chat_rooms r
+                 WHERE r.type = 'FRIEND' AND r.status = 'ACTIVE'
+                   AND r.active_pair_key = f.pair_key LIMIT 1) AS room_id
+        FROM friendships f
+                 JOIN users u
+                      ON u.id = CASE WHEN f.requester_id = #{userId}
+                                     THEN f.addressee_id ELSE f.requester_id END
+                 LEFT JOIN user_profiles p ON p.user_id = u.id
+        WHERE (f.requester_id = #{userId} OR f.addressee_id = #{userId})
+          AND f.status = 'ACCEPTED'
+        <if test="gender != null">AND u.gender = #{gender}</if>
+        <if test="country != null">AND u.country = #{country}</if>
+        <if test="ageMin != null">AND (YEAR(CURDATE()) - u.birth_year) &gt;= #{ageMin}</if>
+        <if test="ageMax != null">AND (YEAR(CURDATE()) - u.birth_year) &lt;= #{ageMax}</if>
+        ORDER BY f.accepted_at DESC
+    </select>
+
+    <select id="selectReceivedRequests" resultMap="FriendshipResultMap">
+        SELECT f.*, u.nickname AS partner_nickname, u.birth_year AS partner_birth_year,
+               u.country AS partner_country, p.photo_key AS partner_photo_key
+        FROM friendships f
+                 JOIN users u ON u.id = f.requester_id
+                 LEFT JOIN user_profiles p ON p.user_id = u.id
+        WHERE f.addressee_id = #{userId} AND f.status = 'PENDING'
+        ORDER BY f.created_at DESC
+    </select>
+
+    <select id="selectSentRequests" resultMap="FriendshipResultMap">
+        SELECT f.*, u.nickname AS partner_nickname, u.birth_year AS partner_birth_year,
+               u.country AS partner_country, p.photo_key AS partner_photo_key
+        FROM friendships f
+                 JOIN users u ON u.id = f.addressee_id
+                 LEFT JOIN user_profiles p ON p.user_id = u.id
+        WHERE f.requester_id = #{userId} AND f.status = 'PENDING'
+        ORDER BY f.created_at DESC
+    </select>
+
+    <select id="countFriends" resultType="int">
+        SELECT COUNT(*) FROM friendships
+        WHERE status = 'ACCEPTED' AND (requester_id = #{userId} OR addressee_id = #{userId})
+    </select>
+
+</mapper>
