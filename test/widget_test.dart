@@ -41,6 +41,8 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 100));
 
+    // 테스트 로케일(en)은 지원 언어가 아니라 한국어로 폴백된다(app.dart의
+    // localeResolutionCallback). 문구가 한국어로 나오는 것 자체가 그 폴백 검증이다.
     expect(find.text('LINE으로 로그인'), findsOneWidget);
     expect(find.text('카카오톡으로 로그인'), findsOneWidget);
     expect(find.text('Google로 로그인'), findsOneWidget);

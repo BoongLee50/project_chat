@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+
+import '../../../../l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -44,6 +46,7 @@ class _NicknameScreenState extends ConsumerState<NicknameScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     final len = _controller.text.characters.length;
     final form = ref.watch(onboardingProvider);
 
@@ -59,8 +62,8 @@ class _NicknameScreenState extends ConsumerState<NicknameScreen> {
 
     return OnboardingScaffold(
       backgroundAsset: 'assets/images/onboarding_1.jpg',
-      title: '닉네임 설정',
-      subtitle: '달빛톡에서 사용할 닉네임을 입력해주세요.',
+      title: l10n.nicknameTitle,
+      subtitle: l10n.nicknameSubtitle,
       submitEnabled: _valid && !form.busy,
       onSubmit: _submit,
       child: Column(
@@ -84,11 +87,11 @@ class _NicknameScreenState extends ConsumerState<NicknameScreen> {
                       color: AppColors.textPrimary,
                       fontSize: 18,
                     ),
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       counterText: '',
                       border: InputBorder.none,
-                      hintText: '닉네임을 입력해주세요',
-                      hintStyle: TextStyle(
+                      hintText: l10n.nicknameHint,
+                      hintStyle: const TextStyle(
                         color: AppColors.textMuted,
                         fontSize: 18,
                       ),
@@ -106,18 +109,18 @@ class _NicknameScreenState extends ConsumerState<NicknameScreen> {
             ),
           ),
           const SizedBox(height: AppDimens.gapLg),
-          const Text(
-            '닉네임 가이드',
-            style: TextStyle(
+          Text(
+            l10n.nicknameGuideTitle,
+            style: const TextStyle(
               color: AppColors.textPrimary,
               fontSize: 16,
               fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: AppDimens.gapSm),
-          const _Bullet('2자 이상 10자 이하로 입력해주세요.'),
-          const _Bullet('특수문자 및 이모지는 사용할 수 없습니다.'),
-          const _Bullet('욕설, 혐오 표현 등 부적절한 닉네임은 사용할 수 없습니다.'),
+          _Bullet(l10n.nicknameGuideLength),
+          _Bullet(l10n.nicknameGuideNoSpecialChars),
+          _Bullet(l10n.nicknameGuideNoProfanity),
         ],
       ),
     );

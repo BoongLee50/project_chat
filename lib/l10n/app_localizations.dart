@@ -1,0 +1,252 @@
+import 'dart:async';
+
+import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:intl/intl.dart' as intl;
+
+import 'app_localizations_ja.dart';
+import 'app_localizations_ko.dart';
+
+// ignore_for_file: type=lint
+
+/// Callers can lookup localized strings with an instance of L10n
+/// returned by `L10n.of(context)`.
+///
+/// Applications need to include `L10n.delegate()` in their app's
+/// `localizationDelegates` list, and the locales they support in the app's
+/// `supportedLocales` list. For example:
+///
+/// ```dart
+/// import 'l10n/app_localizations.dart';
+///
+/// return MaterialApp(
+///   localizationsDelegates: L10n.localizationsDelegates,
+///   supportedLocales: L10n.supportedLocales,
+///   home: MyApplicationHome(),
+/// );
+/// ```
+///
+/// ## Update pubspec.yaml
+///
+/// Please make sure to update your pubspec.yaml to include the following
+/// packages:
+///
+/// ```yaml
+/// dependencies:
+///   # Internationalization support.
+///   flutter_localizations:
+///     sdk: flutter
+///   intl: any # Use the pinned version from flutter_localizations
+///
+///   # Rest of dependencies
+/// ```
+///
+/// ## iOS Applications
+///
+/// iOS applications define key application metadata, including supported
+/// locales, in an Info.plist file that is built into the application bundle.
+/// To configure the locales supported by your app, you’ll need to edit this
+/// file.
+///
+/// First, open your project’s ios/Runner.xcworkspace Xcode workspace file.
+/// Then, in the Project Navigator, open the Info.plist file under the Runner
+/// project’s Runner folder.
+///
+/// Next, select the Information Property List item, select Add Item from the
+/// Editor menu, then select Localizations from the pop-up menu.
+///
+/// Select and expand the newly-created Localizations item then, for each
+/// locale your application supports, add a new item and select the locale
+/// you wish to add from the pop-up menu in the Value field. This list should
+/// be consistent with the languages listed in the L10n.supportedLocales
+/// property.
+abstract class L10n {
+  L10n(String locale)
+    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+
+  final String localeName;
+
+  static L10n of(BuildContext context) {
+    return Localizations.of<L10n>(context, L10n)!;
+  }
+
+  static const LocalizationsDelegate<L10n> delegate = _L10nDelegate();
+
+  /// A list of this localizations delegate along with the default localizations
+  /// delegates.
+  ///
+  /// Returns a list of localizations delegates containing this delegate along with
+  /// GlobalMaterialLocalizations.delegate, GlobalCupertinoLocalizations.delegate,
+  /// and GlobalWidgetsLocalizations.delegate.
+  ///
+  /// Additional delegates can be added by appending to this list in
+  /// MaterialApp. This list does not have to be used at all if a custom list
+  /// of delegates is preferred or required.
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
+      <LocalizationsDelegate<dynamic>>[
+        delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ];
+
+  /// A list of this localizations delegate's supported locales.
+  static const List<Locale> supportedLocales = <Locale>[
+    Locale('ja'),
+    Locale('ko'),
+  ];
+
+  /// 앱 이름. 태스크 스위처와 MaterialApp title
+  ///
+  /// In ko, this message translates to:
+  /// **'달빛톡'**
+  String get appTitle;
+
+  /// No description provided for @commonSave.
+  ///
+  /// In ko, this message translates to:
+  /// **'저장하기'**
+  String get commonSave;
+
+  /// No description provided for @commonCancel.
+  ///
+  /// In ko, this message translates to:
+  /// **'취소'**
+  String get commonCancel;
+
+  /// No description provided for @commonConfirm.
+  ///
+  /// In ko, this message translates to:
+  /// **'확인'**
+  String get commonConfirm;
+
+  /// No description provided for @commonDelete.
+  ///
+  /// In ko, this message translates to:
+  /// **'삭제'**
+  String get commonDelete;
+
+  /// No description provided for @commonRetry.
+  ///
+  /// In ko, this message translates to:
+  /// **'다시 시도'**
+  String get commonRetry;
+
+  /// No description provided for @commonClose.
+  ///
+  /// In ko, this message translates to:
+  /// **'닫기'**
+  String get commonClose;
+
+  /// 로그인 화면 상단 문구
+  ///
+  /// In ko, this message translates to:
+  /// **'밤에만 열리는 채팅의 시간'**
+  String get loginTagline;
+
+  /// 운영시간 안내. 시각이 바뀌면 이 문구도 함께 고칠 것
+  ///
+  /// In ko, this message translates to:
+  /// **'오후 5시 ~ 새벽 6시'**
+  String get loginHours;
+
+  /// No description provided for @loginWithLine.
+  ///
+  /// In ko, this message translates to:
+  /// **'LINE으로 로그인'**
+  String get loginWithLine;
+
+  /// No description provided for @loginWithKakao.
+  ///
+  /// In ko, this message translates to:
+  /// **'카카오톡으로 로그인'**
+  String get loginWithKakao;
+
+  /// No description provided for @loginWithGoogle.
+  ///
+  /// In ko, this message translates to:
+  /// **'Google로 로그인'**
+  String get loginWithGoogle;
+
+  /// No description provided for @loginTermsNotice.
+  ///
+  /// In ko, this message translates to:
+  /// **'로그인하면 서비스 이용약관 및 개인정보처리방침에 동의하게 됩니다.'**
+  String get loginTermsNotice;
+
+  /// No description provided for @nicknameTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'닉네임 설정'**
+  String get nicknameTitle;
+
+  /// No description provided for @nicknameSubtitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'달빛톡에서 사용할 닉네임을 입력해주세요.'**
+  String get nicknameSubtitle;
+
+  /// No description provided for @nicknameHint.
+  ///
+  /// In ko, this message translates to:
+  /// **'닉네임을 입력해주세요'**
+  String get nicknameHint;
+
+  /// No description provided for @nicknameGuideTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'닉네임 가이드'**
+  String get nicknameGuideTitle;
+
+  /// No description provided for @nicknameGuideLength.
+  ///
+  /// In ko, this message translates to:
+  /// **'2자 이상 10자 이하로 입력해주세요.'**
+  String get nicknameGuideLength;
+
+  /// No description provided for @nicknameGuideNoSpecialChars.
+  ///
+  /// In ko, this message translates to:
+  /// **'특수문자 및 이모지는 사용할 수 없습니다.'**
+  String get nicknameGuideNoSpecialChars;
+
+  /// No description provided for @nicknameGuideNoProfanity.
+  ///
+  /// In ko, this message translates to:
+  /// **'욕설, 혐오 표현 등 부적절한 닉네임은 사용할 수 없습니다.'**
+  String get nicknameGuideNoProfanity;
+}
+
+class _L10nDelegate extends LocalizationsDelegate<L10n> {
+  const _L10nDelegate();
+
+  @override
+  Future<L10n> load(Locale locale) {
+    return SynchronousFuture<L10n>(lookupL10n(locale));
+  }
+
+  @override
+  bool isSupported(Locale locale) =>
+      <String>['ja', 'ko'].contains(locale.languageCode);
+
+  @override
+  bool shouldReload(_L10nDelegate old) => false;
+}
+
+L10n lookupL10n(Locale locale) {
+  // Lookup logic when only language code is specified.
+  switch (locale.languageCode) {
+    case 'ja':
+      return L10nJa();
+    case 'ko':
+      return L10nKo();
+  }
+
+  throw FlutterError(
+    'L10n.delegate failed to load unsupported locale "$locale". This is likely '
+    'an issue with the localizations generation tool. Please file an issue '
+    'on GitHub with a reproducible sample app and the gen-l10n configuration '
+    'that was used.',
+  );
+}

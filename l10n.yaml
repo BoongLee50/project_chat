@@ -1,0 +1,9 @@
+# ARB → Dart 코드 생성 설정. (flutter gen-l10n / flutter pub get 시 자동 실행)
+#
+# 원문(template)은 한국어다. 일본어(app_ja.arb)에 키가 없으면 한국어로 폴백되므로,
+# 번역이 덜 끝난 상태에서도 앱이 깨지지 않는다.
+arb-dir: lib/l10n
+template-arb-file: app_ko.arb
+output-localization-file: app_localizations.dart
+output-class: L10n
+nullable-getter: false

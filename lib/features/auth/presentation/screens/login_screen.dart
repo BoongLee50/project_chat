@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+
+import '../../../../l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/theme/app_colors.dart';
@@ -69,6 +71,8 @@ class _TimeBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
@@ -78,25 +82,29 @@ class _TimeBadge extends StatelessWidget {
         border: Border.all(color: AppColors.borderSoft),
       ),
       child: Row(
-        children: const [
-          Icon(Icons.nightlight_round, color: AppColors.moonlight, size: 30),
-          SizedBox(width: 14),
+        children: [
+          const Icon(Icons.nightlight_round,
+              color: AppColors.moonlight, size: 30),
+          const SizedBox(width: 14),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                '오후 5시 ~ 새벽 6시',
-                style: TextStyle(
+                l10n.loginHours,
+                style: const TextStyle(
                   color: AppColors.textPrimary,
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
                 ),
               ),
-              SizedBox(height: 2),
+              const SizedBox(height: 2),
               Text(
-                '밤에만 열리는 채팅의 시간',
-                style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
+                l10n.loginTagline,
+                style: const TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 13,
+                ),
               ),
             ],
           ),
@@ -112,6 +120,7 @@ class _SocialButtons extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = L10n.of(context);
     final busy = ref.watch(sessionProvider).busy;
 
     // 개발용: 소셜 SDK 대신 provider별 목 토큰을 서버에 보낸다.
@@ -129,7 +138,7 @@ class _SocialButtons extends ConsumerWidget {
     return Column(
       children: [
         _SocialButton(
-          label: 'LINE으로 로그인',
+          label: l10n.loginWithLine,
           background: AppColors.line,
           foreground: Colors.white,
           onPressed: () => signIn(SocialProvider.line),
@@ -144,7 +153,7 @@ class _SocialButtons extends ConsumerWidget {
         ),
         const SizedBox(height: AppDimens.gapMd),
         _SocialButton(
-          label: '카카오톡으로 로그인',
+          label: l10n.loginWithKakao,
           background: AppColors.kakao,
           foreground: AppColors.kakaoText,
           onPressed: () => signIn(SocialProvider.kakao),
@@ -159,7 +168,7 @@ class _SocialButtons extends ConsumerWidget {
         ),
         const SizedBox(height: AppDimens.gapMd),
         _SocialButton(
-          label: 'Google로 로그인',
+          label: l10n.loginWithGoogle,
           background: AppColors.google,
           foreground: AppColors.googleText,
           onPressed: () => signIn(SocialProvider.google),
@@ -247,10 +256,14 @@ class _Disclaimer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Text(
-      '로그인하면 서비스 이용약관 및 개인정보처리방침에 동의하게 됩니다.',
+    return Text(
+      L10n.of(context).loginTermsNotice,
       textAlign: TextAlign.center,
-      style: TextStyle(color: AppColors.textMuted, fontSize: 12, height: 1.4),
+      style: const TextStyle(
+        color: AppColors.textMuted,
+        fontSize: 12,
+        height: 1.4,
+      ),
     );
   }
 }
