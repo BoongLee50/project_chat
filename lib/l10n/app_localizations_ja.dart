@@ -1306,6 +1306,12 @@ class L10nJa extends L10n {
   String get errorGardenTargetBlocked => '今はこのユーザーにコメントを残せません。';
 
   @override
+  String get errorTranslateQuotaExceeded => '本日の無料翻訳をすべて使いました。自動翻訳パスをご利用ください。';
+
+  @override
+  String get errorTranslateTargetRequired => '翻訳する相手を指定してください。';
+
+  @override
   String get errorChatGateClosed => '月明かりが訪れる午後5時から翌朝6時まで会話できます。';
 
   @override

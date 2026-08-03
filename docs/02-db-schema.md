@@ -231,7 +231,17 @@ daily_usage                -- 일일 무료 쿼터 카운터
   kind         enum(CHAT_REQUEST, COMMENT_TRANSLATE, CHAT_TRANSLATE)
   used_count   int default 0
   PK(user_id, session_date, kind)
-  -- 대화신청 2회 / 댓글번역 2회 / 채팅번역 2명(무료). 원자적 UPSERT로 증가(§1.4 패턴). 06시 배치가 지난 날짜 정리
+  -- 대화신청 2회 / 댓글번역 2회(무료). 원자적 UPSERT로 증가(§1.4 패턴). 06시 배치가 지난 날짜 정리
+  -- ※ CHAT_TRANSLATE는 "2명"이라 카운터로 못 센다 → daily_translate_targets 사용(아래)
+
+daily_translate_targets    -- 채팅 번역 무료 "하루 2명"을 세기 위한 표 (V7)
+  user_id      uuid FK
+  session_date date
+  target_id    uuid          -- 번역을 연 상대 userId
+  created_at   datetime
+  PK(user_id, session_date, target_id)
+  -- 행 수 = 오늘 번역을 연 사람 수. 한 번 연 상대와는 그날 계속 무료(행이 이미 있으므로).
+  -- 동시 요청으로 사람 수가 두 번 늘지 않게 INSERT IGNORE. 06시 배치가 지난 날짜 정리
 ```
 ```
 store_purchases            -- 인앱결제 영수증(V6 추가 — 01 §1.8의 "중복 지급 방지" 저장소)

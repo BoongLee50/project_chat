@@ -131,4 +131,26 @@
         )
     </select>
 
+    <!-- 번역 무료 쿼터: 채팅 "하루 2명" (V7) -->
+
+    <select id="countTranslateTargets" resultType="int">
+        SELECT COUNT(*) FROM daily_translate_targets
+        WHERE user_id = #{userId} AND session_date = #{sessionDate}
+    </select>
+
+    <select id="existsTranslateTarget" resultType="boolean">
+        SELECT EXISTS (
+            SELECT 1 FROM daily_translate_targets
+            WHERE user_id = #{userId}
+              AND session_date = #{sessionDate}
+              AND target_id = #{targetId}
+        )
+    </select>
+
+    <!-- 같은 순간 두 요청이 들어와도 사람 수가 두 번 늘지 않도록 IGNORE. -->
+    <insert id="insertTranslateTarget">
+        INSERT IGNORE INTO daily_translate_targets (user_id, session_date, target_id)
+        VALUES (#{userId}, #{sessionDate}, #{targetId})
+    </insert>
+
 </mapper>

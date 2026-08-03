@@ -395,6 +395,8 @@
   "errorPostNotPublishedToday": "今日登録されたポストがありません。",
   "errorGardenGateClosed": "月光ガーデンはまだ開いていません。午後5時から翌朝6時までご利用いただけます。",
   "errorGardenTargetBlocked": "今はこのユーザーにコメントを残せません。",
+  "errorTranslateQuotaExceeded": "本日の無料翻訳をすべて使いました。自動翻訳パスをご利用ください。",
+  "errorTranslateTargetRequired": "翻訳する相手を指定してください。",
   "errorChatGateClosed": "月明かりが訪れる午後5時から翌朝6時まで会話できます。",
   "errorChatSelf": "自分自身には会話を申し込めません。",
   "errorChatTargetBlocked": "今はこのユーザーに会話を申し込めません。",

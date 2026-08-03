@@ -71,12 +71,20 @@
 | POST | `/feed/:userId/skip` | 스킵 처리 | 7 |
 | GET | `/posts/:userId/comments` | 포스트 댓글 목록 | 9 |
 | POST | `/posts/:userId/comments` | 댓글 작성(≤25자, 대댓글 없음) | 9 |
-| POST | `/translate` | 번역(text, targetLang) 한↔일 | 9 |
+| POST | `/translate` | 번역(text, targetLang, **scope**, targetId) 한↔일 | 9 |
 
 필터 기본값 [전체]. 노출순 = Post Score 내림차순, 동점은 랜덤.
 `Post Score = Pick(프리미엄50) + Online(10/0) + Recency(1h내20/1~3h10/3h초과0) + Engage(전환율 구간별)`.
 `/translate`는 번역 API 키 설정 전엔 원문을 그대로 반환하는 패스스루로 동작(`app.translate.provider=none`), 추후 실제 번역 공급자로 전환. [05 서버구조 §9.2](05-server-structure.md#92-번역) 참고.
-무료 번역 쿼터(Plan_2): **댓글 하루 2회 / 채팅 매일 2명**(daily_usage), 초과 시 자동번역패스 유도. **자동번역패스**(TRANSLATE_PASS) 보유 시 무제한. 프로필 보기는 항상 무료. 프라임 구독은 번역 무제한.
+무료 번역 쿼터(Plan_2): **댓글 하루 2회 / 채팅 매일 2명**, 초과 시 자동번역패스 유도. **자동번역패스**(TRANSLATE_PASS) 보유 시 무제한. 프로필 보기는 항상 무료. 프라임 구독은 번역 무제한.
+
+**구현됨(V7).** 요청은 `{ text, targetLang, scope, targetId? }` — `scope`는 `COMMENT|CHAT|PROFILE`이고
+`CHAT`일 때만 `targetId`(상대 userId)가 필요하다(없으면 `TRANSLATE_TARGET_REQUIRED`).
+응답은 `{ text, provider, unlimited, remaining }` — `remaining`은 **소진 전에** 패스를 권하라고 주는 값이다.
+쿼터 초과는 `TRANSLATE_QUOTA_EXCEEDED`(409).
+댓글은 횟수라 `daily_usage.COMMENT_TRANSLATE`를 쓰지만, 채팅의 "2명"은 카운터로 셀 수 없어
+**상대를 행으로 남기는 `daily_translate_targets`(V7)** 를 쓴다 — 한 번 연 상대와는 그날 계속 무료.
+둘 다 06시 배치가 지난 영업일을 정리한다.
 
 ### 1.5 대화 신청 (하이브리드: 생성=REST, 도착알림=소켓)
 | Method | Path | 설명 | 화면 |

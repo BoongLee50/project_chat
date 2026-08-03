@@ -2467,6 +2467,18 @@ abstract class L10n {
   /// **'지금은 이 사용자에게 댓글을 남길 수 없어요.'**
   String get errorGardenTargetBlocked;
 
+  /// No description provided for @errorTranslateQuotaExceeded.
+  ///
+  /// In ko, this message translates to:
+  /// **'오늘의 무료 번역을 모두 사용했어요. 자동 번역 패스를 이용해 보세요.'**
+  String get errorTranslateQuotaExceeded;
+
+  /// No description provided for @errorTranslateTargetRequired.
+  ///
+  /// In ko, this message translates to:
+  /// **'번역할 상대를 지정해 주세요.'**
+  String get errorTranslateTargetRequired;
+
   /// No description provided for @errorChatGateClosed.
   ///
   /// In ko, this message translates to:

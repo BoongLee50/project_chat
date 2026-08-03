@@ -59,7 +59,8 @@ public class GardenController {
     }
 
     @PostMapping("/translate")
-    public TranslateResponse translate(@Valid @RequestBody TranslateRequest request) {
-        return gardenService.translate(request.text(), request.targetLang());
+    public TranslateResponse translate(@CurrentUserId String userId,
+                                        @Valid @RequestBody TranslateRequest request) {
+        return gardenService.translate(userId, request);
     }
 }

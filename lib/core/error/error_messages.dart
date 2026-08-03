@@ -39,6 +39,10 @@ String errorMessage(L10n l10n, ApiException e) {
     'GARDEN_GATE_CLOSED' => l10n.errorGardenGateClosed,
     'GARDEN_TARGET_BLOCKED' => l10n.errorGardenTargetBlocked,
 
+    // ── translate ────────────────────────────────────
+    'TRANSLATE_QUOTA_EXCEEDED' => l10n.errorTranslateQuotaExceeded,
+    'TRANSLATE_TARGET_REQUIRED' => l10n.errorTranslateTargetRequired,
+
     // ── chat ─────────────────────────────────────────
     'CHAT_GATE_CLOSED' => l10n.errorChatGateClosed,
     'CHAT_SELF' => l10n.errorChatSelf,

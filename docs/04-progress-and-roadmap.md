@@ -74,13 +74,16 @@
 - [ ] **다국어 ③단계** — 일본어 원어민 검수(현재 439키 전부 초벌), Noto Sans JP 폰트(두부 발생 시에만),
   로그인 배경 이미지 한국어 제거, (선택) 앱 내 언어 전환 UI
   👉 **[09 인수인계](09-next-task-handoff.md)** 참고
-- [ ] **실시간 번역(사용자 글) — 미구현 상태 정리 필요**
-  - `POST /translate`는 있으나 **원문을 그대로 돌려주는 패스스루**(`app.translate.provider=none`)
-  - **클라에서 호출하는 곳이 없다** — 번역 버튼이 어느 화면에도 없음
-  - ⚠️ **무료 쿼터·패스 판정이 전혀 없다.** 기획은 댓글 2회/채팅 2명 무료 + `TRANSLATE_PASS` 무제한인데
-    `GardenService.translate()`가 `userId`조차 받지 않는다. `daily_usage`의 `COMMENT_TRANSLATE`/`CHAT_TRANSLATE`는 만들어만 두고 미사용
-  - ⚠️ **BM 구멍**: `TRANSLATE_PASS`를 800루나에 팔면서 **혜택이 실제로 아무것도 없다**
-  - → 번역 API 키(DeepL/Google) 없이도 **쿼터·패스 판정은 먼저 붙일 수 있다**(작고, 검증 가능, BM 구멍을 막음). 공급자 연동만 키 발급 후
+- [x] **실시간 번역 — 무료 쿼터·패스 판정** (2026-08-03, V7) — `POST /translate`가 `scope`(COMMENT/CHAT/PROFILE)를
+  받아 판정한다. **댓글 하루 2회 · 채팅 하루 2명 · 프로필 항상 무료**, `TRANSLATE_PASS`·프라임은 무제한.
+  응답에 `unlimited`/`remaining`을 실어 **소진 전에** 패스를 권할 수 있다.
+  채팅 "2명"은 카운터로 못 세서 상대를 기록하는 테이블(`daily_translate_targets`)을 뒀다 —
+  한 번 연 상대와는 그날 계속 무료. 06시 배치가 함께 정리한다.
+  **⚠️ BM 구멍은 이걸로 막혔다** — 800루나 `TRANSLATE_PASS`가 처음으로 실제 혜택을 갖는다
+- [ ] **실시간 번역 — 남은 것** (외부 계정 필요)
+  - 공급자 연동: 아직 **원문을 그대로 돌려주는 패스스루**(`app.translate.provider=none`). DeepL/Google **API 키 발급 후** 교체
+  - **클라 번역 버튼이 아직 없다** — 지금 붙이면 패스스루라 "번역했는데 원문 그대로"로 보인다.
+    공급자 연동과 **같이** 붙이는 편이 낫다(댓글 시트·채팅 말풍선·프로필)
 - [ ] (선택) 태블릿 · 가로모드 대응
 
 ### 백엔드 (Spring Boot + MariaDB/MyBatis + Redis(선택))

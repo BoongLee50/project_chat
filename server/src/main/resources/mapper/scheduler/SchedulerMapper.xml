@@ -49,6 +49,11 @@
         DELETE FROM daily_usage WHERE session_date &lt; #{sessionDate}
     </delete>
 
+    <!-- 번역 무료 쿼터(채팅 2명)도 같은 주기로 비운다. 안 지우면 어제 연 상대가 오늘도 무료가 된다. -->
+    <delete id="deleteTranslateTargetsBefore">
+        DELETE FROM daily_translate_targets WHERE session_date &lt; #{sessionDate}
+    </delete>
+
     <!--
       사용자별 최신 1건은 남긴다. one_liner를 다음 영업일로 이어받는 원본이라
       이걸 지우면 "하루 한 마디는 유지"(기획서 3-1)가 깨진다.

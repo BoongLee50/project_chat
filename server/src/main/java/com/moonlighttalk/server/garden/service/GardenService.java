@@ -9,6 +9,7 @@ import com.moonlighttalk.server.garden.entity.FeedCandidate;
 import com.moonlighttalk.server.garden.entity.PostComment;
 import com.moonlighttalk.server.garden.mapper.GardenMapper;
 import com.moonlighttalk.server.garden.translate.TranslationProvider;
+import com.moonlighttalk.server.luna.service.LunaService;
 import com.moonlighttalk.server.presence.PresenceService;
 import com.moonlighttalk.server.store.service.EntitlementService;
 import org.springframework.http.HttpStatus;
@@ -41,25 +42,33 @@ public class GardenService {
     private static final int SCORE_PICK = 50;
     private static final int SCORE_ONLINE = 10;
 
+    /** 무료 번역: 댓글은 하루 2회, 채팅은 하루 2명(01 §1.4). */
+    private static final int FREE_TRANSLATE_COMMENTS = 2;
+    private static final int FREE_TRANSLATE_CHAT_TARGETS = 2;
+    private static final String USAGE_COMMENT_TRANSLATE = "COMMENT_TRANSLATE";
+
     private final GardenMapper gardenMapper;
     private final GateService gateService;
     private final PresenceService presenceService;
     private final FileStorageService fileStorageService;
     private final TranslationProvider translationProvider;
     private final EntitlementService entitlementService;
+    private final LunaService lunaService;
 
     public GardenService(GardenMapper gardenMapper,
                           GateService gateService,
                           PresenceService presenceService,
                           FileStorageService fileStorageService,
                           TranslationProvider translationProvider,
-                          EntitlementService entitlementService) {
+                          EntitlementService entitlementService,
+                          LunaService lunaService) {
         this.gardenMapper = gardenMapper;
         this.gateService = gateService;
         this.presenceService = presenceService;
         this.fileStorageService = fileStorageService;
         this.translationProvider = translationProvider;
         this.entitlementService = entitlementService;
+        this.lunaService = lunaService;
     }
 
     /**
@@ -145,10 +154,70 @@ public class GardenService {
     }
 
     /** 번역 — 키 미설정 시 원문을 그대로 반환(패스스루). */
-    public TranslateResponse translate(String text, String targetLang) {
-        return new TranslateResponse(
-                translationProvider.translate(text, targetLang),
-                translationProvider.name());
+    /**
+     * 번역 — 무료 쿼터/패스를 먼저 판정하고 공급자를 부른다. (01 §1.4)
+     *
+     * <p>자리마다 무료 범위가 다르다. 댓글은 <b>하루 2회</b>(횟수), 채팅은 <b>하루 2명</b>(사람 수),
+     * 프로필 보기는 항상 무료. 채팅이 "명" 단위인 건 한 대화를 번역해 놓고 이어지는 말마다
+     * 쿼터가 깎이면 쓸 수 없기 때문이다 — 한 번 연 상대와는 그날 계속 무료다.
+     *
+     * <p>자동번역패스나 프라임이 있으면 세지 않는다. 여기가 TRANSLATE_PASS가
+     * 실제 혜택을 갖는 지점이다(그 전까지는 팔기만 하고 효과가 없었다).
+     */
+    @Transactional
+    public TranslateResponse translate(String userId, TranslateRequest request) {
+        String provider = translationProvider.name();
+
+        // 프로필 보기는 쿼터 밖이다.
+        if (request.scope() == TranslateScope.PROFILE) {
+            return TranslateResponse.unlimited(translated(request), provider);
+        }
+        if (entitlementService.hasTranslatePass(userId) || entitlementService.isPrime(userId)) {
+            return TranslateResponse.unlimited(translated(request), provider);
+        }
+
+        LocalDate sessionDate = gateService.currentSessionDate();
+        int remaining = request.scope() == TranslateScope.CHAT
+                ? consumeChatQuota(userId, sessionDate, request.targetId())
+                : consumeCommentQuota(userId, sessionDate);
+
+        return TranslateResponse.free(translated(request), provider, remaining);
+    }
+
+    /** 채팅 — 오늘 이미 연 상대면 그냥 통과, 아니면 새 사람으로 세고 기록한다. */
+    private int consumeChatQuota(String userId, LocalDate sessionDate, String targetId) {
+        if (targetId == null || targetId.isBlank()) {
+            throw new ApiException(ErrorCode.TRANSLATE_TARGET_REQUIRED, HttpStatus.BAD_REQUEST,
+                    "번역할 상대를 지정해 주세요.", "targetId");
+        }
+        if (gardenMapper.existsTranslateTarget(userId, sessionDate, targetId)) {
+            return Math.max(0, FREE_TRANSLATE_CHAT_TARGETS
+                    - gardenMapper.countTranslateTargets(userId, sessionDate));
+        }
+        if (gardenMapper.countTranslateTargets(userId, sessionDate) >= FREE_TRANSLATE_CHAT_TARGETS) {
+            throw quotaExceeded();
+        }
+        // INSERT IGNORE라 0이 나오면 같은 순간 다른 요청이 이미 넣은 것 — 어느 쪽이든 이 상대는 열렸다.
+        gardenMapper.insertTranslateTarget(userId, sessionDate, targetId);
+        return Math.max(0, FREE_TRANSLATE_CHAT_TARGETS
+                - gardenMapper.countTranslateTargets(userId, sessionDate));
+    }
+
+    /** 댓글 — 단순 횟수. daily_usage 카운터를 그대로 쓴다. */
+    private int consumeCommentQuota(String userId, LocalDate sessionDate) {
+        int used = lunaService.dailyUsed(userId, sessionDate, USAGE_COMMENT_TRANSLATE);
+        if (used >= FREE_TRANSLATE_COMMENTS) throw quotaExceeded();
+        lunaService.useDaily(userId, sessionDate, USAGE_COMMENT_TRANSLATE);
+        return Math.max(0, FREE_TRANSLATE_COMMENTS - (used + 1));
+    }
+
+    private ApiException quotaExceeded() {
+        return new ApiException(ErrorCode.TRANSLATE_QUOTA_EXCEEDED, HttpStatus.CONFLICT,
+                "오늘의 무료 번역을 모두 사용했어요. 자동 번역 패스를 이용해 보세요.");
+    }
+
+    private String translated(TranslateRequest request) {
+        return translationProvider.translate(request.text(), request.targetLang());
     }
 
     // ── 내부 ────────────────────────────────────────────────

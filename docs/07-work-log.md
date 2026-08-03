@@ -214,6 +214,31 @@ adb shell cmd locale set-app-locales com.example.project_chat --locales ko-KR
 
 ## 4. 세션 로그
 
+### 2026-08-03(2) — 번역 무료 쿼터·패스 판정 (V7)
+**BM 구멍을 막은 작업.** `TRANSLATE_PASS`를 800루나에 팔면서 **혜택이 아무것도 없었다** —
+`GardenService.translate()`가 `userId`조차 받지 않아 쿼터도 패스도 판정하지 않았다.
+
+**한 일**
+- `POST /translate`에 **`scope`(COMMENT/CHAT/PROFILE)** 추가. 자리마다 무료 범위가 다르다 —
+  댓글 **하루 2회**, 채팅 **하루 2명**, 프로필 보기는 **항상 무료**.
+- `TRANSLATE_PASS` 또는 프라임 보유 시 **무제한**(쿼터를 아예 세지 않는다).
+- 응답에 `unlimited`/`remaining`을 실었다. **다 쓴 뒤에 막고 안내하면 늦어서** — 클라가 소진 전에 패스를 권할 수 있다.
+- 신규 `ErrorCode` 2종(`TRANSLATE_QUOTA_EXCEEDED`·`TRANSLATE_TARGET_REQUIRED`) + 한·일 문구.
+
+**설계 판단 — 채팅이 "2회"가 아니라 "2명"인 것**
+`daily_usage`는 `(user, date, kind)`에 `used_count` 하나뿐이라 **횟수는 세도 누구와 했는지는 기억하지 못한다.**
+한 대화를 번역해 놓고 이어지는 말마다 쿼터가 깎이면 기능 자체를 쓸 수 없으므로,
+상대를 행으로 남기는 **`daily_translate_targets`(V7)** 를 뒀다 — 행 수가 곧 사용한 사람 수다.
+한 번 연 상대와는 그날 계속 무료. 동시 요청으로 사람 수가 두 번 늘지 않도록 `INSERT IGNORE`.
+댓글은 순수 횟수라 기존 `daily_usage`를 그대로 쓴다.
+
+**검증**(로컬 서버 + curl): 댓글 1→0→409 · 채팅 상대A→A(무료 유지)→B→A(여전히 무료)→C에서 409 ·
+`targetId` 누락 400 · 쿼터 소진 상태에서 `TRANSLATE_PASS` 부여하자 즉시 `unlimited:true`.
+클라: `analyze` 무경고, `test` 10건 — ②단계의 정합성 테스트가 신규 코드 2종을 자동으로 요구했다(장치가 실제로 작동).
+
+**남은 것**: 공급자 연동(API 키 발급 후)과 **클라 번역 버튼**. 지금 버튼을 붙이면 패스스루라
+"번역했는데 원문 그대로"로 보이므로 **공급자와 같이** 붙이는 게 낫다.
+
 ### 2026-08-03 — 다국어 ②단계: 오류 문구 다국어화 (`048c1a5`~`ca37824`)
 일본어로 앱을 켜면 **버튼은 일본어인데 오류 스낵바만 한국어**였다. 서버가 사람이 읽는
 한국어 문장을 내려주고 클라가 그대로 뿌렸기 때문이다. [09](09-next-task-handoff.md)의 설계대로 5단계로 나눠 진행했다.

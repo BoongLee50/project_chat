@@ -1310,6 +1310,13 @@ class L10nKo extends L10n {
   String get errorGardenTargetBlocked => '지금은 이 사용자에게 댓글을 남길 수 없어요.';
 
   @override
+  String get errorTranslateQuotaExceeded =>
+      '오늘의 무료 번역을 모두 사용했어요. 자동 번역 패스를 이용해 보세요.';
+
+  @override
+  String get errorTranslateTargetRequired => '번역할 상대를 지정해 주세요.';
+
+  @override
   String get errorChatGateClosed => '달빛이 찾아오는 오후 5시부터 다음 날 오전 6시까지 대화할 수 있어요.';
 
   @override

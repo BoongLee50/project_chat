@@ -117,10 +117,11 @@ public class SchedulerService {
         int stats = schedulerMapper.deleteStatsBefore(today);
         int skips = schedulerMapper.deleteSkipsBefore(today);
         int usage = schedulerMapper.deleteDailyUsageBefore(today);
+        int translateTargets = schedulerMapper.deleteTranslateTargetsBefore(today);
         int posts = schedulerMapper.deleteStalePosts(today);
 
-        log.info("[배치] 지난 영업일 정리(<{}) 사진 {}건(파일 실패 {}) · 스코어 {} · 스킵 {} · 일일사용량 {} · 포스트 {}",
-                today, photos, failed, stats, skips, usage, posts);
+        log.info("[배치] 지난 영업일 정리(<{}) 사진 {}건(파일 실패 {}) · 스코어 {} · 스킵 {} · 일일사용량 {} · 번역상대 {} · 포스트 {}",
+                today, photos, failed, stats, skips, usage, translateTargets, posts);
     }
 
     /**

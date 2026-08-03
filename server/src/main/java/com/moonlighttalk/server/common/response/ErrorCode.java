@@ -38,6 +38,10 @@ public enum ErrorCode {
     GARDEN_GATE_CLOSED,
     GARDEN_TARGET_BLOCKED,
 
+    // ── translate ──────────────────────────────────────
+    TRANSLATE_QUOTA_EXCEEDED,
+    TRANSLATE_TARGET_REQUIRED,
+
     // ── chat ───────────────────────────────────────────
     CHAT_GATE_CLOSED,
     CHAT_SELF,

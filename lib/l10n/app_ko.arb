@@ -812,6 +812,8 @@
   "errorPostNotPublishedToday": "오늘 등록된 포스트가 없어요.",
   "errorGardenGateClosed": "달빛가든은 아직 문을 열지 않았어요. 오후 5시부터 다음 날 오전 6시까지 이용할 수 있어요.",
   "errorGardenTargetBlocked": "지금은 이 사용자에게 댓글을 남길 수 없어요.",
+  "errorTranslateQuotaExceeded": "오늘의 무료 번역을 모두 사용했어요. 자동 번역 패스를 이용해 보세요.",
+  "errorTranslateTargetRequired": "번역할 상대를 지정해 주세요.",
   "errorChatGateClosed": "달빛이 찾아오는 오후 5시부터 다음 날 오전 6시까지 대화할 수 있어요.",
   "errorChatSelf": "자신에게는 대화를 신청할 수 없어요.",
   "errorChatTargetBlocked": "지금은 이 사용자에게 대화를 신청할 수 없어요.",
