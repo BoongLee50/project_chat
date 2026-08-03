@@ -75,15 +75,15 @@ public class ChatService {
     public void createRequest(String userId, String targetUserId, String message) {
         requireGateOpen();
         if (userId.equals(targetUserId)) {
-            throw new ApiException(ErrorCode.VALIDATION_FAILED, HttpStatus.BAD_REQUEST,
+            throw new ApiException(ErrorCode.CHAT_SELF, HttpStatus.BAD_REQUEST,
                     "자신에게는 대화를 신청할 수 없어요.");
         }
         if (gardenMapper.existsBlockOrReport(userId, targetUserId)) {
-            throw new ApiException(ErrorCode.TARGET_BLOCKED_OR_REPORTED, HttpStatus.CONFLICT,
+            throw new ApiException(ErrorCode.CHAT_TARGET_BLOCKED, HttpStatus.CONFLICT,
                     "현재 이 사용자에게 대화 신청을 보낼 수 없어요.");
         }
         if (chatMapper.existsPendingRequest(userId, targetUserId)) {
-            throw new ApiException(ErrorCode.VALIDATION_FAILED, HttpStatus.CONFLICT,
+            throw new ApiException(ErrorCode.CHAT_REQUEST_PENDING, HttpStatus.CONFLICT,
                     "이미 대화를 신청했어요. 상대의 응답을 기다려 주세요.");
         }
 
@@ -135,11 +135,11 @@ public class ChatService {
         requireGateOpen();
         ChatRequestEntity request = requireRequest(requestId);
         if (!request.getToUser().equals(userId)) {
-            throw new ApiException(ErrorCode.VALIDATION_FAILED, HttpStatus.FORBIDDEN,
+            throw new ApiException(ErrorCode.CHAT_ACCEPT_NOT_RECEIVER, HttpStatus.FORBIDDEN,
                     "내가 받은 신청만 수락할 수 있어요.");
         }
         if (!"PENDING".equals(request.getStatus())) {
-            throw new ApiException(ErrorCode.VALIDATION_FAILED, HttpStatus.CONFLICT,
+            throw new ApiException(ErrorCode.CHAT_REQUEST_ALREADY_HANDLED, HttpStatus.CONFLICT,
                     "이미 처리된 신청이에요.");
         }
 
@@ -168,7 +168,7 @@ public class ChatService {
     public void rejectRequest(String userId, String requestId) {
         ChatRequestEntity request = requireRequest(requestId);
         if (!request.getToUser().equals(userId)) {
-            throw new ApiException(ErrorCode.VALIDATION_FAILED, HttpStatus.FORBIDDEN,
+            throw new ApiException(ErrorCode.CHAT_REJECT_NOT_RECEIVER, HttpStatus.FORBIDDEN,
                     "내가 받은 신청만 거절할 수 있어요.");
         }
         chatMapper.updateRequestStatus(requestId, "REJECTED");
@@ -279,7 +279,7 @@ public class ChatService {
      */
     private void requireGateOpen() {
         if (!gateService.isOpenNow()) {
-            throw new ApiException(ErrorCode.VALIDATION_FAILED, HttpStatus.CONFLICT,
+            throw new ApiException(ErrorCode.CHAT_GATE_CLOSED, HttpStatus.CONFLICT,
                     "달빛이 찾아오는 오후 5시부터 다음날 오전 6시까지 대화할 수 있어요.");
         }
     }
@@ -294,14 +294,15 @@ public class ChatService {
     private ChatRoom requireMemberRoom(String userId, String roomId) {
         ChatRoom room = chatMapper.selectRoom(roomId);
         if (room == null) {
-            throw new ApiException(ErrorCode.NOT_FOUND, HttpStatus.NOT_FOUND, "대화방을 찾을 수 없어요.");
+            throw new ApiException(ErrorCode.CHAT_ROOM_NOT_FOUND, HttpStatus.NOT_FOUND,
+                    "대화방을 찾을 수 없어요.");
         }
         if (!room.hasMember(userId)) {
-            throw new ApiException(ErrorCode.VALIDATION_FAILED, HttpStatus.FORBIDDEN,
+            throw new ApiException(ErrorCode.CHAT_NOT_MEMBER, HttpStatus.FORBIDDEN,
                     "참여 중인 대화방이 아니에요.");
         }
         if ("ENDED".equals(room.getStatus())) {
-            throw new ApiException(ErrorCode.VALIDATION_FAILED, HttpStatus.CONFLICT, "종료된 대화방이에요.");
+            throw new ApiException(ErrorCode.CHAT_ROOM_CLOSED, HttpStatus.CONFLICT, "종료된 대화방이에요.");
         }
         return room;
     }
@@ -309,7 +310,8 @@ public class ChatService {
     private ChatRequestEntity requireRequest(String requestId) {
         ChatRequestEntity request = chatMapper.selectRequest(requestId);
         if (request == null) {
-            throw new ApiException(ErrorCode.NOT_FOUND, HttpStatus.NOT_FOUND, "신청을 찾을 수 없어요.");
+            throw new ApiException(ErrorCode.CHAT_REQUEST_NOT_FOUND, HttpStatus.NOT_FOUND,
+                    "신청을 찾을 수 없어요.");
         }
         return request;
     }
@@ -317,7 +319,7 @@ public class ChatService {
     private User getUserOrThrow(String userId) {
         User user = userMapper.findById(userId);
         if (user == null) {
-            throw new ApiException(ErrorCode.NOT_FOUND, HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다.");
+            throw new ApiException(ErrorCode.USER_NOT_FOUND, HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다.");
         }
         return user;
     }

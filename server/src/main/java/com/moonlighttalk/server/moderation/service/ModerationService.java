@@ -103,11 +103,11 @@ public class ModerationService {
 
     private void requireOther(String userId, String targetUserId) {
         if (userId.equals(targetUserId)) {
-            throw new ApiException(ErrorCode.VALIDATION_FAILED, HttpStatus.BAD_REQUEST,
+            throw new ApiException(ErrorCode.MODERATION_SELF, HttpStatus.BAD_REQUEST,
                     "자기 자신은 대상이 될 수 없어요.");
         }
         if (userMapper.findById(targetUserId) == null) {
-            throw new ApiException(ErrorCode.NOT_FOUND, HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다.");
+            throw new ApiException(ErrorCode.USER_NOT_FOUND, HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다.");
         }
     }
 

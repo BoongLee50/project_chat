@@ -93,24 +93,26 @@ public class FriendService {
     @Transactional
     public String request(String userId, String targetUserId) {
         if (userId.equals(targetUserId)) {
-            throw new ApiException(ErrorCode.VALIDATION_FAILED, HttpStatus.BAD_REQUEST,
+            throw new ApiException(ErrorCode.FRIEND_SELF, HttpStatus.BAD_REQUEST,
                     "자신에게는 친구 요청을 보낼 수 없어요.");
         }
         if (userMapper.findById(targetUserId) == null) {
-            throw new ApiException(ErrorCode.NOT_FOUND, HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다.");
+            throw new ApiException(ErrorCode.USER_NOT_FOUND, HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다.");
         }
         if (gardenMapper.existsBlockOrReport(userId, targetUserId)) {
-            throw new ApiException(ErrorCode.TARGET_BLOCKED_OR_REPORTED, HttpStatus.CONFLICT,
+            throw new ApiException(ErrorCode.FRIEND_TARGET_BLOCKED, HttpStatus.CONFLICT,
                     "현재 이 사용자에게 친구 요청을 보낼 수 없어요.");
         }
 
         String pairKey = pairKey(userId, targetUserId);
         Friendship existing = friendMapper.selectByPairKey(pairKey);
         if (existing != null) {
-            throw new ApiException(ErrorCode.VALIDATION_FAILED, HttpStatus.CONFLICT,
-                    "ACCEPTED".equals(existing.getStatus())
-                            ? "이미 친구예요."
-                            : "이미 친구 요청이 오갔어요. 응답을 기다려 주세요.");
+            // 이미 친구인 경우와 응답 대기 중인 경우는 사용자에게 다른 이야기다 — 코드도 나눈다.
+            throw "ACCEPTED".equals(existing.getStatus())
+                    ? new ApiException(ErrorCode.FRIEND_ALREADY, HttpStatus.CONFLICT,
+                            "이미 친구예요.")
+                    : new ApiException(ErrorCode.FRIEND_REQUEST_PENDING, HttpStatus.CONFLICT,
+                            "이미 친구 요청이 오갔어요. 응답을 기다려 주세요.");
         }
         requireFriendSlot(userId);
 
@@ -125,7 +127,7 @@ public class FriendService {
             friendMapper.insert(friendship);
         } catch (DataIntegrityViolationException e) {
             // 같은 순간 상대도 요청을 보낸 경우(pair_key 유니크 위반)
-            throw new ApiException(ErrorCode.VALIDATION_FAILED, HttpStatus.CONFLICT,
+            throw new ApiException(ErrorCode.FRIEND_REQUEST_PENDING, HttpStatus.CONFLICT,
                     "이미 친구 요청이 오갔어요. 응답을 기다려 주세요.");
         }
 
@@ -142,11 +144,11 @@ public class FriendService {
     public AcceptFriendResponse accept(String userId, String friendshipId) {
         Friendship friendship = requireFriendship(friendshipId);
         if (!friendship.getAddresseeId().equals(userId)) {
-            throw new ApiException(ErrorCode.VALIDATION_FAILED, HttpStatus.FORBIDDEN,
+            throw new ApiException(ErrorCode.FRIEND_ACCEPT_NOT_RECEIVER, HttpStatus.FORBIDDEN,
                     "내가 받은 요청만 수락할 수 있어요.");
         }
         if ("ACCEPTED".equals(friendship.getStatus())) {
-            throw new ApiException(ErrorCode.VALIDATION_FAILED, HttpStatus.CONFLICT, "이미 친구예요.");
+            throw new ApiException(ErrorCode.FRIEND_ALREADY, HttpStatus.CONFLICT, "이미 친구예요.");
         }
         // 슬롯은 양쪽 모두 확인한다. 요청 시점엔 여유가 있었어도 그 사이에 찼을 수 있다.
         requireFriendSlot(userId);
@@ -167,11 +169,11 @@ public class FriendService {
     public void reject(String userId, String friendshipId) {
         Friendship friendship = requireFriendship(friendshipId);
         if (!friendship.getAddresseeId().equals(userId)) {
-            throw new ApiException(ErrorCode.VALIDATION_FAILED, HttpStatus.FORBIDDEN,
+            throw new ApiException(ErrorCode.FRIEND_REJECT_NOT_RECEIVER, HttpStatus.FORBIDDEN,
                     "내가 받은 요청만 거절할 수 있어요.");
         }
         if ("ACCEPTED".equals(friendship.getStatus())) {
-            throw new ApiException(ErrorCode.VALIDATION_FAILED, HttpStatus.CONFLICT,
+            throw new ApiException(ErrorCode.FRIEND_REQUEST_ALREADY_ACCEPTED, HttpStatus.CONFLICT,
                     "이미 친구가 된 요청이에요.");
         }
         friendMapper.delete(friendshipId);
@@ -185,11 +187,11 @@ public class FriendService {
     public void cancel(String userId, String friendshipId) {
         Friendship friendship = requireFriendship(friendshipId);
         if (!friendship.getRequesterId().equals(userId)) {
-            throw new ApiException(ErrorCode.VALIDATION_FAILED, HttpStatus.FORBIDDEN,
+            throw new ApiException(ErrorCode.FRIEND_CANCEL_NOT_SENDER, HttpStatus.FORBIDDEN,
                     "내가 보낸 요청만 취소할 수 있어요.");
         }
         if ("ACCEPTED".equals(friendship.getStatus())) {
-            throw new ApiException(ErrorCode.VALIDATION_FAILED, HttpStatus.CONFLICT,
+            throw new ApiException(ErrorCode.FRIEND_REQUEST_ALREADY_ACCEPTED, HttpStatus.CONFLICT,
                     "이미 친구가 된 요청이에요.");
         }
         friendMapper.delete(friendshipId);
@@ -224,18 +226,18 @@ public class FriendService {
     public FriendPostDto todayPost(String userId, String friendshipId) {
         Friendship friendship = requireFriendship(friendshipId);
         if (!friendship.hasMember(userId)) {
-            throw new ApiException(ErrorCode.VALIDATION_FAILED, HttpStatus.FORBIDDEN,
+            throw new ApiException(ErrorCode.FRIEND_NOT_MINE, HttpStatus.FORBIDDEN,
                     "내 친구 관계가 아니에요.");
         }
         if (!"ACCEPTED".equals(friendship.getStatus())) {
-            throw new ApiException(ErrorCode.VALIDATION_FAILED, HttpStatus.CONFLICT,
+            throw new ApiException(ErrorCode.FRIEND_NOT_YET, HttpStatus.CONFLICT,
                     "아직 친구가 아니에요.");
         }
 
         String friendId = friendship.otherOf(userId);
         FriendPost post = friendMapper.selectTodayPost(friendId, gateService.currentSessionDate());
         if (post == null) {
-            throw new ApiException(ErrorCode.NOT_FOUND, HttpStatus.NOT_FOUND,
+            throw new ApiException(ErrorCode.FRIEND_NO_TODAY_POST, HttpStatus.NOT_FOUND,
                     "친구가 아직 오늘의 포스트를 공유하지 않았어요.");
         }
 
@@ -262,7 +264,7 @@ public class FriendService {
     public void remove(String userId, String friendshipId) {
         Friendship friendship = requireFriendship(friendshipId);
         if (!friendship.hasMember(userId)) {
-            throw new ApiException(ErrorCode.VALIDATION_FAILED, HttpStatus.FORBIDDEN,
+            throw new ApiException(ErrorCode.FRIEND_NOT_MINE, HttpStatus.FORBIDDEN,
                     "내 친구 관계가 아니에요.");
         }
         friendMapper.delete(friendshipId);
@@ -303,15 +305,18 @@ public class FriendService {
         User user = getUserOrThrow(userId);
         int limit = Boolean.TRUE.equals(user.getPremium()) ? maxFriendsPremium : maxFriends;
         if (friendMapper.countFriends(userId) >= limit) {
-            throw new ApiException(ErrorCode.VALIDATION_FAILED, HttpStatus.CONFLICT,
-                    "친구는 최대 " + limit + "명까지예요.");
+            // 숫자는 field에 실어 보낸다 — 클라가 ARB placeholder로 조립해야
+            // 일본어("友だちは最大N人までです。")처럼 어순이 달라도 문장이 성립한다.
+            throw new ApiException(ErrorCode.FRIEND_LIMIT_EXCEEDED, HttpStatus.CONFLICT,
+                    "친구는 최대 " + limit + "명까지예요.", String.valueOf(limit));
         }
     }
 
     private Friendship requireFriendship(String id) {
         Friendship friendship = friendMapper.selectById(id);
         if (friendship == null) {
-            throw new ApiException(ErrorCode.NOT_FOUND, HttpStatus.NOT_FOUND, "친구 요청을 찾을 수 없어요.");
+            throw new ApiException(ErrorCode.FRIEND_REQUEST_NOT_FOUND, HttpStatus.NOT_FOUND,
+                    "친구 요청을 찾을 수 없어요.");
         }
         return friendship;
     }
@@ -319,7 +324,7 @@ public class FriendService {
     private User getUserOrThrow(String userId) {
         User user = userMapper.findById(userId);
         if (user == null) {
-            throw new ApiException(ErrorCode.NOT_FOUND, HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다.");
+            throw new ApiException(ErrorCode.USER_NOT_FOUND, HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다.");
         }
         return user;
     }

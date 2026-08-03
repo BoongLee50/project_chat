@@ -63,7 +63,7 @@ public class PurchaseService {
                                      String purchaseToken) {
         ReceiptVerifier verifier = resolveVerifier(platform);
         if (!verifier.verify(productId, purchaseToken)) {
-            throw new ApiException(ErrorCode.VALIDATION_FAILED, HttpStatus.BAD_REQUEST,
+            throw new ApiException(ErrorCode.STORE_RECEIPT_INVALID, HttpStatus.BAD_REQUEST,
                     "결제 정보를 확인할 수 없어요.");
         }
 
@@ -101,7 +101,7 @@ public class PurchaseService {
             return;
         }
 
-        throw new ApiException(ErrorCode.NOT_FOUND, HttpStatus.NOT_FOUND,
+        throw new ApiException(ErrorCode.STORE_PRODUCT_NOT_FOUND, HttpStatus.NOT_FOUND,
                 "존재하지 않는 상품이에요.");
     }
 
@@ -125,7 +125,7 @@ public class PurchaseService {
             storeMapper.insertSubscription(subscription);
         } catch (DataIntegrityViolationException e) {
             // active_user_id 유니크 위반 = 이미 구독 중
-            throw new ApiException(ErrorCode.VALIDATION_FAILED, HttpStatus.CONFLICT,
+            throw new ApiException(ErrorCode.STORE_ALREADY_SUBSCRIBED, HttpStatus.CONFLICT,
                     "이미 프라임 구독 중이에요.");
         }
 
@@ -146,7 +146,7 @@ public class PurchaseService {
             verifier = verifiers.get("MOCK");
         }
         if (verifier == null) {
-            throw new ApiException(ErrorCode.PROVIDER_DISABLED, HttpStatus.SERVICE_UNAVAILABLE,
+            throw new ApiException(ErrorCode.STORE_PURCHASE_FAILED, HttpStatus.SERVICE_UNAVAILABLE,
                     "현재 결제를 처리할 수 없어요.");
         }
         return verifier;

@@ -31,7 +31,7 @@ public class NicknameValidator {
 
     public void validateFormat(String nickname) {
         if (nickname == null || !ALLOWED.matcher(nickname).matches()) {
-            throw new ApiException(ErrorCode.NICKNAME_INVALID, HttpStatus.BAD_REQUEST,
+            throw new ApiException(ErrorCode.NICKNAME_FORMAT, HttpStatus.BAD_REQUEST,
                     "닉네임은 특수문자·이모지 없이 10자 이내여야 합니다.", "nickname");
         }
         if (forbiddenNicknames.stream().anyMatch(f -> f.equalsIgnoreCase(nickname))) {

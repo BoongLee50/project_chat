@@ -108,7 +108,8 @@ public class StoreService {
     public WalletDto purchaseWithLuna(String userId, String productId) {
         StoreProperties.LunaProduct product = properties.getLunaProducts().get(productId);
         if (product == null) {
-            throw new ApiException(ErrorCode.NOT_FOUND, HttpStatus.NOT_FOUND, "존재하지 않는 상품이에요.");
+            throw new ApiException(ErrorCode.STORE_PRODUCT_NOT_FOUND, HttpStatus.NOT_FOUND,
+                    "존재하지 않는 상품이에요.");
         }
 
         lunaService.deduct(userId, product.getPrice(), product.getReason(), productId,
@@ -119,8 +120,8 @@ public class StoreService {
             case "ENTITLEMENT" -> storeMapper.upsertEntitlement(
                     userId, product.getKind(), "LUNA_PURCHASE",
                     LocalDateTime.now(), product.getDurationDays());
-            default -> throw new ApiException(ErrorCode.INTERNAL_ERROR, HttpStatus.INTERNAL_SERVER_ERROR,
-                    "상품 구성이 잘못됐어요.");
+            default -> throw new ApiException(ErrorCode.STORE_PRODUCT_INVALID,
+                    HttpStatus.INTERNAL_SERVER_ERROR, "상품 구성이 잘못됐어요.");
         }
         return wallet(userId);
     }
@@ -132,11 +133,11 @@ public class StoreService {
         boolean alreadyOn = storeMapper.selectActiveBoosts(userId, now).stream()
                 .anyMatch(b -> b.getKind().equals(kind));
         if (alreadyOn) {
-            throw new ApiException(ErrorCode.VALIDATION_FAILED, HttpStatus.CONFLICT,
+            throw new ApiException(ErrorCode.STORE_BOOST_ALREADY_ACTIVE, HttpStatus.CONFLICT,
                     "이미 사용 중인 부스트예요.");
         }
         if (storeMapper.consumeBoostStock(userId, kind) == 0) {
-            throw new ApiException(ErrorCode.VALIDATION_FAILED, HttpStatus.CONFLICT,
+            throw new ApiException(ErrorCode.STORE_BOOST_NONE, HttpStatus.CONFLICT,
                     "보유한 부스트가 없어요.");
         }
 
@@ -157,10 +158,11 @@ public class StoreService {
     public WalletDto cancelSubscription(String userId) {
         Subscription subscription = entitlementService.currentSubscription(userId);
         if (subscription == null) {
-            throw new ApiException(ErrorCode.NOT_FOUND, HttpStatus.NOT_FOUND, "구독 중이 아니에요.");
+            throw new ApiException(ErrorCode.STORE_NOT_SUBSCRIBED, HttpStatus.NOT_FOUND,
+                    "구독 중이 아니에요.");
         }
         if (!Boolean.TRUE.equals(subscription.getAutoRenew())) {
-            throw new ApiException(ErrorCode.VALIDATION_FAILED, HttpStatus.CONFLICT,
+            throw new ApiException(ErrorCode.STORE_ALREADY_CANCELED, HttpStatus.CONFLICT,
                     "이미 자동갱신을 해지했어요.");
         }
         storeMapper.cancelAutoRenew(subscription.getId());

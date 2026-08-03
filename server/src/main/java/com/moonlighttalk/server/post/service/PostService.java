@@ -111,13 +111,13 @@ public class PostService {
         boolean unlimited = isUnlimited(userId);
 
         if (!unlimited && isUploadWindowExpired(post)) {
-            throw new ApiException(ErrorCode.VALIDATION_FAILED, HttpStatus.CONFLICT,
+            throw new ApiException(ErrorCode.POST_UPLOAD_WINDOW_CLOSED, HttpStatus.CONFLICT,
                     "포스트 등록 가능 시간이 종료되었어요.");
         }
 
         int max = unlimited ? MAX_PHOTOS_PASS : MAX_PHOTOS_FREE;
         if (postMapper.countPhotos(post.getId()) >= max) {
-            throw new ApiException(ErrorCode.VALIDATION_FAILED, HttpStatus.CONFLICT,
+            throw new ApiException(ErrorCode.POST_PHOTO_LIMIT, HttpStatus.CONFLICT,
                     "등록 가능한 포스트 사진 수를 초과했습니다. 기존 사진을 먼저 삭제 후 등록해 주세요.");
         }
 
@@ -136,19 +136,25 @@ public class PostService {
     public void deletePhoto(String userId, String photoId) {
         PostPhoto photo = postMapper.selectPhotoById(photoId);
         if (photo == null) {
-            throw new ApiException(ErrorCode.NOT_FOUND, HttpStatus.NOT_FOUND, "사진을 찾을 수 없습니다.");
+            throw new ApiException(ErrorCode.POST_PHOTO_NOT_FOUND, HttpStatus.NOT_FOUND,
+                    "사진을 찾을 수 없습니다.");
         }
         if (!photo.getUserId().equals(userId)) {
-            throw new ApiException(ErrorCode.VALIDATION_FAILED, HttpStatus.FORBIDDEN, "내 사진만 삭제할 수 있습니다.");
+            throw new ApiException(ErrorCode.POST_PHOTO_NOT_MINE, HttpStatus.FORBIDDEN,
+                    "내 사진만 삭제할 수 있습니다.");
         }
 
         Post post = getOrCreateTodayPost(userId);
         boolean unlimited = isUnlimited(userId);
         int limit = unlimited ? REPLACE_LIMIT_PASS : REPLACE_LIMIT_FREE;
         if (post.getReplaceCount() >= limit) {
-            throw new ApiException(ErrorCode.VALIDATION_FAILED, HttpStatus.CONFLICT, unlimited
-                    ? "오늘의 사진 교체 횟수를 모두 사용하였습니다. 내일 다시 이용해 주세요."
-                    : "무료로 하루에 2장까지 교체할 수 있습니다. 포스트 앨범 패스를 이용하면 시간 제한 없이 하루 최대 20장까지 자유롭게 사진을 교체할 수 있습니다.");
+            // 패스 보유자는 "오늘 한도 소진", 무료 사용자는 "패스를 사면 늘어난다"는
+            // 서로 다른 안내다 — 코드도 나눠야 클라가 각각 번역할 수 있다.
+            throw unlimited
+                    ? new ApiException(ErrorCode.POST_REPLACE_LIMIT, HttpStatus.CONFLICT,
+                            "오늘의 사진 교체 횟수를 모두 사용하였습니다. 내일 다시 이용해 주세요.")
+                    : new ApiException(ErrorCode.POST_REPLACE_FREE_LIMIT, HttpStatus.CONFLICT,
+                            "무료로 하루에 2장까지 교체할 수 있습니다. 포스트 앨범 패스를 이용하면 시간 제한 없이 하루 최대 20장까지 자유롭게 사진을 교체할 수 있습니다.");
         }
 
         postMapper.deletePhoto(photoId);
@@ -170,11 +176,11 @@ public class PostService {
         Post post = getOrCreateTodayPost(userId);
 
         if (postMapper.countPhotos(post.getId()) == 0) {
-            throw new ApiException(ErrorCode.VALIDATION_FAILED, HttpStatus.CONFLICT,
+            throw new ApiException(ErrorCode.POST_PHOTO_REQUIRED, HttpStatus.CONFLICT,
                     "새로운 포스트 사진을 등록해 주세요.");
         }
         if (post.getOneLiner() == null || post.getOneLiner().isBlank()) {
-            throw new ApiException(ErrorCode.VALIDATION_FAILED, HttpStatus.CONFLICT,
+            throw new ApiException(ErrorCode.POST_ONELINER_REQUIRED, HttpStatus.CONFLICT,
                     "하루 한 마디를 입력해 주세요.");
         }
 
@@ -231,7 +237,7 @@ public class PostService {
 
     private void requireGateOpen() {
         if (!gateService.isOpenNow()) {
-            throw new ApiException(ErrorCode.VALIDATION_FAILED, HttpStatus.CONFLICT,
+            throw new ApiException(ErrorCode.POST_GATE_CLOSED, HttpStatus.CONFLICT,
                     "지금은 포스트를 등록할 수 있는 시간이 아니에요.");
         }
     }

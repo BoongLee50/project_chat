@@ -44,7 +44,7 @@ public class ProfileService {
     public void createProfile(String userId, CreateProfileRequest request) {
         int age = Year.now().getValue() - request.birthYear();
         if (age < MIN_AGE) {
-            throw new ApiException(ErrorCode.VALIDATION_FAILED, HttpStatus.BAD_REQUEST,
+            throw new ApiException(ErrorCode.AGE_RESTRICTED, HttpStatus.BAD_REQUEST,
                     "만 18세 이상만 가입할 수 있습니다.", "birthYear");
         }
 
@@ -78,7 +78,7 @@ public class ProfileService {
     public PublicProfileResponse getPublicProfile(String targetUserId) {
         User user = userMapper.findById(targetUserId);
         if (user == null) {
-            throw new ApiException(ErrorCode.NOT_FOUND, HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다.");
+            throw new ApiException(ErrorCode.USER_NOT_FOUND, HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다.");
         }
         UserProfile profile = profileMapper.selectByUserId(targetUserId);
         List<String> interests = profileMapper.selectInterests(targetUserId);
@@ -150,7 +150,7 @@ public class ProfileService {
     private User getUserOrThrow(String userId) {
         User user = userMapper.findById(userId);
         if (user == null) {
-            throw new ApiException(ErrorCode.NOT_FOUND, HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다.");
+            throw new ApiException(ErrorCode.USER_NOT_FOUND, HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다.");
         }
         return user;
     }

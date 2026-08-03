@@ -131,7 +131,7 @@ public class GardenService {
     public void addComment(String userId, String targetUserId, String body) {
         requireGateOpen();
         if (gardenMapper.existsBlockOrReport(userId, targetUserId)) {
-            throw new ApiException(ErrorCode.TARGET_BLOCKED_OR_REPORTED, HttpStatus.CONFLICT,
+            throw new ApiException(ErrorCode.GARDEN_TARGET_BLOCKED, HttpStatus.CONFLICT,
                     "현재 이 사용자에게 댓글을 남길 수 없어요.");
         }
 
@@ -202,14 +202,15 @@ public class GardenService {
     private String requireTodayPostId(String targetUserId) {
         String postId = gardenMapper.selectTodayPostId(targetUserId, gateService.currentSessionDate());
         if (postId == null) {
-            throw new ApiException(ErrorCode.NOT_FOUND, HttpStatus.NOT_FOUND, "오늘 등록된 포스트가 없어요.");
+            throw new ApiException(ErrorCode.POST_NOT_PUBLISHED_TODAY, HttpStatus.NOT_FOUND,
+                    "오늘 등록된 포스트가 없어요.");
         }
         return postId;
     }
 
     private void requireGateOpen() {
         if (!gateService.isOpenNow()) {
-            throw new ApiException(ErrorCode.VALIDATION_FAILED, HttpStatus.CONFLICT,
+            throw new ApiException(ErrorCode.GARDEN_GATE_CLOSED, HttpStatus.CONFLICT,
                     "달빛가든은 아직 문을 열지 않았어요. 달빛이 찾아오는 오후 5시부터 다음날 오전 6시까지 이용할 수 있습니다.");
         }
     }
