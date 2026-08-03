@@ -1254,6 +1254,193 @@ class L10nKo extends L10n {
   String get cityJpSendai => '센다이';
 
   @override
+  String get errorUserNotFound => '사용자를 찾을 수 없어요.';
+
+  @override
+  String get errorProviderDisabled => '지금은 이 방법으로 로그인할 수 없어요.';
+
+  @override
+  String get errorNicknameInvalid => '사용할 수 없는 닉네임이에요.';
+
+  @override
+  String get errorNicknameDuplicate => '이미 사용 중인 닉네임이에요.';
+
+  @override
+  String get errorNicknameFormat => '닉네임은 특수문자·이모지 없이 10자 이내여야 해요.';
+
+  @override
+  String get errorAgeRestricted => '만 18세 이상만 가입할 수 있어요.';
+
+  @override
+  String get errorPostGateClosed => '지금은 포스트를 등록할 수 있는 시간이 아니에요.';
+
+  @override
+  String get errorPostUploadWindowClosed => '포스트 등록 가능 시간이 끝났어요.';
+
+  @override
+  String get errorPostOneLinerRequired => '하루 한 마디를 입력해 주세요.';
+
+  @override
+  String get errorPostPhotoRequired => '새로운 포스트 사진을 등록해 주세요.';
+
+  @override
+  String get errorPostPhotoNotFound => '사진을 찾을 수 없어요.';
+
+  @override
+  String get errorPostPhotoNotMine => '내 사진만 삭제할 수 있어요.';
+
+  @override
+  String get errorPostPhotoLimit => '등록 가능한 사진 수를 넘었어요. 기존 사진을 먼저 삭제해 주세요.';
+
+  @override
+  String get errorPostReplaceLimit => '오늘의 사진 교체 횟수를 모두 썼어요. 내일 다시 이용해 주세요.';
+
+  @override
+  String get errorPostReplaceFreeLimit =>
+      '무료로는 하루 2장까지 교체할 수 있어요. 앨범 패스가 있으면 시간 제한 없이 하루 20장까지 바꿀 수 있어요.';
+
+  @override
+  String get errorPostNotPublishedToday => '오늘 등록된 포스트가 없어요.';
+
+  @override
+  String get errorGardenGateClosed =>
+      '달빛가든은 아직 문을 열지 않았어요. 오후 5시부터 다음 날 오전 6시까지 이용할 수 있어요.';
+
+  @override
+  String get errorGardenTargetBlocked => '지금은 이 사용자에게 댓글을 남길 수 없어요.';
+
+  @override
+  String get errorChatGateClosed => '달빛이 찾아오는 오후 5시부터 다음 날 오전 6시까지 대화할 수 있어요.';
+
+  @override
+  String get errorChatSelf => '자신에게는 대화를 신청할 수 없어요.';
+
+  @override
+  String get errorChatTargetBlocked => '지금은 이 사용자에게 대화를 신청할 수 없어요.';
+
+  @override
+  String get errorChatRequestPending => '이미 대화를 신청했어요. 상대의 응답을 기다려 주세요.';
+
+  @override
+  String get errorChatRequestNotFound => '신청을 찾을 수 없어요.';
+
+  @override
+  String get errorChatRequestAlreadyHandled => '이미 처리된 신청이에요.';
+
+  @override
+  String get errorChatAcceptNotReceiver => '내가 받은 신청만 수락할 수 있어요.';
+
+  @override
+  String get errorChatRejectNotReceiver => '내가 받은 신청만 거절할 수 있어요.';
+
+  @override
+  String get errorRoomAlreadyActive => '이미 진행 중인 대화가 있어요.';
+
+  @override
+  String get errorChatRoomNotFound => '대화방을 찾을 수 없어요.';
+
+  @override
+  String get errorChatRoomClosed => '종료된 대화방이에요.';
+
+  @override
+  String get errorChatNotMember => '참여 중인 대화방이 아니에요.';
+
+  @override
+  String get errorFriendSelf => '자신에게는 친구 요청을 보낼 수 없어요.';
+
+  @override
+  String get errorFriendTargetBlocked => '지금은 이 사용자에게 친구 요청을 보낼 수 없어요.';
+
+  @override
+  String get errorFriendAlready => '이미 친구예요.';
+
+  @override
+  String get errorFriendNotYet => '아직 친구가 아니에요.';
+
+  @override
+  String get errorFriendNotMine => '내 친구 관계가 아니에요.';
+
+  @override
+  String get errorFriendRequestPending => '이미 친구 요청이 오갔어요. 응답을 기다려 주세요.';
+
+  @override
+  String get errorFriendRequestAlreadyAccepted => '이미 친구가 된 요청이에요.';
+
+  @override
+  String get errorFriendRequestNotFound => '친구 요청을 찾을 수 없어요.';
+
+  @override
+  String get errorFriendAcceptNotReceiver => '내가 받은 요청만 수락할 수 있어요.';
+
+  @override
+  String get errorFriendRejectNotReceiver => '내가 받은 요청만 거절할 수 있어요.';
+
+  @override
+  String get errorFriendCancelNotSender => '내가 보낸 요청만 취소할 수 있어요.';
+
+  @override
+  String errorFriendLimitExceeded(int limit) {
+    return '친구는 최대 $limit명까지예요.';
+  }
+
+  @override
+  String get errorFriendNoTodayPost => '친구가 아직 오늘의 포스트를 공유하지 않았어요.';
+
+  @override
+  String get errorLunaInsufficient => '루나가 부족해요.';
+
+  @override
+  String get errorStoreProductNotFound => '존재하지 않는 상품이에요.';
+
+  @override
+  String get errorStoreProductInvalid => '상품 구성이 잘못됐어요.';
+
+  @override
+  String get errorStoreBoostNone => '보유한 부스트가 없어요.';
+
+  @override
+  String get errorStoreBoostAlreadyActive => '이미 사용 중인 부스트예요.';
+
+  @override
+  String get errorStoreAlreadySubscribed => '이미 프라임을 구독 중이에요.';
+
+  @override
+  String get errorStoreNotSubscribed => '구독 중이 아니에요.';
+
+  @override
+  String get errorStoreAlreadyCanceled => '이미 자동 갱신을 해지했어요.';
+
+  @override
+  String get errorStoreReceiptInvalid => '결제 정보를 확인할 수 없어요.';
+
+  @override
+  String get errorStorePurchaseFailed => '지금은 결제를 처리할 수 없어요.';
+
+  @override
+  String get errorModerationSelf => '자기 자신은 대상이 될 수 없어요.';
+
+  @override
+  String get errorTargetBlockedOrReported => '지금은 이 사용자에게 요청할 수 없어요.';
+
+  @override
+  String get errorNetworkTimeout => '서버 응답이 늦어요. 잠시 후 다시 시도해 주세요.';
+
+  @override
+  String get errorNetworkUnreachable => '서버에 연결할 수 없어요. 네트워크를 확인해 주세요.';
+
+  @override
+  String get errorNetworkUnknown => '통신 중 문제가 발생했어요.';
+
+  @override
+  String get errorSocketDisconnected => '연결이 끊겼어요. 잠시 후 다시 보내주세요.';
+
+  @override
+  String get errorSocketSendTimeout => '메시지를 보내지 못했어요. 다시 시도해 주세요.';
+
+  @override
+  String get errorUnknown => '요청을 처리하지 못했어요.';
+
+  @override
   String regionLabelFormat(String country, String city) {
     return '$country, $city';
   }

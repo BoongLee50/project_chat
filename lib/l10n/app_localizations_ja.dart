@@ -1251,6 +1251,192 @@ class L10nJa extends L10n {
   String get cityJpSendai => '仙台';
 
   @override
+  String get errorUserNotFound => 'ユーザーが見つかりません。';
+
+  @override
+  String get errorProviderDisabled => '現在この方法ではログインできません。';
+
+  @override
+  String get errorNicknameInvalid => '使用できないニックネームです。';
+
+  @override
+  String get errorNicknameDuplicate => 'すでに使われているニックネームです。';
+
+  @override
+  String get errorNicknameFormat => 'ニックネームは記号・絵文字なしの10文字以内で入力してください。';
+
+  @override
+  String get errorAgeRestricted => '18歳以上のみ登録できます。';
+
+  @override
+  String get errorPostGateClosed => '今はポストを登録できる時間ではありません。';
+
+  @override
+  String get errorPostUploadWindowClosed => 'ポストの登録可能時間が終了しました。';
+
+  @override
+  String get errorPostOneLinerRequired => '今日のひとことを入力してください。';
+
+  @override
+  String get errorPostPhotoRequired => '新しいポスト写真を登録してください。';
+
+  @override
+  String get errorPostPhotoNotFound => '写真が見つかりません。';
+
+  @override
+  String get errorPostPhotoNotMine => '自分の写真のみ削除できます。';
+
+  @override
+  String get errorPostPhotoLimit => '登録できる写真の枚数を超えました。先に既存の写真を削除してください。';
+
+  @override
+  String get errorPostReplaceLimit => '今日の写真の入れ替え回数をすべて使いました。明日またご利用ください。';
+
+  @override
+  String get errorPostReplaceFreeLimit =>
+      '無料では1日2枚まで入れ替えできます。アルバムパスがあれば時間制限なしで1日20枚まで変更できます。';
+
+  @override
+  String get errorPostNotPublishedToday => '今日登録されたポストがありません。';
+
+  @override
+  String get errorGardenGateClosed => '月光ガーデンはまだ開いていません。午後5時から翌朝6時までご利用いただけます。';
+
+  @override
+  String get errorGardenTargetBlocked => '今はこのユーザーにコメントを残せません。';
+
+  @override
+  String get errorChatGateClosed => '月明かりが訪れる午後5時から翌朝6時まで会話できます。';
+
+  @override
+  String get errorChatSelf => '自分自身には会話を申し込めません。';
+
+  @override
+  String get errorChatTargetBlocked => '今はこのユーザーに会話を申し込めません。';
+
+  @override
+  String get errorChatRequestPending => 'すでに会話を申し込んでいます。相手の返事をお待ちください。';
+
+  @override
+  String get errorChatRequestNotFound => '申し込みが見つかりません。';
+
+  @override
+  String get errorChatRequestAlreadyHandled => 'すでに処理された申し込みです。';
+
+  @override
+  String get errorChatAcceptNotReceiver => '自分が受け取った申し込みのみ承認できます。';
+
+  @override
+  String get errorChatRejectNotReceiver => '自分が受け取った申し込みのみ辞退できます。';
+
+  @override
+  String get errorRoomAlreadyActive => 'すでに進行中の会話があります。';
+
+  @override
+  String get errorChatRoomNotFound => 'チャットルームが見つかりません。';
+
+  @override
+  String get errorChatRoomClosed => '終了したチャットルームです。';
+
+  @override
+  String get errorChatNotMember => '参加中のチャットルームではありません。';
+
+  @override
+  String get errorFriendSelf => '自分自身には友だち申請を送れません。';
+
+  @override
+  String get errorFriendTargetBlocked => '今はこのユーザーに友だち申請を送れません。';
+
+  @override
+  String get errorFriendAlready => 'すでに友だちです。';
+
+  @override
+  String get errorFriendNotYet => 'まだ友だちではありません。';
+
+  @override
+  String get errorFriendNotMine => '自分の友だち関係ではありません。';
+
+  @override
+  String get errorFriendRequestPending => 'すでに友だち申請をやりとりしています。返事をお待ちください。';
+
+  @override
+  String get errorFriendRequestAlreadyAccepted => 'すでに友だちになった申請です。';
+
+  @override
+  String get errorFriendRequestNotFound => '友だち申請が見つかりません。';
+
+  @override
+  String get errorFriendAcceptNotReceiver => '自分が受け取った申請のみ承認できます。';
+
+  @override
+  String get errorFriendRejectNotReceiver => '自分が受け取った申請のみ辞退できます。';
+
+  @override
+  String get errorFriendCancelNotSender => '自分が送った申請のみ取り消せます。';
+
+  @override
+  String errorFriendLimitExceeded(int limit) {
+    return '友だちは最大$limit人までです。';
+  }
+
+  @override
+  String get errorFriendNoTodayPost => '友だちはまだ今日のポストを共有していません。';
+
+  @override
+  String get errorLunaInsufficient => 'ルナが足りません。';
+
+  @override
+  String get errorStoreProductNotFound => '存在しない商品です。';
+
+  @override
+  String get errorStoreProductInvalid => '商品の構成が正しくありません。';
+
+  @override
+  String get errorStoreBoostNone => '保有しているブーストがありません。';
+
+  @override
+  String get errorStoreBoostAlreadyActive => 'すでに使用中のブーストです。';
+
+  @override
+  String get errorStoreAlreadySubscribed => 'すでにPrimeを購読中です。';
+
+  @override
+  String get errorStoreNotSubscribed => '購読中ではありません。';
+
+  @override
+  String get errorStoreAlreadyCanceled => 'すでに自動更新を解約しています。';
+
+  @override
+  String get errorStoreReceiptInvalid => '決済情報を確認できません。';
+
+  @override
+  String get errorStorePurchaseFailed => '現在、決済を処理できません。';
+
+  @override
+  String get errorModerationSelf => '自分自身は対象にできません。';
+
+  @override
+  String get errorTargetBlockedOrReported => '今はこのユーザーにリクエストできません。';
+
+  @override
+  String get errorNetworkTimeout => 'サーバーの応答が遅れています。しばらくしてからもう一度お試しください。';
+
+  @override
+  String get errorNetworkUnreachable => 'サーバーに接続できません。ネットワークをご確認ください。';
+
+  @override
+  String get errorNetworkUnknown => '通信中に問題が発生しました。';
+
+  @override
+  String get errorSocketDisconnected => '接続が切れました。しばらくしてからもう一度送信してください。';
+
+  @override
+  String get errorSocketSendTimeout => 'メッセージを送信できませんでした。もう一度お試しください。';
+
+  @override
+  String get errorUnknown => 'リクエストを処理できませんでした。';
+
+  @override
   String regionLabelFormat(String country, String city) {
     return '$country、$city';
   }

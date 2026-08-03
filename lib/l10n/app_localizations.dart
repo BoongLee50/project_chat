@@ -2359,6 +2359,372 @@ abstract class L10n {
   /// **'센다이'**
   String get cityJpSendai;
 
+  /// No description provided for @errorUserNotFound.
+  ///
+  /// In ko, this message translates to:
+  /// **'사용자를 찾을 수 없어요.'**
+  String get errorUserNotFound;
+
+  /// No description provided for @errorProviderDisabled.
+  ///
+  /// In ko, this message translates to:
+  /// **'지금은 이 방법으로 로그인할 수 없어요.'**
+  String get errorProviderDisabled;
+
+  /// No description provided for @errorNicknameInvalid.
+  ///
+  /// In ko, this message translates to:
+  /// **'사용할 수 없는 닉네임이에요.'**
+  String get errorNicknameInvalid;
+
+  /// No description provided for @errorNicknameDuplicate.
+  ///
+  /// In ko, this message translates to:
+  /// **'이미 사용 중인 닉네임이에요.'**
+  String get errorNicknameDuplicate;
+
+  /// No description provided for @errorNicknameFormat.
+  ///
+  /// In ko, this message translates to:
+  /// **'닉네임은 특수문자·이모지 없이 10자 이내여야 해요.'**
+  String get errorNicknameFormat;
+
+  /// No description provided for @errorAgeRestricted.
+  ///
+  /// In ko, this message translates to:
+  /// **'만 18세 이상만 가입할 수 있어요.'**
+  String get errorAgeRestricted;
+
+  /// No description provided for @errorPostGateClosed.
+  ///
+  /// In ko, this message translates to:
+  /// **'지금은 포스트를 등록할 수 있는 시간이 아니에요.'**
+  String get errorPostGateClosed;
+
+  /// No description provided for @errorPostUploadWindowClosed.
+  ///
+  /// In ko, this message translates to:
+  /// **'포스트 등록 가능 시간이 끝났어요.'**
+  String get errorPostUploadWindowClosed;
+
+  /// No description provided for @errorPostOneLinerRequired.
+  ///
+  /// In ko, this message translates to:
+  /// **'하루 한 마디를 입력해 주세요.'**
+  String get errorPostOneLinerRequired;
+
+  /// No description provided for @errorPostPhotoRequired.
+  ///
+  /// In ko, this message translates to:
+  /// **'새로운 포스트 사진을 등록해 주세요.'**
+  String get errorPostPhotoRequired;
+
+  /// No description provided for @errorPostPhotoNotFound.
+  ///
+  /// In ko, this message translates to:
+  /// **'사진을 찾을 수 없어요.'**
+  String get errorPostPhotoNotFound;
+
+  /// No description provided for @errorPostPhotoNotMine.
+  ///
+  /// In ko, this message translates to:
+  /// **'내 사진만 삭제할 수 있어요.'**
+  String get errorPostPhotoNotMine;
+
+  /// No description provided for @errorPostPhotoLimit.
+  ///
+  /// In ko, this message translates to:
+  /// **'등록 가능한 사진 수를 넘었어요. 기존 사진을 먼저 삭제해 주세요.'**
+  String get errorPostPhotoLimit;
+
+  /// No description provided for @errorPostReplaceLimit.
+  ///
+  /// In ko, this message translates to:
+  /// **'오늘의 사진 교체 횟수를 모두 썼어요. 내일 다시 이용해 주세요.'**
+  String get errorPostReplaceLimit;
+
+  /// No description provided for @errorPostReplaceFreeLimit.
+  ///
+  /// In ko, this message translates to:
+  /// **'무료로는 하루 2장까지 교체할 수 있어요. 앨범 패스가 있으면 시간 제한 없이 하루 20장까지 바꿀 수 있어요.'**
+  String get errorPostReplaceFreeLimit;
+
+  /// No description provided for @errorPostNotPublishedToday.
+  ///
+  /// In ko, this message translates to:
+  /// **'오늘 등록된 포스트가 없어요.'**
+  String get errorPostNotPublishedToday;
+
+  /// No description provided for @errorGardenGateClosed.
+  ///
+  /// In ko, this message translates to:
+  /// **'달빛가든은 아직 문을 열지 않았어요. 오후 5시부터 다음 날 오전 6시까지 이용할 수 있어요.'**
+  String get errorGardenGateClosed;
+
+  /// No description provided for @errorGardenTargetBlocked.
+  ///
+  /// In ko, this message translates to:
+  /// **'지금은 이 사용자에게 댓글을 남길 수 없어요.'**
+  String get errorGardenTargetBlocked;
+
+  /// No description provided for @errorChatGateClosed.
+  ///
+  /// In ko, this message translates to:
+  /// **'달빛이 찾아오는 오후 5시부터 다음 날 오전 6시까지 대화할 수 있어요.'**
+  String get errorChatGateClosed;
+
+  /// No description provided for @errorChatSelf.
+  ///
+  /// In ko, this message translates to:
+  /// **'자신에게는 대화를 신청할 수 없어요.'**
+  String get errorChatSelf;
+
+  /// No description provided for @errorChatTargetBlocked.
+  ///
+  /// In ko, this message translates to:
+  /// **'지금은 이 사용자에게 대화를 신청할 수 없어요.'**
+  String get errorChatTargetBlocked;
+
+  /// No description provided for @errorChatRequestPending.
+  ///
+  /// In ko, this message translates to:
+  /// **'이미 대화를 신청했어요. 상대의 응답을 기다려 주세요.'**
+  String get errorChatRequestPending;
+
+  /// No description provided for @errorChatRequestNotFound.
+  ///
+  /// In ko, this message translates to:
+  /// **'신청을 찾을 수 없어요.'**
+  String get errorChatRequestNotFound;
+
+  /// No description provided for @errorChatRequestAlreadyHandled.
+  ///
+  /// In ko, this message translates to:
+  /// **'이미 처리된 신청이에요.'**
+  String get errorChatRequestAlreadyHandled;
+
+  /// No description provided for @errorChatAcceptNotReceiver.
+  ///
+  /// In ko, this message translates to:
+  /// **'내가 받은 신청만 수락할 수 있어요.'**
+  String get errorChatAcceptNotReceiver;
+
+  /// No description provided for @errorChatRejectNotReceiver.
+  ///
+  /// In ko, this message translates to:
+  /// **'내가 받은 신청만 거절할 수 있어요.'**
+  String get errorChatRejectNotReceiver;
+
+  /// No description provided for @errorRoomAlreadyActive.
+  ///
+  /// In ko, this message translates to:
+  /// **'이미 진행 중인 대화가 있어요.'**
+  String get errorRoomAlreadyActive;
+
+  /// No description provided for @errorChatRoomNotFound.
+  ///
+  /// In ko, this message translates to:
+  /// **'대화방을 찾을 수 없어요.'**
+  String get errorChatRoomNotFound;
+
+  /// No description provided for @errorChatRoomClosed.
+  ///
+  /// In ko, this message translates to:
+  /// **'종료된 대화방이에요.'**
+  String get errorChatRoomClosed;
+
+  /// No description provided for @errorChatNotMember.
+  ///
+  /// In ko, this message translates to:
+  /// **'참여 중인 대화방이 아니에요.'**
+  String get errorChatNotMember;
+
+  /// No description provided for @errorFriendSelf.
+  ///
+  /// In ko, this message translates to:
+  /// **'자신에게는 친구 요청을 보낼 수 없어요.'**
+  String get errorFriendSelf;
+
+  /// No description provided for @errorFriendTargetBlocked.
+  ///
+  /// In ko, this message translates to:
+  /// **'지금은 이 사용자에게 친구 요청을 보낼 수 없어요.'**
+  String get errorFriendTargetBlocked;
+
+  /// No description provided for @errorFriendAlready.
+  ///
+  /// In ko, this message translates to:
+  /// **'이미 친구예요.'**
+  String get errorFriendAlready;
+
+  /// No description provided for @errorFriendNotYet.
+  ///
+  /// In ko, this message translates to:
+  /// **'아직 친구가 아니에요.'**
+  String get errorFriendNotYet;
+
+  /// No description provided for @errorFriendNotMine.
+  ///
+  /// In ko, this message translates to:
+  /// **'내 친구 관계가 아니에요.'**
+  String get errorFriendNotMine;
+
+  /// No description provided for @errorFriendRequestPending.
+  ///
+  /// In ko, this message translates to:
+  /// **'이미 친구 요청이 오갔어요. 응답을 기다려 주세요.'**
+  String get errorFriendRequestPending;
+
+  /// No description provided for @errorFriendRequestAlreadyAccepted.
+  ///
+  /// In ko, this message translates to:
+  /// **'이미 친구가 된 요청이에요.'**
+  String get errorFriendRequestAlreadyAccepted;
+
+  /// No description provided for @errorFriendRequestNotFound.
+  ///
+  /// In ko, this message translates to:
+  /// **'친구 요청을 찾을 수 없어요.'**
+  String get errorFriendRequestNotFound;
+
+  /// No description provided for @errorFriendAcceptNotReceiver.
+  ///
+  /// In ko, this message translates to:
+  /// **'내가 받은 요청만 수락할 수 있어요.'**
+  String get errorFriendAcceptNotReceiver;
+
+  /// No description provided for @errorFriendRejectNotReceiver.
+  ///
+  /// In ko, this message translates to:
+  /// **'내가 받은 요청만 거절할 수 있어요.'**
+  String get errorFriendRejectNotReceiver;
+
+  /// No description provided for @errorFriendCancelNotSender.
+  ///
+  /// In ko, this message translates to:
+  /// **'내가 보낸 요청만 취소할 수 있어요.'**
+  String get errorFriendCancelNotSender;
+
+  /// No description provided for @errorFriendLimitExceeded.
+  ///
+  /// In ko, this message translates to:
+  /// **'친구는 최대 {limit}명까지예요.'**
+  String errorFriendLimitExceeded(int limit);
+
+  /// No description provided for @errorFriendNoTodayPost.
+  ///
+  /// In ko, this message translates to:
+  /// **'친구가 아직 오늘의 포스트를 공유하지 않았어요.'**
+  String get errorFriendNoTodayPost;
+
+  /// No description provided for @errorLunaInsufficient.
+  ///
+  /// In ko, this message translates to:
+  /// **'루나가 부족해요.'**
+  String get errorLunaInsufficient;
+
+  /// No description provided for @errorStoreProductNotFound.
+  ///
+  /// In ko, this message translates to:
+  /// **'존재하지 않는 상품이에요.'**
+  String get errorStoreProductNotFound;
+
+  /// No description provided for @errorStoreProductInvalid.
+  ///
+  /// In ko, this message translates to:
+  /// **'상품 구성이 잘못됐어요.'**
+  String get errorStoreProductInvalid;
+
+  /// No description provided for @errorStoreBoostNone.
+  ///
+  /// In ko, this message translates to:
+  /// **'보유한 부스트가 없어요.'**
+  String get errorStoreBoostNone;
+
+  /// No description provided for @errorStoreBoostAlreadyActive.
+  ///
+  /// In ko, this message translates to:
+  /// **'이미 사용 중인 부스트예요.'**
+  String get errorStoreBoostAlreadyActive;
+
+  /// No description provided for @errorStoreAlreadySubscribed.
+  ///
+  /// In ko, this message translates to:
+  /// **'이미 프라임을 구독 중이에요.'**
+  String get errorStoreAlreadySubscribed;
+
+  /// No description provided for @errorStoreNotSubscribed.
+  ///
+  /// In ko, this message translates to:
+  /// **'구독 중이 아니에요.'**
+  String get errorStoreNotSubscribed;
+
+  /// No description provided for @errorStoreAlreadyCanceled.
+  ///
+  /// In ko, this message translates to:
+  /// **'이미 자동 갱신을 해지했어요.'**
+  String get errorStoreAlreadyCanceled;
+
+  /// No description provided for @errorStoreReceiptInvalid.
+  ///
+  /// In ko, this message translates to:
+  /// **'결제 정보를 확인할 수 없어요.'**
+  String get errorStoreReceiptInvalid;
+
+  /// No description provided for @errorStorePurchaseFailed.
+  ///
+  /// In ko, this message translates to:
+  /// **'지금은 결제를 처리할 수 없어요.'**
+  String get errorStorePurchaseFailed;
+
+  /// No description provided for @errorModerationSelf.
+  ///
+  /// In ko, this message translates to:
+  /// **'자기 자신은 대상이 될 수 없어요.'**
+  String get errorModerationSelf;
+
+  /// No description provided for @errorTargetBlockedOrReported.
+  ///
+  /// In ko, this message translates to:
+  /// **'지금은 이 사용자에게 요청할 수 없어요.'**
+  String get errorTargetBlockedOrReported;
+
+  /// No description provided for @errorNetworkTimeout.
+  ///
+  /// In ko, this message translates to:
+  /// **'서버 응답이 늦어요. 잠시 후 다시 시도해 주세요.'**
+  String get errorNetworkTimeout;
+
+  /// No description provided for @errorNetworkUnreachable.
+  ///
+  /// In ko, this message translates to:
+  /// **'서버에 연결할 수 없어요. 네트워크를 확인해 주세요.'**
+  String get errorNetworkUnreachable;
+
+  /// No description provided for @errorNetworkUnknown.
+  ///
+  /// In ko, this message translates to:
+  /// **'통신 중 문제가 발생했어요.'**
+  String get errorNetworkUnknown;
+
+  /// No description provided for @errorSocketDisconnected.
+  ///
+  /// In ko, this message translates to:
+  /// **'연결이 끊겼어요. 잠시 후 다시 보내주세요.'**
+  String get errorSocketDisconnected;
+
+  /// No description provided for @errorSocketSendTimeout.
+  ///
+  /// In ko, this message translates to:
+  /// **'메시지를 보내지 못했어요. 다시 시도해 주세요.'**
+  String get errorSocketSendTimeout;
+
+  /// No description provided for @errorUnknown.
+  ///
+  /// In ko, this message translates to:
+  /// **'요청을 처리하지 못했어요.'**
+  String get errorUnknown;
+
   /// No description provided for @regionLabelFormat.
   ///
   /// In ko, this message translates to:
