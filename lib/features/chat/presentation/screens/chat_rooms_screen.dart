@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimens.dart';
+import '../../../../core/error/api_exception.dart';
+import '../../../../core/error/error_messages.dart';
 import '../../../../shared/widgets/gate_notice.dart';
 import '../../../../shared/widgets/authed_image.dart';
 import '../../data/models/chat_models.dart';
@@ -240,12 +242,12 @@ class _RequestTile extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = L10n.of(context);
-    Future<void> run(Future<String?> Function() action) async {
+    Future<void> run(Future<ApiException?> Function() action) async {
       final error = await action();
       if (error != null && context.mounted) {
         ScaffoldMessenger.of(context)
           ..hideCurrentSnackBar()
-          ..showSnackBar(SnackBar(content: Text(error)));
+          ..showSnackBar(SnackBar(content: Text(errorMessage(l10n, error))));
       }
     }
 

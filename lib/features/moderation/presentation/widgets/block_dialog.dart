@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimens.dart';
+import '../../../../core/error/error_messages.dart';
 import '../providers/moderation_provider.dart';
 import '../../../../l10n/app_localizations.dart';
 
@@ -48,7 +49,7 @@ class _BlockDialogState extends ConsumerState<BlockDialog> {
     if (error != null) {
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text(error)));
+        ..showSnackBar(SnackBar(content: Text(errorMessage(L10n.of(context), error))));
       return;
     }
     Navigator.of(context).pop(true);

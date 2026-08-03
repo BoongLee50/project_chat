@@ -165,6 +165,7 @@ class DioClient {
     } on DioException catch (e) {
       throw ApiException(
         message: _networkMessage(e),
+        code: _networkCode(e),
         statusCode: e.response?.statusCode,
       );
     }
@@ -179,9 +180,23 @@ class DioClient {
           : '요청을 처리하지 못했어요. (오류 $status)',
       code: data is Map ? data['code'] as String? : null,
       statusCode: status,
+      field: data is Map ? data['field'] as String? : null,
     );
   }
 
+  /// 서버 응답을 못 받은 경우도 코드를 실어 준다 —
+  /// 화면이 서버 오류와 같은 매핑 함수로 문구를 고를 수 있도록. (docs/09 ②단계)
+  String _networkCode(DioException e) {
+    return switch (e.type) {
+      DioExceptionType.connectionTimeout ||
+      DioExceptionType.sendTimeout ||
+      DioExceptionType.receiveTimeout => ClientErrorCode.networkTimeout,
+      DioExceptionType.connectionError => ClientErrorCode.networkUnreachable,
+      _ => ClientErrorCode.networkUnknown,
+    };
+  }
+
+  /// 폴백·로그용 원문. 화면 문구는 `errorMessage(l10n, e)`가 만든다.
   String _networkMessage(DioException e) {
     return switch (e.type) {
       DioExceptionType.connectionTimeout ||

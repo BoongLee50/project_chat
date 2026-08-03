@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimens.dart';
+import '../../../../core/error/error_messages.dart';
 import '../../data/models/store_models.dart';
 import '../providers/store_provider.dart';
 import '../widgets/store_widgets.dart';
@@ -40,7 +41,7 @@ class _BoostScreenState extends ConsumerState<BoostScreen> {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(
-        SnackBar(content: Text(error ?? l10n.boostUsed)),
+        SnackBar(content: Text(error == null ? l10n.boostUsed : errorMessage(l10n, error))),
       );
   }
 

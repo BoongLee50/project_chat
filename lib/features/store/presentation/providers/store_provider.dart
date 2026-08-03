@@ -33,17 +33,17 @@ class StoreActions {
 
   final Ref _ref;
 
-  Future<String?> purchaseWithLuna(String productId) =>
+  Future<ApiException?> purchaseWithLuna(String productId) =>
       _run(() => _ref.read(storeApiProvider).purchaseWithLuna(productId));
 
-  Future<String?> useBoost(String kind) =>
+  Future<ApiException?> useBoost(String kind) =>
       _run(() => _ref.read(storeApiProvider).useBoost(kind));
 
-  Future<String?> cancelSubscription() =>
+  Future<ApiException?> cancelSubscription() =>
       _run(() => _ref.read(storeApiProvider).cancelSubscription());
 
   /// 인앱결제. 실제 스토어 결제창은 계정 발급 후 붙는다(01 §1.8 ①).
-  Future<String?> verifyPurchase({
+  Future<ApiException?> verifyPurchase({
     required String productId,
     required String purchaseToken,
     String platform = 'GOOGLE',
@@ -55,12 +55,12 @@ class StoreActions {
     ),
   );
 
-  Future<String?> _run(Future<Wallet> Function() action) async {
+  Future<ApiException?> _run(Future<Wallet> Function() action) async {
     try {
       _ref.read(walletProvider.notifier).apply(await action());
       return null;
     } on ApiException catch (e) {
-      return e.message;
+      return e;
     }
   }
 }

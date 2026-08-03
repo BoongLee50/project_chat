@@ -13,22 +13,22 @@ class ProfileEditActions {
 
   final Ref _ref;
 
-  Future<String?> updateInterests(List<String> codes) =>
+  Future<ApiException?> updateInterests(List<String> codes) =>
       _run(() => _ref.read(profileApiProvider).updateInterests(codes));
 
-  Future<String?> updateIntro(String intro) =>
+  Future<ApiException?> updateIntro(String intro) =>
       _run(() => _ref.read(profileApiProvider).updateIntro(intro));
 
-  Future<String?> updateRegions(List<String> codes) =>
+  Future<ApiException?> updateRegions(List<String> codes) =>
       _run(() => _ref.read(profileApiProvider).updateRegions(codes));
 
-  Future<String?> _run(Future<void> Function() action) async {
+  Future<ApiException?> _run(Future<void> Function() action) async {
     try {
       await action();
       await _ref.read(sessionProvider.notifier).refresh();
       return null;
     } on ApiException catch (e) {
-      return e.message;
+      return e;
     }
   }
 }

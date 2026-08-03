@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimens.dart';
+import '../../../../core/error/error_messages.dart';
 import '../../../../shared/widgets/gate_notice.dart';
 import '../../../../shared/widgets/authed_image.dart';
 import '../../data/models/feed_item.dart';
@@ -340,14 +341,14 @@ class _FeedPagerState extends ConsumerState<_FeedPager> {
     _photoIndex = 0;
 
     final error = await notifier.skip(_item);
-    if (error != null && mounted) _toast(error);
+    if (error != null && mounted) _toast(errorMessage(L10n.of(context), error));
     // 목록이 얼마 안 남으면 다음 페이지를 이어붙인다.
     if (nearlyEmpty) notifier.loadMore();
   }
 
   Future<void> _like() async {
     final error = await ref.read(feedProvider.notifier).like(_item);
-    if (error != null && mounted) _toast(error);
+    if (error != null && mounted) _toast(errorMessage(L10n.of(context), error));
   }
 
   /// 대화 신청 팝업 — 하루 무료 2회 후 루나 5 차감(서버 판정).
@@ -392,7 +393,7 @@ class _FeedPagerState extends ConsumerState<_FeedPager> {
         .read(chatActionsProvider)
         .requestChat(item.userId, message);
     if (!mounted) return;
-    _toast(error ?? l10n.gardenChatRequestSent);
+    _toast(error == null ? l10n.gardenChatRequestSent : errorMessage(l10n, error));
   }
 
   void _toast(String message) {

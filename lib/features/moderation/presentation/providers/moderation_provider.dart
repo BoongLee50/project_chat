@@ -14,7 +14,7 @@ class ModerationActions {
 
   final Ref _ref;
 
-  Future<String?> report({
+  Future<ApiException?> report({
     required String targetUserId,
     required String reason,
     String? detail,
@@ -26,17 +26,17 @@ class ModerationActions {
     ),
   );
 
-  Future<String?> block(String targetUserId) =>
+  Future<ApiException?> block(String targetUserId) =>
       _run(() => _ref.read(moderationApiProvider).block(targetUserId));
 
-  Future<String?> _run(Future<void> Function() action) async {
+  Future<ApiException?> _run(Future<void> Function() action) async {
     try {
       await action();
       await _ref.read(chatRoomsProvider.notifier).refresh();
       await _ref.read(friendsProvider.notifier).refresh();
       return null;
     } on ApiException catch (e) {
-      return e.message;
+      return e;
     }
   }
 }

@@ -80,7 +80,7 @@ class FeedController extends AsyncNotifier<List<FeedItem>> {
   }
 
   /// 좋아요. 성공하면 해당 카드의 카운트를 낙관적으로 올린다.
-  Future<String?> like(FeedItem item) async {
+  Future<ApiException?> like(FeedItem item) async {
     try {
       await ref.read(gardenApiProvider).like(item.userId);
       final current = state.valueOrNull;
@@ -92,12 +92,12 @@ class FeedController extends AsyncNotifier<List<FeedItem>> {
       }
       return null;
     } on ApiException catch (e) {
-      return e.message;
+      return e;
     }
   }
 
   /// 스킵 — 목록에서 즉시 제거하고 서버에도 기록한다.
-  Future<String?> skip(FeedItem item) async {
+  Future<ApiException?> skip(FeedItem item) async {
     final current = state.valueOrNull;
     if (current != null) {
       state = AsyncValue.data(
@@ -108,7 +108,7 @@ class FeedController extends AsyncNotifier<List<FeedItem>> {
       await ref.read(gardenApiProvider).skip(item.userId);
       return null;
     } on ApiException catch (e) {
-      return e.message;
+      return e;
     }
   }
 

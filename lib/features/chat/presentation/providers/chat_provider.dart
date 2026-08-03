@@ -96,8 +96,8 @@ class ChatMessagesController
   }
 
   /// 메시지 전송 — 소켓으로 보내고, 서버의 CHAT_SENT_ACK를 받아 목록에 반영한다.
-  /// 성공하면 null, 실패하면 사용자에게 보여줄 사유를 돌려준다.
-  Future<String?> send(String body, String myUserId) async {
+  /// 성공하면 null, 실패하면 화면이 문구로 바꿀 예외를 돌려준다.
+  Future<ApiException?> send(String body, String myUserId) async {
     final text = body.trim();
     if (text.isEmpty) return null;
 
@@ -105,7 +105,10 @@ class ChatMessagesController
     final seq = socket.send(Op.chatSend, {'roomId': arg, 'body': text});
     if (seq == null) {
       unawaited(socket.connect()); // 끊겨 있으면 즉시 재연결 시도
-      return '연결이 끊겼어요. 잠시 후 다시 보내주세요.';
+      return const ApiException(
+        message: '연결이 끊겼어요. 잠시 후 다시 보내주세요.',
+        code: ClientErrorCode.socketDisconnected,
+      );
     }
 
     // ACK를 기다렸다가 서버가 확정한 id/시각으로 추가(낙관적 표시 대신 정확성 우선).
@@ -115,7 +118,10 @@ class ChatMessagesController
           .firstWhere((p) => p.op == Op.chatSentAck && p.seq == seq)
           .timeout(const Duration(seconds: 5));
     } on TimeoutException {
-      return '메시지를 보내지 못했어요. 다시 시도해 주세요.';
+      return const ApiException(
+        message: '메시지를 보내지 못했어요. 다시 시도해 주세요.',
+        code: ClientErrorCode.socketSendTimeout,
+      );
     }
     _append(
       ChatMessage(
@@ -143,7 +149,7 @@ class ChatActions {
 
   final Ref _ref;
 
-  Future<String?> requestChat(String targetUserId, String message) async {
+  Future<ApiException?> requestChat(String targetUserId, String message) async {
     try {
       await _ref
           .read(chatApiProvider)
@@ -151,38 +157,38 @@ class ChatActions {
       _ref.invalidate(sentRequestsProvider);
       return null;
     } on ApiException catch (e) {
-      return e.message;
+      return e;
     }
   }
 
-  Future<String?> accept(String requestId) async {
+  Future<ApiException?> accept(String requestId) async {
     try {
       await _ref.read(chatApiProvider).accept(requestId);
       _ref.invalidate(receivedRequestsProvider);
       await _ref.read(chatRoomsProvider.notifier).refresh();
       return null;
     } on ApiException catch (e) {
-      return e.message;
+      return e;
     }
   }
 
-  Future<String?> reject(String requestId) async {
+  Future<ApiException?> reject(String requestId) async {
     try {
       await _ref.read(chatApiProvider).reject(requestId);
       _ref.invalidate(receivedRequestsProvider);
       return null;
     } on ApiException catch (e) {
-      return e.message;
+      return e;
     }
   }
 
-  Future<String?> leave(String roomId) async {
+  Future<ApiException?> leave(String roomId) async {
     try {
       await _ref.read(chatApiProvider).leave(roomId);
       await _ref.read(chatRoomsProvider.notifier).refresh();
       return null;
     } on ApiException catch (e) {
-      return e.message;
+      return e;
     }
   }
 }

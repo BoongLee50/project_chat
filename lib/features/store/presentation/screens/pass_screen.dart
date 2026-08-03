@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimens.dart';
+import '../../../../core/error/error_messages.dart';
 import '../../data/models/store_models.dart';
 import '../providers/store_provider.dart';
 import '../widgets/store_widgets.dart';
@@ -46,7 +47,7 @@ class _PassScreenState extends ConsumerState<PassScreen> {
       ..showSnackBar(
         SnackBar(
           content: Text(
-            error ?? l10n.passPurchased(StoreKind.label(l10n, widget.kind), product.durationDays),
+            error == null ? l10n.passPurchased(StoreKind.label(l10n, widget.kind), product.durationDays) : errorMessage(l10n, error),
           ),
         ),
       );

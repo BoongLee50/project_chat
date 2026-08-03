@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimens.dart';
+import '../../../../core/error/error_messages.dart';
 import '../../../../shared/widgets/authed_image.dart';
 import '../../../chat/data/models/chat_models.dart';
 import '../../../chat/presentation/screens/chat_screen.dart';
@@ -262,7 +263,7 @@ class _FriendCard extends ConsumerWidget {
     if (!context.mounted || error == null) return;
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(error)));
+      ..showSnackBar(SnackBar(content: Text(errorMessage(l10n, error))));
   }
 
   @override
@@ -408,7 +409,7 @@ class _RequestCard extends ConsumerWidget {
       ..showSnackBar(
         SnackBar(
           content: Text(
-            error ?? (accept ? l10n.friendsAccepted : l10n.friendsRejected),
+            error == null ? (accept ? l10n.friendsAccepted : l10n.friendsRejected) : errorMessage(l10n, error),
           ),
         ),
       );

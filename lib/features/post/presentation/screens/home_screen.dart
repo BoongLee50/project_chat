@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimens.dart';
+import '../../../../core/error/error_messages.dart';
 import '../../../../core/providers.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/gate_notice.dart';
@@ -391,7 +392,7 @@ class _PostPhotoCardState extends ConsumerState<_PostPhotoCard> {
     final error = await ref.read(myPostProvider.notifier).addPhoto(bytes);
     if (!mounted) return;
     setState(() => _busy = false);
-    if (error != null) _toast(error);
+    if (error != null) _toast(errorMessage(L10n.of(context), error));
   }
 
   Future<void> _delete() async {
@@ -404,7 +405,7 @@ class _PostPhotoCardState extends ConsumerState<_PostPhotoCard> {
       _busy = false;
       _index = 0;
     });
-    if (error != null) _toast(error);
+    if (error != null) _toast(errorMessage(L10n.of(context), error));
   }
 
   void _toast(String message) {
@@ -938,7 +939,7 @@ class _OneLiner extends ConsumerWidget {
     if (error != null && context.mounted) {
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text(error)));
+        ..showSnackBar(SnackBar(content: Text(errorMessage(l10n, error))));
     }
   }
 
@@ -1034,7 +1035,7 @@ class _ShareButton extends ConsumerWidget {
                 ScaffoldMessenger.of(context)
                   ..hideCurrentSnackBar()
                   ..showSnackBar(
-                    SnackBar(content: Text(error ?? l10n.homeShared)),
+                    SnackBar(content: Text(error == null ? l10n.homeShared : errorMessage(l10n, error))),
                   );
               }
             : null,

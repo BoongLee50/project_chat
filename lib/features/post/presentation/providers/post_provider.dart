@@ -18,26 +18,26 @@ class MyPostController extends AsyncNotifier<MyPost> {
 
   /// 촬영/선택한 사진을 업로드하고 목록을 갱신한다.
   /// 실패 시 사용자에게 보여줄 메시지를 반환(성공이면 null).
-  Future<String?> addPhoto(List<int> bytes) =>
+  Future<ApiException?> addPhoto(List<int> bytes) =>
       _run(() => ref.read(postApiProvider).uploadPhoto(bytes: bytes));
 
-  Future<String?> deletePhoto(String photoId) =>
+  Future<ApiException?> deletePhoto(String photoId) =>
       _run(() => ref.read(postApiProvider).deletePhoto(photoId));
 
-  Future<String?> updateOneLiner(String text) =>
+  Future<ApiException?> updateOneLiner(String text) =>
       _run(() => ref.read(postApiProvider).updateOneLiner(text));
 
-  Future<String?> publish() => _run(() => ref.read(postApiProvider).publish());
+  Future<ApiException?> publish() => _run(() => ref.read(postApiProvider).publish());
 
   /// 공통 실행기: 동작 수행 → 성공 시 재조회, 실패 시 메시지 반환.
   /// (실패해도 기존 화면 데이터는 유지 — 에러로 화면을 비우지 않는다)
-  Future<String?> _run(Future<void> Function() action) async {
+  Future<ApiException?> _run(Future<void> Function() action) async {
     try {
       await action();
       await refresh();
       return null;
     } on ApiException catch (e) {
-      return e.message;
+      return e;
     }
   }
 }

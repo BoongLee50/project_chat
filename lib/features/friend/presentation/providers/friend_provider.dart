@@ -73,10 +73,10 @@ class FriendActions {
 
   final Ref _ref;
 
-  Future<String?> request(String targetUserId) =>
+  Future<ApiException?> request(String targetUserId) =>
       _run(() => _ref.read(friendApiProvider).request(targetUserId), sent: true);
 
-  Future<String?> accept(String friendshipId) async {
+  Future<ApiException?> accept(String friendshipId) async {
     try {
       await _ref.read(friendApiProvider).accept(friendshipId);
       _ref.invalidate(friendRequestsProvider);
@@ -85,19 +85,19 @@ class FriendActions {
       await _ref.read(chatRoomsProvider.notifier).refresh();
       return null;
     } on ApiException catch (e) {
-      return e.message;
+      return e;
     }
   }
 
-  Future<String?> reject(String friendshipId) => _run(
+  Future<ApiException?> reject(String friendshipId) => _run(
     () => _ref.read(friendApiProvider).reject(friendshipId),
     received: true,
   );
 
-  Future<String?> cancel(String friendshipId) =>
+  Future<ApiException?> cancel(String friendshipId) =>
       _run(() => _ref.read(friendApiProvider).cancel(friendshipId), sent: true);
 
-  Future<String?> remove(String friendshipId) async {
+  Future<ApiException?> remove(String friendshipId) async {
     try {
       await _ref.read(friendApiProvider).remove(friendshipId);
       await _ref.read(friendsProvider.notifier).refresh();
@@ -105,11 +105,11 @@ class FriendActions {
       await _ref.read(chatRoomsProvider.notifier).refresh();
       return null;
     } on ApiException catch (e) {
-      return e.message;
+      return e;
     }
   }
 
-  Future<String?> _run(
+  Future<ApiException?> _run(
     Future<void> Function() action, {
     bool sent = false,
     bool received = false,
@@ -120,7 +120,7 @@ class FriendActions {
       if (received) _ref.invalidate(friendRequestsProvider);
       return null;
     } on ApiException catch (e) {
-      return e.message;
+      return e;
     }
   }
 }

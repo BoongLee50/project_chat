@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimens.dart';
+import '../../../../core/error/error_messages.dart';
 import '../../../../shared/widgets/authed_image.dart';
 import '../../../auth/presentation/providers/session_provider.dart';
 import '../../../friend/presentation/providers/friend_provider.dart';
@@ -50,7 +51,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       _controller.text = text; // 사라지지 않게 입력칸에 되돌려 준다
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text(error)));
+        ..showSnackBar(SnackBar(content: Text(errorMessage(L10n.of(context), error))));
       return;
     }
     _scrollToBottom();
@@ -79,7 +80,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       ..showSnackBar(
         SnackBar(
           content: Text(
-            error ?? l10n.chatFriendRequestSent,
+            error == null ? l10n.chatFriendRequestSent : errorMessage(l10n, error),
           ),
         ),
       );
@@ -124,7 +125,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     if (error != null) {
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text(error)));
+        ..showSnackBar(SnackBar(content: Text(errorMessage(L10n.of(context), error))));
       return;
     }
     Navigator.of(context).pop();
