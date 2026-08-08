@@ -61,7 +61,6 @@ class GardenArt {
     'JP' => filterJapan,
     _ => filterCountryAll,
   };
-  static const String cardFrame = '$_dir/card_frame.png';
   static const String flagKr = '$_dir/flag_kr.png';
   static const String badgePick = '$_dir/badge_pick.png';
   static const String interestMovie = '$_dir/interest_movie.png';
@@ -72,16 +71,20 @@ class GardenArt {
   /// 시안 캔버스 폭. 에셋의 원본 픽셀이 이 폭을 전제로 그려져 있다.
   static const double canvasWidth = 1080;
 
-  /// 카드(사진) 영역의 라운드. 외곽선 그림이 가진 곡률과 맞춰야 한다 —
-  /// 값이 다르면 클립이 프레임 모서리를 잘라 각이 깎여 보인다.
+  /// 카드(사진) 영역의 라운드.
   static const double cardCornerRadius = 24;
 
-  /// 외곽선을 9-슬라이스로 늘리기 위한 중앙 영역(원본 1029×1794 기준).
+  /// 카드 테두리 — **이미지가 아니라 코드로 그린다.**
   ///
-  /// 카드 영역의 가로세로 비가 원본과 달라 그냥 늘이면 모서리 곡률이 찌그러진다.
-  /// 네 모서리는 원본 크기로 두고 **가운데만** 늘리려고 이 사각형을 준다.
-  /// 값은 모서리 라운드(≈60px)보다 넉넉히 잡았다.
-  static const Rect cardFrameCenterSlice = Rect.fromLTRB(90, 90, 939, 1704);
+  /// `포스트 사진 외곽선.png`는 단순한 얇은 라운드 사각 외곽선이라 그림일 필요가 없다.
+  /// 오히려 이미지로 쓰면 손해다:
+  /// - 카드 크기·비율이 기기마다 달라 늘이면 **선 굵기와 모서리 곡률이 찌그러진다**
+  /// - 래스터라 확대되면 **뿌옇게 번진다**
+  /// 코드로 그리면 어떤 크기에서도 선 굵기가 일정하고 모서리가 깨끗하다.
+  ///
+  /// (글자·질감이 들어간 리소스는 그림을 그대로 쓴다 — 이건 선 하나뿐이라 예외다)
+  static const double cardBorderWidth = 1.4;
+  static const Color cardBorderColor = Color(0xCCFFFFFF);
 
   /// 시안 좌표 1단위의 픽셀 크기(캔버스 기준).
   static const double unit = 28.4;

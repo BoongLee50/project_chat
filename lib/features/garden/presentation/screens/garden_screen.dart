@@ -549,17 +549,19 @@ class _FeedPagerState extends ConsumerState<_FeedPager> {
         ),
           ),
 
-          // 시안 카드 외곽선 — **클립 바깥**에 얹는다.
-          // 안에 두면 위 ClipRRect가 프레임의 둥근 모서리를 잘라 각이 깎여 보인다.
-          //
-          // centerSlice로 그리는 이유: 카드 영역 비율이 원본(1029×1794)과 달라
-          // 그냥 늘이면 모서리 곡률이 찌그러진다. 가운데만 늘이고 **네 모서리는 원본 크기 유지**.
+          // 카드 테두리 — 클립 **바깥**에 얹어야 모서리가 안 깎인다.
+          // 이미지가 아니라 코드로 그린다(이유는 GardenArt.cardBorderWidth 주석).
           IgnorePointer(
-            child: Image.asset(
-              GardenArt.cardFrame,
-              fit: BoxFit.fill,
-              centerSlice: GardenArt.cardFrameCenterSlice,
-              filterQuality: FilterQuality.medium,
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(
+                  GardenArt.cardCornerRadius,
+                ),
+                border: Border.all(
+                  color: GardenArt.cardBorderColor,
+                  width: GardenArt.cardBorderWidth,
+                ),
+              ),
             ),
           ),
         ],
