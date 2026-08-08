@@ -40,6 +40,40 @@ class ProfileApi {
     return MeProfile.fromJson(Map<String, dynamic>.from(data as Map));
   }
 
+  /// 프로필 사진 교체: 업로드 URL 발급 → 바이트 직접 전송 → 등록.
+  ///
+  /// 포스트 사진(`PostApi.uploadPhoto`)과 **같은 3단 흐름**이다(docs/01 §1.2).
+  /// 다만 프로필 사진은 여러 장이 아니라 **1장을 갈아끼우는 것**이라 등록이 PUT이고,
+  /// 서버가 등록 시점에 이전 사진을 스토리지에서 지운다.
+  Future<void> uploadProfilePhoto({
+    required List<int> bytes,
+    String contentType = 'image/jpeg',
+  }) async {
+    final issued = await _client.post(
+      '/me/profile-photo:upload-url',
+      query: {'contentType': contentType},
+    );
+    final map = Map<String, dynamic>.from(issued as Map);
+
+    await _client.putBytes(
+      map['uploadUrl'] as String,
+      bytes: bytes,
+      contentType: contentType,
+    );
+
+    await _client.put(
+      '/me/profile-photo',
+      body: {'storageKey': map['storageKey']},
+    );
+  }
+
+  /// 프로필 사진 제거.
+  ///
+  /// 등록과 **같은 엔드포인트**에 `storageKey: null`을 보낸다(docs/01 §1.2).
+  /// 서버가 photo_key를 비우고 이전 파일을 스토리지에서 지운다.
+  Future<void> deleteProfilePhoto() =>
+      _client.put('/me/profile-photo', body: {'storageKey': null});
+
   /// 관심사 교체(최대 8). 서버가 전체를 덮어쓰므로 **선택된 전체 목록**을 보낸다.
   Future<void> updateInterests(List<String> codes) =>
       _client.put('/me/interests', body: {'codes': codes});

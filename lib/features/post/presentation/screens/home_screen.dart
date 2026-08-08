@@ -11,6 +11,7 @@ import '../../../../core/error/error_messages.dart';
 import '../../../../core/providers.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/gate_notice.dart';
+import '../../../../shared/widgets/photo_source_sheet.dart';
 import '../../../auth/presentation/providers/gate_provider.dart';
 import '../../../auth/presentation/providers/session_provider.dart';
 import '../../../store/data/models/store_models.dart';
@@ -378,14 +379,13 @@ class _PostPhotoCardState extends ConsumerState<_PostPhotoCard> {
 
   List<PostPhoto> get _photos => widget.post.photos;
 
-  /// 카메라로 촬영해 업로드. 갤러리 선택은 앨범 패스 보유자만(기획서 3-1).
-  /// 올릴 수 있으면 촬영으로, 막혀 있으면 **왜 막혔는지** 알려준다.
+  /// 사진 버튼. 올릴 수 있으면 선택 시트를 열고, 막혀 있으면 **왜 막혔는지** 알려준다.
   ///
   /// 서버가 쓰는 오류 코드를 그대로 재사용하므로 문구가 한 곳(ARB)에서 관리되고
   /// 일본어도 자동으로 따라온다.
   Future<void> _captureOrExplain() async {
     final reason = widget.post.addPhotoBlockedReason;
-    if (reason == null) return _capture();
+    if (reason == null) return _pick();
 
     _toast(
       errorMessage(
@@ -395,11 +395,28 @@ class _PostPhotoCardState extends ConsumerState<_PostPhotoCard> {
     );
   }
 
-  Future<void> _capture() async {
+  /// 앨범·촬영 중에 고르게 한다. 포스트는 **앨범이 앨범 패스 전용**이라(기획서 3-1)
+  /// 패스가 없으면 줄을 죽이고 이유를 적어 둔다 — 없는 척 숨기면 상품이 있는 줄도 모른다.
+  /// (프로필 사진에는 이 제한이 없어 시트가 조건만 다르게 받는다)
+  Future<void> _pick() async {
     if (_busy) return;
+    final l10n = L10n.of(context);
+    final canUseGallery = widget.post.uploadUnlimited;
+
+    final choice = await PhotoSourceSheet.show(
+      context,
+      title: l10n.photoSheetPostTitle,
+      subtitle: l10n.photoSheetPostSubtitle,
+      galleryEnabled: canUseGallery,
+      galleryHint: l10n.photoSourceGalleryPassOnly,
+    );
+    if (choice == null || !mounted) return;
+
     final picker = ImagePicker();
     final file = await picker.pickImage(
-      source: ImageSource.camera,
+      source: choice == PhotoSource.camera
+          ? ImageSource.camera
+          : ImageSource.gallery,
       imageQuality: 85,
     );
     if (file == null) return;

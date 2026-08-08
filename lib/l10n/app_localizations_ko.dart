@@ -451,6 +451,31 @@ class L10nKo extends L10n {
   String get profilePhotoPrompt => '프로필 사진을 등록해 주세요';
 
   @override
+  String get photoSheetProfileTitle => '프로필 사진 변경';
+
+  @override
+  String get photoSheetProfileSubtitle =>
+      '멋진 사진으로 프로필을 업데이트하고\n더 많은 매치를 만나보세요!';
+
+  @override
+  String get photoSheetPostTitle => '포스트 사진 등록';
+
+  @override
+  String get photoSheetPostSubtitle => '오늘 밤의 순간을 남겨보세요.';
+
+  @override
+  String get photoSourceGallery => '앨범에서 선택';
+
+  @override
+  String get photoSourceCamera => '카메라 촬영';
+
+  @override
+  String get photoSourceRemove => '프로필 사진 제거';
+
+  @override
+  String get photoSourceGalleryPassOnly => '앨범 패스가 있어야 이용할 수 있어요';
+
+  @override
   String get profileLunaBalance => '보유 루나';
 
   @override

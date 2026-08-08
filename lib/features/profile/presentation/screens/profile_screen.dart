@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimens.dart';
+import '../../../../core/error/api_exception.dart';
+import '../../../../core/error/error_messages.dart';
+import '../../../../shared/widgets/authed_image.dart';
+import '../../../../shared/widgets/photo_source_sheet.dart';
 import '../../../auth/presentation/providers/session_provider.dart';
 import '../../../store/data/models/store_models.dart';
 import '../../../store/presentation/providers/store_provider.dart';
@@ -11,6 +16,7 @@ import '../../../store/presentation/screens/luna_store_screen.dart';
 import '../../../store/presentation/screens/prime_screen.dart';
 import '../../data/models/me_profile.dart';
 import '../../data/models/profile_catalog.dart';
+import '../providers/profile_edit_provider.dart';
 import '../widgets/interests_edit_sheet.dart';
 import '../widgets/intro_edit_dialog.dart';
 import '../widgets/regions_edit_sheet.dart';
@@ -18,8 +24,8 @@ import '../../../../l10n/app_localizations.dart';
 
 /// 프로필 — 메인 셸의 l10n.profileTitle 탭 본문. (기획서 7장)
 ///
-/// `GET /me` 응답(세션이 보유)을 그대로 표시한다. 사진/관심사/소개/지역 **편집**은
-/// 서버 엔드포인트는 있으나 아직 화면 미구현(다음 단계).
+/// `GET /me` 응답(세션이 보유)을 그대로 표시한다. 사진·관심사·소개·지역 편집은
+/// 모두 여기서 바로 하고, 저장 후 세션을 다시 읽어 화면이 즉시 따라온다.
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
 
@@ -162,10 +168,72 @@ class _Header extends ConsumerWidget {
 }
 
 /// 프로필 사진. 아직 등록 전이면 등록 안내 플레이스홀더를 보여준다.
-class _PhotoCard extends StatelessWidget {
+///
+/// 사진 버튼을 누르면 선택 시트(앨범·촬영·제거)가 뜬다. 프로필 사진은 포스트와 달리
+/// **운영시간 게이트도 등록 창 제한도 없고 앨범도 패스 없이 쓸 수 있다**
+/// (서버 `ProfileService`에 게이트 검사가 없다) — 친구·상점과 같이 24시간 열린 영역이다.
+class _PhotoCard extends ConsumerStatefulWidget {
   const _PhotoCard({this.photoUrl});
 
   final String? photoUrl;
+
+  @override
+  ConsumerState<_PhotoCard> createState() => _PhotoCardState();
+}
+
+class _PhotoCardState extends ConsumerState<_PhotoCard> {
+  bool _busy = false;
+
+  /// 사진 버튼 → 선택 시트 → 고른 대로 실행.
+  ///
+  /// 제거는 **사진이 있을 때만** 열어 준다. 없는데 눌리면 할 일이 없어서다.
+  Future<void> _pick() async {
+    if (_busy) return;
+    final hasPhoto = widget.photoUrl != null;
+    final l10n = L10n.of(context);
+
+    final choice = await PhotoSourceSheet.show(
+      context,
+      title: l10n.photoSheetProfileTitle,
+      subtitle: l10n.photoSheetProfileSubtitle,
+      showRemove: true,
+      removeEnabled: hasPhoto,
+    );
+    if (choice == null || !mounted) return;
+
+    if (choice == PhotoSource.remove) return _remove();
+
+    final picker = ImagePicker();
+    final file = await picker.pickImage(
+      source: choice == PhotoSource.camera
+          ? ImageSource.camera
+          : ImageSource.gallery,
+      imageQuality: 85,
+    );
+    if (file == null) return;
+
+    final bytes = await file.readAsBytes();
+    if (!mounted) return;
+    await _run(() => ref.read(profileEditActionsProvider).updatePhoto(bytes));
+  }
+
+  Future<void> _remove() =>
+      _run(() => ref.read(profileEditActionsProvider).deletePhoto());
+
+  /// 통신 동안 버튼을 스피너로 바꾸고, 실패하면 이유를 알려준다.
+  Future<void> _run(Future<ApiException?> Function() action) async {
+    setState(() => _busy = true);
+    final error = await action();
+    if (!mounted) return;
+    setState(() => _busy = false);
+    if (error != null) {
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(content: Text(errorMessage(L10n.of(context), error))),
+        );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -176,29 +244,42 @@ class _PhotoCard extends StatelessWidget {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            if (photoUrl != null)
-              Image.network(
-                photoUrl!,
-                fit: BoxFit.cover,
-                errorBuilder: (_, _, _) => const _PhotoPlaceholder(),
+            if (widget.photoUrl != null)
+              // 맨 `Image.network`를 쓰면 안 된다 — 서버가 주는 `/files?key=...`는
+              // **상대경로**이고 JWT도 요구하는데, Image.network는 dio 인터셉터를
+              // 타지 않아 항상 실패하고 조용히 플레이스홀더로 되돌아간다.
+              AuthedImage(
+                url: widget.photoUrl!,
+                fallback: const _PhotoPlaceholder(),
               )
             else
               const _PhotoPlaceholder(),
             Positioned(
               right: 14,
               bottom: 14,
-              child: Container(
-                width: 46,
-                height: 46,
-                decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.45),
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white70),
-                ),
-                child: const Icon(
-                  Icons.photo_camera_outlined,
-                  color: Colors.white,
-                  size: 22,
+              child: GestureDetector(
+                onTap: _pick,
+                child: Container(
+                  width: 46,
+                  height: 46,
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.45),
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white70),
+                  ),
+                  child: _busy
+                      ? const Padding(
+                          padding: EdgeInsets.all(13),
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Icon(
+                          Icons.photo_camera_outlined,
+                          color: Colors.white,
+                          size: 22,
+                        ),
                 ),
               ),
             ),

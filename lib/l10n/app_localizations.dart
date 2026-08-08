@@ -901,6 +901,54 @@ abstract class L10n {
   /// **'프로필 사진을 등록해 주세요'**
   String get profilePhotoPrompt;
 
+  /// No description provided for @photoSheetProfileTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'프로필 사진 변경'**
+  String get photoSheetProfileTitle;
+
+  /// No description provided for @photoSheetProfileSubtitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'멋진 사진으로 프로필을 업데이트하고\n더 많은 매치를 만나보세요!'**
+  String get photoSheetProfileSubtitle;
+
+  /// No description provided for @photoSheetPostTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'포스트 사진 등록'**
+  String get photoSheetPostTitle;
+
+  /// No description provided for @photoSheetPostSubtitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'오늘 밤의 순간을 남겨보세요.'**
+  String get photoSheetPostSubtitle;
+
+  /// No description provided for @photoSourceGallery.
+  ///
+  /// In ko, this message translates to:
+  /// **'앨범에서 선택'**
+  String get photoSourceGallery;
+
+  /// No description provided for @photoSourceCamera.
+  ///
+  /// In ko, this message translates to:
+  /// **'카메라 촬영'**
+  String get photoSourceCamera;
+
+  /// No description provided for @photoSourceRemove.
+  ///
+  /// In ko, this message translates to:
+  /// **'프로필 사진 제거'**
+  String get photoSourceRemove;
+
+  /// No description provided for @photoSourceGalleryPassOnly.
+  ///
+  /// In ko, this message translates to:
+  /// **'앨범 패스가 있어야 이용할 수 있어요'**
+  String get photoSourceGalleryPassOnly;
+
   /// No description provided for @profileLunaBalance.
   ///
   /// In ko, this message translates to:

@@ -449,6 +449,31 @@ class L10nJa extends L10n {
   String get profilePhotoPrompt => 'プロフィール写真を登録してください';
 
   @override
+  String get photoSheetProfileTitle => 'プロフィール写真の変更';
+
+  @override
+  String get photoSheetProfileSubtitle =>
+      'すてきな写真でプロフィールを更新して\nもっと多くの出会いを見つけましょう!';
+
+  @override
+  String get photoSheetPostTitle => 'ポスト写真の登録';
+
+  @override
+  String get photoSheetPostSubtitle => '今夜の瞬間を残してみましょう。';
+
+  @override
+  String get photoSourceGallery => 'アルバムから選択';
+
+  @override
+  String get photoSourceCamera => 'カメラで撮影';
+
+  @override
+  String get photoSourceRemove => 'プロフィール写真を削除';
+
+  @override
+  String get photoSourceGalleryPassOnly => 'アルバムパスが必要です';
+
+  @override
   String get profileLunaBalance => '保有ルナ';
 
   @override
