@@ -20,10 +20,47 @@ class GardenArt {
   static const String title = '$_dir/title_garden.png';
   static const String btnPrime = '$_dir/btn_prime.png';
   static const String btnLuna = '$_dir/btn_luna.png';
+  // 필터 칩 — 값마다 라벨이 구워진 그림이 따로 있다(전체 포함).
+  // 그룹 안에서는 규격이 같아 크기를 한 번만 적으면 된다.
+  static const String filterGenderAll = '$_dir/filter_gender_all.png';
   static const String filterFemale = '$_dir/filter_female.png';
+  static const String filterMale = '$_dir/filter_male.png';
+  static const String filterAgeAll = '$_dir/filter_age_all.png';
+  static const String filter10s = '$_dir/filter_10s.png';
   static const String filter20s = '$_dir/filter_20s.png';
+  static const String filter30s = '$_dir/filter_30s.png';
+  static const String filter40s = '$_dir/filter_40s.png';
+  static const String filterCountryAll = '$_dir/filter_country_all.png';
   static const String filterKorea = '$_dir/filter_korea.png';
+  static const String filterJapan = '$_dir/filter_japan.png';
   static const String filterSpotlight = '$_dir/filter_spotlight.png';
+
+  /// 필터 칩 원본 규격(1080 캔버스 기준).
+  static const Size filterGenderSize = Size(217, 94);
+  static const Size filterAgeSize = Size(227, 94);
+  static const Size filterCountrySize = Size(208, 95);
+  static const Size filterSpotlightSize = Size(334, 94);
+
+  /// 값 → 그림. 이제 모든 상태에 그림이 있어 텍스트 폴백이 필요 없다.
+  static String genderChip(String? gender) => switch (gender) {
+    'FEMALE' => filterFemale,
+    'MALE' => filterMale,
+    _ => filterGenderAll,
+  };
+
+  static String ageChip(int? decade) => switch (decade) {
+    10 => filter10s,
+    20 => filter20s,
+    30 => filter30s,
+    40 => filter40s,
+    _ => filterAgeAll,
+  };
+
+  static String countryChip(String? country) => switch (country) {
+    'KR' => filterKorea,
+    'JP' => filterJapan,
+    _ => filterCountryAll,
+  };
   static const String cardFrame = '$_dir/card_frame.png';
   static const String flagKr = '$_dir/flag_kr.png';
   static const String badgePick = '$_dir/badge_pick.png';
@@ -34,6 +71,17 @@ class GardenArt {
 
   /// 시안 캔버스 폭. 에셋의 원본 픽셀이 이 폭을 전제로 그려져 있다.
   static const double canvasWidth = 1080;
+
+  /// 카드(사진) 영역의 라운드. 외곽선 그림이 가진 곡률과 맞춰야 한다 —
+  /// 값이 다르면 클립이 프레임 모서리를 잘라 각이 깎여 보인다.
+  static const double cardCornerRadius = 24;
+
+  /// 외곽선을 9-슬라이스로 늘리기 위한 중앙 영역(원본 1029×1794 기준).
+  ///
+  /// 카드 영역의 가로세로 비가 원본과 달라 그냥 늘이면 모서리 곡률이 찌그러진다.
+  /// 네 모서리는 원본 크기로 두고 **가운데만** 늘리려고 이 사각형을 준다.
+  /// 값은 모서리 라운드(≈60px)보다 넉넉히 잡았다.
+  static const Rect cardFrameCenterSlice = Rect.fromLTRB(90, 90, 939, 1704);
 
   /// 시안 좌표 1단위의 픽셀 크기(캔버스 기준).
   static const double unit = 28.4;

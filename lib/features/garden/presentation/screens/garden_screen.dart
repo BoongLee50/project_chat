@@ -155,22 +155,15 @@ class _FilterBar extends ConsumerWidget {
     final controller = ref.read(feedFilterProvider.notifier);
     final spotlight = ref.watch(spotlightProvider);
 
-    // 시안 리소스는 **한 상태의 라벨이 구워진 그림**이다(여자·20대·한국).
-    // 그래서 그 값일 때만 그림을 쓰고, 다른 값이면 기존 텍스트 칩으로 돌아간다.
-    // 나머지 상태(남자·10/30/40대·일본·전체) 그림을 받으면 여기 한 줄씩 늘리면 된다.
+    // 필터 칩은 전 상태의 그림이 있다(전체 포함) — 텍스트 폴백이 필요 없다.
+    // 누르면 뜨는 **드롭다운 목록의 글자는 ARB**다(폰트). 칩만 이미지다.
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
         children: [
-          _ArtOrMenu<String>(
-            art: filter.gender == 'FEMALE' ? GardenArt.filterFemale : null,
-            artWidth: 217,
-            artHeight: 94,
-            label: filter.gender == null
-                ? l10n.commonAll
-                : (filter.gender == 'FEMALE' ? l10n.genderFemale : l10n.genderMale),
-            icon: Icons.wc,
-            selected: filter.gender != null,
+          _ArtMenu<String>(
+            art: GardenArt.genderChip(filter.gender),
+            size: GardenArt.filterGenderSize,
             options: {l10n.commonAll: null, l10n.genderFemale: 'FEMALE', l10n.genderMale: 'MALE'},
             current: filter.gender,
             onPick: (value) => value == null
@@ -178,13 +171,9 @@ class _FilterBar extends ConsumerWidget {
                 : controller.toggleGender(value),
           ),
           const SizedBox(width: 8),
-          _ArtOrMenu<int>(
-            art: filter.ageDecade == 20 ? GardenArt.filter20s : null,
-            artWidth: 227,
-            artHeight: 94,
-            label: filter.ageDecade == null ? l10n.commonAll : l10n.ageDecade(filter.ageDecade!),
-            icon: Icons.person_outline,
-            selected: filter.ageDecade != null,
+          _ArtMenu<int>(
+            art: GardenArt.ageChip(filter.ageDecade),
+            size: GardenArt.filterAgeSize,
             options: {
               l10n.commonAll: null,
               l10n.ageDecade(10): 10,
@@ -198,15 +187,9 @@ class _FilterBar extends ConsumerWidget {
                 : controller.toggleAge(value),
           ),
           const SizedBox(width: 8),
-          _ArtOrMenu<String>(
-            art: filter.country == 'KR' ? GardenArt.filterKorea : null,
-            artWidth: 208,
-            artHeight: 95,
-            label: filter.country == null
-                ? l10n.commonAll
-                : (filter.country == 'KR' ? l10n.countryKorea : l10n.countryJapan),
-            icon: Icons.public,
-            selected: filter.country != null,
+          _ArtMenu<String>(
+            art: GardenArt.countryChip(filter.country),
+            size: GardenArt.filterCountrySize,
             options: {l10n.commonAll: null, l10n.countryKorea: 'KR', l10n.countryJapan: 'JP'},
             current: filter.country,
             onPick: (value) => value == null
@@ -233,77 +216,24 @@ class _FilterBar extends ConsumerWidget {
 
 /// 시안 그림이 있는 값이면 그림으로, 아니면 기존 텍스트 칩으로 그린다.
 /// 어느 쪽이든 **누르면 같은 메뉴**가 뜬다 — 보이는 것만 다르고 동작은 하나다.
-class _ArtOrMenu<T> extends StatelessWidget {
-  const _ArtOrMenu({
+
+
+
+/// 시안 칩(이미지)을 누르면 드롭다운이 뜬다.
+/// **칩은 이미지, 목록 글자는 ARB** — 이 앱의 UI 언어 두 종류가 한 위젯에 같이 있다.
+class _ArtMenu<T> extends StatelessWidget {
+  const _ArtMenu({
     required this.art,
-    required this.artWidth,
-    required this.artHeight,
-    required this.label,
-    required this.icon,
-    required this.selected,
+    required this.size,
     required this.options,
     required this.current,
     required this.onPick,
   });
 
-  final String? art;
-  final double artWidth;
-  final double artHeight;
-  final String label;
-  final IconData icon;
-  final bool selected;
-  final Map<String, T?> options;
-  final T? current;
-  final ValueChanged<T?> onPick;
+  final String art;
 
-  @override
-  Widget build(BuildContext context) {
-    if (art == null) {
-      return _FilterMenu<T>(
-        label: label,
-        icon: icon,
-        selected: selected,
-        options: options,
-        current: current,
-        onPick: onPick,
-      );
-    }
-    return PopupMenuButton<String>(
-      color: AppColors.surfaceHigh,
-      onSelected: (name) => onPick(options[name]),
-      itemBuilder: (context) => [
-        for (final entry in options.entries)
-          PopupMenuItem(
-            value: entry.key,
-            child: Text(
-              entry.key,
-              style: TextStyle(
-                color: entry.value == current
-                    ? AppColors.moonlight
-                    : AppColors.textPrimary,
-                fontSize: 15,
-              ),
-            ),
-          ),
-      ],
-      child: ArtImage(art!, width: artWidth, height: artHeight),
-    );
-  }
-}
-
-class _FilterMenu<T> extends StatelessWidget {
-  const _FilterMenu({
-    required this.label,
-    required this.icon,
-    required this.selected,
-    required this.options,
-    required this.current,
-    required this.onPick,
-  });
-
-  final String label;
-  final IconData icon;
-  final bool selected;
+  /// 시안 원본 픽셀(1080 캔버스 기준).
+  final Size size;
 
   /// 표시명 → 값(전체는 null)
   final Map<String, T?> options;
@@ -330,43 +260,10 @@ class _FilterMenu<T> extends StatelessWidget {
             ),
           ),
       ],
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
-        decoration: BoxDecoration(
-          color: selected ? AppColors.moonlight.withValues(alpha: 0.15) : null,
-          borderRadius: BorderRadius.circular(22),
-          border: Border.all(
-            color: selected ? AppColors.moonlight : AppColors.border,
-          ),
-        ),
-        child: Row(
-          children: [
-            Icon(
-              icon,
-              size: 18,
-              color: selected ? AppColors.moonlight : AppColors.textSecondary,
-            ),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: const TextStyle(
-                color: AppColors.textPrimary,
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const Icon(
-              Icons.keyboard_arrow_down,
-              color: AppColors.textSecondary,
-              size: 18,
-            ),
-          ],
-        ),
-      ),
+      child: ArtImage(art, width: size.width, height: size.height),
     );
   }
 }
-
 
 // ── 피드 카드 ────────────────────────────────────────────
 /// 좌우 스와이프로 스킵하며 다음 카드로 넘어간다(기획서 4-1).
@@ -464,8 +361,12 @@ class _FeedPagerState extends ConsumerState<_FeedPager> {
     return Dismissible(
       key: ValueKey(item.userId),
       onDismissed: (_) => _skip(),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(AppDimens.radiusLg),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          ClipRRect(
+        // 시안 외곽선의 라운드와 맞춘다. 값이 다르면 프레임 모서리가 잘려 보인다.
+        borderRadius: BorderRadius.circular(GardenArt.cardCornerRadius),
         child: Stack(
           fit: StackFit.expand,
           children: [
@@ -499,15 +400,6 @@ class _FeedPagerState extends ConsumerState<_FeedPager> {
                   ],
                   stops: [0.0, 0.22, 0.5, 1.0],
                 ),
-              ),
-            ),
-
-            // 시안 카드 외곽선 — 사진 위에 얹는 테두리(터치는 통과시킨다).
-            IgnorePointer(
-              child: Image.asset(
-                GardenArt.cardFrame,
-                fit: BoxFit.fill,
-                filterQuality: FilterQuality.medium,
               ),
             ),
 
@@ -655,6 +547,22 @@ class _FeedPagerState extends ConsumerState<_FeedPager> {
             ),
           ],
         ),
+          ),
+
+          // 시안 카드 외곽선 — **클립 바깥**에 얹는다.
+          // 안에 두면 위 ClipRRect가 프레임의 둥근 모서리를 잘라 각이 깎여 보인다.
+          //
+          // centerSlice로 그리는 이유: 카드 영역 비율이 원본(1029×1794)과 달라
+          // 그냥 늘이면 모서리 곡률이 찌그러진다. 가운데만 늘이고 **네 모서리는 원본 크기 유지**.
+          IgnorePointer(
+            child: Image.asset(
+              GardenArt.cardFrame,
+              fit: BoxFit.fill,
+              centerSlice: GardenArt.cardFrameCenterSlice,
+              filterQuality: FilterQuality.medium,
+            ),
+          ),
+        ],
       ),
     );
   }
