@@ -25,6 +25,11 @@
         UPDATE user_profiles SET intro = #{intro}, updated_at = NOW() WHERE user_id = #{userId}
     </update>
 
+    <!-- 관심사·지역처럼 다른 테이블을 고쳤을 때 프로필 갱신 시각만 찍는다(V8). -->
+    <update id="touchUpdatedAt">
+        UPDATE user_profiles SET updated_at = NOW() WHERE user_id = #{userId}
+    </update>
+
     <select id="selectInterests" resultType="string">
         SELECT code FROM user_interests WHERE user_id = #{userId}
     </select>

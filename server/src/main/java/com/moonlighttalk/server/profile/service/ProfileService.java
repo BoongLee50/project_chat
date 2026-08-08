@@ -124,6 +124,8 @@ public class ProfileService {
         if (!codes.isEmpty()) {
             profileMapper.insertInterests(userId, codes);
         }
+        // 관심사는 별도 테이블이라 프로필 갱신 시각이 자동으로 안 찍힌다(V8).
+        profileMapper.touchUpdatedAt(userId);
     }
 
     @Transactional
@@ -132,6 +134,7 @@ public class ProfileService {
         if (!codes.isEmpty()) {
             profileMapper.insertRegions(userId, codes);
         }
+        profileMapper.touchUpdatedAt(userId);
     }
 
     private void ensureProfileRow(String userId) {

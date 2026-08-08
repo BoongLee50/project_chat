@@ -38,6 +38,11 @@
         UPDATE posts SET one_liner = #{oneLiner} WHERE id = #{postId}
     </update>
 
+    <!-- 스킵 재노출 판정 기준(V8). 사진 등록·삭제·한마디 수정 때 서비스가 부른다. -->
+    <update id="touchContentUpdatedAt">
+        UPDATE posts SET content_updated_at = NOW() WHERE id = #{postId}
+    </update>
+
     <update id="updatePublishedAt">
         UPDATE posts SET published_at = #{publishedAt} WHERE id = #{postId}
     </update>

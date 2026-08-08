@@ -129,6 +129,8 @@ public class PostService {
         photo.setStorageKey(storageKey);
         photo.setOrderIdx(maxOrder == null ? 0 : maxOrder + 1);
         postMapper.insertPhoto(photo);
+        // 갱신 시각을 찍어야 나를 스킵했던 사람의 피드에 다시 뜬다(기획 4-1).
+        postMapper.touchContentUpdatedAt(post.getId());
     }
 
     /** 사진 삭제(= 교체). 교체 횟수를 소모한다. */
@@ -159,6 +161,7 @@ public class PostService {
 
         postMapper.deletePhoto(photoId);
         postMapper.incrementReplaceCount(post.getId());
+        postMapper.touchContentUpdatedAt(post.getId());
         fileStorageService.delete(photo.getStorageKey());
     }
 
@@ -167,6 +170,7 @@ public class PostService {
     public void updateOneLiner(String userId, String oneLiner) {
         Post post = getOrCreateTodayPost(userId);
         postMapper.updateOneLiner(post.getId(), oneLiner);
+        postMapper.touchContentUpdatedAt(post.getId());
     }
 
     /** 포스트 공유하기 — 사진과 하루 한 마디가 모두 있어야 한다. */
