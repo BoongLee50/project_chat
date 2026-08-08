@@ -52,10 +52,21 @@ class MyPost {
   final int replaceRemaining;
 
   /// 사진을 더 등록할 수 있는 상태인가.
-  bool get canAddPhoto =>
-      gateOpen &&
-      photos.length < maxPhotos &&
-      (uploadUnlimited || (remainingUploadSeconds ?? 0) > 0);
+  bool get canAddPhoto => addPhotoBlockedReason == null;
+
+  /// 사진을 못 올리는 **이유**. 올릴 수 있으면 null.
+  ///
+  /// 버튼을 그냥 죽여 두면 사용자는 고장으로 여긴다 —
+  /// 눌렀을 때 이유를 알려주려고 조건을 코드로 나눠 둔다.
+  /// 서버 `ErrorCode`와 같은 이름을 써서 문구를 그대로 재사용한다.
+  String? get addPhotoBlockedReason {
+    if (!gateOpen) return 'POST_GATE_CLOSED';
+    if (photos.length >= maxPhotos) return 'POST_PHOTO_LIMIT';
+    if (!uploadUnlimited && (remainingUploadSeconds ?? 0) <= 0) {
+      return 'POST_UPLOAD_WINDOW_CLOSED';
+    }
+    return null;
+  }
 
   factory MyPost.fromJson(Map<String, dynamic> json) => MyPost(
     sessionDate: json['sessionDate'] as String? ?? '',

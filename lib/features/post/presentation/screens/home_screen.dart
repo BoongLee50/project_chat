@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimens.dart';
+import '../../../../core/error/api_exception.dart';
 import '../../../../core/error/error_messages.dart';
 import '../../../../core/providers.dart';
 import '../../../../l10n/app_localizations.dart';
@@ -378,6 +379,22 @@ class _PostPhotoCardState extends ConsumerState<_PostPhotoCard> {
   List<PostPhoto> get _photos => widget.post.photos;
 
   /// 카메라로 촬영해 업로드. 갤러리 선택은 앨범 패스 보유자만(기획서 3-1).
+  /// 올릴 수 있으면 촬영으로, 막혀 있으면 **왜 막혔는지** 알려준다.
+  ///
+  /// 서버가 쓰는 오류 코드를 그대로 재사용하므로 문구가 한 곳(ARB)에서 관리되고
+  /// 일본어도 자동으로 따라온다.
+  Future<void> _captureOrExplain() async {
+    final reason = widget.post.addPhotoBlockedReason;
+    if (reason == null) return _capture();
+
+    _toast(
+      errorMessage(
+        L10n.of(context),
+        ApiException(message: '', code: reason),
+      ),
+    );
+  }
+
   Future<void> _capture() async {
     if (_busy) return;
     final picker = ImagePicker();
@@ -492,7 +509,8 @@ class _PostPhotoCardState extends ConsumerState<_PostPhotoCard> {
                 ),
               ),
 
-            // 촬영 버튼 — 등록 가능 시간/장수를 넘기면 비활성
+            // 촬영 버튼 — 등록 가능 시간/장수를 넘기면 흐려지지만 **눌리기는 한다**.
+            // 아무 반응이 없으면 고장으로 보이므로, 막힌 이유를 알려준다.
             Align(
               alignment: const Alignment(0, 0.92),
               child: _RoundButton(
@@ -504,7 +522,7 @@ class _PostPhotoCardState extends ConsumerState<_PostPhotoCard> {
                     ? Colors.white
                     : AppColors.textMuted,
                 size: 60,
-                onTap: widget.post.canAddPhoto ? _capture : null,
+                onTap: _captureOrExplain,
               ),
             ),
 
