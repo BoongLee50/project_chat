@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimens.dart';
+import '../../../../app/main_shell.dart';
 import '../../../../core/error/error_messages.dart';
+import '../../../../core/util/freshness.dart';
 import '../../../../shared/widgets/gate_notice.dart';
 import '../../../../shared/widgets/authed_image.dart';
 import '../../data/models/feed_item.dart';
@@ -39,7 +41,12 @@ class GardenScreen extends ConsumerWidget {
     final feed = ref.watch(feedProvider);
     final scale = GardenArt.scaleOf(context);
 
-    return Stack(
+    // 피드는 소켓으로 알려줄 방법이 없어, 탭에 다시 들어왔을 때 낡았으면 조용히 다시 읽는다.
+    // (스킵했던 사람이 사진·프로필을 갱신하면 다시 뜨는 걸 여기서 반영한다)
+    return RefreshOnVisible(
+      isVisible: ref.watch(selectedTabProvider) == MainTab.garden,
+      onStale: () => ref.read(feedProvider.notifier).refreshIfStale(),
+      child: Stack(
       children: [
         // 시안 배경(정원 야경) — 상단에 붙이고 아래는 어둠으로 이어진다.
         Positioned(
@@ -92,6 +99,7 @@ class GardenScreen extends ConsumerWidget {
       ),
         ),
       ],
+      ),
     );
   }
 }

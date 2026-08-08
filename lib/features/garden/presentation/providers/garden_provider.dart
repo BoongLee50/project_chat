@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/error/api_exception.dart';
 import '../../../../core/providers.dart';
+import '../../../../core/util/freshness.dart';
 import '../../data/models/feed_item.dart';
 
 /// 현재 적용된 피드 필터(성별/연령대/국가). 바뀌면 피드를 다시 읽는다.
@@ -30,8 +31,13 @@ final feedFilterProvider = NotifierProvider<FeedFilterController, FeedFilter>(
 final spotlightProvider = StateProvider<bool>((ref) => false);
 
 /// 피드 목록. 필터/스포트라이트가 바뀌면 자동으로 다시 조회된다.
-class FeedController extends AsyncNotifier<List<FeedItem>> {
+class FeedController extends AsyncNotifier<List<FeedItem>>
+    implements RefreshableIfStale {
   String? _nextCursor;
+
+  /// 피드는 서버가 알려줄 방법이 없어(소켓 이벤트가 없다) 시간으로 끊는다.
+  /// 스킵했던 사람이 사진·프로필을 갱신하면 다시 뜨는데, 그걸 보려면 다시 읽어야 한다.
+  final _freshness = Freshness();
 
   @override
   Future<List<FeedItem>> build() async {
@@ -47,12 +53,23 @@ class FeedController extends AsyncNotifier<List<FeedItem>> {
           spotlight: spotlight,
         );
     _nextCursor = page.nextCursor;
+    _freshness.markLoaded();
     return page.items;
   }
 
   Future<void> refresh() async {
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(() => build());
+  }
+
+  /// 탭에 다시 들어오거나 앱이 복귀했을 때 호출된다.
+  /// 방금 읽었으면 아무것도 하지 않는다 — 탭을 오갈 때마다 요청이 나가지 않도록.
+  @override
+  Future<void> refreshIfStale() async {
+    if (!_freshness.isStale) return;
+    // 조용히 바꾼다 — 로딩 스피너를 띄우면 보고 있던 카드가 사라져 깜빡인다.
+    final next = await AsyncValue.guard(() => build());
+    if (next.hasValue) state = next;
   }
 
   /// 다음 페이지를 이어붙인다(끝이면 아무것도 하지 않음).
