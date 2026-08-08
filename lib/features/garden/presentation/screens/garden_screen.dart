@@ -180,9 +180,7 @@ class _FilterBar extends ConsumerWidget {
             size: GardenArt.filterGenderSize,
             options: {l10n.commonAll: null, l10n.genderFemale: 'FEMALE', l10n.genderMale: 'MALE'},
             current: filter.gender,
-            onPick: (value) => value == null
-                ? controller.toggleGender(filter.gender ?? '')
-                : controller.toggleGender(value),
+            onPick: controller.selectGender,
           ),
           const SizedBox(width: 8),
           _ArtMenu<int>(
@@ -196,9 +194,7 @@ class _FilterBar extends ConsumerWidget {
               l10n.ageDecade(40): 40,
             },
             current: filter.ageDecade,
-            onPick: (value) => value == null
-                ? controller.toggleAge(filter.ageDecade ?? -1)
-                : controller.toggleAge(value),
+            onPick: controller.selectAge,
           ),
           const SizedBox(width: 8),
           _ArtMenu<String>(
@@ -206,9 +202,7 @@ class _FilterBar extends ConsumerWidget {
             size: GardenArt.filterCountrySize,
             options: {l10n.commonAll: null, l10n.countryKorea: 'KR', l10n.countryJapan: 'JP'},
             current: filter.country,
-            onPick: (value) => value == null
-                ? controller.toggleCountry(filter.country ?? '')
-                : controller.toggleCountry(value),
+            onPick: controller.selectCountry,
           ),
           const SizedBox(width: 8),
           // 스포트라이트는 켠 상태 그림만 있다 — 끈 상태는 흐리게 그려 구분한다.

@@ -10,15 +10,22 @@ class FeedFilterController extends Notifier<FeedFilter> {
   @override
   FeedFilter build() => const FeedFilter();
 
-  void toggleGender(String value) => state = state.gender == value
+  // 드롭다운은 **고른 값을 그대로 적용**한다(토글이 아니다).
+  // 셋 다 항상 하나가 선택된 상태이고, null이 "전체"라는 선택이다.
+  //
+  // 전에는 토글이라 같은 값을 다시 고르면 해제됐고, 이미 "전체"인데 "전체"를 다시
+  // 고르면 gender=''·ageDecade=-1 같은 **없는 값**이 됐다. 목록에서 고르는 UI에
+  // 토글은 맞지 않는다 — 고른 게 그대로 켜져야 한다.
+
+  void selectGender(String? value) => state = value == null
       ? state.copyWith(clearGender: true)
       : state.copyWith(gender: value);
 
-  void toggleAge(int decade) => state = state.ageDecade == decade
+  void selectAge(int? decade) => state = decade == null
       ? state.copyWith(clearAge: true)
       : state.copyWith(ageDecade: decade);
 
-  void toggleCountry(String value) => state = state.country == value
+  void selectCountry(String? value) => state = value == null
       ? state.copyWith(clearCountry: true)
       : state.copyWith(country: value);
 }
