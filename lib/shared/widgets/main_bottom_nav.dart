@@ -32,7 +32,13 @@ class MainBottomNav extends StatelessWidget {
   Widget build(BuildContext context) {
     final labels = _labels(L10n.of(context));
     return Container(
-      margin: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+      // 좌우 여백은 토큰을 쓴다 — 달빛가든 카드가 이 폭에 맞춰 그려진다.
+      margin: const EdgeInsets.fromLTRB(
+        AppDimens.navSidePad,
+        0,
+        AppDimens.navSidePad,
+        8,
+      ),
       padding: const EdgeInsets.symmetric(vertical: 10),
       decoration: BoxDecoration(
         color: AppColors.night,

@@ -43,14 +43,21 @@ class GardenScreen extends ConsumerWidget {
 
     // 피드는 소켓으로 알려줄 방법이 없어, 탭에 다시 들어왔을 때 낡았으면 조용히 다시 읽는다.
     // (스킵했던 사람이 사진·프로필을 갱신하면 다시 뜨는 걸 여기서 반영한다)
+    // 셸이 SafeArea로 상태바만큼 밀어 놨지만, 시안은 배경이 **화면 맨 위까지** 올라간다.
+    // SafeArea 안에서는 padding·viewPadding이 둘 다 깎여 상태바 높이를 알 수 없으므로,
+    // 화면(View)에서 직접 읽는다.
+    final statusBar = MediaQueryData.fromView(View.of(context)).padding.top;
+
     return RefreshOnVisible(
       isVisible: ref.watch(selectedTabProvider) == MainTab.garden,
       onStale: () => ref.read(feedProvider.notifier).refreshIfStale(),
       child: Stack(
+      // 배경을 상태바 뒤까지 올리려면 Stack이 자르지 않아야 한다(기본값은 자름).
+      clipBehavior: Clip.none,
       children: [
-        // 시안 배경(정원 야경) — 상단에 붙이고 아래는 어둠으로 이어진다.
+        // 시안 배경(정원 야경) — 상태바 뒤까지 덮고 아래는 어둠으로 이어진다.
         Positioned(
-          top: 0,
+          top: -statusBar,
           left: 0,
           right: 0,
           child: Image.asset(
@@ -61,16 +68,23 @@ class GardenScreen extends ConsumerWidget {
         ),
         Padding(
           padding: EdgeInsets.fromLTRB(
-            AppDimens.pagePad,
+            // 하단 5탭과 **좌우 폭을 맞춘다**(시안에서 카드와 내비가 같은 선에 있다).
+            AppDimens.navSidePad,
             // 시안 타이틀 위치(3.74 단위)에 맞춘다.
             GardenArt.unit * 3.74 * scale,
-            AppDimens.pagePad,
+            AppDimens.navSidePad,
             AppDimens.gapMd,
           ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const _GardenHeader(),
+          // 시안에서 타이틀(1.66)은 카드·필터(0.93~0.95)보다 안쪽에 있다 — 그만큼만 더 준다.
+          Padding(
+            padding: EdgeInsets.symmetric(
+              horizontal: GardenArt.unit * (1.66 - 0.93) * scale,
+            ),
+            child: const _GardenHeader(),
+          ),
           const SizedBox(height: AppDimens.gapMd),
           const _FilterBar(),
           const SizedBox(height: AppDimens.gapMd),
