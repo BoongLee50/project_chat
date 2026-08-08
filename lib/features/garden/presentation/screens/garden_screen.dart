@@ -9,8 +9,12 @@ import '../../../../shared/widgets/authed_image.dart';
 import '../../data/models/feed_item.dart';
 import '../../../chat/presentation/providers/chat_provider.dart';
 import '../../../auth/presentation/providers/gate_provider.dart';
+import '../../../profile/data/models/profile_catalog.dart';
+import '../../../store/presentation/screens/luna_store_screen.dart';
+import '../../../store/presentation/screens/prime_screen.dart';
 import '../providers/garden_provider.dart';
 import '../widgets/comments_sheet.dart';
+import '../widgets/garden_art.dart';
 import '../../../../l10n/app_localizations.dart';
 
 /// 달빛가든 — 포스트 사진 피드. 메인 셸의 l10n.gardenTitle 탭 본문. (기획서 4장)
@@ -33,14 +37,29 @@ class GardenScreen extends ConsumerWidget {
     }
 
     final feed = ref.watch(feedProvider);
+    final scale = GardenArt.scaleOf(context);
 
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        AppDimens.pagePad,
-        AppDimens.gapMd,
-        AppDimens.pagePad,
-        AppDimens.gapMd,
-      ),
+    return Stack(
+      children: [
+        // 시안 배경(정원 야경) — 상단에 붙이고 아래는 어둠으로 이어진다.
+        Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          child: Image.asset(
+            GardenArt.background,
+            fit: BoxFit.fitWidth,
+            alignment: Alignment.topCenter,
+          ),
+        ),
+        Padding(
+          padding: EdgeInsets.fromLTRB(
+            AppDimens.pagePad,
+            // 시안 타이틀 위치(3.74 단위)에 맞춘다.
+            GardenArt.unit * 3.74 * scale,
+            AppDimens.pagePad,
+            AppDimens.gapMd,
+          ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -71,6 +90,8 @@ class GardenScreen extends ConsumerWidget {
           ),
         ],
       ),
+        ),
+      ],
     );
   }
 }
@@ -89,39 +110,27 @@ class _GardenHeader extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  Text(
-                    l10n.gardenTitle,
-                    style: TextStyle(
-                      color: AppColors.textPrimary,
-                      fontSize: 24,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                  SizedBox(width: 8),
-                  Icon(
-                    Icons.nightlight_round,
-                    color: AppColors.moonlight,
-                    size: 22,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 4),
+              // 타이틀은 **이미지**다(글자가 구워져 있음). 일본어판은 이미지를 교체한다.
+              const ArtImage(GardenArt.title, width: 278, height: 71),
+              const SizedBox(height: 6),
+              // 부제는 **폰트**다 — ARB가 그리므로 언어를 따라간다.
               Text(
                 l10n.gardenSubtitle,
-                style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
+                style: TextStyle(color: AppColors.textPrimary, fontSize: 13),
               ),
             ],
           ),
         ),
-        const Icon(
-          Icons.notifications_none_rounded,
-          color: AppColors.textPrimary,
-          size: 26,
+        // Prime · 루나상점 진입(시안 20.38 / 29.58 위치)
+        GestureDetector(
+          onTap: () => Navigator.of(context).push(PrimeScreen.route()),
+          child: const ArtImage(GardenArt.btnPrime, width: 248, height: 83),
         ),
-        const SizedBox(width: 16),
-        const Icon(Icons.tune_rounded, color: AppColors.textPrimary, size: 26),
+        const SizedBox(width: 6),
+        GestureDetector(
+          onTap: () => Navigator.of(context).push(LunaStoreScreen.route()),
+          child: const ArtImage(GardenArt.btnLuna, width: 216, height: 83),
+        ),
       ],
     );
   }
@@ -138,11 +147,17 @@ class _FilterBar extends ConsumerWidget {
     final controller = ref.read(feedFilterProvider.notifier);
     final spotlight = ref.watch(spotlightProvider);
 
+    // 시안 리소스는 **한 상태의 라벨이 구워진 그림**이다(여자·20대·한국).
+    // 그래서 그 값일 때만 그림을 쓰고, 다른 값이면 기존 텍스트 칩으로 돌아간다.
+    // 나머지 상태(남자·10/30/40대·일본·전체) 그림을 받으면 여기 한 줄씩 늘리면 된다.
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
         children: [
-          _FilterMenu<String>(
+          _ArtOrMenu<String>(
+            art: filter.gender == 'FEMALE' ? GardenArt.filterFemale : null,
+            artWidth: 217,
+            artHeight: 94,
             label: filter.gender == null
                 ? l10n.commonAll
                 : (filter.gender == 'FEMALE' ? l10n.genderFemale : l10n.genderMale),
@@ -155,7 +170,10 @@ class _FilterBar extends ConsumerWidget {
                 : controller.toggleGender(value),
           ),
           const SizedBox(width: 8),
-          _FilterMenu<int>(
+          _ArtOrMenu<int>(
+            art: filter.ageDecade == 20 ? GardenArt.filter20s : null,
+            artWidth: 227,
+            artHeight: 94,
             label: filter.ageDecade == null ? l10n.commonAll : l10n.ageDecade(filter.ageDecade!),
             icon: Icons.person_outline,
             selected: filter.ageDecade != null,
@@ -172,7 +190,10 @@ class _FilterBar extends ConsumerWidget {
                 : controller.toggleAge(value),
           ),
           const SizedBox(width: 8),
-          _FilterMenu<String>(
+          _ArtOrMenu<String>(
+            art: filter.country == 'KR' ? GardenArt.filterKorea : null,
+            artWidth: 208,
+            artHeight: 95,
             label: filter.country == null
                 ? l10n.commonAll
                 : (filter.country == 'KR' ? l10n.countryKorea : l10n.countryJapan),
@@ -185,13 +206,79 @@ class _FilterBar extends ConsumerWidget {
                 : controller.toggleCountry(value),
           ),
           const SizedBox(width: 8),
-          _SpotlightChip(
-            active: spotlight,
+          // 스포트라이트는 켠 상태 그림만 있다 — 끈 상태는 흐리게 그려 구분한다.
+          GestureDetector(
             onTap: () =>
                 ref.read(spotlightProvider.notifier).state = !spotlight,
+            child: ArtImage(
+              GardenArt.filterSpotlight,
+              width: 334,
+              height: 94,
+              opacity: spotlight ? 1.0 : 0.45,
+            ),
           ),
         ],
       ),
+    );
+  }
+}
+
+/// 시안 그림이 있는 값이면 그림으로, 아니면 기존 텍스트 칩으로 그린다.
+/// 어느 쪽이든 **누르면 같은 메뉴**가 뜬다 — 보이는 것만 다르고 동작은 하나다.
+class _ArtOrMenu<T> extends StatelessWidget {
+  const _ArtOrMenu({
+    required this.art,
+    required this.artWidth,
+    required this.artHeight,
+    required this.label,
+    required this.icon,
+    required this.selected,
+    required this.options,
+    required this.current,
+    required this.onPick,
+  });
+
+  final String? art;
+  final double artWidth;
+  final double artHeight;
+  final String label;
+  final IconData icon;
+  final bool selected;
+  final Map<String, T?> options;
+  final T? current;
+  final ValueChanged<T?> onPick;
+
+  @override
+  Widget build(BuildContext context) {
+    if (art == null) {
+      return _FilterMenu<T>(
+        label: label,
+        icon: icon,
+        selected: selected,
+        options: options,
+        current: current,
+        onPick: onPick,
+      );
+    }
+    return PopupMenuButton<String>(
+      color: AppColors.surfaceHigh,
+      onSelected: (name) => onPick(options[name]),
+      itemBuilder: (context) => [
+        for (final entry in options.entries)
+          PopupMenuItem(
+            value: entry.key,
+            child: Text(
+              entry.key,
+              style: TextStyle(
+                color: entry.value == current
+                    ? AppColors.moonlight
+                    : AppColors.textPrimary,
+                fontSize: 15,
+              ),
+            ),
+          ),
+      ],
+      child: ArtImage(art!, width: artWidth, height: artHeight),
     );
   }
 }
@@ -272,50 +359,6 @@ class _FilterMenu<T> extends StatelessWidget {
   }
 }
 
-class _SpotlightChip extends StatelessWidget {
-  const _SpotlightChip({required this.active, required this.onTap});
-
-  final bool active;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = L10n.of(context);
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(22),
-          gradient: active
-              ? const LinearGradient(
-                  colors: [AppColors.moonlightDeep, AppColors.moonlight],
-                )
-              : null,
-          border: active ? null : Border.all(color: AppColors.border),
-        ),
-        child: Row(
-          children: [
-            Icon(
-              Icons.auto_awesome,
-              color: active ? Colors.white : AppColors.textSecondary,
-              size: 18,
-            ),
-            const SizedBox(width: 6),
-            Text(
-              l10n.gardenSpotlight,
-              style: TextStyle(
-                color: active ? Colors.white : AppColors.textSecondary,
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
 
 // ── 피드 카드 ────────────────────────────────────────────
 /// 좌우 스와이프로 스킵하며 다음 카드로 넘어간다(기획서 4-1).
@@ -451,6 +494,15 @@ class _FeedPagerState extends ConsumerState<_FeedPager> {
               ),
             ),
 
+            // 시안 카드 외곽선 — 사진 위에 얹는 테두리(터치는 통과시킨다).
+            IgnorePointer(
+              child: Image.asset(
+                GardenArt.cardFrame,
+                fit: BoxFit.fill,
+                filterQuality: FilterQuality.medium,
+              ),
+            ),
+
             // 상단: 이름 · 국기 · PICK · 접속중
             Positioned(
               top: 16,
@@ -471,13 +523,17 @@ class _FeedPagerState extends ConsumerState<_FeedPager> {
                       ),
                     ),
                   ),
+                  // 국기 — 한국은 시안 그림, 그 외는 이모지(이모지는 기기마다 모양이 다름)
                   if (item.flag.isNotEmpty) ...[
                     const SizedBox(width: 8),
-                    Text(item.flag, style: const TextStyle(fontSize: 20)),
+                    if (item.country == 'KR')
+                      const ArtImage(GardenArt.flagKr, width: 70, height: 71)
+                    else
+                      Text(item.flag, style: const TextStyle(fontSize: 20)),
                   ],
                   if (item.pick) ...[
                     const SizedBox(width: 8),
-                    const _PickBadge(),
+                    const ArtImage(GardenArt.badgePick, width: 144, height: 71),
                   ],
                   if (item.online) ...[
                     const SizedBox(width: 8),
@@ -516,23 +572,35 @@ class _FeedPagerState extends ConsumerState<_FeedPager> {
                       runSpacing: 6,
                       children: [
                         for (final code in item.interests)
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 5,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.18),
-                              borderRadius: BorderRadius.circular(14),
-                            ),
-                            child: Text(
-                              code,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 13,
+                          // 영화만 시안 그림이 있다. 나머지는 기존 칩 —
+                          // 관심사 37종 전체 그림을 받으면 코드→에셋 표로 바꾸면 된다.
+                          if (code == 'MOVIE')
+                            const ArtImage(
+                              GardenArt.interestMovie,
+                              width: 204,
+                              height: 88,
+                            )
+                          else
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 5,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.18),
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                              child: Text(
+                                ProfileCatalog.interestLabel(
+                                  L10n.of(context),
+                                  code,
+                                ),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 13,
+                                ),
                               ),
                             ),
-                          ),
                       ],
                     )
                   else
@@ -547,16 +615,18 @@ class _FeedPagerState extends ConsumerState<_FeedPager> {
                   const SizedBox(height: 16),
                   Row(
                     children: [
-                      _IconCount(
-                        icon: Icons.favorite,
-                        color: const Color(0xFFE85D6E),
+                      _ArtCount(
+                        asset: GardenArt.iconHeart,
+                        width: 72,
+                        height: 67,
                         label: '${item.likes}',
                         onTap: _like,
                       ),
                       const SizedBox(width: 20),
-                      _IconCount(
-                        icon: Icons.chat_bubble_outline,
-                        color: Colors.white,
+                      _ArtCount(
+                        asset: GardenArt.iconComment,
+                        width: 68,
+                        height: 71,
                         label: '${item.comments}',
                         onTap: () => showCommentsSheet(context, item),
                       ),
@@ -564,18 +634,10 @@ class _FeedPagerState extends ConsumerState<_FeedPager> {
                       // 대화 신청 — 100자 메시지를 적어 보낸다(기획서 4-3)
                       GestureDetector(
                         onTap: () => _requestChat(item),
-                        child: Container(
-                          width: 48,
-                          height: 48,
-                          decoration: const BoxDecoration(
-                            color: AppColors.gold,
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.mail_outline,
-                            color: Color(0xFF2A2400),
-                            size: 24,
-                          ),
+                        child: const ArtImage(
+                          GardenArt.btnChatRequest,
+                          width: 144,
+                          height: 145,
                         ),
                       ),
                     ],
@@ -590,16 +652,19 @@ class _FeedPagerState extends ConsumerState<_FeedPager> {
   }
 }
 
-class _IconCount extends StatelessWidget {
-  const _IconCount({
-    required this.icon,
-    required this.color,
+/// 시안 아이콘 + 숫자. 숫자는 **폰트**라 그대로 두고 아이콘만 그림으로 바꿨다.
+class _ArtCount extends StatelessWidget {
+  const _ArtCount({
+    required this.asset,
+    required this.width,
+    required this.height,
     required this.label,
     required this.onTap,
   });
 
-  final IconData icon;
-  final Color color;
+  final String asset;
+  final double width;
+  final double height;
   final String label;
   final VoidCallback onTap;
 
@@ -607,17 +672,17 @@ class _IconCount extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      behavior: HitTestBehavior.opaque,
       child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: color, size: 24),
-          const SizedBox(width: 6),
+          ArtImage(asset, width: width, height: height),
+          const SizedBox(width: 8),
           Text(
             label,
             style: const TextStyle(
               color: Colors.white,
               fontSize: 16,
-              fontWeight: FontWeight.w600,
+              fontWeight: FontWeight.w700,
             ),
           ),
         ],
@@ -626,28 +691,7 @@ class _IconCount extends StatelessWidget {
   }
 }
 
-class _PickBadge extends StatelessWidget {
-  const _PickBadge();
 
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-      decoration: BoxDecoration(
-        color: AppColors.gold,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: const Text(
-        'PICK',
-        style: TextStyle(
-          color: Color(0xFF2A2400),
-          fontSize: 12,
-          fontWeight: FontWeight.w800,
-        ),
-      ),
-    );
-  }
-}
 
 class _OnlineBadge extends StatelessWidget {
   const _OnlineBadge();

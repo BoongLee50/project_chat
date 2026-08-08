@@ -71,8 +71,10 @@ flutter:
 
   # 이미지 등 에셋 폴더 등록. (유니티와 달리 폴더에 넣는 것만으로는 인식되지 않고
   # 여기에 명시해야 앱이 로드한다.)
+  # 하위 폴더는 자동으로 포함되지 않는다 — 폴더마다 한 줄씩 적어야 한다.
   assets:
     - assets/images/
+    - assets/images/garden/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
