@@ -171,21 +171,29 @@ class _FilterBar extends ConsumerWidget {
 
     // 필터 칩은 전 상태의 그림이 있다(전체 포함) — 텍스트 폴백이 필요 없다.
     // 누르면 뜨는 **드롭다운 목록의 글자는 ARB**다(폰트). 칩만 이미지다.
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
+    //
+    // 시안은 네 칩이 한 줄에 **딱 맞게** 놓인다(스크롤 없음). 화면 폭에 맞춰
+    // 배율을 직접 구해 그린다 — 화면 폭 기준 고정 배율을 쓰면 여백·간격 차이만큼
+    // 넘쳐서 스포트라이트가 잘렸다.
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final s = GardenArt.filterRowScale(constraints.maxWidth);
+        final gap = GardenArt.filterGap * s;
+        return Row(
         children: [
           _ArtMenu<String>(
             art: GardenArt.genderChip(filter.gender),
             size: GardenArt.filterGenderSize,
+            scale: s,
             options: {l10n.commonAll: null, l10n.genderFemale: 'FEMALE', l10n.genderMale: 'MALE'},
             current: filter.gender,
             onPick: controller.selectGender,
           ),
-          const SizedBox(width: 8),
+          SizedBox(width: gap),
           _ArtMenu<int>(
             art: GardenArt.ageChip(filter.ageDecade),
             size: GardenArt.filterAgeSize,
+            scale: s,
             options: {
               l10n.commonAll: null,
               l10n.ageDecade(10): 10,
@@ -196,34 +204,34 @@ class _FilterBar extends ConsumerWidget {
             current: filter.ageDecade,
             onPick: controller.selectAge,
           ),
-          const SizedBox(width: 8),
+          SizedBox(width: gap),
           _ArtMenu<String>(
             art: GardenArt.countryChip(filter.country),
             size: GardenArt.filterCountrySize,
+            scale: s,
             options: {l10n.commonAll: null, l10n.countryKorea: 'KR', l10n.countryJapan: 'JP'},
             current: filter.country,
             onPick: controller.selectCountry,
           ),
-          const SizedBox(width: 8),
+          SizedBox(width: gap),
           // 스포트라이트는 켠 상태 그림만 있다 — 끈 상태는 흐리게 그려 구분한다.
           GestureDetector(
             onTap: () =>
                 ref.read(spotlightProvider.notifier).state = !spotlight,
             child: ArtImage(
               GardenArt.filterSpotlight,
-              width: 334,
-              height: 94,
+              width: GardenArt.filterSpotlightSize.width,
+              height: GardenArt.filterSpotlightSize.height,
+              scale: s,
               opacity: spotlight ? 1.0 : 0.45,
             ),
           ),
         ],
-      ),
+        );
+      },
     );
   }
 }
-
-/// 시안 그림이 있는 값이면 그림으로, 아니면 기존 텍스트 칩으로 그린다.
-/// 어느 쪽이든 **누르면 같은 메뉴**가 뜬다 — 보이는 것만 다르고 동작은 하나다.
 
 
 
@@ -233,6 +241,7 @@ class _ArtMenu<T> extends StatelessWidget {
   const _ArtMenu({
     required this.art,
     required this.size,
+    required this.scale,
     required this.options,
     required this.current,
     required this.onPick,
@@ -242,6 +251,9 @@ class _ArtMenu<T> extends StatelessWidget {
 
   /// 시안 원본 픽셀(1080 캔버스 기준).
   final Size size;
+
+  /// 필터 바가 한 줄에 딱 맞도록 계산한 배율.
+  final double scale;
 
   /// 표시명 → 값(전체는 null)
   final Map<String, T?> options;
@@ -268,7 +280,7 @@ class _ArtMenu<T> extends StatelessWidget {
             ),
           ),
       ],
-      child: ArtImage(art, width: size.width, height: size.height),
+      child: ArtImage(art, width: size.width, height: size.height, scale: scale),
     );
   }
 }

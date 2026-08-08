@@ -41,6 +41,20 @@ class GardenArt {
   static const Size filterCountrySize = Size(208, 95);
   static const Size filterSpotlightSize = Size(334, 94);
 
+  /// 칩 사이 간격(시안 원본 기준). 시안에서 칩 끝과 다음 칩 시작 사이가 13~15px이다.
+  static const double filterGap = 14;
+
+  /// 필터 네 칩이 **주어진 폭에 딱 맞도록** 하는 배율.
+  ///
+  /// 화면 폭 기준 고정 배율([scaleOf])을 쓰면 좌우 여백·간격이 시안보다 커서
+  /// 마지막 칩(스포트라이트)이 넘쳐 스크롤이 생긴다. 시안은 한 줄에 딱 맞으므로
+  /// **남은 폭을 네 칩이 나눠 갖도록** 배율을 되계산한다.
+  static double filterRowScale(double availableWidth) {
+    const designTotal =
+        217 + 227 + 208 + 334 + filterGap * 3; // 칩 폭 합 + 간격 3개
+    return availableWidth / designTotal;
+  }
+
   /// 값 → 그림. 이제 모든 상태에 그림이 있어 텍스트 폴백이 필요 없다.
   static String genderChip(String? gender) => switch (gender) {
     'FEMALE' => filterFemale,
@@ -103,6 +117,7 @@ class ArtImage extends StatelessWidget {
     this.asset, {
     required this.width,
     required this.height,
+    this.scale,
     this.opacity = 1.0,
     super.key,
   });
@@ -111,11 +126,16 @@ class ArtImage extends StatelessWidget {
   final double width;
   final double height;
   final String asset;
+
+  /// 배율을 직접 줄 때 사용. 없으면 화면 폭 기준([GardenArt.scaleOf]).
+  /// 필터 바처럼 **주어진 폭에 딱 맞춰야** 하는 곳에서 계산한 값을 넘긴다.
+  final double? scale;
+
   final double opacity;
 
   @override
   Widget build(BuildContext context) {
-    final s = GardenArt.scaleOf(context);
+    final s = scale ?? GardenArt.scaleOf(context);
     final image = Image.asset(
       asset,
       width: width * s,
