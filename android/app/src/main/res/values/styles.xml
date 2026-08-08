@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Theme applied to the Android Window while the process is starting when the OS's Dark Mode setting is off -->
-    <style name="LaunchTheme" parent="@android:style/Theme.Light.NoTitleBar">
+    <!--
+      달빛톡은 **다크 테마 고정**이다. OS가 라이트 모드여도 앱은 어둡게 뜬다.
+      그래서 values(라이트)에도 Black 테마를 쓴다 — 기본값(Theme.Light)을 두면
+      앱이 뜨기 전 흰 화면이 번쩍이고, 시스템이 내비게이션 바 자리에 밝은 배경을 깐다.
+    -->
+    <style name="LaunchTheme" parent="@android:style/Theme.Black.NoTitleBar">
         <!-- Show a splash screen on the activity. Automatically removed when
              the Flutter engine draws its first frame -->
         <item name="android:windowBackground">@drawable/launch_background</item>
@@ -12,7 +16,17 @@
          running.
 
          This Theme is only used starting with V2 of Flutter's Android embedding. -->
-    <style name="NormalTheme" parent="@android:style/Theme.Light.NoTitleBar">
+    <style name="NormalTheme" parent="@android:style/Theme.Black.NoTitleBar">
         <item name="android:windowBackground">?android:colorBackground</item>
+
+        <!--
+          안드로이드 15+는 edge-to-edge가 강제라 앱이 시스템 바 뒤까지 그린다.
+          그런데 **3버튼 내비게이션**이면 시스템이 가독성을 위해 밝은 대비 스크림을
+          자동으로 덧씌운다 — 다크 앱인데 내비 영역만 회색으로 뜨던 원인이 이것이다.
+          앱 배경이 이미 어두워 대비가 충분하므로 끈다.
+          (systemNavigationBarColor 지정은 15+에서 무시되므로 이 방법을 써야 한다)
+        -->
+        <item name="android:enforceNavigationBarContrast">false</item>
+        <item name="android:enforceStatusBarContrast">false</item>
     </style>
 </resources>
