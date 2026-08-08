@@ -57,9 +57,15 @@
           AND NOT EXISTS (SELECT 1 FROM reports r
                           WHERE (r.reporter_id = #{userId} AND r.target_id = u.id)
                              OR (r.reporter_id = u.id AND r.target_id = #{userId}))
+        <!--
+          스킵은 당일 재노출을 막지만 **영구 제외가 아니다**(기획 4-1).
+          볼 게 다 떨어지면 호출부가 includeSkipped=true로 다시 물어본다.
+        -->
+        <if test="!includeSkipped">
           AND NOT EXISTS (SELECT 1 FROM feed_skips s
                           WHERE s.user_id = #{userId} AND s.target_user_id = u.id
                             AND s.session_date = #{sessionDate})
+        </if>
         <if test="gender != null">AND u.gender = #{gender}</if>
         <if test="country != null">AND u.country = #{country}</if>
         <if test="ageMin != null">

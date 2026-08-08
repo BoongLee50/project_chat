@@ -87,7 +87,17 @@ public class GardenService {
         Integer ageMax = age == null ? null : age + 9;
 
         List<FeedCandidate> candidates = gardenMapper.selectFeedCandidates(
-                userId, sessionDate, emptyToNull(gender), emptyToNull(country), ageMin, ageMax, spotlight);
+                userId, sessionDate, emptyToNull(gender), emptyToNull(country), ageMin, ageMax,
+                spotlight, false);
+
+        // 스킵은 "안 보여준다"가 아니라 **우선순위에서 뒤로 미룬다**는 뜻이다(기획 4-1).
+        // 그래서 볼 게 다 떨어지면 스킵했던 사람도 다시 후보에 넣는다.
+        // 이렇게 하지 않으면 초기 서비스처럼 사람이 적을 때 피드가 금세 비어 버린다.
+        if (candidates.isEmpty()) {
+            candidates = gardenMapper.selectFeedCandidates(
+                    userId, sessionDate, emptyToNull(gender), emptyToNull(country), ageMin, ageMax,
+                    spotlight, true);
+        }
 
         // Pick Point는 "지금 부스트를 켠 사람"에게 준다(02 §1.7). 한 번만 조회해 재사용.
         Set<String> boosted = new HashSet<>(entitlementService.boostedUserIds());

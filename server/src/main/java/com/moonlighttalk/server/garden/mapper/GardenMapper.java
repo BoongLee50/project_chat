@@ -22,7 +22,9 @@ public interface GardenMapper {
             @Param("country") String country,
             @Param("ageMin") Integer ageMin,
             @Param("ageMax") Integer ageMax,
-            @Param("premiumOnly") boolean premiumOnly);
+            @Param("premiumOnly") boolean premiumOnly,
+            /// true면 내가 스킵한 상대도 후보에 넣는다(볼 게 다 떨어졌을 때).
+            @Param("includeSkipped") boolean includeSkipped);
 
     /** 사진 URL 계산용 storage key 목록(노출 순서대로). */
     List<String> selectPhotoKeys(@Param("postId") String postId);
