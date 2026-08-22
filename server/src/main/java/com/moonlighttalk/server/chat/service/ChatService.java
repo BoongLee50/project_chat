@@ -18,6 +18,7 @@ import com.moonlighttalk.server.store.service.EntitlementService;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
@@ -36,8 +37,7 @@ import java.util.UUID;
 @Service
 public class ChatService {
 
-    private static final int LUNA_COST = 5;
-    private static final int FREE_REQUESTS_PER_DAY = 2;
+    /** 한 번에 내려주는 메시지 수. 기획 수치가 아니라 통신 파라미터라 설정으로 빼지 않는다. */
     private static final int MESSAGE_PAGE_SIZE = 30;
     private static final String USAGE_CHAT_REQUEST = "CHAT_REQUEST";
 
@@ -50,6 +50,12 @@ public class ChatService {
     private final FileStorageService fileStorageService;
     private final EntitlementService entitlementService;
 
+    /** 무료 횟수를 다 쓴 뒤 대화 신청 1건당 차감할 루나. */
+    private final int lunaCost;
+
+    /** 하루에 공짜로 보낼 수 있는 대화 신청 수. */
+    private final int freeRequestsPerDay;
+
     public ChatService(ChatMapper chatMapper,
                         UserMapper userMapper,
                         GardenMapper gardenMapper,
@@ -57,7 +63,9 @@ public class ChatService {
                         GateService gateService,
                         SocketRegistry socketRegistry,
                         FileStorageService fileStorageService,
-                        EntitlementService entitlementService) {
+                        EntitlementService entitlementService,
+                        @Value("${app.chat.request-luna-cost:5}") int lunaCost,
+                        @Value("${app.chat.free-requests-per-day:2}") int freeRequestsPerDay) {
         this.chatMapper = chatMapper;
         this.userMapper = userMapper;
         this.gardenMapper = gardenMapper;
@@ -66,6 +74,8 @@ public class ChatService {
         this.socketRegistry = socketRegistry;
         this.fileStorageService = fileStorageService;
         this.entitlementService = entitlementService;
+        this.lunaCost = lunaCost;
+        this.freeRequestsPerDay = freeRequestsPerDay;
     }
 
     // ── 대화 신청 ───────────────────────────────────────────
@@ -94,8 +104,8 @@ public class ChatService {
 
         if (!premium) {
             int used = lunaService.dailyUsed(userId, gateService.currentSessionDate(), USAGE_CHAT_REQUEST);
-            if (used >= FREE_REQUESTS_PER_DAY) {
-                cost = LUNA_COST;
+            if (used >= freeRequestsPerDay) {
+                cost = lunaCost;
             }
         }
 

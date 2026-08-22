@@ -14,6 +14,7 @@ import com.moonlighttalk.server.presence.PresenceService;
 import com.moonlighttalk.server.store.service.EntitlementService;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
@@ -39,12 +40,6 @@ import java.util.*;
 public class GardenService {
 
     private static final int PAGE_SIZE = 10;
-    private static final int SCORE_PICK = 50;
-    private static final int SCORE_ONLINE = 10;
-
-    /** 무료 번역: 댓글은 하루 2회, 채팅은 하루 2명(01 §1.4). */
-    private static final int FREE_TRANSLATE_COMMENTS = 2;
-    private static final int FREE_TRANSLATE_CHAT_TARGETS = 2;
     private static final String USAGE_COMMENT_TRANSLATE = "COMMENT_TRANSLATE";
 
     private final GardenMapper gardenMapper;
@@ -55,13 +50,26 @@ public class GardenService {
     private final EntitlementService entitlementService;
     private final LunaService lunaService;
 
+    // 기획이 바꿀 수 있는 수치는 전부 설정으로 뺀다.
+    /** 무료 번역: 댓글은 하루 N회, 채팅은 하루 N명(01 §1.4). */
+    private final int freeTranslateComments;
+    private final int freeTranslateChatTargets;
+
+    /** 피드 스코어 가중치 — 운영하며 튜닝할 값이라 재배포 없이 바꿀 수 있어야 한다. */
+    private final int scorePick;
+    private final int scoreOnline;
+
     public GardenService(GardenMapper gardenMapper,
                           GateService gateService,
                           PresenceService presenceService,
                           FileStorageService fileStorageService,
                           TranslationProvider translationProvider,
                           EntitlementService entitlementService,
-                          LunaService lunaService) {
+                          LunaService lunaService,
+                          @Value("${app.translate.free-comments-per-day:2}") int freeTranslateComments,
+                          @Value("${app.translate.free-chat-targets-per-day:2}") int freeTranslateChatTargets,
+                          @Value("${app.garden.score-pick:50}") int scorePick,
+                          @Value("${app.garden.score-online:10}") int scoreOnline) {
         this.gardenMapper = gardenMapper;
         this.gateService = gateService;
         this.presenceService = presenceService;
@@ -69,6 +77,10 @@ public class GardenService {
         this.translationProvider = translationProvider;
         this.entitlementService = entitlementService;
         this.lunaService = lunaService;
+        this.freeTranslateComments = freeTranslateComments;
+        this.freeTranslateChatTargets = freeTranslateChatTargets;
+        this.scorePick = scorePick;
+        this.scoreOnline = scoreOnline;
     }
 
     /**
@@ -201,24 +213,24 @@ public class GardenService {
                     "번역할 상대를 지정해 주세요.", "targetId");
         }
         if (gardenMapper.existsTranslateTarget(userId, sessionDate, targetId)) {
-            return Math.max(0, FREE_TRANSLATE_CHAT_TARGETS
+            return Math.max(0, freeTranslateChatTargets
                     - gardenMapper.countTranslateTargets(userId, sessionDate));
         }
-        if (gardenMapper.countTranslateTargets(userId, sessionDate) >= FREE_TRANSLATE_CHAT_TARGETS) {
+        if (gardenMapper.countTranslateTargets(userId, sessionDate) >= freeTranslateChatTargets) {
             throw quotaExceeded();
         }
         // INSERT IGNORE라 0이 나오면 같은 순간 다른 요청이 이미 넣은 것 — 어느 쪽이든 이 상대는 열렸다.
         gardenMapper.insertTranslateTarget(userId, sessionDate, targetId);
-        return Math.max(0, FREE_TRANSLATE_CHAT_TARGETS
+        return Math.max(0, freeTranslateChatTargets
                 - gardenMapper.countTranslateTargets(userId, sessionDate));
     }
 
     /** 댓글 — 단순 횟수. daily_usage 카운터를 그대로 쓴다. */
     private int consumeCommentQuota(String userId, LocalDate sessionDate) {
         int used = lunaService.dailyUsed(userId, sessionDate, USAGE_COMMENT_TRANSLATE);
-        if (used >= FREE_TRANSLATE_COMMENTS) throw quotaExceeded();
+        if (used >= freeTranslateComments) throw quotaExceeded();
         lunaService.useDaily(userId, sessionDate, USAGE_COMMENT_TRANSLATE);
-        return Math.max(0, FREE_TRANSLATE_COMMENTS - (used + 1));
+        return Math.max(0, freeTranslateComments - (used + 1));
     }
 
     private ApiException quotaExceeded() {
@@ -254,8 +266,8 @@ public class GardenService {
     }
 
     private int score(FeedCandidate c, boolean boosted) {
-        int pick = boosted ? SCORE_PICK : 0;
-        int online = presenceService.isOnline(c.getUserId()) ? SCORE_ONLINE : 0;
+        int pick = boosted ? scorePick : 0;
+        int online = presenceService.isOnline(c.getUserId()) ? scoreOnline : 0;
         return pick + online + recencyScore(c.getPublishedAt()) + engageScore(c);
     }
 

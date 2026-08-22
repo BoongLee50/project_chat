@@ -15,6 +15,7 @@ import com.moonlighttalk.server.post.mapper.PostMapper;
 import com.moonlighttalk.server.store.service.EntitlementService;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
@@ -41,11 +42,6 @@ import java.util.UUID;
 @Service
 public class PostService {
 
-    private static final int MAX_PHOTOS_FREE = 2;
-    private static final int MAX_PHOTOS_PASS = 8;
-    private static final int REPLACE_LIMIT_FREE = 2;
-    private static final int REPLACE_LIMIT_PASS = 20;
-    private static final Duration UPLOAD_WINDOW_FREE = Duration.ofHours(1);
 
     private final PostMapper postMapper;
     private final UserMapper userMapper;
@@ -53,16 +49,33 @@ public class PostService {
     private final FileStorageService fileStorageService;
     private final EntitlementService entitlementService;
 
+    // 기획이 바꿀 수 있는 수치는 전부 설정으로 뺀다 — 값이 바뀌어도 코드 수정·배포가 없다.
+    private final int maxPhotosFree;
+    private final int maxPhotosPass;
+    private final int replaceLimitFree;
+    private final int replaceLimitPass;
+    private final Duration uploadWindowFree;
+
     public PostService(PostMapper postMapper,
                         UserMapper userMapper,
                         GateService gateService,
                         FileStorageService fileStorageService,
-                        EntitlementService entitlementService) {
+                        EntitlementService entitlementService,
+                        @Value("${app.post.max-photos-free:2}") int maxPhotosFree,
+                        @Value("${app.post.max-photos-pass:8}") int maxPhotosPass,
+                        @Value("${app.post.replace-limit-free:2}") int replaceLimitFree,
+                        @Value("${app.post.replace-limit-pass:20}") int replaceLimitPass,
+                        @Value("${app.post.upload-window-minutes:60}") int uploadWindowMinutes) {
         this.postMapper = postMapper;
         this.userMapper = userMapper;
         this.gateService = gateService;
         this.fileStorageService = fileStorageService;
         this.entitlementService = entitlementService;
+        this.maxPhotosFree = maxPhotosFree;
+        this.maxPhotosPass = maxPhotosPass;
+        this.replaceLimitFree = replaceLimitFree;
+        this.replaceLimitPass = replaceLimitPass;
+        this.uploadWindowFree = Duration.ofMinutes(uploadWindowMinutes);
     }
 
     /** 오늘의 포스트 상태 조회. 첫 조회 시 등록 가능 창(1시간)이 시작된다. */
@@ -90,8 +103,8 @@ public class PostService {
                 post.getPublishedAt() != null,
                 unlimited ? null : remainingUploadSeconds(post),
                 unlimited,
-                unlimited ? MAX_PHOTOS_PASS : MAX_PHOTOS_FREE,
-                Math.max(0, (unlimited ? REPLACE_LIMIT_PASS : REPLACE_LIMIT_FREE) - post.getReplaceCount())
+                unlimited ? maxPhotosPass : maxPhotosFree,
+                Math.max(0, (unlimited ? replaceLimitPass : replaceLimitFree) - post.getReplaceCount())
         );
     }
 
@@ -115,7 +128,7 @@ public class PostService {
                     "포스트 등록 가능 시간이 종료되었어요.");
         }
 
-        int max = unlimited ? MAX_PHOTOS_PASS : MAX_PHOTOS_FREE;
+        int max = unlimited ? maxPhotosPass : maxPhotosFree;
         if (postMapper.countPhotos(post.getId()) >= max) {
             throw new ApiException(ErrorCode.POST_PHOTO_LIMIT, HttpStatus.CONFLICT,
                     "등록 가능한 포스트 사진 수를 초과했습니다. 기존 사진을 먼저 삭제 후 등록해 주세요.");
@@ -148,7 +161,7 @@ public class PostService {
 
         Post post = getOrCreateTodayPost(userId);
         boolean unlimited = isUnlimited(userId);
-        int limit = unlimited ? REPLACE_LIMIT_PASS : REPLACE_LIMIT_FREE;
+        int limit = unlimited ? replaceLimitPass : replaceLimitFree;
         if (post.getReplaceCount() >= limit) {
             // 패스 보유자는 "오늘 한도 소진", 무료 사용자는 "패스를 사면 늘어난다"는
             // 서로 다른 안내다 — 코드도 나눠야 클라가 각각 번역할 수 있다.
@@ -232,9 +245,9 @@ public class PostService {
     /** 남은 등록 가능 시간(초). 창이 아직 시작 전이면 전체 시간으로 본다. */
     private long remainingUploadSeconds(Post post) {
         if (post.getWindowStartedAt() == null) {
-            return UPLOAD_WINDOW_FREE.toSeconds();
+            return uploadWindowFree.toSeconds();
         }
-        LocalDateTime expiresAt = post.getWindowStartedAt().plus(UPLOAD_WINDOW_FREE);
+        LocalDateTime expiresAt = post.getWindowStartedAt().plus(uploadWindowFree);
         long seconds = Duration.between(gateService.nowKst().toLocalDateTime(), expiresAt).toSeconds();
         return Math.max(0, seconds);
     }
