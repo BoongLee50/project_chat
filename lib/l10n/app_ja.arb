@@ -455,5 +455,14 @@
   "errorSocketDisconnected": "接続が切れました。しばらくしてからもう一度送信してください。",
   "errorSocketSendTimeout": "メッセージを送信できませんでした。もう一度お試しください。",
   "errorUnknown": "リクエストを処理できませんでした。",
-  "regionLabelFormat": "{country}、{city}"
+  "regionLabelFormat": "{country}、{city}",
+  "voiceStop": "録音停止",
+  "voicePlay": "試聴",
+  "voiceDelete": "録音を削除",
+  "voiceSend": "メッセージを送る",
+  "voiceRecord": "音声メッセージ",
+  "voicePermissionDenied": "マイクの許可が必要です。設定から許可してください。",
+  "errorChatVoiceKeyRequired": "音声ファイルがアップロードされていません。",
+  "errorChatVoiceKeyInvalid": "無効な音声ファイルです。",
+  "errorChatVoiceTooLong": "音声メッセージは最大{seconds}秒までです。"
 }

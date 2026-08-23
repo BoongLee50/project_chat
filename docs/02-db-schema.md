@@ -136,10 +136,16 @@ chat_messages                              -- 서버 30일 보관(영속). 진�
   id          uuid PK
   room_id     uuid FK
   sender_id   uuid FK
-  body        varchar(25)
+  type        enum(TEXT,VOICE)               -- V9. VOICE면 body는 비고 audio_* 를 쓴다
+  body        varchar(500)
+  audio_key   varchar(255) null              -- V9. 스토리지 key(파일 자체는 스토리지에)
+  audio_duration_ms int null                 -- V9. 파일을 열지 않고 길이를 그리려고 저장
   created_at  timestamptz                    -- 보관 만료(30일) 판정 기준
   read_at     timestamptz null
 ```
+> **음성 메시지를 같은 테이블에 둔 이유**(V9): 따로 나누면 대화 순서를 맞추려고 매번 두 테이블을
+> 합쳐야 하고, 읽음 처리와 보관 만료(FIFO 삭제)도 두 벌이 된다. 보관 정책이 그대로 적용되는 것도 장점이다.
+> 다만 **메시지가 지워져도 스토리지 파일은 남는다** — 파일 정리는 아직 없다(아래 배치 항목 참고).
 > **보관정책(확정, 2026-08-02 보완)**: 보관 기간은 **방 타입 기준**이다.
 > - `type=MATCH` → **30일**
 > - `type=FRIEND` → **1년**(상시 대화방이라 한 달 만에 사라지면 취지와 어긋남). **친구를 끊어 `ENDED`가 된 방도 `type`은 FRIEND이므로 1년 기준을 그대로 받는다.**

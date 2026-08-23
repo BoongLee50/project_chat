@@ -155,6 +155,29 @@ class DioClient {
     );
   }
 
+  /// 파일 바이트를 그대로 받아온다(스토리지 다운로드 전용).
+  ///
+  /// `/files?key=...`에는 인증이 걸려 있어 플레이어나 `Image.network`가
+  /// URL만으로는 못 가져온다. 여기서 헤더를 실어 받아 로컬에 두고 쓴다.
+  Future<List<int>> getBytes(String url) async {
+    final response = await _dio.get<List<int>>(
+      url,
+      options: Options(
+        responseType: ResponseType.bytes,
+        extra: const {'noAuth': false},
+      ),
+    );
+    final status = response.statusCode ?? 0;
+    if (status < 200 || status >= 300) {
+      throw ApiException(
+        message: '파일을 받지 못했어요.',
+        code: ClientErrorCode.networkUnknown,
+        statusCode: status,
+      );
+    }
+    return response.data ?? const <int>[];
+  }
+
   Options _options(bool noAuth) => Options(extra: {'noAuth': noAuth});
 
   /// 응답 상태를 확인해 성공이면 body를, 실패면 [ApiException]을 던진다.

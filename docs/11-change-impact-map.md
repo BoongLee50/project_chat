@@ -29,6 +29,7 @@ sed -n '/^app:/,$p' server/src/main/resources/application.yml
 | 영역 | 설정 키 | 무엇을 정하나 |
 |---|---|---|
 | 운영시간 | `app.gate.open-hour` · `close-hour` | 몇 시부터 몇 시까지 여는가 |
+| 음성 메시지 | `app.chat.voice-max-duration-ms` | 최대 녹음 길이(⚠️ 클라 상수도 같이) |
 | 포스트 | `app.post.max-photos-free` · `max-photos-pass` | 사진 몇 장까지 (무료/앨범패스) |
 | 포스트 | `app.post.replace-limit-free` · `replace-limit-pass` | 하루 교체 몇 번 |
 | 포스트 | `app.post.upload-window-minutes` | 무료 사용자의 등록 가능 창 |
@@ -94,6 +95,8 @@ sed -n '/^app:/,$p' server/src/main/resources/application.yml
 | 무료 횟수·루나 비용 | `app.chat.*` | 🟢 |
 | 보관 기간 | `app.chat.retention-days*` → `SchedulerService` | 🟢 |
 | 신청 메시지 길이 | `CreateChatRequestBody`의 `@Size` | 🟡 |
+| **음성 최대 길이** | `app.chat.voice-max-duration-ms` + 클라 `kVoiceMaxDuration` | 🟢 + 🟡 (**두 곳을 함께** 바꿔야 한다) |
+| 음성 **무료 횟수** | **아직 없다.** 넣으면 사용량을 어디에 셀지부터 정해야 한다(계정 누적이라 `daily_usage`로는 안 된다) | 🔴 |
 | 방 타입(MATCH/FRIEND) 구분 | `chat_rooms.type` (V4) | 🔴 |
 | 실시간 프로토콜 | 소켓 봉투 `{op,seq,ts,data}` · `Opcodes` | 🟡 (양쪽 동시 수정) |
 

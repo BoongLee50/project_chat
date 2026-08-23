@@ -56,6 +56,15 @@ public class ChatService {
     /** 하루에 공짜로 보낼 수 있는 대화 신청 수. */
     private final int freeRequestsPerDay;
 
+    /** 음성 메시지 최대 길이(ms). 클라도 이 값에서 자동 정지한다. */
+    private final int voiceMaxDurationMs;
+
+    /**
+     * 길이 검사 여유. 클라가 30초에서 멈춰도 인코더가 마지막 프레임을 채우며
+     * 몇십 ms 넘길 수 있다. 여기서 칼같이 자르면 정상 녹음이 거부된다.
+     */
+    private static final int VOICE_DURATION_TOLERANCE_MS = 1_000;
+
     public ChatService(ChatMapper chatMapper,
                         UserMapper userMapper,
                         GardenMapper gardenMapper,
@@ -65,7 +74,8 @@ public class ChatService {
                         FileStorageService fileStorageService,
                         EntitlementService entitlementService,
                         @Value("${app.chat.request-luna-cost:5}") int lunaCost,
-                        @Value("${app.chat.free-requests-per-day:2}") int freeRequestsPerDay) {
+                        @Value("${app.chat.free-requests-per-day:2}") int freeRequestsPerDay,
+                        @Value("${app.chat.voice-max-duration-ms:30000}") int voiceMaxDurationMs) {
         this.chatMapper = chatMapper;
         this.userMapper = userMapper;
         this.gardenMapper = gardenMapper;
@@ -76,6 +86,7 @@ public class ChatService {
         this.entitlementService = entitlementService;
         this.lunaCost = lunaCost;
         this.freeRequestsPerDay = freeRequestsPerDay;
+        this.voiceMaxDurationMs = voiceMaxDurationMs;
     }
 
     // ── 대화 신청 ───────────────────────────────────────────
@@ -245,6 +256,56 @@ public class ChatService {
     /** 메시지 저장 후 양쪽에 전달. 반환값은 발신자에게 줄 ACK 정보. */
     @Transactional
     public ChatMessageDto sendMessage(String userId, String roomId, String body) {
+        return saveAndDeliver(userId, roomId, "TEXT", body, null, null);
+    }
+
+    /**
+     * 음성 메시지 전송. 파일은 이미 스토리지에 올라가 있고 여기서는 key만 받는다.
+     *
+     * <p>업로드를 소켓으로 태우지 않는 이유는 사진과 같다 — 바이트가 소켓을 지나가면
+     * 그동안 그 연결의 다른 패킷(읽음·수신)이 밀린다(01 문서 통신 분리 원칙).
+     */
+    @Transactional
+    public ChatMessageDto sendVoiceMessage(String userId, String roomId, String audioKey, int durationMs) {
+        if (audioKey == null || audioKey.isBlank()) {
+            throw new ApiException(ErrorCode.CHAT_VOICE_KEY_REQUIRED, HttpStatus.BAD_REQUEST,
+                    "음성 파일이 업로드되지 않았어요.");
+        }
+        // 업로드 URL을 발급받은 본인의 경로인지 확인한다. 남의 key를 넣어 보내는 걸 막는다.
+        if (!audioKey.startsWith(voiceKeyPrefix(userId))) {
+            throw new ApiException(ErrorCode.CHAT_VOICE_KEY_INVALID, HttpStatus.FORBIDDEN,
+                    "잘못된 음성 파일이에요.");
+        }
+        if (durationMs <= 0 || durationMs > voiceMaxDurationMs + VOICE_DURATION_TOLERANCE_MS) {
+            throw new ApiException(ErrorCode.CHAT_VOICE_TOO_LONG, HttpStatus.BAD_REQUEST,
+                    "음성 메시지는 최대 " + (voiceMaxDurationMs / 1000) + "초까지예요.",
+                    String.valueOf(voiceMaxDurationMs / 1000));
+        }
+        return saveAndDeliver(userId, roomId, "VOICE", "", audioKey, durationMs);
+    }
+
+    /** 음성 파일 업로드 URL 발급. key에 발신자 id가 들어가 소유자를 나중에 확인할 수 있다. */
+    public UploadUrlResponse issueVoiceUploadUrl(String userId, String roomId, String contentType) {
+        requireMemberRoom(userId, roomId);
+        String storageKey = voiceKeyPrefix(userId) + UUID.randomUUID() + voiceExtensionOf(contentType);
+        return new UploadUrlResponse(fileStorageService.issueUploadUrl(storageKey, contentType), storageKey);
+    }
+
+    private String voiceKeyPrefix(String userId) {
+        return "chat-voice/" + userId + "/";
+    }
+
+    private String voiceExtensionOf(String contentType) {
+        if (contentType == null) return ".m4a";
+        String lower = contentType.toLowerCase();
+        if (lower.contains("aac") || lower.contains("mp4") || lower.contains("m4a")) return ".m4a";
+        if (lower.contains("wav")) return ".wav";
+        if (lower.contains("ogg") || lower.contains("opus")) return ".ogg";
+        return ".m4a";
+    }
+
+    private ChatMessageDto saveAndDeliver(String userId, String roomId, String type,
+                                          String body, String audioKey, Integer durationMs) {
         ChatRoom room = requireMemberRoom(userId, roomId);
         // 친구 상시 대화방은 24시간 예외라 매칭 대화만 운영시간을 따진다(02 §4).
         if (!"FRIEND".equals(room.getType())) {
@@ -255,7 +316,10 @@ public class ChatService {
         message.setId(UUID.randomUUID().toString());
         message.setRoomId(roomId);
         message.setSenderId(userId);
-        message.setBody(body);
+        message.setType(type);
+        message.setBody(body == null ? "" : body);
+        message.setAudioKey(audioKey);
+        message.setAudioDurationMs(durationMs);
         chatMapper.insertMessage(message);
 
         ChatMessage saved = chatMapper.selectMessage(message.getId());
@@ -342,7 +406,10 @@ public class ChatService {
     }
 
     private ChatMessageDto toMessageDto(ChatMessage m) {
-        return new ChatMessageDto(m.getId(), m.getRoomId(), m.getSenderId(), m.getBody(),
+        String type = m.getType() == null ? "TEXT" : m.getType();
+        return new ChatMessageDto(m.getId(), m.getRoomId(), m.getSenderId(), type, m.getBody(),
+                m.getAudioKey() == null ? null : fileStorageService.issueDownloadUrl(m.getAudioKey()),
+                m.getAudioDurationMs(),
                 m.getCreatedAt(), m.getReadAt() != null);
     }
 
@@ -351,7 +418,11 @@ public class ChatService {
         map.put("messageId", dto.id());
         map.put("roomId", dto.roomId());
         map.put("senderId", dto.senderId());
+        map.put("type", dto.type());
         map.put("body", dto.body());
+        // HashMap이라 null을 넣어도 되지만, 받는 쪽이 키 유무로 분기하지 않도록 항상 넣는다.
+        map.put("audioUrl", dto.audioUrl());
+        map.put("audioDurationMs", dto.audioDurationMs());
         map.put("createdAt", dto.createdAt().toString());
         return map;
     }

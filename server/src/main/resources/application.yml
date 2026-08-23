@@ -78,6 +78,8 @@ app:
     # 대화 신청 — 하루 N회는 공짜, 그 뒤로는 1건당 루나를 뺀다(기획서 5장).
     free-requests-per-day: 2
     request-luna-cost: 5
+    # 음성 메시지 최대 길이. 클라도 이 시간에서 자동 정지하므로 두 값을 함께 바꿀 것.
+    voice-max-duration-ms: 30000
     # 메시지 보관 기간. 방 타입 기준으로 판정한다(친구를 끊어 ENDED가 된 방도 FRIEND 기준).
     retention-days: 30
     retention-days-friend: 365

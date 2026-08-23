@@ -84,11 +84,19 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
                 }
                 case Opcodes.CHAT_SEND -> {
                     requireAuth(userId);
-                    ChatMessageDto sent = chatService.sendMessage(
-                            userId, data.path("roomId").asText(), data.path("body").asText());
+                    String roomId = data.path("roomId").asText();
+                    // type이 없으면 TEXT다 — 구버전 클라가 보내던 봉투를 그대로 받기 위해서.
+                    ChatMessageDto sent = "VOICE".equals(data.path("type").asText("TEXT"))
+                            ? chatService.sendVoiceMessage(userId, roomId,
+                                    data.path("audioKey").asText(null),
+                                    data.path("audioDurationMs").asInt(0))
+                            : chatService.sendMessage(userId, roomId, data.path("body").asText());
                     Map<String, Object> ack = new HashMap<>();
                     ack.put("messageId", sent.id());
                     ack.put("roomId", sent.roomId());
+                    ack.put("type", sent.type());
+                    ack.put("audioUrl", sent.audioUrl());
+                    ack.put("audioDurationMs", sent.audioDurationMs());
                     ack.put("createdAt", sent.createdAt().toString());
                     registry.send(session, Packet.of(Opcodes.CHAT_SENT_ACK, seq, ack));
                 }

@@ -134,6 +134,65 @@ class ChatMessagesController
     );
     return null;
   }
+
+  /// 음성 메시지 전송 — 파일을 먼저 올리고, 받은 key를 소켓으로 보낸다.
+  ///
+  /// 업로드(REST)와 전송(소켓)이 나뉘어 있어 중간에 실패하면 파일만 남을 수 있다.
+  /// 고아 파일은 메시지가 없으니 화면에 안 나오고, 보관 배치가 정리 대상으로 본다.
+  Future<ApiException?> sendVoice({
+    required List<int> bytes,
+    required int durationMs,
+    required String myUserId,
+  }) async {
+    final String audioKey;
+    try {
+      audioKey = await ref
+          .read(chatApiProvider)
+          .uploadVoice(roomId: arg, bytes: bytes);
+    } on ApiException catch (e) {
+      return e;
+    }
+
+    final socket = ref.read(socketClientProvider);
+    final seq = socket.send(Op.chatSend, {
+      'roomId': arg,
+      'type': ChatMessageType.voice.wire,
+      'audioKey': audioKey,
+      'audioDurationMs': durationMs,
+    });
+    if (seq == null) {
+      unawaited(socket.connect());
+      return const ApiException(
+        message: '연결이 끊겼어요. 잠시 후 다시 보내주세요.',
+        code: ClientErrorCode.socketDisconnected,
+      );
+    }
+
+    final Packet ack;
+    try {
+      ack = await socket.packets
+          .firstWhere((p) => p.op == Op.chatSentAck && p.seq == seq)
+          .timeout(const Duration(seconds: 10));
+    } on TimeoutException {
+      return const ApiException(
+        message: '메시지를 보내지 못했어요. 다시 시도해 주세요.',
+        code: ClientErrorCode.socketSendTimeout,
+      );
+    }
+    _append(
+      ChatMessage(
+        id: ack.data['messageId'] as String,
+        roomId: arg,
+        senderId: myUserId,
+        type: ChatMessageType.voice,
+        body: '',
+        audioUrl: ack.data['audioUrl'] as String?,
+        audioDurationMs: (ack.data['audioDurationMs'] as num?)?.toInt(),
+        createdAt: parseServerTimeOr(ack.data['createdAt']),
+      ),
+    );
+    return null;
+  }
 }
 
 final chatMessagesProvider =

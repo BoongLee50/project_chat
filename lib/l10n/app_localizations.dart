@@ -2790,6 +2790,60 @@ abstract class L10n {
   /// In ko, this message translates to:
   /// **'{country}, {city}'**
   String regionLabelFormat(String country, String city);
+
+  /// No description provided for @voiceStop.
+  ///
+  /// In ko, this message translates to:
+  /// **'녹음 정지'**
+  String get voiceStop;
+
+  /// No description provided for @voicePlay.
+  ///
+  /// In ko, this message translates to:
+  /// **'미리 듣기'**
+  String get voicePlay;
+
+  /// No description provided for @voiceDelete.
+  ///
+  /// In ko, this message translates to:
+  /// **'녹음 삭제'**
+  String get voiceDelete;
+
+  /// No description provided for @voiceSend.
+  ///
+  /// In ko, this message translates to:
+  /// **'메시지 올리기'**
+  String get voiceSend;
+
+  /// No description provided for @voiceRecord.
+  ///
+  /// In ko, this message translates to:
+  /// **'음성 메시지'**
+  String get voiceRecord;
+
+  /// No description provided for @voicePermissionDenied.
+  ///
+  /// In ko, this message translates to:
+  /// **'마이크 권한이 필요해요. 설정에서 허용해 주세요.'**
+  String get voicePermissionDenied;
+
+  /// No description provided for @errorChatVoiceKeyRequired.
+  ///
+  /// In ko, this message translates to:
+  /// **'음성 파일이 업로드되지 않았어요.'**
+  String get errorChatVoiceKeyRequired;
+
+  /// No description provided for @errorChatVoiceKeyInvalid.
+  ///
+  /// In ko, this message translates to:
+  /// **'잘못된 음성 파일이에요.'**
+  String get errorChatVoiceKeyInvalid;
+
+  /// No description provided for @errorChatVoiceTooLong.
+  ///
+  /// In ko, this message translates to:
+  /// **'음성 메시지는 최대 {seconds}초까지예요.'**
+  String errorChatVoiceTooLong(String seconds);
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

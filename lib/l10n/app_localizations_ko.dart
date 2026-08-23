@@ -1476,4 +1476,33 @@ class L10nKo extends L10n {
   String regionLabelFormat(String country, String city) {
     return '$country, $city';
   }
+
+  @override
+  String get voiceStop => '녹음 정지';
+
+  @override
+  String get voicePlay => '미리 듣기';
+
+  @override
+  String get voiceDelete => '녹음 삭제';
+
+  @override
+  String get voiceSend => '메시지 올리기';
+
+  @override
+  String get voiceRecord => '음성 메시지';
+
+  @override
+  String get voicePermissionDenied => '마이크 권한이 필요해요. 설정에서 허용해 주세요.';
+
+  @override
+  String get errorChatVoiceKeyRequired => '음성 파일이 업로드되지 않았어요.';
+
+  @override
+  String get errorChatVoiceKeyInvalid => '잘못된 음성 파일이에요.';
+
+  @override
+  String errorChatVoiceTooLong(String seconds) {
+    return '음성 메시지는 최대 $seconds초까지예요.';
+  }
 }

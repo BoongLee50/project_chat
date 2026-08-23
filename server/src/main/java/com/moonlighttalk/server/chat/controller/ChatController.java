@@ -42,6 +42,20 @@ public class ChatController {
         return chatService.sentRequests(userId);
     }
 
+    /**
+     * 음성 파일 업로드 자리 발급. 실제 바이트는 여기가 아니라 uploadUrl로 PUT한다.
+     *
+     * <p>올린 뒤 소켓 {@code CHAT_SEND}에 {@code type=VOICE}와 {@code audioKey}를 실어 보내면
+     * 그때 메시지가 만들어진다. 업로드만 하고 보내지 않으면 파일만 남고 메시지는 안 생긴다.
+     */
+    @PostMapping("/chat/rooms/{roomId}/voice:upload-url")
+    public UploadUrlResponse issueVoiceUploadUrl(
+            @CurrentUserId String userId,
+            @PathVariable String roomId,
+            @RequestParam(defaultValue = "audio/mp4") String contentType) {
+        return chatService.issueVoiceUploadUrl(userId, roomId, contentType);
+    }
+
     @GetMapping("/chat/rooms/{roomId}/messages")
     public MessagePageDto messages(@CurrentUserId String userId,
                                     @PathVariable String roomId,

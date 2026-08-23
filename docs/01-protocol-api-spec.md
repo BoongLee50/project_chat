@@ -130,6 +130,14 @@
 
 **신고·차단 부수효과(둘 다 동일)**: 친구 관계 즉시 해제 + 살아있는 대화방 종료(MATCH·FRIEND 모두) + 상대에게 `FRIEND_STATE(removed)` · `ROOM_STATE(ended)` 소켓 통지. 이후 그 상대에게는 대화 신청·친구 요청이 막힌다. 신고 사실 자체는 상대에게 알리지 않는다.
 
+**음성 메시지**(2026-08-23) — 바이트는 소켓을 지나지 않는다.
+1. `POST /chat/rooms/{roomId}/voice:upload-url?contentType=audio/mp4` → `{ uploadUrl, storageKey }`
+2. 그 `uploadUrl`로 파일 **PUT**(로컬 스토리지 모드에서는 우리 서버라 인증 헤더 필요)
+3. 소켓 `CHAT_SEND`에 `type=VOICE` + `audioKey`(= 위 `storageKey`) + `audioDurationMs`
+- `storageKey`는 `chat-voice/{보낸사람 id}/…` 형태이고, 서버가 **보내는 사람의 경로인지 확인**한다(남의 key 차단).
+- 길이는 서버가 `app.chat.voice-max-duration-ms`(기본 30초)로 검사한다. 인코더 여유분 1초를 더 허용한다.
+- ⚠️ **무료 5회 제한은 아직 없다**(기획 예정). 지금은 횟수 제한 없이 보낼 수 있다.
+
 친구는 **양방향(상호 동의)** — 요청→수락 시 친구가 되며 **24시간 상시 대화방**이 생성됨(야간 게이트/30분 삭제 예외, [02 §1.6](02-db-schema.md)). 최대 친구 수는 설정값(`app.friend.max-count` 20 / `max-count-premium` 30 — 기획서 20 vs 30 모순이라 확정 전까지 잠정). 신고·차단 시 상대는 내 프로필 열람 불가, 친구·대화방 즉시 삭제.
 
 ### 1.8 유료 상점 / 구독 / 부스트 (BM, 기획 8장 · 화면 25~30)
@@ -183,9 +191,9 @@
 | S→C | `AUTH_OK` / `AUTH_FAIL` | `{}` / `{code}` | 인증 결과 |
 | C→S | `PING` / S→C `PONG` | `{}` | heartbeat/프레즌스 |
 | C→S | `ROOM_SUBSCRIBE` | `{ roomId }` | 채팅창 진입 |
-| C→S | `CHAT_SEND` | `{ roomId, body(≤25자), seq }` | 메시지 전송 |
-| S→C | `CHAT_SENT_ACK` | `{ seq, messageId, ts }` | 전송 확인 |
-| S→C | `CHAT_RECV` | `{ roomId, messageId, senderId, body, ts }` | 메시지 수신 |
+| C→S | `CHAT_SEND` | `{ roomId, type?, body, audioKey?, audioDurationMs?, seq }` | 메시지 전송. `type`은 `TEXT`(기본)/`VOICE` |
+| S→C | `CHAT_SENT_ACK` | `{ seq, messageId, type, audioUrl, audioDurationMs, ts }` | 전송 확인 |
+| S→C | `CHAT_RECV` | `{ roomId, messageId, senderId, type, body, audioUrl, audioDurationMs, ts }` | 메시지 수신 |
 | C→S | `CHAT_READ` | `{ roomId, lastMessageId }` | 읽음 처리 |
 | S→C | `CHAT_READ_RECEIPT` | `{ roomId, readerId, lastMessageId }` | 읽음 수신 |
 | S→C | `CHAT_REQ_INCOMING` | `{ requestId, fromUser }` | 새 대화 신청 도착 |

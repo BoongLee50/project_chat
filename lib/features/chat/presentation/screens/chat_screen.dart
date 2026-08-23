@@ -11,6 +11,9 @@ import '../../../moderation/presentation/widgets/block_dialog.dart';
 import '../../../moderation/presentation/widgets/report_dialog.dart';
 import '../../data/models/chat_models.dart';
 import '../providers/chat_provider.dart';
+import '../providers/voice_player.dart';
+import '../providers/voice_recorder.dart';
+import '../widgets/voice_message.dart';
 import '../../../../l10n/app_localizations.dart';
 
 /// 채팅창 — 대화방에서 항목을 선택하면 열린다. (기획서 5-1)
@@ -29,11 +32,69 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   final _controller = TextEditingController();
   final _scrollController = ScrollController();
 
+  /// 음성 전송 중. 올리기 버튼을 두 번 눌러 같은 녹음이 두 번 가는 걸 막는다.
+  bool _sendingVoice = false;
+
   @override
   void dispose() {
     _controller.dispose();
     _scrollController.dispose();
     super.dispose();
+  }
+
+  /// 마이크 버튼 — 녹음 시작. 권한이 없으면 안내만 하고 아무것도 바꾸지 않는다.
+  Future<void> _startRecording() async {
+    // 듣고 있던 게 있으면 멈춘다. 녹음과 재생이 겹치면 마이크에 그 소리가 섞인다.
+    await ref.read(voicePlayerProvider.notifier).stop();
+    final ok = await ref.read(voiceRecorderProvider.notifier).start();
+    if (!mounted || ok) return;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(content: Text(L10n.of(context).voicePermissionDenied)),
+      );
+  }
+
+  /// 올리기 버튼 — 녹음 파일을 올리고 메시지로 보낸다.
+  Future<void> _sendVoice() async {
+    final myId = ref.read(sessionProvider).profile?.id;
+    if (myId == null) return;
+
+    final recorder = ref.read(voiceRecorderProvider.notifier);
+    final take = ref.read(voiceRecorderProvider);
+    final bytes = await recorder.readBytes();
+    if (!mounted) return;
+    if (bytes == null || bytes.isEmpty) {
+      // 파일이 사라졌거나 길이가 0. 남은 상태만 정리하고 끝낸다.
+      await recorder.discard();
+      return;
+    }
+
+    setState(() => _sendingVoice = true);
+    // 재생 중이던 미리듣기를 멈춰야 보낸 뒤 상태가 깨끗해진다.
+    await ref.read(voicePlayerProvider.notifier).stop();
+    final error = await ref
+        .read(chatMessagesProvider(widget.room.roomId).notifier)
+        .sendVoice(
+          bytes: bytes,
+          durationMs: take.elapsed.inMilliseconds,
+          myUserId: myId,
+        );
+    if (!mounted) return;
+    setState(() => _sendingVoice = false);
+
+    if (error != null) {
+      // 실패해도 녹음은 남겨 둔다 — 다시 누르면 그대로 재전송할 수 있다.
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(content: Text(errorMessage(L10n.of(context), error))),
+        );
+      return;
+    }
+    await recorder.discard();
+    if (!mounted) return;
+    _scrollToBottom();
   }
 
   Future<void> _send() async {
@@ -181,7 +242,26 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 ),
               ),
             ),
-            _InputBar(controller: _controller, onSend: _send),
+            // 녹음 중이거나 녹음본이 손에 있으면 입력창 대신 녹음 바를 보여준다.
+            if (ref.watch(voiceRecorderProvider).phase != VoiceRecordPhase.idle)
+              Padding(
+                padding: EdgeInsets.fromLTRB(
+                  12,
+                  8,
+                  12,
+                  12 + MediaQuery.of(context).viewInsets.bottom,
+                ),
+                child: VoiceRecordBar(
+                  onSend: _sendVoice,
+                  busy: _sendingVoice,
+                ),
+              )
+            else
+              _InputBar(
+                controller: _controller,
+                onSend: _send,
+                onRecord: _startRecording,
+              ),
           ],
         ),
       ),
@@ -421,16 +501,23 @@ class _Bubble extends StatelessWidget {
                       bottomRight: const Radius.circular(18),
                     ),
                   ),
-                  child: Text(
-                    message.body,
-                    style: TextStyle(
-                      color: mine
-                          ? const Color(0xFF20202A)
-                          : const Color(0xFF2A2620),
-                      fontSize: 15,
-                      height: 1.35,
-                    ),
-                  ),
+                  child: message.isVoice
+                      ? VoiceBubbleContent(
+                          message: message,
+                          foreground: mine
+                              ? const Color(0xFF20202A)
+                              : const Color(0xFF2A2620),
+                        )
+                      : Text(
+                          message.body,
+                          style: TextStyle(
+                            color: mine
+                                ? const Color(0xFF20202A)
+                                : const Color(0xFF2A2620),
+                            fontSize: 15,
+                            height: 1.35,
+                          ),
+                        ),
                 ),
                 const SizedBox(height: 4),
                 Row(
@@ -466,10 +553,15 @@ class _Bubble extends StatelessWidget {
 }
 
 class _InputBar extends StatelessWidget {
-  const _InputBar({required this.controller, required this.onSend});
+  const _InputBar({
+    required this.controller,
+    required this.onSend,
+    required this.onRecord,
+  });
 
   final TextEditingController controller;
   final VoidCallback onSend;
+  final VoidCallback onRecord;
 
   @override
   Widget build(BuildContext context) {
@@ -506,7 +598,22 @@ class _InputBar extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: 8),
+          // 마이크 — 누르면 녹음이 시작되고 이 줄이 녹음 바로 바뀐다.
+          Material(
+            color: AppColors.surfaceHigh,
+            shape: const CircleBorder(),
+            child: InkWell(
+              customBorder: const CircleBorder(),
+              onTap: onRecord,
+              child: const SizedBox(
+                width: 48,
+                height: 48,
+                child: Icon(Icons.mic_none, color: AppColors.moonlight, size: 22),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
           Material(
             color: AppColors.moonlight,
             shape: const CircleBorder(),

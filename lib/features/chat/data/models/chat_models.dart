@@ -105,22 +105,51 @@ class ChatMessage {
     required this.senderId,
     required this.body,
     required this.createdAt,
+    this.type = ChatMessageType.text,
+    this.audioUrl,
+    this.audioDurationMs,
     this.read = false,
   });
 
   final String id;
   final String roomId;
   final String senderId;
+
+  /// TEXT면 [body], VOICE면 [audioUrl]·[audioDurationMs]를 쓴다.
+  final ChatMessageType type;
   final String body;
+
+  /// 서버가 준 다운로드 경로(상대 경로). 인증이 걸려 있어 그냥 재생할 수 없고
+  /// 헤더를 실어 내려받은 뒤 로컬 파일로 재생한다.
+  final String? audioUrl;
+  final int? audioDurationMs;
+
   final DateTime createdAt;
   final bool read;
+
+  bool get isVoice => type == ChatMessageType.voice;
 
   factory ChatMessage.fromJson(Map<String, dynamic> json) => ChatMessage(
     id: (json['id'] ?? json['messageId']) as String,
     roomId: json['roomId'] as String? ?? '',
     senderId: json['senderId'] as String? ?? '',
+    type: ChatMessageType.parse(json['type'] as String?),
     body: json['body'] as String? ?? '',
+    audioUrl: json['audioUrl'] as String?,
+    audioDurationMs: (json['audioDurationMs'] as num?)?.toInt(),
     createdAt: parseServerTimeOr(json['createdAt']),
     read: json['read'] as bool? ?? false,
   );
+}
+
+/// 메시지 종류. 서버가 문자열로 주므로 모르는 값은 텍스트로 떨어뜨린다 —
+/// 서버에 종류가 늘어도 구버전 앱이 죽지 않게 하려는 것.
+enum ChatMessageType {
+  text,
+  voice;
+
+  static ChatMessageType parse(String? raw) =>
+      raw == 'VOICE' ? ChatMessageType.voice : ChatMessageType.text;
+
+  String get wire => this == ChatMessageType.voice ? 'VOICE' : 'TEXT';
 }

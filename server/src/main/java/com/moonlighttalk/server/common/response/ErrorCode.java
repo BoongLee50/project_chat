@@ -88,6 +88,9 @@ public enum ErrorCode {
     TARGET_BLOCKED_OR_REPORTED,
 
     // ── 최후 폴백 ───────────────────────────────────────
+    CHAT_VOICE_KEY_REQUIRED,
+    CHAT_VOICE_KEY_INVALID,
+    CHAT_VOICE_TOO_LONG,
     VALIDATION_FAILED,
     NOT_FOUND,
     INTERNAL_ERROR

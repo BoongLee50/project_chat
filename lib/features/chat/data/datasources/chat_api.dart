@@ -58,4 +58,27 @@ class ChatApi {
       _client.post('/chat/requests/$requestId:reject');
 
   Future<void> leave(String roomId) => _client.post('/chat/rooms/$roomId:leave');
+
+  /// 음성 파일 업로드 → 스토리지 key 반환.
+  ///
+  /// 여기서는 파일만 올린다. 메시지는 이 key를 소켓으로 보내야 만들어진다 —
+  /// 올려 두고 보내지 않으면 파일만 남고 대화에는 안 나타난다.
+  Future<String> uploadVoice({
+    required String roomId,
+    required List<int> bytes,
+    String contentType = 'audio/mp4',
+  }) async {
+    final issued = await _client.post(
+      '/chat/rooms/$roomId/voice:upload-url',
+      query: {'contentType': contentType},
+    );
+    final map = Map<String, dynamic>.from(issued as Map);
+
+    await _client.putBytes(
+      map['uploadUrl'] as String,
+      bytes: bytes,
+      contentType: contentType,
+    );
+    return map['storageKey'] as String;
+  }
 }

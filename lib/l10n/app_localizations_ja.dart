@@ -1471,4 +1471,33 @@ class L10nJa extends L10n {
   String regionLabelFormat(String country, String city) {
     return '$country、$city';
   }
+
+  @override
+  String get voiceStop => '録音停止';
+
+  @override
+  String get voicePlay => '試聴';
+
+  @override
+  String get voiceDelete => '録音を削除';
+
+  @override
+  String get voiceSend => 'メッセージを送る';
+
+  @override
+  String get voiceRecord => '音声メッセージ';
+
+  @override
+  String get voicePermissionDenied => 'マイクの許可が必要です。設定から許可してください。';
+
+  @override
+  String get errorChatVoiceKeyRequired => '音声ファイルがアップロードされていません。';
+
+  @override
+  String get errorChatVoiceKeyInvalid => '無効な音声ファイルです。';
+
+  @override
+  String errorChatVoiceTooLong(String seconds) {
+    return '音声メッセージは最大$seconds秒までです。';
+  }
 }

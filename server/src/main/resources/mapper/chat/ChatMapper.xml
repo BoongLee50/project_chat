@@ -45,7 +45,10 @@
         <id property="id" column="id"/>
         <result property="roomId" column="room_id"/>
         <result property="senderId" column="sender_id"/>
+        <result property="type" column="type"/>
         <result property="body" column="body"/>
+        <result property="audioKey" column="audio_key"/>
+        <result property="audioDurationMs" column="audio_duration_ms"/>
         <result property="createdAt" column="created_at"/>
         <result property="readAt" column="read_at"/>
     </resultMap>
@@ -146,8 +149,8 @@
 
     <!-- ── 메시지 ── -->
     <insert id="insertMessage">
-        INSERT INTO chat_messages (id, room_id, sender_id, body, created_at)
-        VALUES (#{id}, #{roomId}, #{senderId}, #{body}, NOW(3))
+        INSERT INTO chat_messages (id, room_id, sender_id, type, body, audio_key, audio_duration_ms, created_at)
+        VALUES (#{id}, #{roomId}, #{senderId}, #{type}, #{body}, #{audioKey}, #{audioDurationMs}, NOW(3))
     </insert>
 
     <select id="selectMessages" resultMap="MessageResultMap">
