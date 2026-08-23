@@ -97,6 +97,8 @@ sed -n '/^app:/,$p' server/src/main/resources/application.yml
 | 신청 메시지 길이 | `CreateChatRequestBody`의 `@Size` | 🟡 |
 | **음성 최대 길이** | `app.chat.voice-max-duration-ms` + 클라 `kVoiceMaxDuration` | 🟢 + 🟡 (**두 곳을 함께** 바꿔야 한다) |
 | 음성 **무료 횟수** | **아직 없다.** 넣으면 사용량을 어디에 셀지부터 정해야 한다(계정 누적이라 `daily_usage`로는 안 된다) | 🔴 |
+| **대화 신청 수락/거절 흐름** | `chat_requests` + 소켓 `CHAT_REQ_INCOMING` + 대화방 목록 화면 | 🟡~🔴 (**"수락" 단계를 없애면 테이블이 무의미** — [04 §4-4](04-progress-and-roadmap.md)) |
+| 음성 메시지 저장 구조 | `chat_messages.type/audio_key/audio_duration_ms` (V9) | 🔴 |
 | 방 타입(MATCH/FRIEND) 구분 | `chat_rooms.type` (V4) | 🔴 |
 | 실시간 프로토콜 | 소켓 봉투 `{op,seq,ts,data}` · `Opcodes` | 🟡 (양쪽 동시 수정) |
 

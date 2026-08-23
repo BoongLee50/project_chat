@@ -24,10 +24,10 @@
 
 ## 1. 현재 상태 스냅샷 (2026-08-23 기준)
 
-**한 줄 요약**: 기획서 화면 1~30 전부 구현. **전 화면이 로컬 서버·DB와 실제 연동 완료** — 로그인/온보딩 · 프로필 · 홈(오늘의 포스트) · 달빛가든 · 대화방/채팅창(WebSocket 실시간) · 친구. **서버 도메인 전부**(Flyway **V8**) 구현 완료. **UI 다국어(한↔일) ①·②단계 완료** — 화면 전량 + **오류 문구까지** ARB 이전(449키). **번역 무료 쿼터·패스 판정**도 붙어 `TRANSLATE_PASS`가 실제 혜택을 갖는다. **달빛가든 시안(Plan_3) 적용 완료**이고 클라 갱신은 "낡았으면 1분" 방식으로 통일했다. 남은 건 **일본어 마감(③단계, [09](09-next-task-handoff.md))** · 번역 공급자 연동(API 키) · 나머지 리소스(앱 아이콘·스플래시) · 외부 계정이 필요한 것들 · **출시 전에 볼 피드 확장성 부채 2건([§5](#5-미뤄-둔-기술-부채-사용자가-늘면-드러난다))**.
+**한 줄 요약**: 기획서 화면 1~30 전부 구현. **전 화면이 로컬 서버·DB와 실제 연동 완료** — 로그인/온보딩 · 프로필 · 홈(오늘의 포스트) · 달빛가든 · 대화방/채팅창(WebSocket 실시간) · 친구. **서버 도메인 전부**(Flyway **V8**) 구현 완료. **UI 다국어(한↔일) ①·②단계 완료** — 화면 전량 + **오류 문구까지** ARB 이전(459키). **번역 무료 쿼터·패스 판정**도 붙어 `TRANSLATE_PASS`가 실제 혜택을 갖는다. **음성 메시지**(녹음·전송·재생, V9)는 두 기기로 실시간 송수신까지 확인됨. **달빛가든 시안(Plan_3) 적용 완료**이고 클라 갱신은 "낡았으면 1분" 방식으로 통일했다. 남은 건 **일본어 마감(③단계, [09](09-next-task-handoff.md))** · 번역 공급자 연동(API 키) · 나머지 리소스(앱 아이콘·스플래시) · 외부 계정이 필요한 것들 · **출시 전에 볼 피드 확장성 부채 2건([§5](#5-미뤄-둔-기술-부채-사용자가-늘면-드러난다))**.
 
 🚨 **출시는 한·일 동시로 확정**(2026-08-08). 일본어가 "나중에 다듬을 것"이 아니라 **출시 조건**이 됐다 —
-`app_ja.arb` 449키가 전부 AI 초벌이고 **검수자가 아직 미정**이다.
+`app_ja.arb` 459키가 전부 AI 초벌이고 **검수자가 아직 미정**이다.
 
 | 영역 | 상태 |
 |------|------|
@@ -37,7 +37,7 @@
 | 서버 | Spring Boot. **전 도메인 구현** — auth(mock 포함)/profile/post/garden/chat(+WebSocket)/friend/luna/store(BM)/**moderation**/scheduler |
 | DB | 로컬 MariaDB 11.4.5, Flyway **V8까지 적용**(V1 초기 · V2 posts 등록창/교체 · V3 post_comments · V4 chat · V5 friendships 양방향 · V6 BM · V7 번역 쿼터 · V8 스킵 복귀/갱신 감지 · **V9 음성 메시지**) |
 | 실기기 검증 | 에뮬 2대(Pixel_10 · Pixel_B) → 로컬 서버 → DB/디스크 **end-to-end 성공**: 자동 로그인, 프로필, 카메라 촬영→업로드→표시, 가든 피드/좋아요/댓글, **양방향 실시간 채팅**, **친구 요청→수락→상시 대화방→삭제** |
-| 다국어 | **①·②단계 완료** — `app_ko.arb`/`app_ja.arb` 각 **449키**(화면 378 + 오류 61 + 번역 2 + 사진 시트 8). 기기 언어를 따르고 미지원 언어는 한국어 폴백. 오류 문구는 서버 `ErrorCode`(56종)를 클라가 번역한다. 에뮬 `ja-JP` 실확인. 남은 건 **원어민 검수**(③단계, 출시 블로커) |
+| 다국어 | **①·②단계 완료** — `app_ko.arb`/`app_ja.arb` 각 **459키**(화면 378 + 오류 61 + 번역 2 + 사진 시트 8 + 음성 10). 기기 언어를 따르고 미지원 언어는 한국어 폴백. 오류 문구는 서버 `ErrorCode`(56종)를 클라가 번역한다. 에뮬 `ja-JP` 실확인. 남은 건 **원어민 검수**(③단계, 출시 블로커) |
 | 리소스 | 달빛가든 시안(Plan_3) **적용 완료**. 앱 아이콘·스플래시는 아직 **Flutter 기본값**, 나머지 배경·일러스트는 대기. ⚠️ **글자가 구워진 이미지는 일본어판을 따로 받는다**(설계 확정) |
 
 > ⚠️ **착수 전에 [04 §4 예고된 변경](04-progress-and-roadmap.md)을 읽을 것**(2026-08-08 공유).
@@ -95,7 +95,7 @@ flutter run -d emulator-5554 --dart-define=API_BASE_URL=http://localhost:8080
 **에뮬 2대로 채팅 테스트하기**
 ```bash
 flutter emulators --launch Pixel_10          # 첫 번째 → emulator-5554
-flutter emulators --launch Pixel_10          # 두 번째 → emulator-5556
+flutter emulators --launch Pixel_B           # 두 번째 → emulator-5556  (⚠️ 같은 AVD 재사용 불가, 함정 #32)
 ```
 - 두 기기에서 **서로 다른 소셜 버튼**으로 로그인해야 다른 계정이 된다(`dev-line` / `dev-kakao` / `dev-google`).
 - 흐름: A 달빛가든에서 B에게 **대화 신청** → B 대화방에 신청 카드 → **수락** → 양쪽에 방 생성 → 채팅.
@@ -226,6 +226,8 @@ adb shell cmd locale set-app-locales com.example.project_chat --locales ko-KR
 | 28 | **ARB를 고쳤으면 `flutter gen-l10n`을 돌려야 한다** | `lib/l10n/app_localizations*.dart`는 **생성물이지만 저장소에 커밋돼 있다.** ARB만 고치고 넘어가면 `undefined_getter`가 쏟아진다. `flutter pub get`이 자동으로 돌려 주기도 하지만 믿지 말 것 |
 | 29 | **폰용 빌드에 `--dart-define`을 빼면 조용히 죽는다** | `AppConfig.apiBaseUrl` 기본값이 **에뮬레이터 주소**(`10.0.2.2`)라 실기기에선 아무 데도 닿지 않는다. 오류 로그도 안 남아 로그인 화면에서 반응만 없다 → 폰 빌드는 **항상** `--dart-define=API_BASE_URL=http://localhost:8080` + `adb reverse tcp:8080 tcp:8080`(함정 #12와 같은 조합) |
 | 30 | **`pubspec.yaml`의 `assets:`는 하위 폴더를 자동 포함하지 않는다** | `assets/images/`만 적혀 있으면 `assets/images/garden/`은 **번들에 안 들어간다.** 런타임에야 "Unable to load asset"으로 드러난다 → 폴더를 추가하면 `- assets/images/garden/` 줄도 같이 넣을 것 |
+| 32 | **같은 AVD는 두 번 못 띄운다** | `flutter emulators --launch Pixel_10`을 두 번 하면 두 번째가 조용히 실패한다(`The Android emulator exited with code 1`). AVD 하나에 실행 인스턴스 하나다 → 2대 테스트는 **서로 다른 AVD**(`Pixel_10` + `Pixel_B`). 새로 만들려면 `flutter emulators --create --name <이름>` |
+| 33 | **두 기기로 봐야만 보이는 버그가 있다** | 음성 메시지를 넣고 한 대로 볼 땐 멀쩡했는데, 두 대로 보니 **대화방 목록 미리보기가 "대화를 시작해보세요"** 였다. 보낸 사람은 방 안에 있어 목록을 안 보기 때문에 안 드러난다. **목록·배지·미확인 수처럼 "상대 쪽에서만 보이는 화면"은 반드시 2대로 확인**할 것 |
 | 31 | **`centerSlice`는 모서리를 원본 픽셀 크기로 그린다** | 9-patch식으로 늘리면 테두리가 안 굵어질 거라 기대하지만, 코너는 **스케일을 안 받아** 1080폭 원본 기준 ~90 논리픽셀 두께로 박힌다. 얇은 라운드 테두리는 이미지가 아니라 **`Border.all` + `BorderRadius`로 코드로 그릴 것**(크기·비율이 기기마다 달라 래스터는 찌그러지고 번진다) |
 | 32 | **`SafeArea`는 `padding`뿐 아니라 `viewPadding`도 지운다** | 그래서 SafeArea 안에서 `MediaQuery.viewPaddingOf(context).top`을 읽으면 **0이 온다.** 배경을 상태바까지 올리려고 상단 인셋이 필요하면 `MediaQueryData.fromView(View.of(context)).padding.top`으로 **뷰에서 직접** 읽을 것 |
 | 33 | **안드로이드 15+는 `systemNavigationBarColor`를 무시한다** | edge-to-edge가 강제라 색 지정이 안 먹고, **3버튼 내비**면 시스템이 가독성용 밝은 대비 스크림을 덧씌운다 — 다크 앱인데 내비 영역만 회색으로 뜬 원인. 바를 투명하게 두고 앱 배경을 비추되, `styles.xml`(values·values-night **양쪽**)에 `android:enforceNavigationBarContrast=false` / `enforceStatusBarContrast=false`를 넣어야 한다. 아이콘 밝기는 `SystemChrome`으로 지정 가능 |
@@ -441,7 +443,7 @@ adb shell cmd locale set-app-locales com.example.project_chat --locales ko-KR
 
 **여기서 나온 실무 결론** — 🚨 **일본어 검수를 449키 전량으로 발주하면 낭비가 난다.**
 1이 실현되면 게이트 문구 14키가 사라지고, 2면 친구 문구가 바뀌고, 3이면 상당수가 ARB가 아니라 이미지 원고가 된다.
-그렇다고 미룰 수도 없다(한·일 동시 오픈 = 출시 블로커). **흔들리지 않는 범위부터 나눠 돌린다** — 04 §4-4 표.
+그렇다고 미룰 수도 없다(한·일 동시 오픈 = 출시 블로커). **흔들리지 않는 범위부터 나눠 돌린다** — 04 §4-5 표.
 
 ### 2026-08-08(4) — V8 적용 확인 + 시안 실물 검증 + 잘못된 요청 400 (`57549b2`)
 

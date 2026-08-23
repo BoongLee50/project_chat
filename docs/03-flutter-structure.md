@@ -53,6 +53,10 @@ features/chat/
 │  └─ repositories/              # 추상 인터페이스(선택)
 └─ presentation/
    ├─ screens/                   # 대화방, 채팅창 화면
+   ├─ widgets/                   # voice_message.dart — 음성 말풍선 + 녹음 바
+   │                             #   (파형은 실제 오디오가 아니라 messageId 기반 고정 난수)
+   └─ providers/                 # voice_recorder.dart(record) / voice_player.dart(just_audio)
+                                 #   재생은 대화방에서 하나만 — 컨트롤러가 재생 중 messageId를 들고 있다
    ├─ widgets/
    └─ providers/                # Riverpod controller/notifier
 ```
