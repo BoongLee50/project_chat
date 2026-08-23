@@ -898,5 +898,6 @@
         "type": "String"
       }
     }
-  }
+  },
+  "chatRoomsVoicePreview": "음성 메시지"
 }

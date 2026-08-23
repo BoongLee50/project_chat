@@ -219,6 +219,7 @@ public class ChatService {
                         s.getPartnerCountry(),
                         photoUrl(s.getPartnerPhotoKey()),
                         s.getLastMessage(),
+                        s.getLastMessageType(),
                         s.getLastMessageAt(),
                         s.getUnreadCount()))
                 .toList();

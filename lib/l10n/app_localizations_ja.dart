@@ -1500,4 +1500,7 @@ class L10nJa extends L10n {
   String errorChatVoiceTooLong(String seconds) {
     return '音声メッセージは最大$seconds秒までです。';
   }
+
+  @override
+  String get chatRoomsVoicePreview => '音声メッセージ';
 }

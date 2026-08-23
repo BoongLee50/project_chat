@@ -37,6 +37,7 @@
         <result property="partnerCountry" column="partner_country"/>
         <result property="partnerPhotoKey" column="partner_photo_key"/>
         <result property="lastMessage" column="last_message"/>
+        <result property="lastMessageType" column="last_message_type"/>
         <result property="lastMessageAt" column="last_message_at"/>
         <result property="unreadCount" column="unread_count"/>
     </resultMap>
@@ -115,6 +116,8 @@
                pr.photo_key                               AS partner_photo_key,
                (SELECT m.body FROM chat_messages m
                 WHERE m.room_id = r.id ORDER BY m.created_at DESC LIMIT 1)      AS last_message,
+               (SELECT m.type FROM chat_messages m
+                WHERE m.room_id = r.id ORDER BY m.created_at DESC LIMIT 1)      AS last_message_type,
                (SELECT m.created_at FROM chat_messages m
                 WHERE m.room_id = r.id ORDER BY m.created_at DESC LIMIT 1)      AS last_message_at,
                (SELECT COUNT(*) FROM chat_messages m

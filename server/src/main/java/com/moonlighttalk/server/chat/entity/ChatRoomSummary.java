@@ -18,6 +18,8 @@ public class ChatRoomSummary {
     private String partnerCountry;
     private String partnerPhotoKey;
     private String lastMessage;
+    /** 마지막 메시지 종류. 음성이면 목록 미리보기를 문구 대신 "음성 메시지"로 그린다. */
+    private String lastMessageType;
     private LocalDateTime lastMessageAt;
     private int unreadCount;
 }

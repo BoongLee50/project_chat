@@ -2844,6 +2844,12 @@ abstract class L10n {
   /// In ko, this message translates to:
   /// **'음성 메시지는 최대 {seconds}초까지예요.'**
   String errorChatVoiceTooLong(String seconds);
+
+  /// No description provided for @chatRoomsVoicePreview.
+  ///
+  /// In ko, this message translates to:
+  /// **'음성 메시지'**
+  String get chatRoomsVoicePreview;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

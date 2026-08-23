@@ -464,5 +464,6 @@
   "voicePermissionDenied": "マイクの許可が必要です。設定から許可してください。",
   "errorChatVoiceKeyRequired": "音声ファイルがアップロードされていません。",
   "errorChatVoiceKeyInvalid": "無効な音声ファイルです。",
-  "errorChatVoiceTooLong": "音声メッセージは最大{seconds}秒までです。"
+  "errorChatVoiceTooLong": "音声メッセージは最大{seconds}秒までです。",
+  "chatRoomsVoicePreview": "音声メッセージ"
 }

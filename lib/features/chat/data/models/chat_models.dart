@@ -14,6 +14,7 @@ class ChatRoomSummary {
     this.partnerCountry,
     this.partnerPhotoUrl,
     this.lastMessage,
+    this.lastMessageType = ChatMessageType.text,
     this.lastMessageAt,
   });
 
@@ -28,6 +29,11 @@ class ChatRoomSummary {
   final String? partnerCountry;
   final String? partnerPhotoUrl;
   final String? lastMessage;
+
+  /// 마지막 메시지 종류. 음성이면 [lastMessage]가 비어 있으므로
+  /// 목록 미리보기를 "음성 메시지"로 대신 그린다.
+  final ChatMessageType lastMessageType;
+
   final DateTime? lastMessageAt;
   final int unreadCount;
 
@@ -47,6 +53,7 @@ class ChatRoomSummary {
         partnerCountry: json['partnerCountry'] as String?,
         partnerPhotoUrl: json['partnerPhotoUrl'] as String?,
         lastMessage: json['lastMessage'] as String?,
+        lastMessageType: ChatMessageType.parse(json['lastMessageType'] as String?),
         lastMessageAt: json['lastMessageAt'] == null
             ? null
             : parseServerTime(json['lastMessageAt']),

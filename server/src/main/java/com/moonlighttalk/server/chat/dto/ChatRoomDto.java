@@ -12,6 +12,7 @@ public record ChatRoomDto(
         String partnerCountry,
         String partnerPhotoUrl,
         String lastMessage,
+        String lastMessageType,
         LocalDateTime lastMessageAt,
         int unreadCount
 ) {

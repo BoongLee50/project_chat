@@ -396,7 +396,7 @@ class _RoomTile extends StatelessWidget {
                       const SizedBox(height: 6),
                       Text(
                         // 목록 미리보기는 25자까지만(기획서 5장)
-                        _preview(l10n, room.lastMessage),
+                        _preview(l10n, room.lastMessageType, room.lastMessage),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
@@ -435,7 +435,10 @@ class _RoomTile extends StatelessWidget {
     );
   }
 
-  static String _preview(L10n l10n, String? text) {
+  static String _preview(L10n l10n, ChatMessageType type, String? text) {
+    // 음성 메시지는 본문이 없다. 빈 문자열을 그대로 두면 "대화를 시작해보세요"로
+    // 보여서 방금 보낸 게 사라진 것처럼 느껴진다.
+    if (type == ChatMessageType.voice) return l10n.chatRoomsVoicePreview;
     if (text == null || text.isEmpty) return l10n.chatRoomsStart;
     final chars = text.characters;
     return chars.length <= 25 ? text : '${chars.take(25)}…';
