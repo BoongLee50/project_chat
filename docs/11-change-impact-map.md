@@ -46,6 +46,12 @@ sed -n '/^app:/,$p' server/src/main/resources/application.yml
 | 프로필 | `app.profile.forbidden-nicknames` | 금지 닉네임 |
 | 인프라 | `app.storage.*` · `app.redis.enabled` · `app.jwt.*` | 저장소·Redis·토큰 수명 |
 
+> 🚨 **2026-08-29 — Plan_3(v2.0)로 아래 값들이 바뀐다**(아직 반영 전, [09](09-next-task-handoff.md) ①단계):
+> `max-photos-pass` 8→**9** · `replace-limit-free`/`pass` 2·20→**3·3**(키는 유지) ·
+> `friend.max-count`/`premium` 20·30→**100·100** · `chat.free-requests-per-day` 2→**10**(하루 단위 유지) ·
+> `gate.*` **삭제**(게이트 폐지) → 대신 **영업일 경계 설정 신설**(18시).
+> **번역 채팅 쿼터는 설정값이 아니라 구조가 바뀐다** — "하루 2명" → **"동시 5개 방"**.
+>
 > 2026-08-09에 **BM 수치 8개를 코드 상수에서 설정으로 옮겼다**(대화 신청 2종, 포스트 4종, 무료 번역 2종
 > + 등록 창·스코어 가중치). 그전에는 이것들이 `private static final`이라 값 하나 바꾸는 데도
 > 코드 수정과 재배포가 필요했다.
