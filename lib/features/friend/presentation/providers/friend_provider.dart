@@ -56,17 +56,6 @@ final friendRequestsProvider = FutureProvider<List<FriendRequest>>((ref) {
   return ref.read(friendApiProvider).receivedRequests();
 });
 
-/// 내가 보낸 친구 요청(PENDING).
-final sentFriendRequestsProvider = FutureProvider<List<FriendRequest>>((ref) {
-  ref.listen(socketPacketProvider, (previous, next) {
-    final op = next.valueOrNull?.op;
-    if (op == Op.friendState || op == Op.authOk) {
-      ref.invalidateSelf();
-    }
-  });
-  return ref.read(friendApiProvider).sentRequests();
-});
-
 /// 친구 요청/수락/거절/취소/삭제 — 성공하면 null, 실패하면 사용자에게 보여줄 메시지.
 class FriendActions {
   const FriendActions(this._ref);
@@ -116,7 +105,6 @@ class FriendActions {
   }) async {
     try {
       await action();
-      if (sent) _ref.invalidate(sentFriendRequestsProvider);
       if (received) _ref.invalidate(friendRequestsProvider);
       return null;
     } on ApiException catch (e) {

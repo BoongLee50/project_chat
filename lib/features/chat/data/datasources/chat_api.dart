@@ -30,12 +30,6 @@ class ChatApi {
         .toList();
   }
 
-  Future<List<ChatRequest>> sentRequests() async {
-    final data = await _client.get('/chat/rooms/sent');
-    return (data as List)
-        .map((e) => ChatRequest.fromJson(Map<String, dynamic>.from(e as Map)))
-        .toList();
-  }
 
   /// 메시지 히스토리(오래된 → 최신 순으로 내려옴).
   Future<List<ChatMessage>> messages(String roomId, {String? cursor}) async {

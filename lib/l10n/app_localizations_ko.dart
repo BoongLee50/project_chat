@@ -187,9 +187,6 @@ class L10nKo extends L10n {
   String get gardenSubtitle => '달빛 아래, 우리의 하루를 나누는 공간 ✨';
 
   @override
-  String get gardenSpotlight => '스포트라이트';
-
-  @override
   String get gardenLoadFailed => '피드를 불러오지 못했어요.';
 
   @override
@@ -233,22 +230,13 @@ class L10nKo extends L10n {
   String get chatRoomsSubtitle => '마음이 통하는 사람들과 이야기를 나눠보세요.';
 
   @override
-  String get chatTabMatch => '매칭 대화';
-
-  @override
   String get chatTabFriend => '친구';
 
   @override
   String get chatTabReceived => '받은 신청';
 
   @override
-  String get chatTabSent => '보낸 신청';
-
-  @override
   String get chatRoomsEmpty => '아직 대화가 없어요.\n달빛가든에서 마음에 드는 사람에게 말을 걸어보세요.';
-
-  @override
-  String get chatRoomsEmptySent => '보낸 대화 신청이 없어요.';
 
   @override
   String get chatRoomsStart => '대화를 시작해보세요.';
@@ -447,9 +435,6 @@ class L10nKo extends L10n {
   }
 
   @override
-  String get profileSpotlight => '스포트라이트';
-
-  @override
   String get profileFreeUpload => '무료 업로드';
 
   @override
@@ -544,9 +529,6 @@ class L10nKo extends L10n {
   String get storeKindPostBoost => '포스트 부스트';
 
   @override
-  String get storeKindSpotlightBoost => '스포트라이트 부스트';
-
-  @override
   String get storeKindAlbumPass => '포스트 앨범 패스';
 
   @override
@@ -554,9 +536,6 @@ class L10nKo extends L10n {
 
   @override
   String get storeDescPostBoost => '다른 사람보다 우선적으로 포스트 사진을 추천해드려요!';
-
-  @override
-  String get storeDescSpotlightBoost => '프리미엄 유저만 이용 가능한 특별 추천 공간!';
 
   @override
   String get storeDescAlbumPass =>
@@ -907,9 +886,6 @@ class L10nKo extends L10n {
   String get primePostBoostDesc => '내 포스트를 더 많은 사람에게 노출! (일일제한 없음)';
 
   @override
-  String get primeSpotlightDesc => '오늘의 주인공이 되어 더 많은 관심을! (일일제한 없음)';
-
-  @override
   String get primeUnlimitedChat => '대화 신청 무제한';
 
   @override
@@ -973,12 +949,6 @@ class L10nKo extends L10n {
 
   @override
   String get navProfile => '프로필';
-
-  @override
-  String get chatRequestPending => '대화 대기 중';
-
-  @override
-  String get chatRequestClosed => '대화 종료';
 
   @override
   String get blockConfirmSuffix => '님을 차단하시겠습니까?';
@@ -1240,9 +1210,6 @@ class L10nKo extends L10n {
 
   @override
   String get errorAgeRestricted => '만 18세 이상만 가입할 수 있어요.';
-
-  @override
-  String get errorPostOneLinerRequired => '하루 한 마디를 입력해 주세요.';
 
   @override
   String get errorPostPhotoRequired => '새로운 포스트 사진을 등록해 주세요.';

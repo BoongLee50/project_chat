@@ -36,11 +36,6 @@ public class ChatController {
         return chatService.receivedRequests(userId);
     }
 
-    /** 내가 보낸 신청. */
-    @GetMapping("/chat/rooms/sent")
-    public List<ChatRequestDto> sent(@CurrentUserId String userId) {
-        return chatService.sentRequests(userId);
-    }
 
     /**
      * 음성 파일 업로드 자리 발급. 실제 바이트는 여기가 아니라 uploadUrl로 PUT한다.

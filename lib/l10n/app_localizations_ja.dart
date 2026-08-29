@@ -187,9 +187,6 @@ class L10nJa extends L10n {
   String get gardenSubtitle => '月明かりの下、私たちの一日を分かち合う場所 ✨';
 
   @override
-  String get gardenSpotlight => 'スポットライト';
-
-  @override
   String get gardenLoadFailed => 'フィードを読み込めませんでした。';
 
   @override
@@ -233,22 +230,13 @@ class L10nJa extends L10n {
   String get chatRoomsSubtitle => '心が通じ合う人と話してみましょう。';
 
   @override
-  String get chatTabMatch => 'マッチトーク';
-
-  @override
   String get chatTabFriend => '友だち';
 
   @override
   String get chatTabReceived => '受け取ったリクエスト';
 
   @override
-  String get chatTabSent => '送ったリクエスト';
-
-  @override
   String get chatRoomsEmpty => 'まだ会話がありません。\n月光ガーデンで気になる人に話しかけてみましょう。';
-
-  @override
-  String get chatRoomsEmptySent => '送った会話リクエストはありません。';
 
   @override
   String get chatRoomsStart => '会話を始めてみましょう。';
@@ -447,9 +435,6 @@ class L10nJa extends L10n {
   }
 
   @override
-  String get profileSpotlight => 'スポットライト';
-
-  @override
   String get profileFreeUpload => '無料アップロード';
 
   @override
@@ -544,9 +529,6 @@ class L10nJa extends L10n {
   String get storeKindPostBoost => 'ポストブースト';
 
   @override
-  String get storeKindSpotlightBoost => 'スポットライトブースト';
-
-  @override
   String get storeKindAlbumPass => 'ポストアルバムパス';
 
   @override
@@ -554,9 +536,6 @@ class L10nJa extends L10n {
 
   @override
   String get storeDescPostBoost => '他の人より優先してポスト写真をおすすめします！';
-
-  @override
-  String get storeDescSpotlightBoost => 'プレミアムユーザーだけが使える特別なおすすめ枠！';
 
   @override
   String get storeDescAlbumPass =>
@@ -907,9 +886,6 @@ class L10nJa extends L10n {
   String get primePostBoostDesc => '自分のポストをより多くの人に表示！（1日の制限なし）';
 
   @override
-  String get primeSpotlightDesc => '今日の主役になって、もっと注目を！（1日の制限なし）';
-
-  @override
   String get primeUnlimitedChat => '会話リクエスト無制限';
 
   @override
@@ -972,12 +948,6 @@ class L10nJa extends L10n {
 
   @override
   String get navProfile => 'プロフィール';
-
-  @override
-  String get chatRequestPending => '返事待ち';
-
-  @override
-  String get chatRequestClosed => '会話終了';
 
   @override
   String get blockConfirmSuffix => 'さんをブロックしますか？';
@@ -1239,9 +1209,6 @@ class L10nJa extends L10n {
 
   @override
   String get errorAgeRestricted => '18歳以上のみ登録できます。';
-
-  @override
-  String get errorPostOneLinerRequired => '今日のひとことを入力してください。';
 
   @override
   String get errorPostPhotoRequired => '新しいポスト写真を登録してください。';

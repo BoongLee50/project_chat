@@ -12,7 +12,8 @@ import '../../../../l10n/app_localizations.dart';
 
 /// 화면 28 — 보유 부스트. 보유 매수를 보고 1매를 써서 1시간 노출을 올린다.
 ///
-/// 포스트 부스트와 스포트라이트 부스트가 같은 구조라 [kind]로 한 화면을 공유한다.
+/// 부스트 종류가 늘어도 같은 구조를 쓰도록 [kind]로 화면을 공유한다.
+/// (Plan_3 기준 부스트는 포스트 부스트 하나뿐이다.)
 class BoostScreen extends ConsumerStatefulWidget {
   const BoostScreen({super.key, required this.kind});
 

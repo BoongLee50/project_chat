@@ -441,18 +441,13 @@ class _Benefits extends StatelessWidget {
               title: l10n.primeAlbumBenefit(plan.durationDays),
               description: l10n.primeAlbumBenefitDesc,
             ),
+          // Plan_3에서 스포트라이트가 폐지돼 부스트는 포스트 부스트 하나뿐이다.
           for (final entry in plan.boosts.entries)
             BenefitRow(
-              icon: entry.key == StoreKind.postBoost
-                  ? Icons.trending_up
-                  : Icons.star_border_rounded,
+              icon: Icons.trending_up,
               title: l10n.primeBoostBenefit(StoreKind.label(l10n, entry.key), entry.value),
-              description: entry.key == StoreKind.postBoost
-                  ? l10n.primePostBoostDesc
-                  : l10n.primeSpotlightDesc,
-              accent: entry.key == StoreKind.postBoost
-                  ? const Color(0xFFE8386D)
-                  : AppColors.moonlight,
+              description: l10n.primePostBoostDesc,
+              accent: const Color(0xFFE8386D),
             ),
           if (plan.entitlements.contains(StoreKind.unlimitedChatReq))
             BenefitRow(

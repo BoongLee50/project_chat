@@ -87,11 +87,10 @@ public class GardenService {
      * 피드 조회. 반환된 카드의 노출 수를 증가시킨다(전환율 분모).
      *
      * @param age 연령대 앞자리(10/20/30/40), null이면 전체
-     * @param spotlight 스포트라이트 — 부스팅 사용자만
      */
     @Transactional
     public FeedPageDto feed(String userId, String gender, Integer age, String country,
-                             String cursor, boolean spotlight) {
+                             String cursor) {
 
         LocalDate sessionDate = sessionTime.currentSessionDate();
         Integer ageMin = age == null ? null : age;
@@ -99,7 +98,7 @@ public class GardenService {
 
         List<FeedCandidate> candidates = gardenMapper.selectFeedCandidates(
                 userId, sessionDate, emptyToNull(gender), emptyToNull(country), ageMin, ageMax,
-                spotlight, false);
+                false);
 
         // 스킵은 "안 보여준다"가 아니라 **우선순위에서 뒤로 미룬다**는 뜻이다(기획 4-1).
         // 그래서 볼 게 다 떨어지면 스킵했던 사람도 다시 후보에 넣는다.
@@ -107,7 +106,7 @@ public class GardenService {
         if (candidates.isEmpty()) {
             candidates = gardenMapper.selectFeedCandidates(
                     userId, sessionDate, emptyToNull(gender), emptyToNull(country), ageMin, ageMax,
-                    spotlight, true);
+                    true);
         }
 
         // Pick Point는 "지금 부스트를 켠 사람"에게 준다(02 §1.7). 한 번만 조회해 재사용.

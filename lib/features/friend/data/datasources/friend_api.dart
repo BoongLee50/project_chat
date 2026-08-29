@@ -21,12 +21,6 @@ class FriendApi {
         .toList();
   }
 
-  Future<List<FriendRequest>> sentRequests() async {
-    final data = await _client.get('/friends/requests/sent');
-    return (data as List)
-        .map((e) => FriendRequest.fromJson(Map<String, dynamic>.from(e as Map)))
-        .toList();
-  }
 
   Future<void> request(String targetUserId) =>
       _client.post('/friends/requests', body: {'targetUserId': targetUserId});

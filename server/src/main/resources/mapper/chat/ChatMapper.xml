@@ -78,15 +78,6 @@
         ORDER BY r.created_at DESC
     </select>
 
-    <select id="selectSentRequests" resultMap="RequestResultMap">
-        SELECT r.*, u.nickname AS partner_nickname, u.birth_year AS partner_birth_year,
-               u.country AS partner_country, p.photo_key AS partner_photo_key
-        FROM chat_requests r
-                 JOIN users u ON u.id = r.to_user
-                 LEFT JOIN user_profiles p ON p.user_id = u.id
-        WHERE r.from_user = #{userId}
-        ORDER BY r.created_at DESC
-    </select>
 
     <select id="existsPendingRequest" resultType="boolean">
         SELECT EXISTS (SELECT 1 FROM chat_requests

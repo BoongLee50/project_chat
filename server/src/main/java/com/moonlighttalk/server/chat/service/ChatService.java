@@ -200,10 +200,6 @@ public class ChatService {
         return chatMapper.selectReceivedRequests(userId).stream().map(this::toRequestDto).toList();
     }
 
-    public List<ChatRequestDto> sentRequests(String userId) {
-        return chatMapper.selectSentRequests(userId).stream().map(this::toRequestDto).toList();
-    }
-
     // ── 대화방 ─────────────────────────────────────────────
 
     public List<ChatRoomDto> myRooms(String userId) {

@@ -1,7 +1,6 @@
 // 채팅 DTO. (docs/01-protocol-api-spec.md §1.5~1.6)
 
 import '../../../../core/util/server_time.dart';
-import '../../../../l10n/app_localizations.dart';
 
 class ChatRoomSummary {
   const ChatRoomSummary({
@@ -88,9 +87,6 @@ class ChatRequest {
   final String? partnerCountry;
   final String? partnerPhotoUrl;
 
-  /// 보낸 신청 목록의 상태 문구(기획서 5장).
-  String sentStatusLabel(L10n l10n) =>
-      status == 'PENDING' ? l10n.chatRequestPending : l10n.chatRequestClosed;
 
   factory ChatRequest.fromJson(Map<String, dynamic> json) => ChatRequest(
     id: json['id'] as String,

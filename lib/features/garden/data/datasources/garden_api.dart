@@ -12,14 +12,13 @@ class GardenApi {
     int? ageDecade,
     String? country,
     String? cursor,
-    bool spotlight = false,
   }) async {
     final data = await _client.get(
-      spotlight ? '/feed/spotlight' : '/feed',
+      '/feed',
       query: {
-        if (!spotlight && gender != null) 'gender': gender,
-        if (!spotlight && ageDecade != null) 'age': ageDecade,
-        if (!spotlight && country != null) 'country': country,
+        'gender': ?gender,
+        'age': ?ageDecade,
+        'country': ?country,
         'cursor': ?cursor,
       },
     );

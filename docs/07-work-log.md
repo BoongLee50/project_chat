@@ -23,9 +23,9 @@
 
 ---
 
-## 1. 현재 상태 스냅샷 (2026-08-23 기준)
+## 1. 현재 상태 스냅샷 (2026-08-29 기준)
 
-**한 줄 요약**: 기획서 화면 1~30 전부 구현. **전 화면이 로컬 서버·DB와 실제 연동 완료** — 로그인/온보딩 · 프로필 · 홈(오늘의 포스트) · 달빛가든 · 대화방/채팅창(WebSocket 실시간) · 친구. **서버 도메인 전부**(Flyway **V8**) 구현 완료. **UI 다국어(한↔일) ①·②단계 완료** — 화면 전량 + **오류 문구까지** ARB 이전(459키). **번역 무료 쿼터·패스 판정**도 붙어 `TRANSLATE_PASS`가 실제 혜택을 갖는다. **음성 메시지**(녹음·전송·재생, V9)는 두 기기로 실시간 송수신까지 확인됨. **달빛가든 시안(Plan_3) 적용 완료**이고 클라 갱신은 "낡았으면 1분" 방식으로 통일했다. ⚠️ **다만 이 모든 게 Plan_2 기준이다.** 2026-08-29에 **Plan_3(v2.0)** 이 도착해 게이트가 폐지되고 영업일이 18시로 바뀌며 달빛 한마디가 신설된다 — **다음 작업은 그 반영**([09](09-next-task-handoff.md) · 분석 [12](12-plan3-diff.md)). 일본어 마감은 **보류**(화면이 바뀌면 문구도 바뀐다). 그 외 남은 것: 번역 공급자 연동(API 키) · 앱 아이콘·스플래시 · 외부 계정이 필요한 것들 · **피드 확장성 부채 2건**(Plan_3 ②단계에서 함께 해소된다).
+**한 줄 요약**: 기획서 화면 1~30 전부 구현. **전 화면이 로컬 서버·DB와 실제 연동 완료** — 로그인/온보딩 · 프로필 · 홈(오늘의 포스트) · 달빛가든 · 대화방/채팅창(WebSocket 실시간) · 친구. **서버 도메인 전부**(Flyway **V8**) 구현 완료. **UI 다국어(한↔일) ①·②단계 완료** — 화면 전량 + **오류 문구까지** ARB 이전(459키). **번역 무료 쿼터·패스 판정**도 붙어 `TRANSLATE_PASS`가 실제 혜택을 갖는다. **음성 메시지**(녹음·전송·재생, V9)는 두 기기로 실시간 송수신까지 확인됨. **달빛가든 시안(Plan_3) 적용 완료**이고 클라 갱신은 "낡았으면 1분" 방식으로 통일했다. 🚀 **Plan_3(v2.0) 반영 ①단계 완료**(2026-08-29, **V10**) — **야간 게이트가 폐지돼 24시간 열려 있고**, "하루"의 경계가 **KST 18시**다. 하루 한 마디·포스트 등록 창·[보낸 신청] 탭·스포트라이트 부스트도 함께 걷어냈다. **다음은 ②단계(포스트 — 메인 사진 지정·9장·삭제 3회)**([09](09-next-task-handoff.md) · 분석 [12](12-plan3-diff.md)). 일본어 마감은 **보류**(화면이 바뀌면 문구도 바뀐다). 그 외 남은 것: 번역 공급자 연동(API 키) · 앱 아이콘·스플래시 · 외부 계정이 필요한 것들 · **피드 확장성 부채 2건**(Plan_3 ②단계에서 함께 해소된다).
 
 🚨 **출시는 한·일 동시로 확정**(2026-08-08). 일본어가 "나중에 다듬을 것"이 아니라 **출시 조건**이 됐다 —
 `app_ja.arb` 459키가 전부 AI 초벌이고 **검수자가 아직 미정**이다.
@@ -33,18 +33,17 @@
 | 영역 | 상태 |
 |------|------|
 | 기획 | 🚨 **Plan_3(v2.0)이 정본** (`D:\MyProject\Plan_Chat\Plan_3` — **게이트 폐지·영업일 18시·달빛 한마디 신설**). 분석은 [12](12-plan3-diff.md). **지금 코드는 아직 Plan_2 기준**이라 반영 작업이 남아 있다 |
-| 클라 UI | **기획서 화면 1~30 전부**(기본 11 + BM 6 + 팝업/시트: 신고·차단·관심사·지역·소개·친구포스트·게이트), 다크 테마 고정 |
+| 클라 UI | **기획서 화면 1~30 전부**(기본 11 + BM 6 + 팝업/시트: 신고·차단·관심사·지역·소개·친구포스트). 게이트 화면은 ①단계에서 **삭제됨**. 다크 테마 고정 |
 | 클라 데이터 | **Riverpod + go_router + Dio + secure storage + image_picker + web_socket_channel**. **전 화면 실연동 완료**(하드코딩 화면 없음) |
 | 서버 | Spring Boot. **전 도메인 구현** — auth(mock 포함)/profile/post/garden/chat(+WebSocket)/friend/luna/store(BM)/**moderation**/scheduler |
-| DB | 로컬 MariaDB 11.4.5, Flyway **V8까지 적용**(V1 초기 · V2 posts 등록창/교체 · V3 post_comments · V4 chat · V5 friendships 양방향 · V6 BM · V7 번역 쿼터 · V8 스킵 복귀/갱신 감지 · **V9 음성 메시지**) |
+| DB | 로컬 MariaDB 11.4.5, Flyway **V10까지 적용**(V1 초기 · V2 posts 등록창/교체 · V3 post_comments · V4 chat · V5 friendships 양방향 · V6 BM · V7 번역 쿼터 · V8 스킵 복귀/갱신 감지 · V9 음성 메시지 · **V10 게이트 폐지 정리**) |
 | 실기기 검증 | 에뮬 2대(Pixel_10 · Pixel_B) → 로컬 서버 → DB/디스크 **end-to-end 성공**: 자동 로그인, 프로필, 카메라 촬영→업로드→표시, 가든 피드/좋아요/댓글, **양방향 실시간 채팅**, **친구 요청→수락→상시 대화방→삭제** |
-| 다국어 | **①·②단계 완료** — `app_ko.arb`/`app_ja.arb` 각 **459키**(화면 378 + 오류 61 + 번역 2 + 사진 시트 8 + 음성 10). 기기 언어를 따르고 미지원 언어는 한국어 폴백. 오류 문구는 서버 `ErrorCode`(56종)를 클라가 번역한다. 에뮬 `ja-JP` 실확인. 남은 건 **원어민 검수**(③단계, 출시 블로커) |
+| 다국어 | **①·②단계 완료** — `app_ko.arb`/`app_ja.arb` 각 **429키**(①단계에서 게이트·하루 한 마디·보낸 신청·스포트라이트 문구 30키가 사라졌다). 기기 언어를 따르고 미지원 언어는 한국어 폴백. 오류 문구는 서버 `ErrorCode`(56종)를 클라가 번역한다. 에뮬 `ja-JP` 실확인. 남은 건 **원어민 검수**(③단계, 출시 블로커) |
 | 리소스 | 달빛가든 시안(Plan_3) **적용 완료**. 앱 아이콘·스플래시는 아직 **Flutter 기본값**, 나머지 배경·일러스트는 대기. ⚠️ **글자가 구워진 이미지는 일본어판을 따로 받는다**(설계 확정) |
 
-> 🚨 **2026-08-29 — 새 기획서 Plan_3(v2.0)이 도착했다. 착수 전에 [12 변경 분석](12-plan3-diff.md)을 먼저 읽을 것.**
-> 야간 게이트가 **없어지고**(24시간), "하루"의 경계가 **KST 18시**로 바뀌며,
-> **달빛 한마디 이벤트**라는 신규 도메인이 생긴다. 예고돼 있던 변경 셋이 모두 현실화됐다.
-> 아래 §4(예고된 변경)는 이제 **Plan_3으로 대체되는 중**이다 — 확정 정리 전까지 둘을 함께 볼 것.
+> 🚨 **Plan_3(v2.0)이 정본이다. 착수 전에 [12 변경 분석](12-plan3-diff.md)을 먼저 읽을 것.**
+> ①단계(게이트 폐지 + 영업일 18시)는 **끝났고**, ②~⑦단계가 남아 있다([09](09-next-task-handoff.md) §3).
+> **달빛 한마디 이벤트**는 아직 손대지 않은 신규 도메인이다(⑤단계).
 
 > ⚠️ **착수 전에 [04 §4 예고된 변경](04-progress-and-roadmap.md)을 읽을 것**(2026-08-08 공유).
 > 기획 변경 요청이 오면 **[11 변경 영향 지도](11-change-impact-map.md)** 로 비용을 판정한다.
@@ -114,22 +113,24 @@ flutter emulators --launch Pixel_B           # 두 번째 → emulator-5556  (�
 - 클라: 소셜 버튼을 누르면 `dev-line` / `dev-kakao` / `dev-google` 토큰을 전송 → **버튼마다 다른 테스트 계정**이 된다.
 - 계정 초기화하려면 DB에서 해당 `users` row 삭제(또는 DB 재생성 후 서버 재기동).
 
-### 2-4. 낮에 개발할 때 — 게이트/배치/결제 우회
-운영시간은 17~06시라 **낮에는 서버가 채팅·가든·포스트를 막는다**(서버 강제, 함정 #18).
-낮에 기능을 확인하려면 게이트를 열고 띄운다.
-```bash
-cd server && JAVA_HOME="<jdk17>" ./gradlew bootRun --args='--app.gate.open-hour=0'
-```
-> `isOpen = hour >= openHour || hour < closeHour` 이므로 `open-hour=0`이면 항상 열린다.
-> 실제 운영시간 동작을 볼 땐 이 옵션 없이 띄울 것.
+### 2-4. 배치/결제 우회
+
+> ✅ **게이트 우회(`--app.gate.open-hour=0`)는 더 이상 필요 없다.** Plan_3 ①단계에서 운영시간이 폐지돼
+> **낮에도 전 기능이 열려 있다**. 옛 문서를 보고 이 옵션을 주면 서버가 알 수 없는 설정으로 무시한다.
+
+⚠️ 대신 **영업일 경계가 KST 18시**다. 18시 이전은 `session_date`가 **어제**로 잡히므로,
+"오늘 것"이 안 보인다고 느껴지면 게이트가 아니라 이 경계를 의심할 것(`app.session.rollover-hour`).
 
 **배치를 기다리지 않고 실행**(local 프로필에서만 열림 — `app.scheduler.dev-trigger-enabled`)
 ```
-POST /internal/scheduler/gate-close       # 06시 종료 처리(매칭방 종료 + SYSTEM_CLOSE)
-POST /internal/scheduler/daily-cleanup    # 지난 영업일 정리
-POST /internal/scheduler/purge-messages   # 메시지 보관 만료 삭제
-POST /internal/scheduler/expire-benefits  # 구독·엔티틀먼트·부스트 만료 정리
+POST /internal/scheduler/close-match-rooms  # 매칭방 일괄 종료 + SYSTEM_CLOSE (⚠️ 아래 참고)
+POST /internal/scheduler/daily-cleanup      # 지난 영업일 정리
+POST /internal/scheduler/purge-messages     # 메시지 보관 만료 삭제
+POST /internal/scheduler/expire-benefits    # 구독·엔티틀먼트·부스트 만료 정리
 ```
+> ⚠️ `close-match-rooms`를 **돌리는 cron이 없다**. 06시 종료 배치가 게이트와 함께 사라졌고
+> Plan_3에 방 종료 규칙이 없어, 기능만 남기고 수동 실행으로 뒀다(기획 확인 대기).
+> 지금은 매칭 방이 **신고·차단·나가기 전까지 계속 열려 있다.**
 
 **결제 없이 상점 테스트**(`app.store.mock-purchase-enabled: true`, local 전용)
 - 영수증 토큰이 **`dev-`로 시작하면 통과**한다(`MockReceiptVerifier`). 앱의 충전/구독 버튼이 이미 이 토큰을 보낸다.
@@ -239,6 +240,9 @@ adb shell cmd locale set-app-locales com.example.project_chat --locales ko-KR
 | 33 | **안드로이드 15+는 `systemNavigationBarColor`를 무시한다** | edge-to-edge가 강제라 색 지정이 안 먹고, **3버튼 내비**면 시스템이 가독성용 밝은 대비 스크림을 덧씌운다 — 다크 앱인데 내비 영역만 회색으로 뜬 원인. 바를 투명하게 두고 앱 배경을 비추되, `styles.xml`(values·values-night **양쪽**)에 `android:enforceNavigationBarContrast=false` / `enforceStatusBarContrast=false`를 넣어야 한다. 아이콘 밝기는 `SystemChrome`으로 지정 가능 |
 | 34 | **Git Bash가 `/sdcard`를 Windows 경로로 바꾼다** | `adb shell screencap -p /sdcard/s.png`가 `C:/Program Files/Git/sdcard/...`로 둔갑해 실패 → `export MSYS_NO_PATHCONV=1`. 스크린샷은 **기기에 저장 후 `adb pull`**로 받을 것 |
 | 35 | **PowerShell 5.1의 `Get-Content`/`Set-Content`는 UTF-8 한글을 깨뜨린다** | 인코딩을 안 주면 **ANSI로 읽어** 한글이 전부 뭉개진다(`?щ튆??`). 문서 일부를 잘라내려고 `Get-Content \| Set-Content -Encoding utf8`을 쓰면 **파일 전체가 손상**된다. md 편집은 **Edit 도구나 bash 리다이렉트**를 쓸 것 — 실제로 07·09를 이렇게 날렸다가 `git checkout --`으로 되돌렸다 |
+| 36 | **정규식으로 여러 줄 프로바이더를 지우면 엉뚱한 곳에서 끝난다** | `provider = ...(?:.\|
+)*?\}\);` 같은 비탐욕 패턴이 **안쪽 `ref.listen(...)`의 `});`** 에 먼저 걸려, 프로바이더 절반만 지우고 나머지가 남는다(실제로 `chat_provider`·`friend_provider`에서 분석 오류 60~78건). **여러 줄 블록 삭제는 정규식 말고 문자열 전체를 그대로 매칭**할 것 |
+| 37 | **"N개가 한 줄에 딱 맞게"식 배율은 개수가 줄면 확대된다** | 가든 필터가 `availableWidth / (칩 폭 합)`로 배율을 구하고 있었다. 스포트라이트 칩 하나를 지우자 남은 셋이 **1.5배로 부풀었다** — 폭을 셋이 나눠 갖기 때문이다. 개수에 의존하는 배율은 **시안 배율을 상한으로 두고 넘칠 때만 줄일 것**(`min(fit, design)`) |
 
 ---
 
@@ -329,6 +333,62 @@ adb shell cmd locale set-app-locales com.example.project_chat --locales ko-KR
 >
 > **⚠️ 다른 기기에서 받을 때**: `git pull` 후 **서버를 한 번 띄워 V7을 적용**해야 한다(`daily_translate_targets`).
 > ARB를 건드렸으므로 `flutter gen-l10n`도 필요하다(함정 #28). 자세한 절차는 §2-2.
+
+### 2026-08-29(4) — **Plan_3 ①단계 완료: 게이트 폐지 + 영업일 18시** (V10)
+
+**앱의 전제가 바뀐 작업이다.** 야간 운영시간(17~06시)이 없어져 **24시간 열려 있고**,
+"하루"의 경계가 **KST 18시**가 됐다. 대부분이 삭제라 코드는 오히려 줄었다.
+
+#### 걷어낸 것 — 게이트
+
+| 대상 | 결과 |
+|---|---|
+| 서버 판정 | `requireGateOpen()` **10곳**(chat 3 · garden 4 · post 3) 제거 |
+| API | `/system/gate` · `GateState` 삭제 |
+| 클라 | `GateClosedView` · `GateBanner` · 카운트다운 · `gateProvider` 삭제 |
+| 배치 | 17시 개방 / 06시 종료 cron 삭제 |
+| 설정 | `app.gate.open-hour` · `close-hour` → **`app.session.rollover-hour: 18`** |
+
+> ⚠️ **`GateService`는 지우지 않고 `SessionTimeService`로 이름만 바꿨다.**
+> `currentSessionDate()`·`nowKst()`가 그 안에 있고 **영업일 계산은 없어진 게 아니라 기준만 바뀌었다** —
+> `posts`·`daily_usage`·`feed_skips`·`daily_translate_targets`·`boost_activations`·`post_stats`
+> **6개 테이블**이 이 한 메서드에 매달려 있다. 통째로 지웠으면 전부 따라 깨졌다.
+
+#### 함께 정리한 것 (기획서에 없어진 것들)
+
+- **포스트 등록 창(1시간)** — `posts.window_started_at`, `app.post.upload-window-minutes`, 홈의 "남은 시간"
+- **하루 한 마디** — `posts.one_liner`, 홈 입력창, `OneLinerRequest`
+- **[보낸 신청] 탭** — 대화방 탭, `GET /chat/rooms/sent`, `sentStatusLabel`
+- **스포트라이트 부스트** — 상품 2종, 가든 필터 칩, 프로필 바로가기, 프라임 혜택 분기
+- ARB **30키 삭제**(459 → **429키**, 한·일 양쪽)
+
+#### 값만 바꾼 것
+
+`max-photos-pass` 8→**9** · `replace-limit-free`/`pass` 2·20→**3/3**(키는 둘 다 유지) ·
+`friend.max-count`/`max-count-premium` 20·30→**100/100**(프리미엄 분기 제거) ·
+`chat.free-requests-per-day` 2→**10**
+
+#### 뜻밖에 드러난 것
+
+- **`posts.one_liner`를 가든·친구 카드도 쓰고 있었다.** 지우면 카드 문구가 빈다.
+  Plan_3 §4-1이 *"관심사와 자기소개 문구를 랜덤하게 출력"*이라 **`user_profiles.intro`로 갈아끼웠고**
+  DTO 필드 이름도 `oneLiner` → `intro`로 바꿨다(옛 이름을 남기면 옛 규칙이 따라온다).
+- **06시 종료 배치가 사라지면 매칭 방이 자동으로 안 닫힌다.** Plan_3에 종료 규칙이 없다.
+  기능(`closeMatchRooms()`)은 남기고 dev 엔드포인트를 `gate-close` → **`close-match-rooms`** 로 개명해 뒀다.
+  **기획 확인 대기** — 지금은 신고·차단·나가기로만 닫힌다.
+- **V6의 `ENUM('POST_BOOST','SPOTLIGHT_BOOST')`는 건드리지 않았다.** 이미 들어간 행이 있을 수 있는
+  enum을 좁히는 건 위험한데 얻는 게 없다. 코드·설정에서 안 쓰면 그만이다.
+- 잘못된 JSON을 보냈더니 **500 INTERNAL_ERROR**가 났다. `HttpMessageNotReadableException` → 400,
+  `NoResourceFoundException` → 404 핸들러를 추가했다(내 셸 인코딩 문제가 진짜 결함을 드러낸 사례).
+
+#### 함정 2건 추가
+
+**#36**(정규식으로 여러 줄 프로바이더 삭제 → 안쪽 `});`에 걸림),
+**#37**("N개가 한 줄에 딱 맞게"식 배율은 개수가 줄면 확대됨) — §3 참조.
+
+**검증**: `flutter analyze lib test` 0건 · `flutter test` 10건 통과 · 서버 `compileJava` 성공 · V10 적용 완료.
+
+---
 
 ### 2026-08-29(3) — Plan_3 반영 준비: 문서 전체를 새 기준으로 맞춤
 

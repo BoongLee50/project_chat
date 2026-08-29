@@ -46,10 +46,9 @@ app:
     # price 단위는 "루나". 현금 가격(충전팩·프라임)은 스토어 콘솔이 권위이므로 여기 두지 않는다.
     luna-products:
       # 부스트 — 1매당 1시간. 10매 묶음은 20% 할인가(화면 25)
+      # Plan_3에서 스포트라이트 부스트는 폐지됐다(포스트 부스트만 남는다).
       POST_BOOST_5:       { type: BOOST,       kind: POST_BOOST,      price: 400, quantity: 5,  reason: BUY_BOOST }
       POST_BOOST_10:      { type: BOOST,       kind: POST_BOOST,      price: 640, quantity: 10, reason: BUY_BOOST }
-      SPOTLIGHT_BOOST_5:  { type: BOOST,       kind: SPOTLIGHT_BOOST, price: 500, quantity: 5,  reason: BUY_BOOST }
-      SPOTLIGHT_BOOST_10: { type: BOOST,       kind: SPOTLIGHT_BOOST, price: 800, quantity: 10, reason: BUY_BOOST }
       # 패스 — 7일/30일 (화면 25·29·30)
       ALBUM_PASS_7D:      { type: ENTITLEMENT, kind: ALBUM_PASS,      price: 250, duration-days: 7,  reason: BUY_ALBUM_PASS }
       ALBUM_PASS_30D:     { type: ENTITLEMENT, kind: ALBUM_PASS,      price: 800, duration-days: 30, reason: BUY_ALBUM_PASS }
@@ -68,13 +67,13 @@ app:
         product: PRIME_1M
         duration-days: 30
         entitlements: [ALBUM_PASS, UNLIMITED_CHAT_REQ]
-        boosts: { POST_BOOST: 10, SPOTLIGHT_BOOST: 5 }
+        boosts: { POST_BOOST: 10 }
       PRIME_6M:
         product: PRIME_6M
         duration-days: 180
         entitlements: [ALBUM_PASS, UNLIMITED_CHAT_REQ]
         # ⚠️ 6개월 부스트를 일괄 지급할지 매월 지급할지 기획 확인 필요 — 일단 6배로 둔다
-        boosts: { POST_BOOST: 60, SPOTLIGHT_BOOST: 30 }
+        boosts: { POST_BOOST: 60 }
   chat:
     # 대화 신청 — 하루 N회는 공짜, 그 뒤로는 1건당 루나를 뺀다(기획서 5장).
     free-requests-per-day: 10

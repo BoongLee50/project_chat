@@ -23,14 +23,11 @@ class ChatRoomsScreen extends ConsumerStatefulWidget {
 }
 
 class _ChatRoomsScreenState extends ConsumerState<ChatRoomsScreen> {
-  bool _showSent = false;
-
   @override
   Widget build(BuildContext context) {
     final l10n = L10n.of(context);
     final rooms = ref.watch(chatRoomsProvider);
     final received = ref.watch(receivedRequestsProvider);
-    final sent = ref.watch(sentRequestsProvider);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -65,31 +62,6 @@ class _ChatRoomsScreenState extends ConsumerState<ChatRoomsScreen> {
                 style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
               ),
               const SizedBox(height: AppDimens.gapMd),
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    _Pill(
-                      icon: Icons.chat_bubble_outline,
-                      label: l10n.chatTabMatch,
-                      count:
-                          (rooms.valueOrNull?.length ?? 0) +
-                          (received.valueOrNull?.length ?? 0),
-                      active: !_showSent,
-                      onTap: () => setState(() => _showSent = false),
-                    ),
-                    const SizedBox(width: 10),
-                    _Pill(
-                      icon: Icons.send_outlined,
-                      label: l10n.chatTabSent,
-                      count: sent.valueOrNull?.length ?? 0,
-                      active: _showSent,
-                      onTap: () => setState(() => _showSent = true),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: AppDimens.gapMd),
             ],
           ),
         ),
@@ -100,11 +72,10 @@ class _ChatRoomsScreenState extends ConsumerState<ChatRoomsScreen> {
             onRefresh: () async {
               await ref.read(chatRoomsProvider.notifier).refresh();
               ref.invalidate(receivedRequestsProvider);
-              ref.invalidate(sentRequestsProvider);
             },
-            child: _showSent
-                ? _SentList(sent: sent)
-                : _MatchedList(rooms: rooms, received: received),
+            // Plan_3은 [대화]와 [받은 신청]을 탭으로 나누지만, 그 분리는 ⑥단계(포스트 정보 화면)와
+            // 함께 간다. 여기서는 [보낸 신청] 탭만 걷어내고 한 목록으로 둔다.
+            child: _MatchedList(rooms: rooms, received: received),
           ),
         ),
       ],
@@ -154,79 +125,6 @@ class _MatchedList extends ConsumerWidget {
   }
 }
 
-class _SentList extends StatelessWidget {
-  const _SentList({required this.sent});
-
-  final AsyncValue<List<ChatRequest>> sent;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = L10n.of(context);
-    final list = sent.valueOrNull ?? const <ChatRequest>[];
-    if (sent.isLoading && list.isEmpty) return const _Loading();
-    if (list.isEmpty) return _Empty(l10n.chatRoomsEmptySent);
-
-    return ListView.separated(
-      physics: const AlwaysScrollableScrollPhysics(),
-      padding: const EdgeInsets.fromLTRB(
-        AppDimens.pagePad,
-        0,
-        AppDimens.pagePad,
-        AppDimens.gapMd,
-      ),
-      itemCount: list.length,
-      separatorBuilder: (_, _) => const SizedBox(height: AppDimens.gapSm),
-      itemBuilder: (context, i) {
-        final request = list[i];
-        return _Card(
-          child: Row(
-            children: [
-              _Avatar(url: request.partnerPhotoUrl),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      _nameAge(request.partnerNickname, request.partnerAge),
-                      style: const TextStyle(
-                        color: AppColors.textPrimary,
-                        fontSize: 17,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      request.message,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: AppColors.textSecondary,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 8),
-              Text(
-                request.sentStatusLabel(l10n),
-                style: TextStyle(
-                  color: request.status == 'PENDING'
-                      ? AppColors.gold
-                      : AppColors.textMuted,
-                  fontSize: 12,
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-}
-
-/// 받은 신청 — 수락/거절 버튼.
 class _RequestTile extends ConsumerWidget {
   const _RequestTile({required this.request});
 
@@ -510,76 +408,6 @@ class _SectionLabel extends StatelessWidget {
     );
   }
 }
-
-class _Pill extends StatelessWidget {
-  const _Pill({
-    required this.icon,
-    required this.label,
-    required this.count,
-    required this.active,
-    required this.onTap,
-  });
-
-  final IconData icon;
-  final String label;
-  final int count;
-  final bool active;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
-        decoration: BoxDecoration(
-          color: active ? AppColors.moonlight.withValues(alpha: 0.15) : null,
-          borderRadius: BorderRadius.circular(22),
-          border: Border.all(
-            color: active ? AppColors.moonlight : AppColors.border,
-          ),
-        ),
-        child: Row(
-          children: [
-            Icon(
-              icon,
-              size: 18,
-              color: active ? AppColors.moonlight : AppColors.textSecondary,
-            ),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: TextStyle(
-                color: active ? AppColors.textPrimary : AppColors.textSecondary,
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            if (count > 0) ...[
-              const SizedBox(width: 6),
-              Container(
-                padding: const EdgeInsets.all(5),
-                decoration: const BoxDecoration(
-                  color: AppColors.moonlight,
-                  shape: BoxShape.circle,
-                ),
-                child: Text(
-                  '$count',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-}
-
 class _Loading extends StatelessWidget {
   const _Loading();
 

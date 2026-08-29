@@ -38,11 +38,6 @@ public class FriendController {
         return friendService.receivedRequests(userId);
     }
 
-    /** 내가 보낸 친구 요청(PENDING). */
-    @GetMapping("/friends/requests/sent")
-    public List<FriendRequestDto> sent(@CurrentUserId String userId) {
-        return friendService.sentRequests(userId);
-    }
 
     @PostMapping("/friends/requests")
     public AcceptFriendResponse request(@CurrentUserId String userId,

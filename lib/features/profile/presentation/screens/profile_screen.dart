@@ -565,16 +565,6 @@ class _StoreEntry extends ConsumerWidget {
                     .push(BoostScreen.route(StoreKind.postBoost)),
               ),
             ),
-            const SizedBox(width: AppDimens.gapSm),
-            Expanded(
-              child: _StoreShortcut(
-                icon: Icons.star_border_rounded,
-                label: l10n.profileSpotlight,
-                badge: wallet.stockOf(StoreKind.spotlightBoost),
-                onTap: () => Navigator.of(context)
-                    .push(BoostScreen.route(StoreKind.spotlightBoost)),
-              ),
-            ),
           ],
         ),
       ],

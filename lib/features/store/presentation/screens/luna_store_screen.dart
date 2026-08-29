@@ -71,12 +71,6 @@ class LunaStoreScreen extends ConsumerWidget {
                 options: data.optionsOf(StoreKind.postBoost),
               ),
               _ProductSection(
-                kind: StoreKind.spotlightBoost,
-                icon: Icons.star_border_rounded,
-                accent: AppColors.moonlight,
-                options: data.optionsOf(StoreKind.spotlightBoost),
-              ),
-              _ProductSection(
                 kind: StoreKind.albumPass,
                 icon: Icons.photo_camera_outlined,
                 accent: const Color(0xFF2F7BF6),

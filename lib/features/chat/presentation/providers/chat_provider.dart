@@ -51,16 +51,6 @@ final receivedRequestsProvider = FutureProvider<List<ChatRequest>>((ref) {
   return ref.read(chatApiProvider).receivedRequests();
 });
 
-/// 내가 보낸 대화 신청. 상대가 수락/거절하면(ROOM_STATE) 자동 갱신된다.
-final sentRequestsProvider = FutureProvider<List<ChatRequest>>((ref) {
-  ref.listen(socketPacketProvider, (previous, next) {
-    if (next.valueOrNull?.op == Op.roomState) {
-      ref.invalidateSelf();
-    }
-  });
-  return ref.read(chatApiProvider).sentRequests();
-});
-
 /// 채팅방 하나의 메시지 목록 — 히스토리(REST) + 실시간 수신(소켓)을 합친다.
 class ChatMessagesController
     extends FamilyAsyncNotifier<List<ChatMessage>, String> {
@@ -213,7 +203,6 @@ class ChatActions {
       await _ref
           .read(chatApiProvider)
           .createRequest(targetUserId: targetUserId, message: message);
-      _ref.invalidate(sentRequestsProvider);
       return null;
     } on ApiException catch (e) {
       return e;

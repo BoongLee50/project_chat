@@ -213,10 +213,6 @@ public class FriendService {
         return friendMapper.selectReceivedRequests(userId).stream().map(this::toRequestDto).toList();
     }
 
-    public List<FriendRequestDto> sentRequests(String userId) {
-        return friendMapper.selectSentRequests(userId).stream().map(this::toRequestDto).toList();
-    }
-
     /**
      * 친구의 오늘 포스트. (기획서 화면 19)
      *

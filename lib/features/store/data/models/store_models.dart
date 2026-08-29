@@ -22,7 +22,7 @@ class LunaProduct {
   /// BOOST | ENTITLEMENT
   final String type;
 
-  /// POST_BOOST | SPOTLIGHT_BOOST | ALBUM_PASS | TRANSLATE_PASS
+  /// POST_BOOST | ALBUM_PASS | TRANSLATE_PASS
   final String kind;
 
   final int price;
@@ -238,7 +238,6 @@ class ActiveBoost {
 /// 상품 종류별 화면 문구 — 여러 화면에서 같은 표현을 쓰려고 한곳에 모았다.
 abstract final class StoreKind {
   static const postBoost = 'POST_BOOST';
-  static const spotlightBoost = 'SPOTLIGHT_BOOST';
   static const albumPass = 'ALBUM_PASS';
   static const translatePass = 'TRANSLATE_PASS';
   static const unlimitedChatReq = 'UNLIMITED_CHAT_REQ';
@@ -246,7 +245,6 @@ abstract final class StoreKind {
 
   static String label(L10n l10n, String kind) => switch (kind) {
     postBoost => l10n.storeKindPostBoost,
-    spotlightBoost => l10n.storeKindSpotlightBoost,
     albumPass => l10n.storeKindAlbumPass,
     translatePass => l10n.storeKindTranslatePass,
     _ => kind,
@@ -254,7 +252,6 @@ abstract final class StoreKind {
 
   static String description(L10n l10n, String kind) => switch (kind) {
     postBoost => l10n.storeDescPostBoost,
-    spotlightBoost => l10n.storeDescSpotlightBoost,
     albumPass => l10n.storeDescAlbumPass,
     translatePass => l10n.storeDescTranslatePass,
     _ => '',

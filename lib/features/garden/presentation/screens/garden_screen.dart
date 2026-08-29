@@ -19,7 +19,7 @@ import '../../../../l10n/app_localizations.dart';
 
 /// 달빛가든 — 포스트 사진 피드. 메인 셸의 l10n.gardenTitle 탭 본문. (기획서 4장)
 ///
-/// 필터(성별·연령대·국가)·스포트라이트·좋아요·스킵(스와이프)·댓글을 서버와 연동한다.
+/// 필터(성별·연령대·국가)·좋아요·스킵(스와이프)·댓글을 서버와 연동한다.
 /// 대화 신청은 chat 도메인 구현 후 연결 예정.
 class GardenScreen extends ConsumerWidget {
   const GardenScreen({super.key});
@@ -156,14 +156,12 @@ class _FilterBar extends ConsumerWidget {
     final l10n = L10n.of(context);
     final filter = ref.watch(feedFilterProvider);
     final controller = ref.read(feedFilterProvider.notifier);
-    final spotlight = ref.watch(spotlightProvider);
 
     // 필터 칩은 전 상태의 그림이 있다(전체 포함) — 텍스트 폴백이 필요 없다.
     // 누르면 뜨는 **드롭다운 목록의 글자는 ARB**다(폰트). 칩만 이미지다.
     //
-    // 시안은 네 칩이 한 줄에 **딱 맞게** 놓인다(스크롤 없음). 화면 폭에 맞춰
-    // 배율을 직접 구해 그린다 — 화면 폭 기준 고정 배율을 쓰면 여백·간격 차이만큼
-    // 넘쳐서 스포트라이트가 잘렸다.
+    // 칩은 시안 배율로 그리되 폭을 넘치면 줄인다([GardenArt.filterRowScale]).
+    // Plan_3에서 스포트라이트 칩이 폐지돼 셋만 남았고, 남는 폭은 그냥 비워 둔다.
     return LayoutBuilder(
       builder: (context, constraints) {
         final s = GardenArt.filterRowScale(constraints.maxWidth);
@@ -201,19 +199,6 @@ class _FilterBar extends ConsumerWidget {
             options: {l10n.commonAll: null, l10n.countryKorea: 'KR', l10n.countryJapan: 'JP'},
             current: filter.country,
             onPick: controller.selectCountry,
-          ),
-          SizedBox(width: gap),
-          // 스포트라이트는 켠 상태 그림만 있다 — 끈 상태는 흐리게 그려 구분한다.
-          GestureDetector(
-            onTap: () =>
-                ref.read(spotlightProvider.notifier).state = !spotlight,
-            child: ArtImage(
-              GardenArt.filterSpotlight,
-              width: GardenArt.filterSpotlightSize.width,
-              height: GardenArt.filterSpotlightSize.height,
-              scale: s,
-              opacity: spotlight ? 1.0 : 0.45,
-            ),
           ),
         ],
         );

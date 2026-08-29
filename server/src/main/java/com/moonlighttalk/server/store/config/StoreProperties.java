@@ -53,7 +53,7 @@ public class StoreProperties {
     public static class LunaProduct {
         /** BOOST | ENTITLEMENT */
         private String type;
-        /** BOOST면 POST_BOOST/SPOTLIGHT_BOOST, ENTITLEMENT면 ALBUM_PASS/TRANSLATE_PASS 등 */
+        /** BOOST면 POST_BOOST, ENTITLEMENT면 ALBUM_PASS/TRANSLATE_PASS 등 */
         private String kind;
         private int price;
         private int quantity = 1;

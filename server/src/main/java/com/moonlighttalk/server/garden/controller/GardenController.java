@@ -25,15 +25,7 @@ public class GardenController {
             @RequestParam(required = false) Integer age,
             @RequestParam(required = false) String country,
             @RequestParam(required = false) String cursor) {
-        return gardenService.feed(userId, gender, age, country, cursor, false);
-    }
-
-    /** 스포트라이트 — 부스팅 사용자만 노출. */
-    @GetMapping("/feed/spotlight")
-    public FeedPageDto spotlight(
-            @CurrentUserId String userId,
-            @RequestParam(required = false) String cursor) {
-        return gardenService.feed(userId, null, null, null, cursor, true);
+        return gardenService.feed(userId, gender, age, country, cursor);
     }
 
     @PostMapping("/feed/{targetUserId}/like")

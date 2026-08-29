@@ -33,26 +33,26 @@ class GardenArt {
   static const String filterCountryAll = '$_dir/filter_country_all.png';
   static const String filterKorea = '$_dir/filter_korea.png';
   static const String filterJapan = '$_dir/filter_japan.png';
-  static const String filterSpotlight = '$_dir/filter_spotlight.png';
 
   /// 필터 칩 원본 규격(1080 캔버스 기준).
   static const Size filterGenderSize = Size(217, 94);
   static const Size filterAgeSize = Size(227, 94);
   static const Size filterCountrySize = Size(208, 95);
-  static const Size filterSpotlightSize = Size(334, 94);
 
   /// 칩 사이 간격(시안 원본 기준). 시안에서 칩 끝과 다음 칩 시작 사이가 13~15px이다.
   static const double filterGap = 14;
 
-  /// 필터 네 칩이 **주어진 폭에 딱 맞도록** 하는 배율.
+  /// 필터 칩 줄의 배율.
   ///
-  /// 화면 폭 기준 고정 배율([scaleOf])을 쓰면 좌우 여백·간격이 시안보다 커서
-  /// 마지막 칩(스포트라이트)이 넘쳐 스크롤이 생긴다. 시안은 한 줄에 딱 맞으므로
-  /// **남은 폭을 네 칩이 나눠 갖도록** 배율을 되계산한다.
+  /// 시안 배율([canvasWidth] 기준)을 쓰되, 그렇게 그려서 폭을 넘치면 줄인다.
+  /// - Plan_3에서 **스포트라이트 칩이 폐지돼 칩이 셋**이라 시안 배율로도 폭이 남는다.
+  ///   남는 폭까지 나눠 가지면 칩이 시안보다 커지므로 **키우지는 않는다**(왼쪽 정렬).
+  /// - 좁은 기기에서는 셋도 넘칠 수 있어 그때만 딱 맞게 줄인다(스크롤이 생기지 않게).
   static double filterRowScale(double availableWidth) {
-    const designTotal =
-        217 + 227 + 208 + 334 + filterGap * 3; // 칩 폭 합 + 간격 3개
-    return availableWidth / designTotal;
+    const designTotal = 217 + 227 + 208 + filterGap * 2; // 칩 폭 합 + 간격 2개
+    final fit = availableWidth / designTotal;
+    final design = availableWidth / canvasWidth;
+    return fit < design ? fit : design;
   }
 
   /// 값 → 그림. 이제 모든 상태에 그림이 있어 텍스트 폴백이 필요 없다.

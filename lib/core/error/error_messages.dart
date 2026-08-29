@@ -24,7 +24,6 @@ String errorMessage(L10n l10n, ApiException e) {
     'AGE_RESTRICTED' => l10n.errorAgeRestricted,
 
     // ── post ─────────────────────────────────────────
-    'POST_ONELINER_REQUIRED' => l10n.errorPostOneLinerRequired,
     'POST_PHOTO_REQUIRED' => l10n.errorPostPhotoRequired,
     'POST_PHOTO_NOT_FOUND' => l10n.errorPostPhotoNotFound,
     'POST_PHOTO_NOT_MINE' => l10n.errorPostPhotoNotMine,

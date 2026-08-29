@@ -21,8 +21,6 @@ public interface ChatMapper {
     List<ChatRequestEntity> selectReceivedRequests(@Param("userId") String userId);
 
     /** 내가 보낸 신청 전체(대기/종료 표시용). */
-    List<ChatRequestEntity> selectSentRequests(@Param("userId") String userId);
-
     /** 같은 상대에게 이미 대기 중인 신청이 있는지. */
     boolean existsPendingRequest(@Param("fromUser") String fromUser, @Param("toUser") String toUser);
 

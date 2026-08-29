@@ -36,8 +36,6 @@ public interface FriendMapper {
     List<Friendship> selectReceivedRequests(@Param("userId") String userId);
 
     /** 내가 보낸 친구 요청(PENDING). */
-    List<Friendship> selectSentRequests(@Param("userId") String userId);
-
     /** 성립된 친구 수(최대 친구 수 제한 검사용). */
     int countFriends(@Param("userId") String userId);
 

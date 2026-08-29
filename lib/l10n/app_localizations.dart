@@ -433,12 +433,6 @@ abstract class L10n {
   /// **'달빛 아래, 우리의 하루를 나누는 공간 ✨'**
   String get gardenSubtitle;
 
-  /// No description provided for @gardenSpotlight.
-  ///
-  /// In ko, this message translates to:
-  /// **'스포트라이트'**
-  String get gardenSpotlight;
-
   /// No description provided for @gardenLoadFailed.
   ///
   /// In ko, this message translates to:
@@ -517,12 +511,6 @@ abstract class L10n {
   /// **'마음이 통하는 사람들과 이야기를 나눠보세요.'**
   String get chatRoomsSubtitle;
 
-  /// No description provided for @chatTabMatch.
-  ///
-  /// In ko, this message translates to:
-  /// **'매칭 대화'**
-  String get chatTabMatch;
-
   /// No description provided for @chatTabFriend.
   ///
   /// In ko, this message translates to:
@@ -535,23 +523,11 @@ abstract class L10n {
   /// **'받은 신청'**
   String get chatTabReceived;
 
-  /// No description provided for @chatTabSent.
-  ///
-  /// In ko, this message translates to:
-  /// **'보낸 신청'**
-  String get chatTabSent;
-
   /// No description provided for @chatRoomsEmpty.
   ///
   /// In ko, this message translates to:
   /// **'아직 대화가 없어요.\n달빛가든에서 마음에 드는 사람에게 말을 걸어보세요.'**
   String get chatRoomsEmpty;
-
-  /// No description provided for @chatRoomsEmptySent.
-  ///
-  /// In ko, this message translates to:
-  /// **'보낸 대화 신청이 없어요.'**
-  String get chatRoomsEmptySent;
 
   /// No description provided for @chatRoomsStart.
   ///
@@ -907,12 +883,6 @@ abstract class L10n {
   /// **'{count}매'**
   String profileBoostCount(int count);
 
-  /// No description provided for @profileSpotlight.
-  ///
-  /// In ko, this message translates to:
-  /// **'스포트라이트'**
-  String get profileSpotlight;
-
   /// No description provided for @profileFreeUpload.
   ///
   /// In ko, this message translates to:
@@ -1081,12 +1051,6 @@ abstract class L10n {
   /// **'포스트 부스트'**
   String get storeKindPostBoost;
 
-  /// No description provided for @storeKindSpotlightBoost.
-  ///
-  /// In ko, this message translates to:
-  /// **'스포트라이트 부스트'**
-  String get storeKindSpotlightBoost;
-
   /// No description provided for @storeKindAlbumPass.
   ///
   /// In ko, this message translates to:
@@ -1104,12 +1068,6 @@ abstract class L10n {
   /// In ko, this message translates to:
   /// **'다른 사람보다 우선적으로 포스트 사진을 추천해드려요!'**
   String get storeDescPostBoost;
-
-  /// No description provided for @storeDescSpotlightBoost.
-  ///
-  /// In ko, this message translates to:
-  /// **'프리미엄 유저만 이용 가능한 특별 추천 공간!'**
-  String get storeDescSpotlightBoost;
 
   /// No description provided for @storeDescAlbumPass.
   ///
@@ -1705,12 +1663,6 @@ abstract class L10n {
   /// **'내 포스트를 더 많은 사람에게 노출! (일일제한 없음)'**
   String get primePostBoostDesc;
 
-  /// No description provided for @primeSpotlightDesc.
-  ///
-  /// In ko, this message translates to:
-  /// **'오늘의 주인공이 되어 더 많은 관심을! (일일제한 없음)'**
-  String get primeSpotlightDesc;
-
   /// No description provided for @primeUnlimitedChat.
   ///
   /// In ko, this message translates to:
@@ -1824,18 +1776,6 @@ abstract class L10n {
   /// In ko, this message translates to:
   /// **'프로필'**
   String get navProfile;
-
-  /// No description provided for @chatRequestPending.
-  ///
-  /// In ko, this message translates to:
-  /// **'대화 대기 중'**
-  String get chatRequestPending;
-
-  /// No description provided for @chatRequestClosed.
-  ///
-  /// In ko, this message translates to:
-  /// **'대화 종료'**
-  String get chatRequestClosed;
 
   /// No description provided for @blockConfirmSuffix.
   ///
@@ -2352,12 +2292,6 @@ abstract class L10n {
   /// In ko, this message translates to:
   /// **'만 18세 이상만 가입할 수 있어요.'**
   String get errorAgeRestricted;
-
-  /// No description provided for @errorPostOneLinerRequired.
-  ///
-  /// In ko, this message translates to:
-  /// **'하루 한 마디를 입력해 주세요.'**
-  String get errorPostOneLinerRequired;
 
   /// No description provided for @errorPostPhotoRequired.
   ///

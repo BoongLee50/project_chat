@@ -34,10 +34,7 @@ final feedFilterProvider = NotifierProvider<FeedFilterController, FeedFilter>(
   FeedFilterController.new,
 );
 
-/// 스포트라이트 모드(부스팅 사용자만) 여부.
-final spotlightProvider = StateProvider<bool>((ref) => false);
-
-/// 피드 목록. 필터/스포트라이트가 바뀌면 자동으로 다시 조회된다.
+/// 피드 목록. 필터가 바뀌면 자동으로 다시 조회된다.
 class FeedController extends AsyncNotifier<List<FeedItem>>
     implements RefreshableIfStale {
   String? _nextCursor;
@@ -49,7 +46,6 @@ class FeedController extends AsyncNotifier<List<FeedItem>>
   @override
   Future<List<FeedItem>> build() async {
     final filter = ref.watch(feedFilterProvider);
-    final spotlight = ref.watch(spotlightProvider);
 
     final page = await ref
         .read(gardenApiProvider)
@@ -57,7 +53,6 @@ class FeedController extends AsyncNotifier<List<FeedItem>>
           gender: filter.gender,
           ageDecade: filter.ageDecade,
           country: filter.country,
-          spotlight: spotlight,
         );
     _nextCursor = page.nextCursor;
     _freshness.markLoaded();
@@ -94,7 +89,6 @@ class FeedController extends AsyncNotifier<List<FeedItem>>
             ageDecade: filter.ageDecade,
             country: filter.country,
             cursor: cursor,
-            spotlight: ref.read(spotlightProvider),
           );
       _nextCursor = page.nextCursor;
       state = AsyncValue.data([...current, ...page.items]);

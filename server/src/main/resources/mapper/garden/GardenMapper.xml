@@ -79,7 +79,6 @@
         <if test="ageMin != null">
             AND (YEAR(CURDATE()) - u.birth_year) BETWEEN #{ageMin} AND #{ageMax}
         </if>
-        <if test="premiumOnly">AND u.is_premium = 1</if>
     </select>
 
     <select id="selectPhotoKeys" resultType="string">
