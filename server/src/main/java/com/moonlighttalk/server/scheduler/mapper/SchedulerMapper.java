@@ -29,6 +29,9 @@ public interface SchedulerMapper {
     /** 사진을 지운 뒤 떠 버린 대표 사진 참조를 비운다(V11 — main_photo_id에는 FK가 없다). */
     int clearMainPhotosBefore(@Param("sessionDate") LocalDate sessionDate);
 
+    /** 15분 판정용 노출 기록(V12) 중 하루가 지난 것을 지운다. */
+    int deleteExposuresBefore(@Param("before") java.time.LocalDateTime before);
+
     int deleteStatsBefore(@Param("sessionDate") LocalDate sessionDate);
 
     int deleteSkipsBefore(@Param("sessionDate") LocalDate sessionDate);

@@ -139,6 +139,8 @@ class FeedController extends AsyncNotifier<List<FeedItem>>
     online: item.online,
     intro: item.intro,
     photoUrls: item.photoUrls,
+    photoLocked: item.photoLocked,
+    totalPhotos: item.totalPhotos,
     interests: item.interests,
     likes: likes,
     comments: item.comments,

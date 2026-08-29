@@ -55,6 +55,12 @@ class _MainShellState extends ConsumerState<MainShell> {
 
   @override
   Widget build(BuildContext context) {
+    // 다른 화면이 탭을 옮길 수 있게 한다 — 달빛가든의 [사진 등록 안내창]이 포스트 탭으로 보낸다.
+    // 셸이 자기 _index를 따로 들고 있어서, 프로바이더만 바꿔서는 화면이 안 바뀐다.
+    ref.listen<int>(selectedTabProvider, (_, next) {
+      if (next != _index) setState(() => _index = next);
+    });
+
     return Scaffold(
       body: SafeArea(
         bottom: false,

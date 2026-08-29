@@ -50,6 +50,14 @@
         DELETE FROM post_stats WHERE session_date &lt; #{sessionDate}
     </delete>
 
+    <!--
+      노출 기록(V12)은 15분 판정에만 쓰이므로 하루가 지나면 쓸모가 없다.
+      session_date가 없는 테이블이라 시각으로 자른다.
+    -->
+    <delete id="deleteExposuresBefore">
+        DELETE FROM feed_exposures WHERE exposed_at &lt; #{before}
+    </delete>
+
     <delete id="deleteSkipsBefore">
         DELETE FROM feed_skips WHERE session_date &lt; #{sessionDate}
     </delete>

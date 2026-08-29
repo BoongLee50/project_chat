@@ -23,7 +23,19 @@ public interface GardenMapper {
             @Param("ageMin") Integer ageMin,
             @Param("ageMax") Integer ageMax,
             /// true면 내가 스킵한 상대도 후보에 넣는다(볼 게 다 떨어졌을 때).
-            @Param("includeSkipped") boolean includeSkipped);
+            @Param("includeSkipped") boolean includeSkipped,
+            /// 이 시각 이후에 이미 보여준 상대는 뺀다(15분 노출 제외). null이면 제외하지 않는다.
+            @Param("exposedAfter") java.time.LocalDateTime exposedAfter);
+
+    /**
+     * 정해진 순서의 <b>한 페이지분</b>만 다시 읽는다.
+     *
+     * <p>순서는 진입할 때 한 번 산정해 두므로(FeedSessionStore) 페이지를 넘길 때마다
+     * 후보 전체를 다시 훑을 이유가 없다. 반환 순서는 보장되지 않으니 호출부가 id로 정렬한다.
+     */
+    List<FeedCandidate> selectCandidatesByIds(
+            @Param("sessionDate") LocalDate sessionDate,
+            @Param("ids") List<String> ids);
 
     /** 사진 URL 계산용 storage key 목록(노출 순서대로). */
     List<String> selectPhotoKeys(@Param("postId") String postId);
@@ -36,6 +48,22 @@ public interface GardenMapper {
                         @Param("sessionDate") LocalDate sessionDate,
                         @Param("column") String column,
                         @Param("delta") int delta);
+
+    /**
+     * 노출 기록 — <b>마지막으로 보여준 시각을 덮어쓴다</b>(15분 제외 판정용, V12).
+     * 이력이 아니라 최신값만 필요하므로 행이 늘지 않는다.
+     */
+    void touchExposure(@Param("userId") String userId,
+                        @Param("targetUserId") String targetUserId);
+
+    /**
+     * 오늘 <b>공유까지 마친</b> 내 포스트에 사진이 한 장이라도 있는가.
+     *
+     * <p>달빛가든 열람 조건이다 — 올리기만 하고 [공유하기]를 안 했으면 열리지 않는다
+     * (docs/12 §6 B1). 그래서 {@code published_at IS NOT NULL}을 함께 본다.
+     */
+    boolean existsPublishedPhotoToday(@Param("userId") String userId,
+                                       @Param("sessionDate") LocalDate sessionDate);
 
     /** 스킵 등록(중복이어도 에러 없이 무시). */
     void insertSkip(@Param("userId") String userId,

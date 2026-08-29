@@ -5,6 +5,8 @@ class FeedItem {
     required this.userId,
     required this.nickname,
     required this.photoUrls,
+    required this.photoLocked,
+    required this.totalPhotos,
     required this.interests,
     required this.likes,
     required this.comments,
@@ -32,7 +34,20 @@ class FeedItem {
   final String? intro;
 
   /// 서버가 준 사진 URL(상대경로) 목록.
+  ///
+  /// **열람 제한이 걸리면 메인 1장만 들어 있다.** 잠긴 사진의 URL은 아예 오지 않으므로
+  /// 화면이 가리는 게 아니라 **애초에 받지 못한다**(서버가 자른다).
   final List<String> photoUrls;
+
+  /// 나머지 사진이 잠겨 있는가. 오늘 내 포스트를 공유하면 열린다.
+  final bool photoLocked;
+
+  /// 원래 몇 장인지. 잠겨 있어도 "더 있다"를 보여줘야 안내가 말이 된다.
+  final int totalPhotos;
+
+  /// 잠금 때문에 못 보고 있는 장수.
+  int get lockedPhotoCount =>
+      photoLocked ? (totalPhotos - photoUrls.length).clamp(0, totalPhotos) : 0;
 
   final List<String> interests;
   final int likes;
@@ -56,6 +71,8 @@ class FeedItem {
     online: json['online'] as bool? ?? false,
     intro: json['intro'] as String?,
     photoUrls: (json['photoUrls'] as List? ?? const []).cast<String>(),
+    photoLocked: json['photoLocked'] as bool? ?? false,
+    totalPhotos: json['totalPhotos'] as int? ?? 0,
     interests: (json['interests'] as List? ?? const []).cast<String>(),
     likes: json['likes'] as int? ?? 0,
     comments: json['comments'] as int? ?? 0,

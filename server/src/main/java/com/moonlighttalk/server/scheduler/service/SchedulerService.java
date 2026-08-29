@@ -117,12 +117,15 @@ public class SchedulerService {
         schedulerMapper.clearMainPhotosBefore(today);
         int stats = schedulerMapper.deleteStatsBefore(today);
         int skips = schedulerMapper.deleteSkipsBefore(today);
+        // 노출 기록은 15분 판정용이라 하루가 지나면 쓸모가 없다(V12).
+        int exposures = schedulerMapper.deleteExposuresBefore(
+                sessionTime.nowKst().toLocalDateTime().minusDays(1));
         int usage = schedulerMapper.deleteDailyUsageBefore(today);
         int translateTargets = schedulerMapper.deleteTranslateTargetsBefore(today);
         int posts = schedulerMapper.deleteStalePosts(today);
 
-        log.info("[배치] 지난 영업일 정리(<{}) 사진 {}건(파일 실패 {}) · 스코어 {} · 스킵 {} · 일일사용량 {} · 번역상대 {} · 포스트 {}",
-                today, photos, failed, stats, skips, usage, translateTargets, posts);
+        log.info("[배치] 지난 영업일 정리(<{}) 사진 {}건(파일 실패 {}) · 스코어 {} · 스킵 {} · 노출 {} · 일일사용량 {} · 번역상대 {} · 포스트 {}",
+                today, photos, failed, stats, skips, exposures, usage, translateTargets, posts);
     }
 
     /**

@@ -1,5 +1,6 @@
 package com.moonlighttalk.server.scheduler;
 
+import com.moonlighttalk.server.garden.service.FeedSessionStore;
 import com.moonlighttalk.server.scheduler.service.SchedulerService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,9 +25,11 @@ public class ScheduledJobs {
     private static final String KST = "Asia/Seoul";
 
     private final SchedulerService schedulerService;
+    private final FeedSessionStore feedSessions;
 
-    public ScheduledJobs(SchedulerService schedulerService) {
+    public ScheduledJobs(SchedulerService schedulerService, FeedSessionStore feedSessions) {
         this.schedulerService = schedulerService;
+        this.feedSessions = feedSessions;
     }
 
     /**
@@ -54,5 +57,19 @@ public class ScheduledJobs {
     @Scheduled(fixedDelayString = "${app.scheduler.benefit-expiry-ms:600000}")
     public void expireBenefits() {
         schedulerService.expireBenefits();
+    }
+
+    /**
+     * 만료된 피드 순서를 메모리에서 치운다(③단계).
+     *
+     * <p>조회할 때도 TTL을 보므로 이게 없어도 잘못된 순서가 나가지는 않는다. 다만
+     * <b>다시 들어오지 않는 사용자의 순서가 계속 남는다</b> — 그것만 정리하는 잡이다.
+     */
+    @Scheduled(fixedDelayString = "${app.scheduler.feed-session-evict-ms:600000}")
+    public void evictFeedSessions() {
+        int evicted = feedSessions.evictExpired();
+        if (evicted > 0) {
+            log.debug("[배치] 만료된 피드 순서 {}건 정리", evicted);
+        }
     }
 }

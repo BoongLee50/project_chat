@@ -12,8 +12,11 @@
         <result property="premium" column="is_premium"/>
         <result property="intro" column="intro"/>
         <result property="publishedAt" column="published_at"/>
+        <result property="contentUpdatedAt" column="content_updated_at"/>
+        <result property="photoCount" column="photo_count"/>
         <result property="exposures" column="exposures"/>
         <result property="likes" column="likes"/>
+        <result property="comments" column="comments"/>
         <result property="requests" column="requests"/>
     </resultMap>
 
@@ -40,8 +43,11 @@
                u.is_premium,
                pr.intro,
                p.published_at,
+               p.content_updated_at,
+               (SELECT COUNT(*) FROM post_photos ph WHERE ph.post_id = p.id) AS photo_count,
                COALESCE(ps.exposures, 0) AS exposures,
                COALESCE(ps.likes, 0)     AS likes,
+               COALESCE(ps.comments, 0)  AS comments,
                COALESCE(ps.requests, 0)  AS requests
         FROM posts p
                  JOIN users u ON u.id = p.user_id
@@ -74,11 +80,51 @@
                                     p.content_updated_at,
                                     COALESCE(pr.updated_at, p.content_updated_at)))
         </if>
+        <!--
+          15분 노출 제외(Plan_3 4-1) — 스킵과 뜻이 다르다. 스킵은 **사용자가 넘긴 것**이고
+          이건 **그냥 보여줬다는 사실**이다. 넘기지 않고 지나간 상대도 잠시는 안 나와야
+          같은 얼굴이 연달아 뜨지 않는다. 볼 게 다 떨어져 재조회할 때는 null로 꺼진다.
+        -->
+        <if test="exposedAfter != null">
+          AND NOT EXISTS (SELECT 1 FROM feed_exposures fe
+                          WHERE fe.user_id = #{userId} AND fe.target_user_id = u.id
+                            AND fe.exposed_at >= #{exposedAfter})
+        </if>
         <if test="gender != null">AND u.gender = #{gender}</if>
         <if test="country != null">AND u.country = #{country}</if>
         <if test="ageMin != null">
             AND (YEAR(CURDATE()) - u.birth_year) BETWEEN #{ageMin} AND #{ageMax}
         </if>
+    </select>
+
+    <!--
+      정해진 순서의 한 페이지분만 다시 읽는다. 조건(차단·신고·필터)은 순서를 산정할 때
+      이미 걸렀으므로 여기서는 id로만 뽑는다 — 그 사이 차단이 생겨도 한 세션이면 지나간다.
+    -->
+    <select id="selectCandidatesByIds" resultMap="FeedCandidateResultMap">
+        SELECT u.id            AS user_id,
+               p.id            AS post_id,
+               u.nickname,
+               u.birth_year,
+               u.gender,
+               u.country,
+               u.is_premium,
+               pr.intro,
+               p.published_at,
+               p.content_updated_at,
+               (SELECT COUNT(*) FROM post_photos ph WHERE ph.post_id = p.id) AS photo_count,
+               COALESCE(ps.exposures, 0) AS exposures,
+               COALESCE(ps.likes, 0)     AS likes,
+               COALESCE(ps.comments, 0)  AS comments,
+               COALESCE(ps.requests, 0)  AS requests
+        FROM posts p
+                 JOIN users u ON u.id = p.user_id
+                 LEFT JOIN post_stats ps
+                           ON ps.user_id = u.id AND ps.session_date = #{sessionDate}
+                 LEFT JOIN user_profiles pr ON pr.user_id = u.id
+        WHERE p.session_date = #{sessionDate}
+          AND p.published_at IS NOT NULL
+          AND u.id IN <foreach item="id" collection="ids" open="(" separator="," close=")">#{id}</foreach>
     </select>
 
     <!--
@@ -100,16 +146,18 @@
 
     <!-- 읽고-더하고-쓰기 대신 원자적 UPSERT (동시 좋아요/노출 시 lost update 방지) -->
     <update id="incrementStat">
-        INSERT INTO post_stats (user_id, session_date, exposures, likes, requests, updated_at)
+        INSERT INTO post_stats (user_id, session_date, exposures, likes, comments, requests, updated_at)
         VALUES (#{userId}, #{sessionDate},
                 <choose><when test="column == 'exposures'">#{delta}</when><otherwise>0</otherwise></choose>,
                 <choose><when test="column == 'likes'">#{delta}</when><otherwise>0</otherwise></choose>,
+                <choose><when test="column == 'comments'">#{delta}</when><otherwise>0</otherwise></choose>,
                 <choose><when test="column == 'requests'">#{delta}</when><otherwise>0</otherwise></choose>,
                 NOW())
         ON DUPLICATE KEY UPDATE
         <choose>
             <when test="column == 'exposures'">exposures = exposures + #{delta}</when>
             <when test="column == 'likes'">likes = likes + #{delta}</when>
+            <when test="column == 'comments'">comments = comments + #{delta}</when>
             <otherwise>requests = requests + #{delta}</otherwise>
         </choose>,
         updated_at = NOW()
@@ -125,6 +173,24 @@
         VALUES (#{userId}, #{targetUserId}, #{sessionDate}, NOW())
         ON DUPLICATE KEY UPDATE created_at = NOW()
     </insert>
+
+    <!-- 마지막 노출 시각만 남긴다(V12). 이력이 아니라 "언제 마지막으로 보여줬나"만 필요하다. -->
+    <insert id="touchExposure">
+        INSERT INTO feed_exposures (user_id, target_user_id, exposed_at)
+        VALUES (#{userId}, #{targetUserId}, NOW())
+        ON DUPLICATE KEY UPDATE exposed_at = NOW()
+    </insert>
+
+    <!-- 달빛가든 열람 조건 — 오늘 사진을 올리고 [공유하기]까지 했는가(docs/12 §6 B1). -->
+    <select id="existsPublishedPhotoToday" resultType="boolean">
+        SELECT EXISTS (
+            SELECT 1 FROM posts p
+            WHERE p.user_id = #{userId}
+              AND p.session_date = #{sessionDate}
+              AND p.published_at IS NOT NULL
+              AND EXISTS (SELECT 1 FROM post_photos ph WHERE ph.post_id = p.id)
+        )
+    </select>
 
     <select id="selectTodayPostId" resultType="string">
         SELECT id FROM posts WHERE user_id = #{userId} AND session_date = #{sessionDate}

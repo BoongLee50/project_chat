@@ -216,6 +216,17 @@ class L10nJa extends L10n {
   String get gardenChatRequestSent => '会話をリクエストしました。相手の返事をお待ちください。';
 
   @override
+  String gardenPhotoLockedTitle(int count) {
+    return '写真があと$count枚あります';
+  }
+
+  @override
+  String get gardenPhotoLockedBody => '今日の自分のポストをシェアすると、相手の写真をすべて見られます。';
+
+  @override
+  String get gardenPhotoLockedAction => '自分のポストを登録';
+
+  @override
   String commentsTitle(String nickname) {
     return '$nicknameさんのポスト';
   }

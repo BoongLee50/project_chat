@@ -41,67 +41,70 @@ class GardenScreen extends ConsumerWidget {
       isVisible: ref.watch(selectedTabProvider) == MainTab.garden,
       onStale: () => ref.read(feedProvider.notifier).refreshIfStale(),
       child: Stack(
-      // 배경을 상태바 뒤까지 올리려면 Stack이 자르지 않아야 한다(기본값은 자름).
-      clipBehavior: Clip.none,
-      children: [
-        // 시안 배경(정원 야경) — 상태바 뒤까지 덮고 아래는 어둠으로 이어진다.
-        Positioned(
-          top: -statusBar,
-          left: 0,
-          right: 0,
-          child: Image.asset(
-            GardenArt.background,
-            fit: BoxFit.fitWidth,
-            alignment: Alignment.topCenter,
-          ),
-        ),
-        Padding(
-          padding: EdgeInsets.fromLTRB(
-            // 하단 5탭과 **좌우 폭을 맞춘다**(시안에서 카드와 내비가 같은 선에 있다).
-            AppDimens.navSidePad,
-            // 시안 타이틀 위치(3.74 단위)에 맞춘다.
-            GardenArt.unit * 3.74 * scale,
-            AppDimens.navSidePad,
-            AppDimens.gapMd,
-          ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        // 배경을 상태바 뒤까지 올리려면 Stack이 자르지 않아야 한다(기본값은 자름).
+        clipBehavior: Clip.none,
         children: [
-          // 시안에서 타이틀(1.66)은 카드·필터(0.93~0.95)보다 안쪽에 있다 — 그만큼만 더 준다.
-          Padding(
-            padding: EdgeInsets.symmetric(
-              horizontal: GardenArt.unit * (1.66 - 0.93) * scale,
+          // 시안 배경(정원 야경) — 상태바 뒤까지 덮고 아래는 어둠으로 이어진다.
+          Positioned(
+            top: -statusBar,
+            left: 0,
+            right: 0,
+            child: Image.asset(
+              GardenArt.background,
+              fit: BoxFit.fitWidth,
+              alignment: Alignment.topCenter,
             ),
-            child: const _GardenHeader(),
           ),
-          const SizedBox(height: AppDimens.gapMd),
-          const _FilterBar(),
-          const SizedBox(height: AppDimens.gapMd),
-          Expanded(
-            child: feed.when(
-              loading: () => const Center(
-                child: CircularProgressIndicator(color: AppColors.moonlight),
-              ),
-              error: (error, _) => _Message(
-                icon: Icons.cloud_off,
-                title: l10n.gardenLoadFailed,
-                detail: '$error',
-                onRetry: () => ref.read(feedProvider.notifier).refresh(),
-              ),
-              data: (items) => items.isEmpty
-                  ? _Message(
-                      icon: Icons.nightlight_round,
-                      title: l10n.gardenEmptyTitle,
-                      detail: l10n.gardenEmptyDetail,
+          Padding(
+            padding: EdgeInsets.fromLTRB(
+              // 하단 5탭과 **좌우 폭을 맞춘다**(시안에서 카드와 내비가 같은 선에 있다).
+              AppDimens.navSidePad,
+              // 시안 타이틀 위치(3.74 단위)에 맞춘다.
+              GardenArt.unit * 3.74 * scale,
+              AppDimens.navSidePad,
+              AppDimens.gapMd,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // 시안에서 타이틀(1.66)은 카드·필터(0.93~0.95)보다 안쪽에 있다 — 그만큼만 더 준다.
+                Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: GardenArt.unit * (1.66 - 0.93) * scale,
+                  ),
+                  child: const _GardenHeader(),
+                ),
+                const SizedBox(height: AppDimens.gapMd),
+                const _FilterBar(),
+                const SizedBox(height: AppDimens.gapMd),
+                Expanded(
+                  child: feed.when(
+                    loading: () => const Center(
+                      child: CircularProgressIndicator(
+                        color: AppColors.moonlight,
+                      ),
+                    ),
+                    error: (error, _) => _Message(
+                      icon: Icons.cloud_off,
+                      title: l10n.gardenLoadFailed,
+                      detail: '$error',
                       onRetry: () => ref.read(feedProvider.notifier).refresh(),
-                    )
-                  : _FeedPager(items: items),
+                    ),
+                    data: (items) => items.isEmpty
+                        ? _Message(
+                            icon: Icons.nightlight_round,
+                            title: l10n.gardenEmptyTitle,
+                            detail: l10n.gardenEmptyDetail,
+                            onRetry: () =>
+                                ref.read(feedProvider.notifier).refresh(),
+                          )
+                        : _FeedPager(items: items),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
-      ),
-        ),
-      ],
       ),
     );
   }
@@ -167,47 +170,53 @@ class _FilterBar extends ConsumerWidget {
         final s = GardenArt.filterRowScale(constraints.maxWidth);
         final gap = GardenArt.filterGap * s;
         return Row(
-        children: [
-          _ArtMenu<String>(
-            art: GardenArt.genderChip(filter.gender),
-            size: GardenArt.filterGenderSize,
-            scale: s,
-            options: {l10n.commonAll: null, l10n.genderFemale: 'FEMALE', l10n.genderMale: 'MALE'},
-            current: filter.gender,
-            onPick: controller.selectGender,
-          ),
-          SizedBox(width: gap),
-          _ArtMenu<int>(
-            art: GardenArt.ageChip(filter.ageDecade),
-            size: GardenArt.filterAgeSize,
-            scale: s,
-            options: {
-              l10n.commonAll: null,
-              l10n.ageDecade(10): 10,
-              l10n.ageDecade(20): 20,
-              l10n.ageDecade(30): 30,
-              l10n.ageDecade(40): 40,
-            },
-            current: filter.ageDecade,
-            onPick: controller.selectAge,
-          ),
-          SizedBox(width: gap),
-          _ArtMenu<String>(
-            art: GardenArt.countryChip(filter.country),
-            size: GardenArt.filterCountrySize,
-            scale: s,
-            options: {l10n.commonAll: null, l10n.countryKorea: 'KR', l10n.countryJapan: 'JP'},
-            current: filter.country,
-            onPick: controller.selectCountry,
-          ),
-        ],
+          children: [
+            _ArtMenu<String>(
+              art: GardenArt.genderChip(filter.gender),
+              size: GardenArt.filterGenderSize,
+              scale: s,
+              options: {
+                l10n.commonAll: null,
+                l10n.genderFemale: 'FEMALE',
+                l10n.genderMale: 'MALE',
+              },
+              current: filter.gender,
+              onPick: controller.selectGender,
+            ),
+            SizedBox(width: gap),
+            _ArtMenu<int>(
+              art: GardenArt.ageChip(filter.ageDecade),
+              size: GardenArt.filterAgeSize,
+              scale: s,
+              options: {
+                l10n.commonAll: null,
+                l10n.ageDecade(10): 10,
+                l10n.ageDecade(20): 20,
+                l10n.ageDecade(30): 30,
+                l10n.ageDecade(40): 40,
+              },
+              current: filter.ageDecade,
+              onPick: controller.selectAge,
+            ),
+            SizedBox(width: gap),
+            _ArtMenu<String>(
+              art: GardenArt.countryChip(filter.country),
+              size: GardenArt.filterCountrySize,
+              scale: s,
+              options: {
+                l10n.commonAll: null,
+                l10n.countryKorea: 'KR',
+                l10n.countryJapan: 'JP',
+              },
+              current: filter.country,
+              onPick: controller.selectCountry,
+            ),
+          ],
         );
       },
     );
   }
 }
-
-
 
 /// 시안 칩(이미지)을 누르면 드롭다운이 뜬다.
 /// **칩은 이미지, 목록 글자는 ARB** — 이 앱의 UI 언어 두 종류가 한 위젯에 같이 있다.
@@ -254,7 +263,12 @@ class _ArtMenu<T> extends StatelessWidget {
             ),
           ),
       ],
-      child: ArtImage(art, width: size.width, height: size.height, scale: scale),
+      child: ArtImage(
+        art,
+        width: size.width,
+        height: size.height,
+        scale: scale,
+      ),
     );
   }
 }
@@ -273,6 +287,10 @@ class _FeedPager extends ConsumerStatefulWidget {
 class _FeedPagerState extends ConsumerState<_FeedPager> {
   int _photoIndex = 0;
 
+  /// 잠긴 사진을 넘기려 했는가 — 안내창은 **시도했을 때만** 뜬다(기획 4-1).
+  /// 처음부터 띄워 두면 사진을 볼 생각도 없던 사람에게 광고가 되고, 카드가 가려진다.
+  bool _lockNotice = false;
+
   FeedItem get _item => widget.items.first;
 
   Future<void> _skip() async {
@@ -281,6 +299,7 @@ class _FeedPagerState extends ConsumerState<_FeedPager> {
     final notifier = ref.read(feedProvider.notifier);
     final nearlyEmpty = widget.items.length <= 2;
     _photoIndex = 0;
+    _lockNotice = false;
 
     final error = await notifier.skip(_item);
     if (error != null && mounted) _toast(errorMessage(L10n.of(context), error));
@@ -335,7 +354,9 @@ class _FeedPagerState extends ConsumerState<_FeedPager> {
         .read(chatActionsProvider)
         .requestChat(item.userId, message);
     if (!mounted) return;
-    _toast(error == null ? l10n.gardenChatRequestSent : errorMessage(l10n, error));
+    _toast(
+      error == null ? l10n.gardenChatRequestSent : errorMessage(l10n, error),
+    );
   }
 
   void _toast(String message) {
@@ -359,198 +380,246 @@ class _FeedPagerState extends ConsumerState<_FeedPager> {
         fit: StackFit.expand,
         children: [
           ClipRRect(
-        // 시안 외곽선의 라운드와 맞춘다. 값이 다르면 프레임 모서리가 잘려 보인다.
-        borderRadius: BorderRadius.circular(GardenArt.cardCornerRadius),
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            if (photos.isEmpty)
-              const ColoredBox(color: AppColors.surface)
-            else
-              GestureDetector(
-                onTapUp: (details) {
-                  final width = context.size?.width ?? 1;
-                  final next = details.localPosition.dx > width / 2
-                      ? index + 1
-                      : index - 1;
-                  setState(
-                    () => _photoIndex = next.clamp(0, photos.length - 1),
-                  );
-                },
-                child: AuthedImage(url: photos[index]),
-              ),
+            // 시안 외곽선의 라운드와 맞춘다. 값이 다르면 프레임 모서리가 잘려 보인다.
+            borderRadius: BorderRadius.circular(GardenArt.cardCornerRadius),
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                if (photos.isEmpty)
+                  const ColoredBox(color: AppColors.surface)
+                else
+                  GestureDetector(
+                    // ⚠️ opaque가 없으면 **탭이 아예 안 들어온다.** GestureDetector의 기본값은
+                    // deferToChild이고 Image는 자기 자신을 히트테스트하지 않아, 사진 위를 눌러도
+                    // 아무 일이 일어나지 않는다(함정 #38).
+                    behavior: HitTestBehavior.opaque,
+                    onTapUp: (details) {
+                      final width = context.size?.width ?? 1;
+                      final forward = details.localPosition.dx > width / 2;
+                      // 잠긴 다음 장을 넘기려 하면 사진 대신 안내창을 띄운다.
+                      if (forward &&
+                          index == photos.length - 1 &&
+                          item.photoLocked) {
+                        setState(() => _lockNotice = true);
+                        return;
+                      }
+                      final next = forward ? index + 1 : index - 1;
+                      setState(
+                        () => _photoIndex = next.clamp(0, photos.length - 1),
+                      );
+                    },
+                    child: AuthedImage(url: photos[index]),
+                  ),
 
-            // 가독성 스크림
-            const DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Color(0x99000000),
-                    Color(0x00000000),
-                    Color(0x00000000),
-                    Color(0xE6000000),
-                  ],
-                  stops: [0.0, 0.22, 0.5, 1.0],
-                ),
-              ),
-            ),
-
-            // 상단: 이름 · 국기 · PICK · 접속중
-            Positioned(
-              top: 16,
-              left: 16,
-              right: 16,
-              child: Row(
-                children: [
-                  Flexible(
-                    child: Text(
-                      [item.nickname, if (item.age != null) '${item.age}']
-                          .join(' '),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 22,
-                        fontWeight: FontWeight.w800,
+                // 가독성 스크림.
+                //
+                // ⚠️ **IgnorePointer가 반드시 있어야 한다.** `DecoratedBox`는 자기 자신을
+                // 히트테스트하고(`RenderDecoratedBox.hitTestSelf` → `BoxDecoration.hitTest`는
+                // 사각형 안이면 true), 이게 카드 전체를 덮고 있어서 **아래 사진의 탭을 전부
+                // 먹어 버린다.** 좌우로 넘겨 보는 기능이 그동안 조용히 죽어 있던 원인이다(함정 #38).
+                const IgnorePointer(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Color(0x99000000),
+                          Color(0x00000000),
+                          Color(0x00000000),
+                          Color(0xE6000000),
+                        ],
+                        stops: [0.0, 0.22, 0.5, 1.0],
                       ),
                     ),
                   ),
-                  // 국기 — 한국은 시안 그림, 그 외는 이모지(이모지는 기기마다 모양이 다름)
-                  if (item.flag.isNotEmpty) ...[
-                    const SizedBox(width: 8),
-                    if (item.country == 'KR')
-                      const ArtImage(GardenArt.flagKr, width: 70, height: 71)
-                    else
-                      Text(item.flag, style: const TextStyle(fontSize: 20)),
-                  ],
-                  if (item.pick) ...[
-                    const SizedBox(width: 8),
-                    const ArtImage(GardenArt.badgePick, width: 144, height: 71),
-                  ],
-                  if (item.online) ...[
-                    const SizedBox(width: 8),
-                    const _OnlineBadge(),
-                  ],
-                  const Spacer(),
-                  if (photos.length > 1)
-                    Row(
-                      children: List.generate(
-                        photos.length,
-                        (i) => Container(
-                          width: 16,
-                          height: 3,
-                          margin: const EdgeInsets.only(left: 4),
-                          color: Colors.white.withValues(
-                            alpha: i == index ? 0.9 : 0.4,
+                ),
+
+                // 상단: 이름 · 국기 · PICK · 접속중
+                Positioned(
+                  top: 16,
+                  left: 16,
+                  right: 16,
+                  child: Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          [
+                            item.nickname,
+                            if (item.age != null) '${item.age}',
+                          ].join(' '),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 22,
+                            fontWeight: FontWeight.w800,
                           ),
                         ),
                       ),
-                    ),
-                ],
-              ),
-            ),
-
-            // 하단: 한마디(또는 관심사) + 좋아요/댓글/메시지
-            Positioned(
-              left: 20,
-              right: 20,
-              bottom: 20,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (showInterests)
-                    Wrap(
-                      spacing: 6,
-                      runSpacing: 6,
-                      children: [
-                        for (final code in item.interests)
-                          // 영화만 시안 그림이 있다. 나머지는 기존 칩 —
-                          // 관심사 37종 전체 그림을 받으면 코드→에셋 표로 바꾸면 된다.
-                          if (code == 'MOVIE')
-                            const ArtImage(
-                              GardenArt.interestMovie,
-                              width: 204,
-                              height: 88,
-                            )
-                          else
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                                vertical: 5,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.18),
-                                borderRadius: BorderRadius.circular(14),
-                              ),
-                              child: Text(
-                                ProfileCatalog.interestLabel(
-                                  L10n.of(context),
-                                  code,
-                                ),
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 13,
-                                ),
-                              ),
-                            ),
+                      // 국기 — 한국은 시안 그림, 그 외는 이모지(이모지는 기기마다 모양이 다름)
+                      if (item.flag.isNotEmpty) ...[
+                        const SizedBox(width: 8),
+                        if (item.country == 'KR')
+                          const ArtImage(
+                            GardenArt.flagKr,
+                            width: 70,
+                            height: 71,
+                          )
+                        else
+                          Text(item.flag, style: const TextStyle(fontSize: 20)),
                       ],
-                    )
-                  else
-                    Text(
-                      item.intro ?? '',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      _ArtCount(
-                        asset: GardenArt.iconHeart,
-                        width: 72,
-                        height: 67,
-                        label: '${item.likes}',
-                        onTap: _like,
-                      ),
-                      const SizedBox(width: 20),
-                      _ArtCount(
-                        asset: GardenArt.iconComment,
-                        width: 68,
-                        height: 71,
-                        label: '${item.comments}',
-                        onTap: () => showCommentsSheet(context, item),
-                      ),
-                      const Spacer(),
-                      // 대화 신청 — 100자 메시지를 적어 보낸다(기획서 4-3)
-                      GestureDetector(
-                        onTap: () => _requestChat(item),
-                        child: const ArtImage(
-                          GardenArt.btnChatRequest,
+                      if (item.pick) ...[
+                        const SizedBox(width: 8),
+                        const ArtImage(
+                          GardenArt.badgePick,
                           width: 144,
-                          height: 145,
+                          height: 71,
                         ),
+                      ],
+                      if (item.online) ...[
+                        const SizedBox(width: 8),
+                        const _OnlineBadge(),
+                      ],
+                      const Spacer(),
+                      // 잠겨 있어도 **몇 장이 있는지는 보여준다.** 눈금이 1개면 한 장뿐인 줄 알고
+                      // 넘겨 볼 생각조차 안 하게 되고, 그러면 등록을 유도하는 장치가 죽는다.
+                      if (item.totalPhotos > 1)
+                        Row(
+                          children: List.generate(item.totalPhotos, (i) {
+                            final locked = i >= photos.length;
+                            return Container(
+                              width: 16,
+                              height: 3,
+                              margin: const EdgeInsets.only(left: 4),
+                              color: Colors.white.withValues(
+                                alpha: i == index
+                                    ? 0.9
+                                    : locked
+                                    ? 0.18
+                                    : 0.4,
+                              ),
+                            );
+                          }),
+                        ),
+                    ],
+                  ),
+                ),
+
+                // 하단: 한마디(또는 관심사) + 좋아요/댓글/메시지
+                Positioned(
+                  left: 20,
+                  right: 20,
+                  bottom: 20,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (showInterests)
+                        Wrap(
+                          spacing: 6,
+                          runSpacing: 6,
+                          children: [
+                            for (final code in item.interests)
+                              // 영화만 시안 그림이 있다. 나머지는 기존 칩 —
+                              // 관심사 37종 전체 그림을 받으면 코드→에셋 표로 바꾸면 된다.
+                              if (code == 'MOVIE')
+                                const ArtImage(
+                                  GardenArt.interestMovie,
+                                  width: 204,
+                                  height: 88,
+                                )
+                              else
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 5,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withValues(alpha: 0.18),
+                                    borderRadius: BorderRadius.circular(14),
+                                  ),
+                                  child: Text(
+                                    ProfileCatalog.interestLabel(
+                                      L10n.of(context),
+                                      code,
+                                    ),
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                ),
+                          ],
+                        )
+                      else
+                        Text(
+                          item.intro ?? '',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          _ArtCount(
+                            asset: GardenArt.iconHeart,
+                            width: 72,
+                            height: 67,
+                            label: '${item.likes}',
+                            onTap: _like,
+                          ),
+                          const SizedBox(width: 20),
+                          _ArtCount(
+                            asset: GardenArt.iconComment,
+                            width: 68,
+                            height: 71,
+                            label: '${item.comments}',
+                            onTap: () => showCommentsSheet(context, item),
+                          ),
+                          const Spacer(),
+                          // 대화 신청 — 100자 메시지를 적어 보낸다(기획서 4-3)
+                          GestureDetector(
+                            onTap: () => _requestChat(item),
+                            child: const ArtImage(
+                              GardenArt.btnChatRequest,
+                              width: 144,
+                              height: 145,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
-                ],
+                ),
+              ],
+            ),
+          ),
+
+          // 잠긴 사진을 넘기려 했을 때 뜨는 [사진 등록 안내창](기획 4-1).
+          // 테두리보다 앞에 둬야 버튼이 눌린다.
+          if (_lockNotice)
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: _PhotoLockNotice(
+                lockedCount: item.lockedPhotoCount,
+                onClose: () => setState(() => _lockNotice = false),
+                onGoPost: () {
+                  setState(() => _lockNotice = false);
+                  ref.read(selectedTabProvider.notifier).state = MainTab.post;
+                },
               ),
             ),
-          ],
-        ),
-          ),
 
           // 카드 테두리 — 클립 **바깥**에 얹어야 모서리가 안 깎인다.
           // 이미지가 아니라 코드로 그린다(이유는 GardenArt.cardBorderWidth 주석).
           IgnorePointer(
             child: DecoratedBox(
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(
-                  GardenArt.cardCornerRadius,
-                ),
+                borderRadius: BorderRadius.circular(GardenArt.cardCornerRadius),
                 border: Border.all(
                   color: GardenArt.cardBorderColor,
                   width: GardenArt.cardBorderWidth,
@@ -565,6 +634,85 @@ class _FeedPagerState extends ConsumerState<_FeedPager> {
 }
 
 /// 시안 아이콘 + 숫자. 숫자는 **폰트**라 그대로 두고 아이콘만 그림으로 바꿨다.
+/// 잠긴 사진 안내창(기획 4-1). 카드 하단에 얹혀 "왜 안 보이는지"와 "어떻게 열리는지"를 알린다.
+///
+/// 열쇠는 **상품이 아니라 내 포스트**다 — 그래서 상점이 아니라 포스트 탭으로 보낸다.
+class _PhotoLockNotice extends StatelessWidget {
+  const _PhotoLockNotice({
+    required this.lockedCount,
+    required this.onClose,
+    required this.onGoPost,
+  });
+
+  final int lockedCount;
+  final VoidCallback onClose;
+  final VoidCallback onGoPost;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
+    return Container(
+      padding: const EdgeInsets.fromLTRB(18, 16, 12, 18),
+      decoration: BoxDecoration(
+        color: AppColors.surface.withValues(alpha: 0.96),
+        borderRadius: const BorderRadius.vertical(
+          top: Radius.circular(AppDimens.radiusLg),
+        ),
+        border: const Border(top: BorderSide(color: AppColors.moonlight)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.lock_outline_rounded,
+                      color: AppColors.moonlight,
+                      size: 18,
+                    ),
+                    const SizedBox(width: 6),
+                    Flexible(
+                      child: Text(
+                        l10n.gardenPhotoLockedTitle(lockedCount),
+                        style: const TextStyle(
+                          color: AppColors.textPrimary,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  l10n.gardenPhotoLockedBody,
+                  style: const TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 13,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                FilledButton(
+                  onPressed: onGoPost,
+                  child: Text(l10n.gardenPhotoLockedAction),
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            onPressed: onClose,
+            icon: const Icon(Icons.close_rounded, color: AppColors.textMuted),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _ArtCount extends StatelessWidget {
   const _ArtCount({
     required this.asset,
@@ -602,8 +750,6 @@ class _ArtCount extends StatelessWidget {
     );
   }
 }
-
-
 
 class _OnlineBadge extends StatelessWidget {
   const _OnlineBadge();

@@ -38,9 +38,34 @@ app:
     replace-limit-free: 3
     replace-limit-pass: 3
   garden:
-    # 피드 스코어 가중치. 운영하며 튜닝할 값이라 재배포 없이 바꿀 수 있게 뺐다.
-    score-pick: 50
+    # 피드 스코어(Plan_3 4-1). 운영하며 튜닝할 값이라 재배포 없이 바꿀 수 있게 뺐다.
+    # ⚠️ Plan_3에서 Pick Point(부스트 가점)가 사라졌다 — 부스트는 점수가 아니라 아래 mix로 동작한다.
     score-online: 10
+    # 기준 시각은 "공유 시각과 사진 갱신 시각 중 나중"이다.
+    recency:
+      within1h: 30
+      within3h: 20
+      within5h: 10
+    # 전환율 = {(좋아요×like)+(댓글×comment)+(대화신청×request)} / 총 노출 × 100
+    engage:
+      # 표본이 적으면 좋아요 한 번에 100%가 되어 갓 올린 포스트가 최상단에 간다.
+      min-exposures: 20
+      like-weight: 1
+      comment-weight: 2
+      request-weight: 4
+      rate30: 30
+      rate20: 20
+      rate15: 15
+      rate10: 10
+      rate5: 5
+    # 일반 풀 : 부스트 풀 = 6:4로 섞는다. 부스트 풀이 더 크면 비율이 뒤집힌다.
+    mix:
+      normal: 6
+      boost: 4
+    # 한 번 보여준 상대를 다시 후보에 넣지 않는 시간.
+    exposure-cooldown-minutes: 15
+    # 한 번 산정한 노출 순서를 유지하는 시간("그 세션 동안").
+    session-ttl-minutes: 30
   store:
     # 기획서 Plan_2 화면 25~30의 가격표를 그대로 옮긴 값이다.
     # price 단위는 "루나". 현금 가격(충전팩·프라임)은 스토어 콘솔이 권위이므로 여기 두지 않는다.

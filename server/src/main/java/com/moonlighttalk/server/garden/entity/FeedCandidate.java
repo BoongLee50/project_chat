@@ -18,8 +18,13 @@ public class FeedCandidate {
     private boolean premium;
     private String intro;
     private LocalDateTime publishedAt;
+    /** 사진이 마지막으로 바뀐 시각(V8). Recency는 공유 시각과 이 값 중 <b>나중</b>을 본다. */
+    private LocalDateTime contentUpdatedAt;
+    /** 이 포스트의 사진 수. 열람 제한으로 잘라 보낼 때 "원래 몇 장인지" 알려주는 데 쓴다. */
+    private int photoCount;
     /** post_stats 집계(없으면 0). */
     private int exposures;
     private int likes;
+    private int comments;
     private int requests;
 }

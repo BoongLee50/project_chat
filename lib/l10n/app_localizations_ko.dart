@@ -216,6 +216,17 @@ class L10nKo extends L10n {
   String get gardenChatRequestSent => '대화 신청을 보냈어요. 상대의 응답을 기다려 주세요.';
 
   @override
+  String gardenPhotoLockedTitle(int count) {
+    return '사진 $count장이 더 있어요';
+  }
+
+  @override
+  String get gardenPhotoLockedBody => '오늘 내 포스트를 공유하면 상대의 사진을 모두 볼 수 있어요.';
+
+  @override
+  String get gardenPhotoLockedAction => '내 포스트 등록하기';
+
+  @override
   String commentsTitle(String nickname) {
     return '$nickname님의 포스트';
   }

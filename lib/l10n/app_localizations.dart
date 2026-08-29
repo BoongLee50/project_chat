@@ -487,6 +487,24 @@ abstract class L10n {
   /// **'대화 신청을 보냈어요. 상대의 응답을 기다려 주세요.'**
   String get gardenChatRequestSent;
 
+  /// No description provided for @gardenPhotoLockedTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'사진 {count}장이 더 있어요'**
+  String gardenPhotoLockedTitle(int count);
+
+  /// No description provided for @gardenPhotoLockedBody.
+  ///
+  /// In ko, this message translates to:
+  /// **'오늘 내 포스트를 공유하면 상대의 사진을 모두 볼 수 있어요.'**
+  String get gardenPhotoLockedBody;
+
+  /// No description provided for @gardenPhotoLockedAction.
+  ///
+  /// In ko, this message translates to:
+  /// **'내 포스트 등록하기'**
+  String get gardenPhotoLockedAction;
+
   /// No description provided for @commentsTitle.
   ///
   /// In ko, this message translates to:

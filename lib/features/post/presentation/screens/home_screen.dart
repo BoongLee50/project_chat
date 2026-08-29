@@ -446,6 +446,9 @@ class _PostPhotoCardState extends ConsumerState<_PostPhotoCard> {
             if (hasPhoto)
               // 좌/우 탭으로 등록된 사진을 순차 검색(기획서 3-1).
               GestureDetector(
+                // Image는 자기 자신을 히트테스트하지 않아 기본값(deferToChild)으로는
+                // 탭이 안 들어온다 — 좌우로 넘겨 보는 기능이 조용히 죽는다(함정 #38).
+                behavior: HitTestBehavior.opaque,
                 onTapUp: (details) {
                   final width = context.size?.width ?? 1;
                   final next = details.localPosition.dx > width / 2
