@@ -41,6 +41,12 @@ public class PostController {
         postService.deletePhoto(userId, photoId);
     }
 
+    /** 대표 사진 지정([메인] 버튼). 달빛가든에 이 사진이 노출된다. */
+    @PostMapping("/posts/photos/{photoId}:main")
+    public void setMainPhoto(@CurrentUserId String userId, @PathVariable String photoId) {
+        postService.setMainPhoto(userId, photoId);
+    }
+
 
     @PostMapping("/posts:publish")
     public void publish(@CurrentUserId String userId) {

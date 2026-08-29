@@ -26,6 +26,9 @@ public interface SchedulerMapper {
 
     int deletePhotosBefore(@Param("sessionDate") LocalDate sessionDate);
 
+    /** 사진을 지운 뒤 떠 버린 대표 사진 참조를 비운다(V11 — main_photo_id에는 FK가 없다). */
+    int clearMainPhotosBefore(@Param("sessionDate") LocalDate sessionDate);
+
     int deleteStatsBefore(@Param("sessionDate") LocalDate sessionDate);
 
     int deleteSkipsBefore(@Param("sessionDate") LocalDate sessionDate);

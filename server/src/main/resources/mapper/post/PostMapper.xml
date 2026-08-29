@@ -8,6 +8,7 @@
         <result property="sessionDate" column="session_date"/>
         <result property="publishedAt" column="published_at"/>
         <result property="replaceCount" column="replace_count"/>
+        <result property="mainPhotoId" column="main_photo_id"/>
     </resultMap>
 
     <resultMap id="PostPhotoResultMap" type="com.moonlighttalk.server.post.entity.PostPhoto">
@@ -39,12 +40,21 @@
         UPDATE posts SET published_at = #{publishedAt} WHERE id = #{postId}
     </update>
 
+    <update id="updateMainPhotoId">
+        UPDATE posts SET main_photo_id = #{photoId} WHERE id = #{postId}
+    </update>
+
     <update id="incrementReplaceCount">
         UPDATE posts SET replace_count = replace_count + 1 WHERE id = #{postId}
     </update>
 
+    <!--
+        표시 순서는 **최신이 1번 슬롯**이다(Plan_3 §3-1 "신규 사진은 등록 시간순 슬롯, 1번이 최신").
+        order_idx는 등록 순서대로 증가하는 값이라 내림차순이 곧 최신순이다.
+        번호를 다시 매기지 않으므로 삭제가 있어도 순서가 흐트러지지 않는다.
+    -->
     <select id="selectPhotos" resultMap="PostPhotoResultMap">
-        SELECT * FROM post_photos WHERE post_id = #{postId} ORDER BY order_idx
+        SELECT * FROM post_photos WHERE post_id = #{postId} ORDER BY order_idx DESC
     </select>
 
     <select id="selectPhotoById" resultMap="PostPhotoResultMap">

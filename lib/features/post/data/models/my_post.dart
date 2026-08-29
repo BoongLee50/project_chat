@@ -25,6 +25,7 @@ class MyPost {
   const MyPost({
     required this.sessionDate,
     required this.photos,
+    required this.mainPhotoId,
     required this.published,
     required this.maxPhotos,
     required this.replaceRemaining,
@@ -33,7 +34,15 @@ class MyPost {
   /// 영업일. **Plan_3부터 KST 18시에 넘어간다**(서버 `app.session.rollover-hour`).
   final String sessionDate;
 
+  /// 표시 순서. **1번 슬롯이 최신**이다(Plan_3 §3-1) — 서버가 그 순서로 준다.
   final List<PostPhoto> photos;
+
+  /// 달빛가든에 노출할 대표 사진. 사진이 없으면 null.
+  ///
+  /// 서버가 항상 **존재하는 사진**을 가리키도록 정리해서 준다(떠 있으면 첫 슬롯으로 대신).
+  /// 최초 사진은 자동 메인이고, 메인을 지우면 이웃 슬롯이 승계된다.
+  final String? mainPhotoId;
+
   final bool published;
 
   /// 등록 가능한 최대 사진 수. 무료·앨범패스에 따라 서버가 정해 준다.
@@ -59,6 +68,7 @@ class MyPost {
     photos: (json['photos'] as List? ?? const [])
         .map((e) => PostPhoto.fromJson(Map<String, dynamic>.from(e as Map)))
         .toList(),
+    mainPhotoId: json['mainPhotoId'] as String?,
     published: json['published'] as bool? ?? false,
     maxPhotos: json['maxPhotos'] as int? ?? 2,
     replaceRemaining: json['replaceRemaining'] as int? ?? 0,

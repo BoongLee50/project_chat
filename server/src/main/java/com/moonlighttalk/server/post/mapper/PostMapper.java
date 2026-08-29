@@ -31,6 +31,13 @@ public interface PostMapper {
      */
     void touchContentUpdatedAt(@Param("postId") String postId);
 
+    /**
+     * 대표 사진 지정. {@code photoId}에 null을 주면 해제된다(사진이 하나도 안 남은 경우).
+     *
+     * <p>FK가 없다 — 순환 캐스케이드를 피하려고 일부러 뺐다(V11). 값의 유효성은 서비스가 지킨다.
+     */
+    void updateMainPhotoId(@Param("postId") String postId, @Param("photoId") String photoId);
+
     void insertPhoto(PostPhoto photo);
 
     void deletePhoto(@Param("photoId") String photoId);

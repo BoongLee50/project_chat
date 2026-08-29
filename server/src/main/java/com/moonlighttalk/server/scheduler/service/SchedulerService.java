@@ -114,6 +114,7 @@ public class SchedulerService {
         }
 
         int photos = schedulerMapper.deletePhotosBefore(today);
+        schedulerMapper.clearMainPhotosBefore(today);
         int stats = schedulerMapper.deleteStatsBefore(today);
         int skips = schedulerMapper.deleteSkipsBefore(today);
         int usage = schedulerMapper.deleteDailyUsageBefore(today);

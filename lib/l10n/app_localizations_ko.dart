@@ -147,6 +147,15 @@ class L10nKo extends L10n {
   }
 
   @override
+  String get homeMainPhoto => '메인';
+
+  @override
+  String get homeSetMainPhoto => '메인으로';
+
+  @override
+  String get homeMainPhotoSet => '메인 사진으로 지정했어요.';
+
+  @override
   String get homeBoost => '부스트';
 
   @override
@@ -418,7 +427,7 @@ class L10nKo extends L10n {
   String get profilePrimeTitle => '프라임으로 더 특별하게 ✨';
 
   @override
-  String get profilePrimeBenefits => '포스트 8장·부스트·무제한 대화·자동 번역';
+  String get profilePrimeBenefits => '포스트 9장·부스트·무제한 대화·자동 번역';
 
   @override
   String get profileSeeDetail => '자세히 보기';
@@ -744,10 +753,10 @@ class L10nKo extends L10n {
   String get passAlbumHeadline => '더 많은 포스트 사진을 등록하고 다양한 매력을 보여주세요!';
 
   @override
-  String get passAlbumBenefit1 => '포스트 사진 최대 8장까지 등록';
+  String get passAlbumBenefit1 => '포스트 사진 최대 9장까지 등록';
 
   @override
-  String get passAlbumBenefit1Desc => '기본 1장에서 최대 8장까지 여러 장의 사진을 등록할 수 있어요.';
+  String get passAlbumBenefit1Desc => '기본 2장에서 최대 9장까지 여러 장의 사진을 등록할 수 있어요.';
 
   @override
   String get passAlbumBenefit2 => '등록 시간 제한 없음 (24시간 자유롭게)';
@@ -1221,14 +1230,19 @@ class L10nKo extends L10n {
   String get errorPostPhotoNotMine => '내 사진만 삭제할 수 있어요.';
 
   @override
-  String get errorPostPhotoLimit => '등록 가능한 사진 수를 넘었어요. 기존 사진을 먼저 삭제해 주세요.';
+  String errorPostPhotoLimit(int count) {
+    return '사진은 최대 $count장까지 등록할 수 있어요. 기존 사진을 먼저 삭제해 주세요.';
+  }
 
   @override
-  String get errorPostReplaceLimit => '오늘의 사진 교체 횟수를 모두 썼어요. 내일 다시 이용해 주세요.';
+  String errorPostReplaceLimit(int count) {
+    return '오늘의 사진 교체 횟수($count회)를 모두 썼어요. 내일 다시 이용해 주세요.';
+  }
 
   @override
-  String get errorPostReplaceFreeLimit =>
-      '무료로는 하루 2장까지 교체할 수 있어요. 앨범 패스가 있으면 시간 제한 없이 하루 20장까지 바꿀 수 있어요.';
+  String errorPostReplaceFreeLimit(int count) {
+    return '사진은 하루 $count번까지 교체할 수 있어요. 내일 다시 이용해 주세요.';
+  }
 
   @override
   String get errorPostNotPublishedToday => '오늘 등록된 포스트가 없어요.';

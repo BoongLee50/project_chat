@@ -14,7 +14,11 @@ public class Post {
     private String userId;
     private LocalDate sessionDate;
     private LocalDateTime publishedAt;
-    /** 등록 가능 창 시작(일반 사용자 1시간 계산 기준). */
     /** 당일 사진 교체(삭제) 횟수. */
     private int replaceCount;
+    /**
+     * 달빛가든 대표 사진({@code post_photos.id}). FK가 없어 떠 있을 수 있으므로
+     * <b>읽는 쪽이 실재 여부를 확인</b>한다(V11 주석 참고).
+     */
+    private String mainPhotoId;
 }

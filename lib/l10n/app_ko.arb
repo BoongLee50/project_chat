@@ -71,6 +71,15 @@
       }
     }
   },
+  "homeMainPhoto": "메인",
+  "@homeMainPhoto": {
+    "description": "달빛가든에 노출되는 대표 사진임을 알리는 배지"
+  },
+  "homeSetMainPhoto": "메인으로",
+  "@homeSetMainPhoto": {
+    "description": "보고 있는 사진을 대표 사진으로 지정하는 버튼"
+  },
+  "homeMainPhotoSet": "메인 사진으로 지정했어요.",
   "homeBoost": "부스트",
   "homeBoostActive": "부스트 사용 중",
   "homeBoostStock": "보유 {count}매",
@@ -237,7 +246,7 @@
   "profileLunaBalance": "보유 루나",
   "profileLunaStore": "루나상점",
   "profilePrimeTitle": "프라임으로 더 특별하게 ✨",
-  "profilePrimeBenefits": "포스트 8장·부스트·무제한 대화·자동 번역",
+  "profilePrimeBenefits": "포스트 9장·부스트·무제한 대화·자동 번역",
   "profileSeeDetail": "자세히 보기",
   "profileBoostPost": "포스트 부스트",
   "profileBoostMatch": "매칭 부스트",
@@ -506,8 +515,8 @@
   "passValidPeriod": "유효 기간",
   "passExtendNotice": "이미 이용 중이에요. 지금 구매하면 남은 기간에 이어서 연장됩니다.",
   "passAlbumHeadline": "더 많은 포스트 사진을 등록하고 다양한 매력을 보여주세요!",
-  "passAlbumBenefit1": "포스트 사진 최대 8장까지 등록",
-  "passAlbumBenefit1Desc": "기본 1장에서 최대 8장까지 여러 장의 사진을 등록할 수 있어요.",
+  "passAlbumBenefit1": "포스트 사진 최대 9장까지 등록",
+  "passAlbumBenefit1Desc": "기본 2장에서 최대 9장까지 여러 장의 사진을 등록할 수 있어요.",
   "passAlbumBenefit2": "등록 시간 제한 없음 (24시간 자유롭게)",
   "passAlbumBenefit2Desc": "시간 제약 없이 언제든지 자유롭게 포스트를 등록할 수 있어요.",
   "passAlbumBenefit3": "휴대폰 갤러리 사진까지 업로드 가능",
@@ -749,9 +758,9 @@
   "errorPostPhotoRequired": "새로운 포스트 사진을 등록해 주세요.",
   "errorPostPhotoNotFound": "사진을 찾을 수 없어요.",
   "errorPostPhotoNotMine": "내 사진만 삭제할 수 있어요.",
-  "errorPostPhotoLimit": "등록 가능한 사진 수를 넘었어요. 기존 사진을 먼저 삭제해 주세요.",
-  "errorPostReplaceLimit": "오늘의 사진 교체 횟수를 모두 썼어요. 내일 다시 이용해 주세요.",
-  "errorPostReplaceFreeLimit": "무료로는 하루 2장까지 교체할 수 있어요. 앨범 패스가 있으면 시간 제한 없이 하루 20장까지 바꿀 수 있어요.",
+  "errorPostPhotoLimit": "사진은 최대 {count}장까지 등록할 수 있어요. 기존 사진을 먼저 삭제해 주세요.",
+  "errorPostReplaceLimit": "오늘의 사진 교체 횟수({count}회)를 모두 썼어요. 내일 다시 이용해 주세요.",
+  "errorPostReplaceFreeLimit": "사진은 하루 {count}번까지 교체할 수 있어요. 내일 다시 이용해 주세요.",
   "errorPostNotPublishedToday": "오늘 등록된 포스트가 없어요.",
   "errorGardenTargetBlocked": "지금은 이 사용자에게 댓글을 남길 수 없어요.",
   "errorTranslateQuotaExceeded": "오늘의 무료 번역을 모두 사용했어요. 자동 번역 패스를 이용해 보세요.",
@@ -832,5 +841,26 @@
       }
     }
   },
-  "chatRoomsVoicePreview": "음성 메시지"
+  "chatRoomsVoicePreview": "음성 메시지",
+  "@errorPostPhotoLimit": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@errorPostReplaceLimit": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@errorPostReplaceFreeLimit": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

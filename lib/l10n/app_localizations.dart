@@ -361,6 +361,24 @@ abstract class L10n {
   /// **'최대 {count}장 등록 가능'**
   String homeAlbumPassMaxPhotos(int count);
 
+  /// 달빛가든에 노출되는 대표 사진임을 알리는 배지
+  ///
+  /// In ko, this message translates to:
+  /// **'메인'**
+  String get homeMainPhoto;
+
+  /// 보고 있는 사진을 대표 사진으로 지정하는 버튼
+  ///
+  /// In ko, this message translates to:
+  /// **'메인으로'**
+  String get homeSetMainPhoto;
+
+  /// No description provided for @homeMainPhotoSet.
+  ///
+  /// In ko, this message translates to:
+  /// **'메인 사진으로 지정했어요.'**
+  String get homeMainPhotoSet;
+
   /// No description provided for @homeBoost.
   ///
   /// In ko, this message translates to:
@@ -856,7 +874,7 @@ abstract class L10n {
   /// No description provided for @profilePrimeBenefits.
   ///
   /// In ko, this message translates to:
-  /// **'포스트 8장·부스트·무제한 대화·자동 번역'**
+  /// **'포스트 9장·부스트·무제한 대화·자동 번역'**
   String get profilePrimeBenefits;
 
   /// No description provided for @profileSeeDetail.
@@ -1414,13 +1432,13 @@ abstract class L10n {
   /// No description provided for @passAlbumBenefit1.
   ///
   /// In ko, this message translates to:
-  /// **'포스트 사진 최대 8장까지 등록'**
+  /// **'포스트 사진 최대 9장까지 등록'**
   String get passAlbumBenefit1;
 
   /// No description provided for @passAlbumBenefit1Desc.
   ///
   /// In ko, this message translates to:
-  /// **'기본 1장에서 최대 8장까지 여러 장의 사진을 등록할 수 있어요.'**
+  /// **'기본 2장에서 최대 9장까지 여러 장의 사진을 등록할 수 있어요.'**
   String get passAlbumBenefit1Desc;
 
   /// No description provided for @passAlbumBenefit2.
@@ -2314,20 +2332,20 @@ abstract class L10n {
   /// No description provided for @errorPostPhotoLimit.
   ///
   /// In ko, this message translates to:
-  /// **'등록 가능한 사진 수를 넘었어요. 기존 사진을 먼저 삭제해 주세요.'**
-  String get errorPostPhotoLimit;
+  /// **'사진은 최대 {count}장까지 등록할 수 있어요. 기존 사진을 먼저 삭제해 주세요.'**
+  String errorPostPhotoLimit(int count);
 
   /// No description provided for @errorPostReplaceLimit.
   ///
   /// In ko, this message translates to:
-  /// **'오늘의 사진 교체 횟수를 모두 썼어요. 내일 다시 이용해 주세요.'**
-  String get errorPostReplaceLimit;
+  /// **'오늘의 사진 교체 횟수({count}회)를 모두 썼어요. 내일 다시 이용해 주세요.'**
+  String errorPostReplaceLimit(int count);
 
   /// No description provided for @errorPostReplaceFreeLimit.
   ///
   /// In ko, this message translates to:
-  /// **'무료로는 하루 2장까지 교체할 수 있어요. 앨범 패스가 있으면 시간 제한 없이 하루 20장까지 바꿀 수 있어요.'**
-  String get errorPostReplaceFreeLimit;
+  /// **'사진은 하루 {count}번까지 교체할 수 있어요. 내일 다시 이용해 주세요.'**
+  String errorPostReplaceFreeLimit(int count);
 
   /// No description provided for @errorPostNotPublishedToday.
   ///

@@ -347,7 +347,12 @@ class _PostPhotoCardState extends ConsumerState<_PostPhotoCard> {
     _toast(
       errorMessage(
         L10n.of(context),
-        ApiException(message: '', code: reason),
+        // 서버가 막았을 때와 같은 문장을 만들려면 숫자도 같은 자리(field)에 넣어야 한다.
+        ApiException(
+          message: '',
+          code: reason,
+          field: '${widget.post.maxPhotos}',
+        ),
       ),
     );
   }
@@ -398,6 +403,23 @@ class _PostPhotoCardState extends ConsumerState<_PostPhotoCard> {
       _index = 0;
     });
     if (error != null) _toast(errorMessage(L10n.of(context), error));
+  }
+
+  /// 보고 있는 사진을 대표 사진으로 세운다(달빛가든에 이 사진이 나간다).
+  Future<void> _setMain() async {
+    if (_busy || _photos.isEmpty) return;
+    setState(() => _busy = true);
+    final target = _photos[_index.clamp(0, _photos.length - 1)];
+    final error = await ref
+        .read(myPostProvider.notifier)
+        .setMainPhoto(target.id);
+    if (!mounted) return;
+    setState(() => _busy = false);
+    _toast(
+      error != null
+          ? errorMessage(L10n.of(context), error)
+          : L10n.of(context).homeMainPhotoSet,
+    );
   }
 
   void _toast(String message) {
@@ -470,6 +492,20 @@ class _PostPhotoCardState extends ConsumerState<_PostPhotoCard> {
               },
             ),
 
+            // 메인 사진 — 보고 있는 사진이 대표면 배지, 아니면 지정 버튼.
+            //
+            // 배지와 버튼을 같은 자리에 두는 이유: 둘을 나란히 놓으면 "지금 뭐가 메인인지"와
+            // "누르면 뭐가 되는지"가 헷갈린다. 한 자리에서 상태가 바뀌면 관계가 분명해진다.
+            if (hasPhoto)
+              Positioned(
+                left: 12,
+                top: 12,
+                child: _MainPhotoChip(
+                  isMain: _photos[index].id == widget.post.mainPhotoId,
+                  onTap: _setMain,
+                ),
+              ),
+
             // 삭제 버튼
             if (hasPhoto)
               Positioned(
@@ -527,6 +563,53 @@ class _PostPhotoCardState extends ConsumerState<_PostPhotoCard> {
         ),
       ),
     );
+  }
+}
+
+/// 대표 사진 표시 겸 지정 버튼(Plan_3 §3-1 `[메인]`).
+///
+/// 메인이면 **채워진 배지**로 상태만 보여주고 누를 수 없다 — 이미 메인인 걸 다시 눌러 봐야
+/// 아무 일도 안 일어나는데, 눌리면 고장으로 읽힌다.
+class _MainPhotoChip extends StatelessWidget {
+  const _MainPhotoChip({required this.isMain, required this.onTap});
+
+  final bool isMain;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
+    final chip = Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+      decoration: BoxDecoration(
+        color: isMain
+            ? AppColors.moonlight
+            : Colors.black.withValues(alpha: 0.55),
+        borderRadius: BorderRadius.circular(AppDimens.radiusMd),
+        border: Border.all(color: AppColors.moonlight),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            isMain ? Icons.star_rounded : Icons.star_border_rounded,
+            size: 15,
+            color: isMain ? AppColors.night : AppColors.moonlight,
+          ),
+          const SizedBox(width: 4),
+          Text(
+            isMain ? l10n.homeMainPhoto : l10n.homeSetMainPhoto,
+            style: TextStyle(
+              color: isMain ? AppColors.night : AppColors.moonlight,
+              fontSize: 12,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ],
+      ),
+    );
+
+    return isMain ? chip : GestureDetector(onTap: onTap, child: chip);
   }
 }
 

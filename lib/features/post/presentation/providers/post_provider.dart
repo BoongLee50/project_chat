@@ -24,6 +24,11 @@ class MyPostController extends AsyncNotifier<MyPost> {
   Future<ApiException?> deletePhoto(String photoId) =>
       _run(() => ref.read(postApiProvider).deletePhoto(photoId));
 
+  /// 대표 사진 지정. 승계 규칙(등록/삭제 시 자동 지정)은 서버가 처리하므로
+  /// 여기서는 사용자가 직접 고른 경우만 다룬다.
+  Future<ApiException?> setMainPhoto(String photoId) =>
+      _run(() => ref.read(postApiProvider).setMainPhoto(photoId));
+
 
   Future<ApiException?> publish() => _run(() => ref.read(postApiProvider).publish());
 

@@ -81,8 +81,17 @@
         </if>
     </select>
 
+    <!--
+        가든 카드의 첫 장은 **메인 사진**이다(Plan_3 §3-1·4-1). 그다음은 최신순.
+        ③단계의 열람 제한("무료는 상대 메인 1장만")이 이 순서를 전제로 얹힌다.
+        <=> 는 NULL 안전 비교라 메인이 지정되지 않은 포스트도 그냥 최신순으로 나온다.
+    -->
     <select id="selectPhotoKeys" resultType="string">
-        SELECT storage_key FROM post_photos WHERE post_id = #{postId} ORDER BY order_idx
+        SELECT ph.storage_key
+        FROM post_photos ph
+                 JOIN posts p ON p.id = ph.post_id
+        WHERE ph.post_id = #{postId}
+        ORDER BY (ph.id &lt;=&gt; p.main_photo_id) DESC, ph.order_idx DESC
     </select>
 
     <select id="selectInterests" resultType="string">

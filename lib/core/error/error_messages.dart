@@ -27,9 +27,11 @@ String errorMessage(L10n l10n, ApiException e) {
     'POST_PHOTO_REQUIRED' => l10n.errorPostPhotoRequired,
     'POST_PHOTO_NOT_FOUND' => l10n.errorPostPhotoNotFound,
     'POST_PHOTO_NOT_MINE' => l10n.errorPostPhotoNotMine,
-    'POST_PHOTO_LIMIT' => l10n.errorPostPhotoLimit,
-    'POST_REPLACE_LIMIT' => l10n.errorPostReplaceLimit,
-    'POST_REPLACE_FREE_LIMIT' => l10n.errorPostReplaceFreeLimit,
+    // 장수·횟수는 설정값이라 언제든 바뀐다 — 서버가 field에 실어 보내고 ARB가 조립한다
+    // (`FRIEND_LIMIT_EXCEEDED`와 같은 방식). 문구에 숫자를 굳히면 설정만 바꿔도 거짓말이 된다.
+    'POST_PHOTO_LIMIT' => l10n.errorPostPhotoLimit(_count(e)),
+    'POST_REPLACE_LIMIT' => l10n.errorPostReplaceLimit(_count(e)),
+    'POST_REPLACE_FREE_LIMIT' => l10n.errorPostReplaceFreeLimit(_count(e)),
     'POST_NOT_PUBLISHED_TODAY' => l10n.errorPostNotPublishedToday,
 
     // ── garden ───────────────────────────────────────
@@ -101,3 +103,9 @@ String errorMessage(L10n l10n, ApiException e) {
     _ => e.code == null ? l10n.errorUnknown : e.message,
   };
 }
+
+/// 서버가 `field`에 실어 보낸 숫자(장수·횟수 한도). 없으면 0.
+///
+/// 클라가 직접 만든 예외(눌리기 전 사전 안내)도 같은 자리에 값을 넣어 준다 —
+/// 그래야 서버가 막았을 때와 화면이 미리 알려줄 때의 문구가 같다.
+int _count(ApiException e) => int.tryParse(e.field ?? '') ?? 0;
