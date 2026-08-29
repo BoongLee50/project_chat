@@ -5,10 +5,8 @@ import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimens.dart';
 import '../../../../core/error/api_exception.dart';
 import '../../../../core/error/error_messages.dart';
-import '../../../../shared/widgets/gate_notice.dart';
 import '../../../../shared/widgets/authed_image.dart';
 import '../../data/models/chat_models.dart';
-import '../../../auth/presentation/providers/gate_provider.dart';
 import '../providers/chat_provider.dart';
 import 'chat_screen.dart';
 import '../../../../l10n/app_localizations.dart';
@@ -67,11 +65,6 @@ class _ChatRoomsScreenState extends ConsumerState<ChatRoomsScreen> {
                 style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
               ),
               const SizedBox(height: AppDimens.gapMd),
-              // 운영시간 밖에는 매칭 대화만 막힌다 — 친구 방은 24시간이라 그대로 쓸 수 있다.
-              if (!ref.watch(gateOpenProvider))
-                GateBanner(
-                  message: l10n.chatGateClosed,
-                ),
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: Row(

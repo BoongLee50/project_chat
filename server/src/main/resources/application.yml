@@ -24,18 +24,19 @@ app:
     secret: ${APP_JWT_SECRET:local-dev-secret-change-me-please-0123456789}
     access-token-ttl-minutes: 60
     refresh-token-ttl-days: 30
-  gate:
-    open-hour: 17
-    close-hour: 6
+  session:
+    # 영업일(session_date)이 넘어가는 시각(KST). Plan_3에서 18시로 확정.
+    # ⚠️ 이 값을 바꿔 배포할 때는 반드시 그 시각 정각에 배포할 것 —
+    #    이미 저장된 행은 옛 기준으로 찍혀 있어 중간에 바꾸면 한 테이블에 두 기준이 섞인다(docs/12 §6-1).
+    # ⚠️ 아래 scheduler의 cron 시각도 이 값에 맞춰야 한다.
+    rollover-hour: 18
   post:
     # 오늘의 포스트 — 무료/앨범패스별 사진 수와 하루 교체 횟수(기획서 3장).
     max-photos-free: 2
-    max-photos-pass: 8
-    replace-limit-free: 2
-    replace-limit-pass: 20
-    # 무료 사용자의 등록 가능 창. 첫 조회 시점부터 이 시간 동안만 올릴 수 있다.
-    # 패스 보유자는 창 자체가 없다.
-    upload-window-minutes: 60
+    max-photos-pass: 9
+    # Plan_3에서 무료·유료 구분 없이 3회로 통일됐다. 다만 다시 갈릴 수 있어 키는 둘 다 남겨 둔다.
+    replace-limit-free: 3
+    replace-limit-pass: 3
   garden:
     # 피드 스코어 가중치. 운영하며 튜닝할 값이라 재배포 없이 바꿀 수 있게 뺐다.
     score-pick: 50
@@ -76,7 +77,7 @@ app:
         boosts: { POST_BOOST: 60, SPOTLIGHT_BOOST: 30 }
   chat:
     # 대화 신청 — 하루 N회는 공짜, 그 뒤로는 1건당 루나를 뺀다(기획서 5장).
-    free-requests-per-day: 2
+    free-requests-per-day: 10
     request-luna-cost: 5
     # 음성 메시지 최대 길이. 클라도 이 시간에서 자동 정지하므로 두 값을 함께 바꿀 것.
     voice-max-duration-ms: 30000
@@ -86,18 +87,16 @@ app:
     # 한 번에 지울 행 수. 큰 트랜잭션으로 테이블을 오래 잠그지 않도록 나눠서 지운다.
     retention-batch-size: 1000
   scheduler:
-    # ⚠️ gate-open/close cron은 app.gate.open-hour/close-hour와 같은 값이어야 한다.
-    gate-open-cron: "0 0 17 * * *"
-    gate-close-cron: "0 0 6 * * *"
-    daily-cleanup-cron: "0 5 6 * * *"
+    # ⚠️ 아래 cron 시각은 app.session.rollover-hour와 맞춰야 한다(경계 직후에 돈다).
+    daily-cleanup-cron: "0 5 18 * * *"
     presence-sweep-ms: 300000
     # 배치를 수동 실행하는 개발용 엔드포인트(운영에서는 절대 켜지 말 것).
     dev-trigger-enabled: false
   friend:
-    # 기획서에 20과 30이 함께 적혀 있어(보완 문서 대기) 설정으로 뺐다.
-    # 프리미엄이 더 많이 가질 수 있다는 해석으로 잡아 둔 잠정값.
-    max-count: 20
-    max-count-premium: 30
+    # Plan_3에서 과금과 무관하게 100명으로 통일됐다(20 vs 30 모순이 이렇게 정리됨).
+    # 다시 갈릴 수 있어 키는 둘 다 남겨 둔다.
+    max-count: 100
+    max-count-premium: 100
   redis:
     enabled: false
   storage:

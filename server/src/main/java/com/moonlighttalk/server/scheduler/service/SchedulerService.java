@@ -1,6 +1,6 @@
 package com.moonlighttalk.server.scheduler.service;
 
-import com.moonlighttalk.server.auth.service.GateService;
+import com.moonlighttalk.server.auth.service.SessionTimeService;
 import com.moonlighttalk.server.chat.entity.ChatRoom;
 import com.moonlighttalk.server.chat.socket.Opcodes;
 import com.moonlighttalk.server.chat.socket.Packet;
@@ -34,7 +34,7 @@ public class SchedulerService {
     private final SchedulerMapper schedulerMapper;
     private final SocketRegistry socketRegistry;
     private final FileStorageService fileStorageService;
-    private final GateService gateService;
+    private final SessionTimeService sessionTime;
     private final MessageRetentionPurger messageRetentionPurger;
     private final StoreMapper storeMapper;
 
@@ -45,7 +45,7 @@ public class SchedulerService {
     public SchedulerService(SchedulerMapper schedulerMapper,
                              SocketRegistry socketRegistry,
                              FileStorageService fileStorageService,
-                             GateService gateService,
+                             SessionTimeService sessionTime,
                              MessageRetentionPurger messageRetentionPurger,
                              StoreMapper storeMapper,
                              @Value("${app.chat.retention-days:30}") int retentionDays,
@@ -54,7 +54,7 @@ public class SchedulerService {
         this.schedulerMapper = schedulerMapper;
         this.socketRegistry = socketRegistry;
         this.fileStorageService = fileStorageService;
-        this.gateService = gateService;
+        this.sessionTime = sessionTime;
         this.messageRetentionPurger = messageRetentionPurger;
         this.storeMapper = storeMapper;
         this.retentionDays = retentionDays;
@@ -99,7 +99,7 @@ public class SchedulerService {
      */
     @Transactional
     public void cleanupPreviousSessions() {
-        LocalDate today = gateService.currentSessionDate();
+        LocalDate today = sessionTime.currentSessionDate();
 
         List<String> keys = schedulerMapper.selectPhotoKeysBefore(today);
         int failed = 0;

@@ -12,7 +12,7 @@ class FeedItem {
     required this.online,
     this.age,
     this.country,
-    this.oneLiner,
+    this.intro,
     this.score = 0,
   });
 
@@ -29,7 +29,7 @@ class FeedItem {
   /// 접속 중 표시.
   final bool online;
 
-  final String? oneLiner;
+  final String? intro;
 
   /// 서버가 준 사진 URL(상대경로) 목록.
   final List<String> photoUrls;
@@ -54,7 +54,7 @@ class FeedItem {
     country: json['country'] as String?,
     pick: json['pick'] as bool? ?? false,
     online: json['online'] as bool? ?? false,
-    oneLiner: json['oneLiner'] as String?,
+    intro: json['intro'] as String?,
     photoUrls: (json['photoUrls'] as List? ?? const []).cast<String>(),
     interests: (json['interests'] as List? ?? const []).cast<String>(),
     likes: json['likes'] as int? ?? 0,

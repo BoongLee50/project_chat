@@ -7,11 +7,15 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 /**
- * 배치 트리거. 시각은 KST 고정이며 <b>{@code app.gate.*}와 반드시 같은 값</b>이어야 한다
- * (게이트 판정은 GateService, 배치 시각은 cron이라 두 곳에 있다).
+ * 배치 트리거. 시각은 KST 고정이며 <b>영업일 경계({@code app.session.rollover-hour})와 맞춰야 한다</b>
+ * (경계 판정은 {@code SessionTimeService}, 배치 시각은 cron이라 두 곳에 있다).
  *
- * <p>범위: 게이트 개방/종료 + 지난 영업일 정리 + 메시지 보관 만료 + 프레즌스 청소.
- * BM(부스트·엔티틀먼트·구독) 만료 정리까지 포함한다.
+ * <p>범위: 지난 영업일 정리 + 메시지 보관 만료 + BM 만료 정리(+ 프레즌스 청소는 별도).
+ *
+ * <p>⚠️ Plan_3에서 게이트가 폐지되며 <b>17시 개방·06시 매칭방 일괄 종료 잡이 사라졌다.</b>
+ * 그래서 지금은 <b>매칭 대화방이 저절로 닫히지 않는다</b> — 신고·차단·나가기로만 닫힌다.
+ * 종료 규칙은 기획 확인 대기 중이며, 필요하면 {@code SchedulerService.closeMatchRooms()}가
+ * 그대로 남아 있으니 잡만 다시 달면 된다(개발용 수동 실행 엔드포인트도 유지).
  */
 @Component
 public class ScheduledJobs {
@@ -25,33 +29,20 @@ public class ScheduledJobs {
         this.schedulerService = schedulerService;
     }
 
-    /** 17:00 개방. 게이트 판정 자체는 시간 계산이라 별도 상태 변경이 없고, 기록만 남긴다. */
-    @Scheduled(cron = "${app.scheduler.gate-open-cron:0 0 17 * * *}", zone = KST)
-    public void gateOpen() {
-        log.info("[배치] 서비스 개방(17시)");
-    }
-
-    /** 06:00 종료 — 매칭 대화방을 닫고 접속자에게 알린다. 친구 대화방은 대상이 아니다. */
-    @Scheduled(cron = "${app.scheduler.gate-close-cron:0 0 6 * * *}", zone = KST)
-    public void gateClose() {
-        schedulerService.closeMatchRooms();
-        schedulerService.broadcastSystemClose();
-    }
-
     /**
-     * 06:05 지난 영업일 정리. 종료 처리와 같은 06:00에 겹치면 영업일 경계에서
-     * {@code currentSessionDate()}가 막 넘어가는 순간과 부딪히므로 몇 분 뒤에 돈다.
+     * 지난 영업일 정리. 경계 정각에 돌리면 {@code currentSessionDate()}가 막 넘어가는 순간과
+     * 부딪히므로 몇 분 뒤에 돈다.
      */
-    @Scheduled(cron = "${app.scheduler.daily-cleanup-cron:0 5 6 * * *}", zone = KST)
+    @Scheduled(cron = "${app.scheduler.daily-cleanup-cron:0 5 18 * * *}", zone = KST)
     public void dailyCleanup() {
         schedulerService.cleanupPreviousSessions();
     }
 
     /**
-     * 06:20 보관 만료 메시지 삭제(FIFO). 매칭 30일 / 친구 1년 — 판정은 방 타입 기준.
+     * 보관 만료 메시지 삭제(FIFO). 매칭 30일 / 친구 1년 — 판정은 방 타입 기준.
      * 정리 배치와 겹치지 않게 뒤로 뺐다.
      */
-    @Scheduled(cron = "${app.scheduler.message-retention-cron:0 20 6 * * *}", zone = KST)
+    @Scheduled(cron = "${app.scheduler.message-retention-cron:0 20 18 * * *}", zone = KST)
     public void purgeExpiredMessages() {
         schedulerService.purgeExpiredMessages();
     }

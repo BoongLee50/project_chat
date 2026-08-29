@@ -14,10 +14,6 @@
   "@loginTagline": {
     "description": "로그인 화면 상단 문구"
   },
-  "loginHours": "오후 5시 ~ 새벽 6시",
-  "@loginHours": {
-    "description": "운영시간 안내. 시각이 바뀌면 이 문구도 함께 고칠 것"
-  },
   "loginWithLine": "LINE으로 로그인",
   "loginWithKakao": "카카오톡으로 로그인",
   "loginWithGoogle": "Google로 로그인",
@@ -47,7 +43,6 @@
   "homeTitle": "오늘의 포스트",
   "homeTodayMoon": "오늘의 달",
   "homeMoonCrescent": "초승달",
-  "homeUploadRemaining": "포스트 등록 남은 시간",
   "homeLoadFailed": "포스트를 불러오지 못했어요.",
   "homePullToRefresh": "아래로 당겨 새로고침해 주세요.",
   "homeEmptyGreeting": "{nickname}님",
@@ -59,7 +54,6 @@
     }
   },
   "homeEmptyHint": "달빛 아래의 지금을 포스트해 보세요.\n새로운 대화의 시작이 될 수 있어요.",
-  "homeGateClosed": "지금은 포스트를 등록할 수 있는 시간이 아니에요.",
   "homeAlbumPass": "포스트 앨범 패스",
   "homeAlbumPassRemaining": "{days}일 남음",
   "@homeAlbumPassRemaining": {
@@ -87,10 +81,6 @@
       }
     }
   },
-  "homeOneLiner": "하루 한 마디",
-  "homeOneLinerHint": "오늘의 기분을 한 줄로 남겨보세요",
-  "homeOneLinerEmpty": "하루 한 마디를 입력해 주세요.",
-  "homeOneLinerWrite": "작성",
   "homeShare": "포스트 공유하기",
   "homeShareAgain": "공유됨 · 다시 공유하기",
   "homeShared": "포스트를 공유했어요 🌙",
@@ -111,8 +101,6 @@
   "gardenLoadFailed": "피드를 불러오지 못했어요.",
   "gardenEmptyTitle": "지금은 보여줄 포스트가 없어요.",
   "gardenEmptyDetail": "필터를 바꾸거나 잠시 후 다시 확인해 주세요.",
-  "gardenGateTitle": "달빛가든은 아직 문을 열지 않았어요.",
-  "gardenGateDescription": "달빛이 찾아오는 오후 5시부터\n다음날 오전 6시까지 이용할 수 있어요.",
   "gardenChatRequestTitle": "{nickname}님에게 대화 신청",
   "@gardenChatRequestTitle": {
     "placeholders": {
@@ -135,45 +123,6 @@
   "commentsHint": "댓글을 남겨보세요 (최대 25자)",
   "commentsEmpty": "첫 댓글을 남겨보세요.",
   "commentsLoadFailed": "댓글을 불러오지 못했어요.",
-  "gateOpensIn": "문 열리기까지",
-  "gateOpensAfter": "{remaining} 뒤에 열려요.",
-  "@gateOpensAfter": {
-    "placeholders": {
-      "remaining": {
-        "type": "String"
-      }
-    }
-  },
-  "durationHourMinute": "{hours}시간 {minutes}분",
-  "@durationHourMinute": {
-    "placeholders": {
-      "hours": {
-        "type": "int"
-      },
-      "minutes": {
-        "type": "int"
-      }
-    }
-  },
-  "durationMinuteSecond": "{minutes}분 {seconds}초",
-  "@durationMinuteSecond": {
-    "placeholders": {
-      "minutes": {
-        "type": "int"
-      },
-      "seconds": {
-        "type": "int"
-      }
-    }
-  },
-  "durationSecond": "{seconds}초",
-  "@durationSecond": {
-    "placeholders": {
-      "seconds": {
-        "type": "int"
-      }
-    }
-  },
   "chatRoomsTitle": "대화방",
   "chatRoomsSubtitle": "마음이 통하는 사람들과 이야기를 나눠보세요.",
   "chatTabMatch": "매칭 대화",
@@ -184,7 +133,6 @@
   "chatRoomsEmptySent": "보낸 대화 신청이 없어요.",
   "chatRoomsStart": "대화를 시작해보세요.",
   "chatRoomsOngoing": "대화 중",
-  "chatGateClosed": "지금은 매칭 대화를 나눌 수 있는 시간이 아니에요.\n친구와의 대화는 언제든 가능해요.",
   "commonAccept": "수락",
   "commonReject": "거절",
   "timeJustNow": "방금",
@@ -808,8 +756,6 @@
   "errorNicknameDuplicate": "이미 사용 중인 닉네임이에요.",
   "errorNicknameFormat": "닉네임은 특수문자·이모지 없이 10자 이내여야 해요.",
   "errorAgeRestricted": "만 18세 이상만 가입할 수 있어요.",
-  "errorPostGateClosed": "지금은 포스트를 등록할 수 있는 시간이 아니에요.",
-  "errorPostUploadWindowClosed": "포스트 등록 가능 시간이 끝났어요.",
   "errorPostOneLinerRequired": "하루 한 마디를 입력해 주세요.",
   "errorPostPhotoRequired": "새로운 포스트 사진을 등록해 주세요.",
   "errorPostPhotoNotFound": "사진을 찾을 수 없어요.",
@@ -818,11 +764,9 @@
   "errorPostReplaceLimit": "오늘의 사진 교체 횟수를 모두 썼어요. 내일 다시 이용해 주세요.",
   "errorPostReplaceFreeLimit": "무료로는 하루 2장까지 교체할 수 있어요. 앨범 패스가 있으면 시간 제한 없이 하루 20장까지 바꿀 수 있어요.",
   "errorPostNotPublishedToday": "오늘 등록된 포스트가 없어요.",
-  "errorGardenGateClosed": "달빛가든은 아직 문을 열지 않았어요. 오후 5시부터 다음 날 오전 6시까지 이용할 수 있어요.",
   "errorGardenTargetBlocked": "지금은 이 사용자에게 댓글을 남길 수 없어요.",
   "errorTranslateQuotaExceeded": "오늘의 무료 번역을 모두 사용했어요. 자동 번역 패스를 이용해 보세요.",
   "errorTranslateTargetRequired": "번역할 상대를 지정해 주세요.",
-  "errorChatGateClosed": "달빛이 찾아오는 오후 5시부터 다음 날 오전 6시까지 대화할 수 있어요.",
   "errorChatSelf": "자신에게는 대화를 신청할 수 없어요.",
   "errorChatTargetBlocked": "지금은 이 사용자에게 대화를 신청할 수 없어요.",
   "errorChatRequestPending": "이미 대화를 신청했어요. 상대의 응답을 기다려 주세요.",

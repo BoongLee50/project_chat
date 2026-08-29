@@ -152,7 +152,7 @@ class FriendPost {
     required this.comments,
     this.age,
     this.country,
-    this.oneLiner,
+    this.intro,
     this.publishedAt,
   });
 
@@ -168,7 +168,7 @@ class FriendPost {
   final int comments;
   final int? age;
   final String? country;
-  final String? oneLiner;
+  final String? intro;
   final DateTime? publishedAt;
 
   String get flag => switch (country) {
@@ -189,7 +189,7 @@ class FriendPost {
     comments: json['comments'] as int? ?? 0,
     age: json['age'] as int?,
     country: json['country'] as String?,
-    oneLiner: json['oneLiner'] as String?,
+    intro: json['intro'] as String?,
     publishedAt: parseServerTime(json['publishedAt']),
   );
 }

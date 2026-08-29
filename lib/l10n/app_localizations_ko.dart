@@ -33,9 +33,6 @@ class L10nKo extends L10n {
   String get loginTagline => '밤에만 열리는 채팅의 시간';
 
   @override
-  String get loginHours => '오후 5시 ~ 새벽 6시';
-
-  @override
   String get loginWithLine => 'LINE으로 로그인';
 
   @override
@@ -123,9 +120,6 @@ class L10nKo extends L10n {
   String get homeMoonCrescent => '초승달';
 
   @override
-  String get homeUploadRemaining => '포스트 등록 남은 시간';
-
-  @override
   String get homeLoadFailed => '포스트를 불러오지 못했어요.';
 
   @override
@@ -138,9 +132,6 @@ class L10nKo extends L10n {
 
   @override
   String get homeEmptyHint => '달빛 아래의 지금을 포스트해 보세요.\n새로운 대화의 시작이 될 수 있어요.';
-
-  @override
-  String get homeGateClosed => '지금은 포스트를 등록할 수 있는 시간이 아니에요.';
 
   @override
   String get homeAlbumPass => '포스트 앨범 패스';
@@ -165,18 +156,6 @@ class L10nKo extends L10n {
   String homeBoostStock(int count) {
     return '보유 $count매';
   }
-
-  @override
-  String get homeOneLiner => '하루 한 마디';
-
-  @override
-  String get homeOneLinerHint => '오늘의 기분을 한 줄로 남겨보세요';
-
-  @override
-  String get homeOneLinerEmpty => '하루 한 마디를 입력해 주세요.';
-
-  @override
-  String get homeOneLinerWrite => '작성';
 
   @override
   String get homeShare => '포스트 공유하기';
@@ -220,13 +199,6 @@ class L10nKo extends L10n {
   String get gardenEmptyDetail => '필터를 바꾸거나 잠시 후 다시 확인해 주세요.';
 
   @override
-  String get gardenGateTitle => '달빛가든은 아직 문을 열지 않았어요.';
-
-  @override
-  String get gardenGateDescription =>
-      '달빛이 찾아오는 오후 5시부터\n다음날 오전 6시까지 이용할 수 있어요.';
-
-  @override
   String gardenChatRequestTitle(String nickname) {
     return '$nickname님에게 대화 신청';
   }
@@ -253,29 +225,6 @@ class L10nKo extends L10n {
 
   @override
   String get commentsLoadFailed => '댓글을 불러오지 못했어요.';
-
-  @override
-  String get gateOpensIn => '문 열리기까지';
-
-  @override
-  String gateOpensAfter(String remaining) {
-    return '$remaining 뒤에 열려요.';
-  }
-
-  @override
-  String durationHourMinute(int hours, int minutes) {
-    return '$hours시간 $minutes분';
-  }
-
-  @override
-  String durationMinuteSecond(int minutes, int seconds) {
-    return '$minutes분 $seconds초';
-  }
-
-  @override
-  String durationSecond(int seconds) {
-    return '$seconds초';
-  }
 
   @override
   String get chatRoomsTitle => '대화방';
@@ -306,10 +255,6 @@ class L10nKo extends L10n {
 
   @override
   String get chatRoomsOngoing => '대화 중';
-
-  @override
-  String get chatGateClosed =>
-      '지금은 매칭 대화를 나눌 수 있는 시간이 아니에요.\n친구와의 대화는 언제든 가능해요.';
 
   @override
   String get commonAccept => '수락';
@@ -1297,12 +1242,6 @@ class L10nKo extends L10n {
   String get errorAgeRestricted => '만 18세 이상만 가입할 수 있어요.';
 
   @override
-  String get errorPostGateClosed => '지금은 포스트를 등록할 수 있는 시간이 아니에요.';
-
-  @override
-  String get errorPostUploadWindowClosed => '포스트 등록 가능 시간이 끝났어요.';
-
-  @override
   String get errorPostOneLinerRequired => '하루 한 마디를 입력해 주세요.';
 
   @override
@@ -1328,10 +1267,6 @@ class L10nKo extends L10n {
   String get errorPostNotPublishedToday => '오늘 등록된 포스트가 없어요.';
 
   @override
-  String get errorGardenGateClosed =>
-      '달빛가든은 아직 문을 열지 않았어요. 오후 5시부터 다음 날 오전 6시까지 이용할 수 있어요.';
-
-  @override
   String get errorGardenTargetBlocked => '지금은 이 사용자에게 댓글을 남길 수 없어요.';
 
   @override
@@ -1340,9 +1275,6 @@ class L10nKo extends L10n {
 
   @override
   String get errorTranslateTargetRequired => '번역할 상대를 지정해 주세요.';
-
-  @override
-  String get errorChatGateClosed => '달빛이 찾아오는 오후 5시부터 다음 날 오전 6시까지 대화할 수 있어요.';
 
   @override
   String get errorChatSelf => '자신에게는 대화를 신청할 수 없어요.';

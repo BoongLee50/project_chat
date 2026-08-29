@@ -1,6 +1,6 @@
 package com.moonlighttalk.server.garden.service;
 
-import com.moonlighttalk.server.auth.service.GateService;
+import com.moonlighttalk.server.auth.service.SessionTimeService;
 import com.moonlighttalk.server.common.exception.ApiException;
 import com.moonlighttalk.server.common.response.ErrorCode;
 import com.moonlighttalk.server.common.storage.FileStorageService;
@@ -43,7 +43,7 @@ public class GardenService {
     private static final String USAGE_COMMENT_TRANSLATE = "COMMENT_TRANSLATE";
 
     private final GardenMapper gardenMapper;
-    private final GateService gateService;
+    private final SessionTimeService sessionTime;
     private final PresenceService presenceService;
     private final FileStorageService fileStorageService;
     private final TranslationProvider translationProvider;
@@ -60,7 +60,7 @@ public class GardenService {
     private final int scoreOnline;
 
     public GardenService(GardenMapper gardenMapper,
-                          GateService gateService,
+                          SessionTimeService sessionTime,
                           PresenceService presenceService,
                           FileStorageService fileStorageService,
                           TranslationProvider translationProvider,
@@ -71,7 +71,7 @@ public class GardenService {
                           @Value("${app.garden.score-pick:50}") int scorePick,
                           @Value("${app.garden.score-online:10}") int scoreOnline) {
         this.gardenMapper = gardenMapper;
-        this.gateService = gateService;
+        this.sessionTime = sessionTime;
         this.presenceService = presenceService;
         this.fileStorageService = fileStorageService;
         this.translationProvider = translationProvider;
@@ -92,9 +92,8 @@ public class GardenService {
     @Transactional
     public FeedPageDto feed(String userId, String gender, Integer age, String country,
                              String cursor, boolean spotlight) {
-        requireGateOpen();
 
-        LocalDate sessionDate = gateService.currentSessionDate();
+        LocalDate sessionDate = sessionTime.currentSessionDate();
         Integer ageMin = age == null ? null : age;
         Integer ageMax = age == null ? null : age + 9;
 
@@ -139,15 +138,13 @@ public class GardenService {
     /** 좋아요 +1(전환율 분자). */
     @Transactional
     public void like(String userId, String targetUserId) {
-        requireGateOpen();
-        gardenMapper.incrementStat(targetUserId, gateService.currentSessionDate(), "likes", 1);
+        gardenMapper.incrementStat(targetUserId, sessionTime.currentSessionDate(), "likes", 1);
     }
 
     /** 스킵 — 당일 재노출 대상에서 제외. */
     @Transactional
     public void skip(String userId, String targetUserId) {
-        requireGateOpen();
-        gardenMapper.insertSkip(userId, targetUserId, gateService.currentSessionDate());
+        gardenMapper.insertSkip(userId, targetUserId, sessionTime.currentSessionDate());
     }
 
     public List<CommentDto> comments(String targetUserId) {
@@ -160,7 +157,6 @@ public class GardenService {
 
     @Transactional
     public void addComment(String userId, String targetUserId, String body) {
-        requireGateOpen();
         if (gardenMapper.existsBlockOrReport(userId, targetUserId)) {
             throw new ApiException(ErrorCode.GARDEN_TARGET_BLOCKED, HttpStatus.CONFLICT,
                     "현재 이 사용자에게 댓글을 남길 수 없어요.");
@@ -198,7 +194,7 @@ public class GardenService {
             return TranslateResponse.unlimited(translated(request), provider);
         }
 
-        LocalDate sessionDate = gateService.currentSessionDate();
+        LocalDate sessionDate = sessionTime.currentSessionDate();
         int remaining = request.scope() == TranslateScope.CHAT
                 ? consumeChatQuota(userId, sessionDate, request.targetId())
                 : consumeCommentQuota(userId, sessionDate);
@@ -252,11 +248,11 @@ public class GardenService {
         return new FeedItemDto(
                 c.getUserId(),
                 c.getNickname(),
-                c.getBirthYear() == null ? null : gateService.nowKst().getYear() - c.getBirthYear(),
+                c.getBirthYear() == null ? null : sessionTime.nowKst().getYear() - c.getBirthYear(),
                 c.getCountry(),
                 boosted, // PICK 마크 = 부스트 활성 여부
                 presenceService.isOnline(c.getUserId()),
-                c.getOneLiner(),
+                c.getIntro(),
                 photoUrls,
                 gardenMapper.selectInterests(c.getUserId()),
                 c.getLikes(),
@@ -273,7 +269,7 @@ public class GardenService {
 
     private int recencyScore(LocalDateTime publishedAt) {
         if (publishedAt == null) return 0;
-        long hours = Duration.between(publishedAt, gateService.nowKst().toLocalDateTime()).toHours();
+        long hours = Duration.between(publishedAt, sessionTime.nowKst().toLocalDateTime()).toHours();
         if (hours < 1) return 20;
         if (hours <= 3) return 10;
         return 0;
@@ -291,19 +287,12 @@ public class GardenService {
     }
 
     private String requireTodayPostId(String targetUserId) {
-        String postId = gardenMapper.selectTodayPostId(targetUserId, gateService.currentSessionDate());
+        String postId = gardenMapper.selectTodayPostId(targetUserId, sessionTime.currentSessionDate());
         if (postId == null) {
             throw new ApiException(ErrorCode.POST_NOT_PUBLISHED_TODAY, HttpStatus.NOT_FOUND,
                     "오늘 등록된 포스트가 없어요.");
         }
         return postId;
-    }
-
-    private void requireGateOpen() {
-        if (!gateService.isOpenNow()) {
-            throw new ApiException(ErrorCode.GARDEN_GATE_CLOSED, HttpStatus.CONFLICT,
-                    "달빛가든은 아직 문을 열지 않았어요. 달빛이 찾아오는 오후 5시부터 다음날 오전 6시까지 이용할 수 있습니다.");
-        }
     }
 
     private static String emptyToNull(String value) {

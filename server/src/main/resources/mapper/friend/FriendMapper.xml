@@ -104,7 +104,7 @@
         <result property="nickname" column="nickname"/>
         <result property="birthYear" column="birth_year"/>
         <result property="country" column="country"/>
-        <result property="oneLiner" column="one_liner"/>
+        <result property="intro" column="intro"/>
         <result property="publishedAt" column="published_at"/>
         <result property="likes" column="likes"/>
     </resultMap>
@@ -116,13 +116,14 @@
                u.nickname,
                u.birth_year,
                u.country,
-               p.one_liner,
+               pr.intro,
                p.published_at,
                COALESCE(s.likes, 0) AS likes
         FROM posts p
                  JOIN users u ON u.id = p.user_id
                  LEFT JOIN post_stats s
                            ON s.user_id = p.user_id AND s.session_date = p.session_date
+                 LEFT JOIN user_profiles pr ON pr.user_id = u.id
         WHERE p.user_id = #{userId}
           AND p.session_date = #{sessionDate}
           AND p.published_at IS NOT NULL

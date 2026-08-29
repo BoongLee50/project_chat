@@ -50,7 +50,6 @@ class LoginScreen extends ConsumerWidget {
               child: Column(
                 children: const [
                   Spacer(), // 상단 풍경(타이틀 포함)이 보이도록 밀어냄
-                  _TimeBadge(),
                   SizedBox(height: AppDimens.gapLg),
                   _SocialButtons(),
                   SizedBox(height: AppDimens.gapLg),
@@ -65,56 +64,6 @@ class LoginScreen extends ConsumerWidget {
   }
 }
 
-/// "밤 6시 ~ 새벽 5시" 운영시간 배지.
-class _TimeBadge extends StatelessWidget {
-  const _TimeBadge();
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = L10n.of(context);
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-      decoration: BoxDecoration(
-        color: AppColors.glass,
-        borderRadius: BorderRadius.circular(AppDimens.radiusMd),
-        border: Border.all(color: AppColors.borderSoft),
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.nightlight_round,
-              color: AppColors.moonlight, size: 30),
-          const SizedBox(width: 14),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                l10n.loginHours,
-                style: const TextStyle(
-                  color: AppColors.textPrimary,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                l10n.loginTagline,
-                style: const TextStyle(
-                  color: AppColors.textSecondary,
-                  fontSize: 13,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// 소셜 로그인 버튼 3종.
 class _SocialButtons extends ConsumerWidget {
   const _SocialButtons();
 

@@ -15,11 +15,6 @@ public interface PostMapper {
     Post selectByUserAndDate(@Param("userId") String userId, @Param("sessionDate") LocalDate sessionDate);
 
     void insertPost(Post post);
-
-    void updateWindowStartedAt(@Param("postId") String postId, @Param("startedAt") LocalDateTime startedAt);
-
-    void updateOneLiner(@Param("postId") String postId, @Param("oneLiner") String oneLiner);
-
     void updatePublishedAt(@Param("postId") String postId, @Param("publishedAt") LocalDateTime publishedAt);
 
     void incrementReplaceCount(@Param("postId") String postId);

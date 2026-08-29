@@ -33,9 +33,6 @@ class L10nJa extends L10n {
   String get loginTagline => '夜だけ開くチャットの時間';
 
   @override
-  String get loginHours => '午後5時 〜 午前6時';
-
-  @override
   String get loginWithLine => 'LINEでログイン';
 
   @override
@@ -123,9 +120,6 @@ class L10nJa extends L10n {
   String get homeMoonCrescent => '三日月';
 
   @override
-  String get homeUploadRemaining => 'ポスト登録の残り時間';
-
-  @override
   String get homeLoadFailed => 'ポストを読み込めませんでした。';
 
   @override
@@ -138,9 +132,6 @@ class L10nJa extends L10n {
 
   @override
   String get homeEmptyHint => '月明かりの下の今をポストしてみましょう。\n新しい会話のきっかけになるかもしれません。';
-
-  @override
-  String get homeGateClosed => '今はポストを登録できる時間ではありません。';
 
   @override
   String get homeAlbumPass => 'ポストアルバムパス';
@@ -165,18 +156,6 @@ class L10nJa extends L10n {
   String homeBoostStock(int count) {
     return '保有$count枚';
   }
-
-  @override
-  String get homeOneLiner => '今日のひとこと';
-
-  @override
-  String get homeOneLinerHint => '今日の気分を一言で残してみましょう';
-
-  @override
-  String get homeOneLinerEmpty => '今日のひとことを入力してください。';
-
-  @override
-  String get homeOneLinerWrite => '作成';
 
   @override
   String get homeShare => 'ポストを共有する';
@@ -220,12 +199,6 @@ class L10nJa extends L10n {
   String get gardenEmptyDetail => 'フィルターを変えるか、しばらくしてからご確認ください。';
 
   @override
-  String get gardenGateTitle => '月光ガーデンはまだ開いていません。';
-
-  @override
-  String get gardenGateDescription => '月明かりが訪れる午後5時から\n翌朝6時までご利用いただけます。';
-
-  @override
   String gardenChatRequestTitle(String nickname) {
     return '$nicknameさんに会話をリクエスト';
   }
@@ -252,29 +225,6 @@ class L10nJa extends L10n {
 
   @override
   String get commentsLoadFailed => 'コメントを読み込めませんでした。';
-
-  @override
-  String get gateOpensIn => '開くまで';
-
-  @override
-  String gateOpensAfter(String remaining) {
-    return '$remaining後に開きます。';
-  }
-
-  @override
-  String durationHourMinute(int hours, int minutes) {
-    return '$hours時間$minutes分';
-  }
-
-  @override
-  String durationMinuteSecond(int minutes, int seconds) {
-    return '$minutes分$seconds秒';
-  }
-
-  @override
-  String durationSecond(int seconds) {
-    return '$seconds秒';
-  }
 
   @override
   String get chatRoomsTitle => 'チャットルーム';
@@ -305,9 +255,6 @@ class L10nJa extends L10n {
 
   @override
   String get chatRoomsOngoing => '会話中';
-
-  @override
-  String get chatGateClosed => '今はマッチトークができる時間ではありません。\n友だちとの会話はいつでも可能です。';
 
   @override
   String get commonAccept => '承認';
@@ -1294,12 +1241,6 @@ class L10nJa extends L10n {
   String get errorAgeRestricted => '18歳以上のみ登録できます。';
 
   @override
-  String get errorPostGateClosed => '今はポストを登録できる時間ではありません。';
-
-  @override
-  String get errorPostUploadWindowClosed => 'ポストの登録可能時間が終了しました。';
-
-  @override
   String get errorPostOneLinerRequired => '今日のひとことを入力してください。';
 
   @override
@@ -1325,9 +1266,6 @@ class L10nJa extends L10n {
   String get errorPostNotPublishedToday => '今日登録されたポストがありません。';
 
   @override
-  String get errorGardenGateClosed => '月光ガーデンはまだ開いていません。午後5時から翌朝6時までご利用いただけます。';
-
-  @override
   String get errorGardenTargetBlocked => '今はこのユーザーにコメントを残せません。';
 
   @override
@@ -1335,9 +1273,6 @@ class L10nJa extends L10n {
 
   @override
   String get errorTranslateTargetRequired => '翻訳する相手を指定してください。';
-
-  @override
-  String get errorChatGateClosed => '月明かりが訪れる午後5時から翌朝6時まで会話できます。';
 
   @override
   String get errorChatSelf => '自分自身には会話を申し込めません。';

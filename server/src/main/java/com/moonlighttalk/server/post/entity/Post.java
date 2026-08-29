@@ -13,10 +13,8 @@ public class Post {
     private String id;
     private String userId;
     private LocalDate sessionDate;
-    private String oneLiner;
     private LocalDateTime publishedAt;
     /** 등록 가능 창 시작(일반 사용자 1시간 계산 기준). */
-    private LocalDateTime windowStartedAt;
     /** 당일 사진 교체(삭제) 횟수. */
     private int replaceCount;
 }

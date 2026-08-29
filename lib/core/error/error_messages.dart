@@ -24,8 +24,6 @@ String errorMessage(L10n l10n, ApiException e) {
     'AGE_RESTRICTED' => l10n.errorAgeRestricted,
 
     // ── post ─────────────────────────────────────────
-    'POST_GATE_CLOSED' => l10n.errorPostGateClosed,
-    'POST_UPLOAD_WINDOW_CLOSED' => l10n.errorPostUploadWindowClosed,
     'POST_ONELINER_REQUIRED' => l10n.errorPostOneLinerRequired,
     'POST_PHOTO_REQUIRED' => l10n.errorPostPhotoRequired,
     'POST_PHOTO_NOT_FOUND' => l10n.errorPostPhotoNotFound,
@@ -36,7 +34,6 @@ String errorMessage(L10n l10n, ApiException e) {
     'POST_NOT_PUBLISHED_TODAY' => l10n.errorPostNotPublishedToday,
 
     // ── garden ───────────────────────────────────────
-    'GARDEN_GATE_CLOSED' => l10n.errorGardenGateClosed,
     'GARDEN_TARGET_BLOCKED' => l10n.errorGardenTargetBlocked,
 
     // ── translate ────────────────────────────────────
@@ -44,7 +41,6 @@ String errorMessage(L10n l10n, ApiException e) {
     'TRANSLATE_TARGET_REQUIRED' => l10n.errorTranslateTargetRequired,
 
     // ── chat ─────────────────────────────────────────
-    'CHAT_GATE_CLOSED' => l10n.errorChatGateClosed,
     'CHAT_SELF' => l10n.errorChatSelf,
     'CHAT_TARGET_BLOCKED' => l10n.errorChatTargetBlocked,
     'CHAT_REQUEST_PENDING' => l10n.errorChatRequestPending,

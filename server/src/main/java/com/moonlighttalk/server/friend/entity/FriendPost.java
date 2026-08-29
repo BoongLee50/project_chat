@@ -10,7 +10,7 @@ public class FriendPost {
     private String nickname;
     private Integer birthYear;
     private String country;
-    private String oneLiner;
+    private String intro;
     private LocalDateTime publishedAt;
     private int likes;
 
@@ -54,12 +54,12 @@ public class FriendPost {
         this.country = country;
     }
 
-    public String getOneLiner() {
-        return oneLiner;
+    public String getIntro() {
+        return intro;
     }
 
-    public void setOneLiner(String oneLiner) {
-        this.oneLiner = oneLiner;
+    public void setIntro(String intro) {
+        this.intro = intro;
     }
 
     public LocalDateTime getPublishedAt() {

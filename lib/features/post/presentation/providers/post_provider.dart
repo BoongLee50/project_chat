@@ -24,8 +24,6 @@ class MyPostController extends AsyncNotifier<MyPost> {
   Future<ApiException?> deletePhoto(String photoId) =>
       _run(() => ref.read(postApiProvider).deletePhoto(photoId));
 
-  Future<ApiException?> updateOneLiner(String text) =>
-      _run(() => ref.read(postApiProvider).updateOneLiner(text));
 
   Future<ApiException?> publish() => _run(() => ref.read(postApiProvider).publish());
 

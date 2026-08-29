@@ -1,6 +1,6 @@
 package com.moonlighttalk.server.store.service;
 
-import com.moonlighttalk.server.auth.service.GateService;
+import com.moonlighttalk.server.auth.service.SessionTimeService;
 import com.moonlighttalk.server.common.exception.ApiException;
 import com.moonlighttalk.server.common.response.ErrorCode;
 import com.moonlighttalk.server.luna.service.LunaService;
@@ -38,18 +38,18 @@ public class StoreService {
     private final StoreMapper storeMapper;
     private final LunaService lunaService;
     private final EntitlementService entitlementService;
-    private final GateService gateService;
+    private final SessionTimeService sessionTime;
 
     public StoreService(StoreProperties properties,
                          StoreMapper storeMapper,
                          LunaService lunaService,
                          EntitlementService entitlementService,
-                         GateService gateService) {
+                         SessionTimeService sessionTime) {
         this.properties = properties;
         this.storeMapper = storeMapper;
         this.lunaService = lunaService;
         this.entitlementService = entitlementService;
-        this.gateService = gateService;
+        this.sessionTime = sessionTime;
     }
 
     /** 카탈로그. 가격·구성은 설정에서 온다(코드 하드코딩 금지 — 01 §1.8). */
@@ -145,7 +145,7 @@ public class StoreService {
         activation.setId(UUID.randomUUID().toString());
         activation.setUserId(userId);
         activation.setKind(kind);
-        activation.setSessionDate(gateService.currentSessionDate());
+        activation.setSessionDate(sessionTime.currentSessionDate());
         activation.setStartedAt(now);
         activation.setExpiresAt(now.plusHours(BOOST_HOURS));
         storeMapper.insertBoostActivation(activation);

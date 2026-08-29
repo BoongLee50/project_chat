@@ -16,7 +16,7 @@ public record FriendPostDto(
         boolean pick,
         boolean online,
         List<String> photoUrls,
-        String oneLiner,
+        String intro,
         int likes,
         int comments,
         LocalDateTime publishedAt

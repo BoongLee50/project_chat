@@ -2,7 +2,7 @@ package com.moonlighttalk.server.friend.service;
 
 import com.moonlighttalk.server.auth.entity.User;
 import com.moonlighttalk.server.auth.mapper.UserMapper;
-import com.moonlighttalk.server.auth.service.GateService;
+import com.moonlighttalk.server.auth.service.SessionTimeService;
 import com.moonlighttalk.server.chat.entity.ChatRoom;
 import com.moonlighttalk.server.chat.mapper.ChatMapper;
 import com.moonlighttalk.server.chat.socket.Opcodes;
@@ -50,7 +50,7 @@ public class FriendService {
     private final ChatMapper chatMapper;
     private final UserMapper userMapper;
     private final GardenMapper gardenMapper;
-    private final GateService gateService;
+    private final SessionTimeService sessionTime;
     private final PresenceService presenceService;
     private final EntitlementService entitlementService;
     private final SocketRegistry socketRegistry;
@@ -67,18 +67,18 @@ public class FriendService {
                           ChatMapper chatMapper,
                           UserMapper userMapper,
                           GardenMapper gardenMapper,
-                          GateService gateService,
+                          SessionTimeService sessionTime,
                           PresenceService presenceService,
                           EntitlementService entitlementService,
                           SocketRegistry socketRegistry,
                           FileStorageService fileStorageService,
-                          @Value("${app.friend.max-count:20}") int maxFriends,
-                          @Value("${app.friend.max-count-premium:30}") int maxFriendsPremium) {
+                          @Value("${app.friend.max-count:100}") int maxFriends,
+                          @Value("${app.friend.max-count-premium:100}") int maxFriendsPremium) {
         this.friendMapper = friendMapper;
         this.chatMapper = chatMapper;
         this.userMapper = userMapper;
         this.gardenMapper = gardenMapper;
-        this.gateService = gateService;
+        this.sessionTime = sessionTime;
         this.presenceService = presenceService;
         this.entitlementService = entitlementService;
         this.socketRegistry = socketRegistry;
@@ -235,7 +235,7 @@ public class FriendService {
         }
 
         String friendId = friendship.otherOf(userId);
-        FriendPost post = friendMapper.selectTodayPost(friendId, gateService.currentSessionDate());
+        FriendPost post = friendMapper.selectTodayPost(friendId, sessionTime.currentSessionDate());
         if (post == null) {
             throw new ApiException(ErrorCode.FRIEND_NO_TODAY_POST, HttpStatus.NOT_FOUND,
                     "친구가 아직 오늘의 포스트를 공유하지 않았어요.");
@@ -253,7 +253,7 @@ public class FriendService {
                 entitlementService.boostedUserIds().contains(friendId),
                 presenceService.isOnline(friendId),
                 photoUrls,
-                post.getOneLiner(),
+                post.getIntro(),
                 post.getLikes(),
                 gardenMapper.countComments(post.getPostId()),
                 post.getPublishedAt());
@@ -357,7 +357,7 @@ public class FriendService {
     }
 
     private Integer age(Integer birthYear) {
-        return birthYear == null ? null : gateService.nowKst().getYear() - birthYear;
+        return birthYear == null ? null : sessionTime.nowKst().getYear() - birthYear;
     }
 
     private String photoUrl(String photoKey) {

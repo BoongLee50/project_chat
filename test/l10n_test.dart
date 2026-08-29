@@ -145,7 +145,7 @@ Map<String, String> _samples(L10n l) => {
   'homeTitle': l.homeTitle,
   'gardenTitle': l.gardenTitle,
   'commentsSection': l.commentsSection,
-  'gateOpensIn': l.gateOpensIn,
+  'photoSheetPostTitle': l.photoSheetPostTitle,
   'chatRoomsTitle': l.chatRoomsTitle,
   'chatInputHint': l.chatInputHint,
   'friendsTitle': l.friendsTitle,

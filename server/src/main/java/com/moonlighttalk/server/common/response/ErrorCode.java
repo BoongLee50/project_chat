@@ -23,9 +23,6 @@ public enum ErrorCode {
     AGE_RESTRICTED,
 
     // ── post ───────────────────────────────────────────
-    POST_GATE_CLOSED,
-    POST_UPLOAD_WINDOW_CLOSED,
-    POST_ONELINER_REQUIRED,
     POST_PHOTO_REQUIRED,
     POST_PHOTO_NOT_FOUND,
     POST_PHOTO_NOT_MINE,
@@ -35,7 +32,6 @@ public enum ErrorCode {
     POST_NOT_PUBLISHED_TODAY,
 
     // ── garden ─────────────────────────────────────────
-    GARDEN_GATE_CLOSED,
     GARDEN_TARGET_BLOCKED,
 
     // ── translate ──────────────────────────────────────
@@ -43,7 +39,6 @@ public enum ErrorCode {
     TRANSLATE_TARGET_REQUIRED,
 
     // ── chat ───────────────────────────────────────────
-    CHAT_GATE_CLOSED,
     CHAT_SELF,
     CHAT_TARGET_BLOCKED,
     CHAT_REQUEST_PENDING,

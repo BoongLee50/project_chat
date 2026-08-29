@@ -2,7 +2,7 @@ package com.moonlighttalk.server.chat.service;
 
 import com.moonlighttalk.server.auth.entity.User;
 import com.moonlighttalk.server.auth.mapper.UserMapper;
-import com.moonlighttalk.server.auth.service.GateService;
+import com.moonlighttalk.server.auth.service.SessionTimeService;
 import com.moonlighttalk.server.chat.dto.*;
 import com.moonlighttalk.server.chat.entity.*;
 import com.moonlighttalk.server.chat.mapper.ChatMapper;
@@ -45,7 +45,7 @@ public class ChatService {
     private final UserMapper userMapper;
     private final GardenMapper gardenMapper;
     private final LunaService lunaService;
-    private final GateService gateService;
+    private final SessionTimeService sessionTime;
     private final SocketRegistry socketRegistry;
     private final FileStorageService fileStorageService;
     private final EntitlementService entitlementService;
@@ -69,18 +69,18 @@ public class ChatService {
                         UserMapper userMapper,
                         GardenMapper gardenMapper,
                         LunaService lunaService,
-                        GateService gateService,
+                        SessionTimeService sessionTime,
                         SocketRegistry socketRegistry,
                         FileStorageService fileStorageService,
                         EntitlementService entitlementService,
                         @Value("${app.chat.request-luna-cost:5}") int lunaCost,
-                        @Value("${app.chat.free-requests-per-day:2}") int freeRequestsPerDay,
+                        @Value("${app.chat.free-requests-per-day:10}") int freeRequestsPerDay,
                         @Value("${app.chat.voice-max-duration-ms:30000}") int voiceMaxDurationMs) {
         this.chatMapper = chatMapper;
         this.userMapper = userMapper;
         this.gardenMapper = gardenMapper;
         this.lunaService = lunaService;
-        this.gateService = gateService;
+        this.sessionTime = sessionTime;
         this.socketRegistry = socketRegistry;
         this.fileStorageService = fileStorageService;
         this.entitlementService = entitlementService;
@@ -94,7 +94,6 @@ public class ChatService {
     /** 대화 신청 생성 — 무료 2회 소진 후 루나 5 차감. 성공 시 상대에게 소켓 알림. */
     @Transactional
     public void createRequest(String userId, String targetUserId, String message) {
-        requireGateOpen();
         if (userId.equals(targetUserId)) {
             throw new ApiException(ErrorCode.CHAT_SELF, HttpStatus.BAD_REQUEST,
                     "자신에게는 대화를 신청할 수 없어요.");
@@ -114,7 +113,7 @@ public class ChatService {
         int cost = 0;
 
         if (!premium) {
-            int used = lunaService.dailyUsed(userId, gateService.currentSessionDate(), USAGE_CHAT_REQUEST);
+            int used = lunaService.dailyUsed(userId, sessionTime.currentSessionDate(), USAGE_CHAT_REQUEST);
             if (used >= freeRequestsPerDay) {
                 cost = lunaCost;
             }
@@ -126,7 +125,7 @@ public class ChatService {
                     "대화 신청에 필요한 루나가 부족해요.");
         }
         if (!premium) {
-            lunaService.useDaily(userId, gateService.currentSessionDate(), USAGE_CHAT_REQUEST);
+            lunaService.useDaily(userId, sessionTime.currentSessionDate(), USAGE_CHAT_REQUEST);
         }
 
         ChatRequestEntity request = new ChatRequestEntity();
@@ -139,7 +138,7 @@ public class ChatService {
         chatMapper.insertRequest(request);
 
         // 전환율(Engage) 반영 — 대화 신청도 분자에 포함(기획서 4-1)
-        gardenMapper.incrementStat(targetUserId, gateService.currentSessionDate(), "requests", 1);
+        gardenMapper.incrementStat(targetUserId, sessionTime.currentSessionDate(), "requests", 1);
 
         socketRegistry.sendTo(targetUserId, Packet.of(Opcodes.CHAT_REQ_INCOMING, Map.of(
                 "requestId", requestId,
@@ -153,7 +152,6 @@ public class ChatService {
     @Transactional
     public String acceptRequest(String userId, String requestId) {
         // 수락하면 매칭 대화방이 생기므로 운영시간 안에서만 가능하다.
-        requireGateOpen();
         ChatRequestEntity request = requireRequest(requestId);
         if (!request.getToUser().equals(userId)) {
             throw new ApiException(ErrorCode.CHAT_ACCEPT_NOT_RECEIVER, HttpStatus.FORBIDDEN,
@@ -308,10 +306,6 @@ public class ChatService {
     private ChatMessageDto saveAndDeliver(String userId, String roomId, String type,
                                           String body, String audioKey, Integer durationMs) {
         ChatRoom room = requireMemberRoom(userId, roomId);
-        // 친구 상시 대화방은 24시간 예외라 매칭 대화만 운영시간을 따진다(02 §4).
-        if (!"FRIEND".equals(room.getType())) {
-            requireGateOpen();
-        }
 
         ChatMessage message = new ChatMessage();
         message.setId(UUID.randomUUID().toString());
@@ -352,13 +346,6 @@ public class ChatService {
      * <p>거절·나가기·읽음·목록 조회는 막지 않는다 — 이미 벌어진 일을 정리하는 동작이라
      * 시간대와 무관하게 할 수 있어야 한다. 친구 관련 동작도 24시간 예외다.
      */
-    private void requireGateOpen() {
-        if (!gateService.isOpenNow()) {
-            throw new ApiException(ErrorCode.CHAT_GATE_CLOSED, HttpStatus.CONFLICT,
-                    "달빛이 찾아오는 오후 5시부터 다음날 오전 6시까지 대화할 수 있어요.");
-        }
-    }
-
     private void notifyRoomState(ChatRoom room, String state) {
         Packet packet = Packet.of(Opcodes.ROOM_STATE, Map.of(
                 "roomId", room.getId(), "state", state));
@@ -429,7 +416,7 @@ public class ChatService {
     }
 
     private Integer age(Integer birthYear) {
-        return birthYear == null ? null : gateService.nowKst().getYear() - birthYear;
+        return birthYear == null ? null : sessionTime.nowKst().getYear() - birthYear;
     }
 
     private String photoUrl(String photoKey) {

@@ -6,11 +6,9 @@ import '../../../../app/theme/app_dimens.dart';
 import '../../../../app/main_shell.dart';
 import '../../../../core/error/error_messages.dart';
 import '../../../../core/util/freshness.dart';
-import '../../../../shared/widgets/gate_notice.dart';
 import '../../../../shared/widgets/authed_image.dart';
 import '../../data/models/feed_item.dart';
 import '../../../chat/presentation/providers/chat_provider.dart';
-import '../../../auth/presentation/providers/gate_provider.dart';
 import '../../../profile/data/models/profile_catalog.dart';
 import '../../../store/presentation/screens/luna_store_screen.dart';
 import '../../../store/presentation/screens/prime_screen.dart';
@@ -29,15 +27,6 @@ class GardenScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = L10n.of(context);
-    // 달빛가든은 운영시간 밖이면 서버가 피드 자체를 막는다(가든 서비스 전 메서드).
-    // 그래서 에러 화면 대신 안내를 보여주고, 열리면 자동으로 되돌아온다.
-    if (!ref.watch(gateOpenProvider)) {
-      return GateClosedView(
-        title: l10n.gardenGateTitle,
-        description: l10n.gardenGateDescription,
-      );
-    }
-
     final feed = ref.watch(feedProvider);
     final scale = GardenArt.scaleOf(context);
 
@@ -525,7 +514,7 @@ class _FeedPagerState extends ConsumerState<_FeedPager> {
                     )
                   else
                     Text(
-                      item.oneLiner ?? '',
+                      item.intro ?? '',
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 16,

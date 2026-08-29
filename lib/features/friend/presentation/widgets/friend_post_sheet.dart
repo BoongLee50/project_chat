@@ -262,10 +262,10 @@ class _Content extends StatelessWidget {
                     ),
             ),
           ),
-          if (post.oneLiner != null && post.oneLiner!.isNotEmpty) ...[
+          if (post.intro != null && post.intro!.isNotEmpty) ...[
             const SizedBox(height: AppDimens.gapMd),
             Text(
-              post.oneLiner!,
+              post.intro!,
               textAlign: TextAlign.center,
               style: const TextStyle(
                 color: AppColors.textPrimary,

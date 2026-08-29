@@ -143,7 +143,7 @@ class FeedController extends AsyncNotifier<List<FeedItem>>
     country: item.country,
     pick: item.pick,
     online: item.online,
-    oneLiner: item.oneLiner,
+    intro: item.intro,
     photoUrls: item.photoUrls,
     interests: item.interests,
     likes: likes,

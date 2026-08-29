@@ -6,9 +6,7 @@
         <id property="id" column="id"/>
         <result property="userId" column="user_id"/>
         <result property="sessionDate" column="session_date"/>
-        <result property="oneLiner" column="one_liner"/>
         <result property="publishedAt" column="published_at"/>
-        <result property="windowStartedAt" column="window_started_at"/>
         <result property="replaceCount" column="replace_count"/>
     </resultMap>
 
@@ -26,17 +24,11 @@
     </select>
 
     <insert id="insertPost">
-        INSERT INTO posts (id, user_id, session_date, one_liner, published_at, window_started_at, replace_count)
-        VALUES (#{id}, #{userId}, #{sessionDate}, #{oneLiner}, #{publishedAt}, #{windowStartedAt}, #{replaceCount})
+        INSERT INTO posts (id, user_id, session_date, published_at, replace_count)
+        VALUES (#{id}, #{userId}, #{sessionDate}, #{publishedAt}, #{replaceCount})
     </insert>
 
-    <update id="updateWindowStartedAt">
-        UPDATE posts SET window_started_at = #{startedAt} WHERE id = #{postId}
-    </update>
 
-    <update id="updateOneLiner">
-        UPDATE posts SET one_liner = #{oneLiner} WHERE id = #{postId}
-    </update>
 
     <!-- 스킵 재노출 판정 기준(V8). 사진 등록·삭제·한마디 수정 때 서비스가 부른다. -->
     <update id="touchContentUpdatedAt">

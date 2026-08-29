@@ -16,7 +16,7 @@ public class FeedCandidate {
     private String gender;
     private String country;
     private boolean premium;
-    private String oneLiner;
+    private String intro;
     private LocalDateTime publishedAt;
     /** post_stats 집계(없으면 0). */
     private int exposures;

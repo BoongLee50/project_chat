@@ -2,7 +2,6 @@ package com.moonlighttalk.server.post.controller;
 
 import com.moonlighttalk.server.common.security.CurrentUserId;
 import com.moonlighttalk.server.post.dto.MyPostResponse;
-import com.moonlighttalk.server.post.dto.OneLinerRequest;
 import com.moonlighttalk.server.post.dto.RegisterPhotoRequest;
 import com.moonlighttalk.server.post.dto.UploadUrlResponse;
 import com.moonlighttalk.server.post.service.PostService;
@@ -42,10 +41,6 @@ public class PostController {
         postService.deletePhoto(userId, photoId);
     }
 
-    @PutMapping("/posts/one-liner")
-    public void updateOneLiner(@CurrentUserId String userId, @Valid @RequestBody OneLinerRequest request) {
-        postService.updateOneLiner(userId, request.oneLiner());
-    }
 
     @PostMapping("/posts:publish")
     public void publish(@CurrentUserId String userId) {

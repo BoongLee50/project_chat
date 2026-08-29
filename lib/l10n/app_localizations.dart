@@ -145,12 +145,6 @@ abstract class L10n {
   /// **'밤에만 열리는 채팅의 시간'**
   String get loginTagline;
 
-  /// 운영시간 안내. 시각이 바뀌면 이 문구도 함께 고칠 것
-  ///
-  /// In ko, this message translates to:
-  /// **'오후 5시 ~ 새벽 6시'**
-  String get loginHours;
-
   /// No description provided for @loginWithLine.
   ///
   /// In ko, this message translates to:
@@ -325,12 +319,6 @@ abstract class L10n {
   /// **'초승달'**
   String get homeMoonCrescent;
 
-  /// No description provided for @homeUploadRemaining.
-  ///
-  /// In ko, this message translates to:
-  /// **'포스트 등록 남은 시간'**
-  String get homeUploadRemaining;
-
   /// No description provided for @homeLoadFailed.
   ///
   /// In ko, this message translates to:
@@ -354,12 +342,6 @@ abstract class L10n {
   /// In ko, this message translates to:
   /// **'달빛 아래의 지금을 포스트해 보세요.\n새로운 대화의 시작이 될 수 있어요.'**
   String get homeEmptyHint;
-
-  /// No description provided for @homeGateClosed.
-  ///
-  /// In ko, this message translates to:
-  /// **'지금은 포스트를 등록할 수 있는 시간이 아니에요.'**
-  String get homeGateClosed;
 
   /// No description provided for @homeAlbumPass.
   ///
@@ -396,30 +378,6 @@ abstract class L10n {
   /// In ko, this message translates to:
   /// **'보유 {count}매'**
   String homeBoostStock(int count);
-
-  /// No description provided for @homeOneLiner.
-  ///
-  /// In ko, this message translates to:
-  /// **'하루 한 마디'**
-  String get homeOneLiner;
-
-  /// No description provided for @homeOneLinerHint.
-  ///
-  /// In ko, this message translates to:
-  /// **'오늘의 기분을 한 줄로 남겨보세요'**
-  String get homeOneLinerHint;
-
-  /// No description provided for @homeOneLinerEmpty.
-  ///
-  /// In ko, this message translates to:
-  /// **'하루 한 마디를 입력해 주세요.'**
-  String get homeOneLinerEmpty;
-
-  /// No description provided for @homeOneLinerWrite.
-  ///
-  /// In ko, this message translates to:
-  /// **'작성'**
-  String get homeOneLinerWrite;
 
   /// No description provided for @homeShare.
   ///
@@ -499,18 +457,6 @@ abstract class L10n {
   /// **'필터를 바꾸거나 잠시 후 다시 확인해 주세요.'**
   String get gardenEmptyDetail;
 
-  /// No description provided for @gardenGateTitle.
-  ///
-  /// In ko, this message translates to:
-  /// **'달빛가든은 아직 문을 열지 않았어요.'**
-  String get gardenGateTitle;
-
-  /// No description provided for @gardenGateDescription.
-  ///
-  /// In ko, this message translates to:
-  /// **'달빛이 찾아오는 오후 5시부터\n다음날 오전 6시까지 이용할 수 있어요.'**
-  String get gardenGateDescription;
-
   /// No description provided for @gardenChatRequestTitle.
   ///
   /// In ko, this message translates to:
@@ -558,36 +504,6 @@ abstract class L10n {
   /// In ko, this message translates to:
   /// **'댓글을 불러오지 못했어요.'**
   String get commentsLoadFailed;
-
-  /// No description provided for @gateOpensIn.
-  ///
-  /// In ko, this message translates to:
-  /// **'문 열리기까지'**
-  String get gateOpensIn;
-
-  /// No description provided for @gateOpensAfter.
-  ///
-  /// In ko, this message translates to:
-  /// **'{remaining} 뒤에 열려요.'**
-  String gateOpensAfter(String remaining);
-
-  /// No description provided for @durationHourMinute.
-  ///
-  /// In ko, this message translates to:
-  /// **'{hours}시간 {minutes}분'**
-  String durationHourMinute(int hours, int minutes);
-
-  /// No description provided for @durationMinuteSecond.
-  ///
-  /// In ko, this message translates to:
-  /// **'{minutes}분 {seconds}초'**
-  String durationMinuteSecond(int minutes, int seconds);
-
-  /// No description provided for @durationSecond.
-  ///
-  /// In ko, this message translates to:
-  /// **'{seconds}초'**
-  String durationSecond(int seconds);
 
   /// No description provided for @chatRoomsTitle.
   ///
@@ -648,12 +564,6 @@ abstract class L10n {
   /// In ko, this message translates to:
   /// **'대화 중'**
   String get chatRoomsOngoing;
-
-  /// No description provided for @chatGateClosed.
-  ///
-  /// In ko, this message translates to:
-  /// **'지금은 매칭 대화를 나눌 수 있는 시간이 아니에요.\n친구와의 대화는 언제든 가능해요.'**
-  String get chatGateClosed;
 
   /// No description provided for @commonAccept.
   ///
@@ -2443,18 +2353,6 @@ abstract class L10n {
   /// **'만 18세 이상만 가입할 수 있어요.'**
   String get errorAgeRestricted;
 
-  /// No description provided for @errorPostGateClosed.
-  ///
-  /// In ko, this message translates to:
-  /// **'지금은 포스트를 등록할 수 있는 시간이 아니에요.'**
-  String get errorPostGateClosed;
-
-  /// No description provided for @errorPostUploadWindowClosed.
-  ///
-  /// In ko, this message translates to:
-  /// **'포스트 등록 가능 시간이 끝났어요.'**
-  String get errorPostUploadWindowClosed;
-
   /// No description provided for @errorPostOneLinerRequired.
   ///
   /// In ko, this message translates to:
@@ -2503,12 +2401,6 @@ abstract class L10n {
   /// **'오늘 등록된 포스트가 없어요.'**
   String get errorPostNotPublishedToday;
 
-  /// No description provided for @errorGardenGateClosed.
-  ///
-  /// In ko, this message translates to:
-  /// **'달빛가든은 아직 문을 열지 않았어요. 오후 5시부터 다음 날 오전 6시까지 이용할 수 있어요.'**
-  String get errorGardenGateClosed;
-
   /// No description provided for @errorGardenTargetBlocked.
   ///
   /// In ko, this message translates to:
@@ -2526,12 +2418,6 @@ abstract class L10n {
   /// In ko, this message translates to:
   /// **'번역할 상대를 지정해 주세요.'**
   String get errorTranslateTargetRequired;
-
-  /// No description provided for @errorChatGateClosed.
-  ///
-  /// In ko, this message translates to:
-  /// **'달빛이 찾아오는 오후 5시부터 다음 날 오전 6시까지 대화할 수 있어요.'**
-  String get errorChatGateClosed;
 
   /// No description provided for @errorChatSelf.
   ///

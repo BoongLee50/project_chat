@@ -24,30 +24,19 @@ class PostPhoto {
 class MyPost {
   const MyPost({
     required this.sessionDate,
-    required this.gateOpen,
     required this.photos,
     required this.published,
-    required this.uploadUnlimited,
     required this.maxPhotos,
     required this.replaceRemaining,
-    this.oneLiner,
-    this.remainingUploadSeconds,
   });
 
-  /// 영업일(06시 롤오버 기준).
+  /// 영업일. **Plan_3부터 KST 18시에 넘어간다**(서버 `app.session.rollover-hour`).
   final String sessionDate;
 
-  /// 지금이 운영시간(17~06시)인지.
-  final bool gateOpen;
-
   final List<PostPhoto> photos;
-  final String? oneLiner;
   final bool published;
 
-  /// 남은 등록 가능 시간(초). 무제한(프라임/앨범패스)이면 null → "PASS" 표시.
-  final int? remainingUploadSeconds;
-
-  final bool uploadUnlimited;
+  /// 등록 가능한 최대 사진 수. 무료·앨범패스에 따라 서버가 정해 준다.
   final int maxPhotos;
   final int replaceRemaining;
 
@@ -59,25 +48,18 @@ class MyPost {
   /// 버튼을 그냥 죽여 두면 사용자는 고장으로 여긴다 —
   /// 눌렀을 때 이유를 알려주려고 조건을 코드로 나눠 둔다.
   /// 서버 `ErrorCode`와 같은 이름을 써서 문구를 그대로 재사용한다.
+  /// Plan_3에서 **운영시간 게이트와 등록 창(1시간)이 폐지**돼 남은 이유는 장수 초과뿐이다.
   String? get addPhotoBlockedReason {
-    if (!gateOpen) return 'POST_GATE_CLOSED';
     if (photos.length >= maxPhotos) return 'POST_PHOTO_LIMIT';
-    if (!uploadUnlimited && (remainingUploadSeconds ?? 0) <= 0) {
-      return 'POST_UPLOAD_WINDOW_CLOSED';
-    }
     return null;
   }
 
   factory MyPost.fromJson(Map<String, dynamic> json) => MyPost(
     sessionDate: json['sessionDate'] as String? ?? '',
-    gateOpen: json['gateOpen'] as bool? ?? false,
     photos: (json['photos'] as List? ?? const [])
         .map((e) => PostPhoto.fromJson(Map<String, dynamic>.from(e as Map)))
         .toList(),
-    oneLiner: json['oneLiner'] as String?,
     published: json['published'] as bool? ?? false,
-    remainingUploadSeconds: json['remainingUploadSeconds'] as int?,
-    uploadUnlimited: json['uploadUnlimited'] as bool? ?? false,
     maxPhotos: json['maxPhotos'] as int? ?? 2,
     replaceRemaining: json['replaceRemaining'] as int? ?? 0,
   );

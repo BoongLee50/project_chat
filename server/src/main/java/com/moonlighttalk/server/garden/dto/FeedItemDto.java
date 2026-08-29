@@ -15,7 +15,7 @@ public record FeedItemDto(
         String country,
         boolean pick,
         boolean online,
-        String oneLiner,
+        String intro,
         List<String> photoUrls,
         List<String> interests,
         int likes,

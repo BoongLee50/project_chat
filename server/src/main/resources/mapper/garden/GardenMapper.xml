@@ -10,7 +10,7 @@
         <result property="gender" column="gender"/>
         <result property="country" column="country"/>
         <result property="premium" column="is_premium"/>
-        <result property="oneLiner" column="one_liner"/>
+        <result property="intro" column="intro"/>
         <result property="publishedAt" column="published_at"/>
         <result property="exposures" column="exposures"/>
         <result property="likes" column="likes"/>
@@ -38,7 +38,7 @@
                u.gender,
                u.country,
                u.is_premium,
-               p.one_liner,
+               pr.intro,
                p.published_at,
                COALESCE(ps.exposures, 0) AS exposures,
                COALESCE(ps.likes, 0)     AS likes,

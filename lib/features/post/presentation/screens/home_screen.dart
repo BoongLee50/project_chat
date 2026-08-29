@@ -10,9 +10,7 @@ import '../../../../core/error/api_exception.dart';
 import '../../../../core/error/error_messages.dart';
 import '../../../../core/providers.dart';
 import '../../../../l10n/app_localizations.dart';
-import '../../../../shared/widgets/gate_notice.dart';
 import '../../../../shared/widgets/photo_source_sheet.dart';
-import '../../../auth/presentation/providers/gate_provider.dart';
 import '../../../auth/presentation/providers/session_provider.dart';
 import '../../../store/data/models/store_models.dart';
 import '../../../store/presentation/providers/store_provider.dart';
@@ -114,7 +112,6 @@ class _PostBody extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = L10n.of(context);
     return SingleChildScrollView(
       physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.fromLTRB(
@@ -128,9 +125,6 @@ class _PostBody extends ConsumerWidget {
         children: [
           const _TopBar(),
           const SizedBox(height: AppDimens.gapMd),
-          // 운영시간 밖에는 사진 등록·공유만 막힌다(하루 한 마디는 언제든 가능).
-          if (!ref.watch(gateOpenProvider))
-            GateBanner(message: l10n.homeGateClosed),
           _InfoCards(post: post),
           const SizedBox(height: AppDimens.gapMd),
           _PostPhotoCard(post: post),
@@ -139,7 +133,6 @@ class _PostBody extends ConsumerWidget {
           const SizedBox(height: AppDimens.gapMd),
           const _BoostRow(),
           const SizedBox(height: AppDimens.gapLg),
-          _OneLiner(post: post),
           const SizedBox(height: AppDimens.gapLg),
           _ShareButton(post: post),
         ],
@@ -301,44 +294,8 @@ class _InfoCards extends StatelessWidget {
             ),
           ),
         ),
-        const SizedBox(width: AppDimens.gapMd),
-        Expanded(
-          child: _InfoCard(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  l10n.homeUploadRemaining,
-                  style: TextStyle(
-                    color: AppColors.textSecondary,
-                    fontSize: 13,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  _remainingLabel(post),
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
-                    fontSize: 20,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
       ],
     );
-  }
-
-  /// 프라임/앨범패스는 시간 제한이 없어 "PASS"로 표시한다(기획서 3-1).
-  static String _remainingLabel(MyPost post) {
-    if (post.uploadUnlimited) return 'PASS';
-    if (!post.gateOpen) return '--:--';
-    final seconds = post.remainingUploadSeconds ?? 0;
-    final mm = (seconds ~/ 60).toString().padLeft(2, '0');
-    final ss = (seconds % 60).toString().padLeft(2, '0');
-    return '$mm:$ss';
   }
 }
 
@@ -401,7 +358,8 @@ class _PostPhotoCardState extends ConsumerState<_PostPhotoCard> {
   Future<void> _pick() async {
     if (_busy) return;
     final l10n = L10n.of(context);
-    final canUseGallery = widget.post.uploadUnlimited;
+    // Plan_3 §3-1: 카메라 촬영과 갤러리 선택 모두 가능(무료·유료 구분 없음).
+    const canUseGallery = true;
 
     final choice = await PhotoSourceSheet.show(
       context,
@@ -927,128 +885,6 @@ class _StatPill extends StatelessWidget {
 }
 
 // ── 하루 한 마디 ─────────────────────────────────────────
-class _OneLiner extends ConsumerWidget {
-  const _OneLiner({required this.post});
-
-  static const int maxLength = 25;
-
-  final MyPost post;
-
-  Future<void> _edit(BuildContext context, WidgetRef ref) async {
-    final l10n = L10n.of(context);
-    final controller = TextEditingController(text: post.oneLiner ?? '');
-    final text = await showDialog<String>(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppColors.surface,
-        title: Text(
-          l10n.homeOneLiner,
-          style: TextStyle(color: AppColors.textPrimary),
-        ),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          maxLength: maxLength,
-          cursorColor: AppColors.moonlight,
-          style: const TextStyle(color: AppColors.textPrimary),
-          decoration: InputDecoration(
-            hintText: l10n.homeOneLinerHint,
-            hintStyle: TextStyle(color: AppColors.textMuted),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(l10n.commonCancel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, controller.text.trim()),
-            child: Text(l10n.commonSave),
-          ),
-        ],
-      ),
-    );
-
-    if (text == null || !context.mounted) return;
-    final error = await ref.read(myPostProvider.notifier).updateOneLiner(text);
-    if (error != null && context.mounted) {
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text(errorMessage(l10n, error))));
-    }
-  }
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = L10n.of(context);
-    final text = post.oneLiner;
-    final length = text?.characters.length ?? 0;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Text(
-              l10n.homeOneLiner,
-              style: TextStyle(
-                color: AppColors.textPrimary,
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            const SizedBox(width: 8),
-            Text(
-              '$length/$maxLength',
-              style: const TextStyle(color: AppColors.gold, fontSize: 14),
-            ),
-            const Spacer(),
-            TextButton(
-              onPressed: () => _edit(context, ref),
-              child: Text(
-                text == null || text.isEmpty ? l10n.homeOneLinerWrite : l10n.commonEdit,
-                style: const TextStyle(color: AppColors.moonlight),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: AppDimens.gapSm),
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
-          decoration: BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.circular(AppDimens.radiusMd),
-            border: Border.all(color: AppColors.border),
-          ),
-          child: Row(
-            children: [
-              Expanded(
-                child: Text(
-                  text == null || text.isEmpty ? l10n.homeOneLinerEmpty : text,
-                  style: TextStyle(
-                    color: text == null || text.isEmpty
-                        ? AppColors.textMuted
-                        : AppColors.textPrimary,
-                    fontSize: 15,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              const Icon(
-                Icons.nightlight_round,
-                color: AppColors.moonlight,
-                size: 22,
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-// ── 공유 버튼 ────────────────────────────────────────────
 class _ShareButton extends ConsumerWidget {
   const _ShareButton({required this.post});
 
@@ -1057,7 +893,7 @@ class _ShareButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = L10n.of(context);
-    final enabled = post.gateOpen;
+    final enabled = post.photos.isNotEmpty;
 
     return SizedBox(
       width: double.infinity,
