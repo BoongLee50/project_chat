@@ -163,8 +163,10 @@ class _FilterBar extends ConsumerWidget {
     // 필터 칩은 전 상태의 그림이 있다(전체 포함) — 텍스트 폴백이 필요 없다.
     // 누르면 뜨는 **드롭다운 목록의 글자는 ARB**다(폰트). 칩만 이미지다.
     //
-    // 칩은 시안 배율로 그리되 폭을 넘치면 줄인다([GardenArt.filterRowScale]).
-    // Plan_3에서 스포트라이트 칩이 폐지돼 셋만 남았고, 남는 폭은 그냥 비워 둔다.
+    // 시안(4-1)의 이 줄은 **네 칸**이다 — 성별·나이·국가 칩 셋 + **[달빛 한마디] 버튼**.
+    // 폐지된 스포트라이트 칩 자리에 같은 크기로 들어가는 **데일리 참여 이벤트 진입점**이고,
+    // ⑤단계에서 화면과 함께 만든다. 배율은 네 칸 기준이라(GardenArt.filterRowScale)
+    // 지금은 오른쪽에 그 버튼 자리만큼 여백이 남는다 — 비어 보이는 게 맞다.
     return LayoutBuilder(
       builder: (context, constraints) {
         final s = GardenArt.filterRowScale(constraints.maxWidth);

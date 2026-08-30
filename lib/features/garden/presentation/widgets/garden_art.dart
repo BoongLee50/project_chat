@@ -42,17 +42,23 @@ class GardenArt {
   /// 칩 사이 간격(시안 원본 기준). 시안에서 칩 끝과 다음 칩 시작 사이가 13~15px이다.
   static const double filterGap = 14;
 
+  /// 달빛 한마디 진입 버튼의 규격(시안 4-1의 **네 번째 칸**).
+  ///
+  /// Plan_3에서 스포트라이트 칩이 폐지된 자리에 **같은 크기로** 달빛 한마디 버튼이 들어간다.
+  /// 드롭다운 칩이 아니라 **채워진 버튼**이고, 누르면 오늘의 질문 화면으로 간다.
+  /// 아직 리소스도 화면도 없어 그리지 않지만, **자리는 이 상수만큼 비워 둔다**(⑤단계에서 채운다).
+  static const Size filterDailyQuestionSize = Size(334, 94);
+
   /// 필터 칩 줄의 배율.
   ///
-  /// 시안 배율([canvasWidth] 기준)을 쓰되, 그렇게 그려서 폭을 넘치면 줄인다.
-  /// - Plan_3에서 **스포트라이트 칩이 폐지돼 칩이 셋**이라 시안 배율로도 폭이 남는다.
-  ///   남는 폭까지 나눠 가지면 칩이 시안보다 커지므로 **키우지는 않는다**(왼쪽 정렬).
-  /// - 좁은 기기에서는 셋도 넘칠 수 있어 그때만 딱 맞게 줄인다(스크롤이 생기지 않게).
+  /// 시안은 **네 칸**이 한 줄에 딱 맞는다 — 성별·나이·국가 칩 셋과 **달빛 한마디 버튼**.
+  /// 네 칸 기준으로 배율을 구하므로, 버튼을 아직 안 그려도 **칩 셋의 크기가 시안과 같고
+  /// 오른쪽에 버튼 자리만큼 여백이 남는다.** ⑤단계에서 버튼을 채우면 레이아웃은 그대로다.
+  ///
+  /// (셋 기준으로 계산하면 남는 폭을 셋이 나눠 가져 **칩이 1.5배로 부푼다** — 함정 #37)
   static double filterRowScale(double availableWidth) {
-    const designTotal = 217 + 227 + 208 + filterGap * 2; // 칩 폭 합 + 간격 2개
-    final fit = availableWidth / designTotal;
-    final design = availableWidth / canvasWidth;
-    return fit < design ? fit : design;
+    const designTotal = 217 + 227 + 208 + 334 + filterGap * 3; // 네 칸 + 간격 3개
+    return availableWidth / designTotal;
   }
 
   /// 값 → 그림. 이제 모든 상태에 그림이 있어 텍스트 폴백이 필요 없다.
