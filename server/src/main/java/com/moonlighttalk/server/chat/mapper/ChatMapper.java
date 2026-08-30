@@ -15,7 +15,18 @@ public interface ChatMapper {
 
     ChatRequestEntity selectRequest(@Param("id") String id);
 
-    void updateRequestStatus(@Param("id") String id, @Param("status") String status);
+    void updateRequestStatus(@Param("id") String id, @Param("status") String status,
+                              @Param("respondedAt") java.time.LocalDateTime respondedAt);
+
+    /**
+     * 거절당한 지 얼마 안 됐는가 — 거절 후 1일간 다시 신청할 수 없다(기획 §2-5).
+     *
+     * <p>{@code responded_at}이 NULL인 옛 행은 세지 않는다. 그때는 시각을 남기지 않았을 뿐이라
+     * 지금 그 사람을 막을 근거가 되지 못한다.
+     */
+    boolean existsRecentRejection(@Param("fromUser") String fromUser,
+                                   @Param("toUser") String toUser,
+                                   @Param("since") java.time.LocalDateTime since);
 
     /** 내가 받은 신청(PENDING). */
     List<ChatRequestEntity> selectReceivedRequests(@Param("userId") String userId);
@@ -23,6 +34,13 @@ public interface ChatMapper {
     /** 내가 보낸 신청 전체(대기/종료 표시용). */
     /** 같은 상대에게 이미 대기 중인 신청이 있는지. */
     boolean existsPendingRequest(@Param("fromUser") String fromUser, @Param("toUser") String toUser);
+
+    /**
+     * 두 사람 사이의 대기 중인 대화 신청 <b>한 건</b>. [포스트 정보] 화면이 신청 메시지와
+     * 수락/거절에 쓸 id를 함께 봐야 해서 존재 여부(boolean)로는 모자란다.
+     */
+    ChatRequestEntity selectPendingRequestBetween(@Param("fromUser") String fromUser,
+                                                   @Param("toUser") String toUser);
 
     // ── 대화방 ──
     void insertRoom(ChatRoom room);

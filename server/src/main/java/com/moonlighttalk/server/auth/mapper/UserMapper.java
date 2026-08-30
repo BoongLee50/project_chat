@@ -20,4 +20,7 @@ public interface UserMapper {
                         @Param("country") String country);
 
     int countByNickname(@Param("nickname") String nickname);
+
+    /** 마지막 접속 시각(V16). 하트비트마다가 아니라 눌러서 쓴다 — {@code LastSeenService}. */
+    void touchLastSeen(@Param("id") String id, @Param("at") java.time.LocalDateTime at);
 }

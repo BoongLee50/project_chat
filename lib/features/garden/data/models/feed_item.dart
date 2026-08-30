@@ -16,6 +16,7 @@ class FeedItem {
     this.age,
     this.country,
     this.intro,
+    this.region,
     this.score = 0,
   });
 
@@ -33,6 +34,9 @@ class FeedItem {
   final bool online;
 
   final String? intro;
+
+  /// 활동 지역 **코드** 1개. "한국, 서울" 문구는 `ProfileCatalog.regionLabel`이 만든다.
+  final String? region;
 
   /// 서버가 준 사진 URL(상대경로) 목록.
   ///
@@ -74,6 +78,7 @@ class FeedItem {
     pick: json['pick'] as bool? ?? false,
     online: json['online'] as bool? ?? false,
     intro: json['intro'] as String?,
+    region: json['region'] as String?,
     photoUrls: (json['photoUrls'] as List? ?? const []).cast<String>(),
     photoLocked: json['photoLocked'] as bool? ?? false,
     totalPhotos: json['totalPhotos'] as int? ?? 0,

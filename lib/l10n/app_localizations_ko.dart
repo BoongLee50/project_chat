@@ -27,6 +27,9 @@ class L10nKo extends L10n {
   String get commonRetry => '다시 시도';
 
   @override
+  String get commonBack => '뒤로';
+
+  @override
   String get commonClose => '닫기';
 
   @override
@@ -351,6 +354,12 @@ class L10nKo extends L10n {
   String get chatTabReceived => '받은 신청';
 
   @override
+  String get chatTabChats => '대화';
+
+  @override
+  String get chatRequestsEmpty => '받은 신청이 없어요.';
+
+  @override
   String get chatRoomsEmpty => '아직 대화가 없어요.\n달빛가든에서 마음에 드는 사람에게 말을 걸어보세요.';
 
   @override
@@ -427,6 +436,20 @@ class L10nKo extends L10n {
   String get friendsTitle => '친구';
 
   @override
+  String get friendsTabList => '친구 목록';
+
+  @override
+  String get friendsRequestsEmpty => '받은 친구 신청이 없어요.';
+
+  @override
+  String friendsLastSeen(String time) {
+    return '$time 접속';
+  }
+
+  @override
+  String get friendsNeverSeen => '접속 기록 없음';
+
+  @override
   String get friendsOnlineNowLabel => '지금 접속 중 ';
 
   @override
@@ -491,6 +514,44 @@ class L10nKo extends L10n {
 
   @override
   String get friendPostSendMessage => '메시지 보내기';
+
+  @override
+  String get postInfoMenuProfile => '프로필 보기';
+
+  @override
+  String get postInfoMenuUnfriend => '친구 해제';
+
+  @override
+  String get postInfoLoadFailed => '상대 정보를 불러오지 못했어요.';
+
+  @override
+  String get postInfoNoPost => '오늘 올린 포스트가 없어요.';
+
+  @override
+  String get postInfoChat => '대화하기';
+
+  @override
+  String get postInfoRequestChat => '대화 신청';
+
+  @override
+  String get postInfoFriendAdd => '친구 신청';
+
+  @override
+  String get postInfoFriendPending => '신청 대기';
+
+  @override
+  String get postInfoFriendIncoming => '친구 수락';
+
+  @override
+  String get postInfoFriendLabel => '친구';
+
+  @override
+  String postInfoProfileTitle(String nickname) {
+    return '$nickname님의 프로필';
+  }
+
+  @override
+  String get postInfoRegions => '활동 지역';
 
   @override
   String get profileTitle => '프로필';
@@ -1408,6 +1469,11 @@ class L10nKo extends L10n {
 
   @override
   String get errorChatRequestPending => '이미 대화를 신청했어요. 상대의 응답을 기다려 주세요.';
+
+  @override
+  String errorChatRequestRejectedCooldown(int hours) {
+    return '거절된 상대예요. $hours시간 뒤에 다시 신청할 수 있어요.';
+  }
 
   @override
   String get errorChatRequestNotFound => '신청을 찾을 수 없어요.';

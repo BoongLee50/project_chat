@@ -60,6 +60,9 @@ String errorMessage(L10n l10n, ApiException e) {
     'CHAT_SELF' => l10n.errorChatSelf,
     'CHAT_TARGET_BLOCKED' => l10n.errorChatTargetBlocked,
     'CHAT_REQUEST_PENDING' => l10n.errorChatRequestPending,
+    // 차단 시간은 설정값(app.chat.rejection-cooldown-hours)이라 서버가 field로 싣는다.
+    'CHAT_REQUEST_REJECTED_COOLDOWN' =>
+      l10n.errorChatRequestRejectedCooldown(_count(e)),
     'CHAT_REQUEST_NOT_FOUND' => l10n.errorChatRequestNotFound,
     'CHAT_REQUEST_ALREADY_HANDLED' => l10n.errorChatRequestAlreadyHandled,
     'CHAT_ACCEPT_NOT_RECEIVER' => l10n.errorChatAcceptNotReceiver,

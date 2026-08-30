@@ -248,7 +248,14 @@ public class GardenService {
      * <p>앨범패스·프라임은 무제한이고, 무료 사용자는 <b>오늘 자기 사진을 올리고
      * [공유하기]까지</b> 해야 열린다. 올리기만 한 상태는 열리지 않는다(docs/12 §6 B1).
      * 프라임은 구독 시 앨범패스 엔티틀먼트를 함께 받으므로 따로 볼 필요가 없다.
+     *
+     * <p>[포스트 정보] 화면도 <b>이 판정을 그대로</b> 부른다. 같은 규칙을 두 벌 만들면
+     * 한쪽만 고쳐지고 다른 쪽이 뚫린 채 남는다.
      */
+    public boolean canViewAllPhotos(String userId) {
+        return canViewAllPhotos(userId, sessionTime.currentSessionDate());
+    }
+
     private boolean canViewAllPhotos(String userId, LocalDate sessionDate) {
         if (entitlementService.hasAlbumPass(userId)) {
             return true;
@@ -423,6 +430,7 @@ public class GardenService {
                 c.getLikes(),
                 commentService.count(CommentTarget.POST, c.getPostId()),
                 c.isLikedByMe(),
+                c.getRegion(),
                 score
         );
     }

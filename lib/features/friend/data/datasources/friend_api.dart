@@ -22,8 +22,12 @@ class FriendApi {
   }
 
 
-  Future<void> request(String targetUserId) =>
-      _client.post('/friends/requests', body: {'targetUserId': targetUserId});
+  /// [message]는 신청과 함께 보내는 한마디(선택, 25자). 길이는 서버가 잰다.
+  Future<void> request(String targetUserId, {String? message}) =>
+      _client.post('/friends/requests', body: {
+        'targetUserId': targetUserId,
+        if (message != null && message.isNotEmpty) 'message': message,
+      });
 
   /// 수락하면 상시 대화방 id가 돌아온다.
   Future<String?> accept(String friendshipId) async {

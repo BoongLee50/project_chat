@@ -12,8 +12,12 @@ import com.moonlighttalk.server.chat.socket.SocketRegistry;
 import com.moonlighttalk.server.common.exception.ApiException;
 import com.moonlighttalk.server.common.response.ErrorCode;
 import com.moonlighttalk.server.common.storage.FileStorageService;
+import com.moonlighttalk.server.friend.entity.Friendship;
+import com.moonlighttalk.server.friend.mapper.FriendMapper;
+import com.moonlighttalk.server.friend.service.FriendRelations;
 import com.moonlighttalk.server.garden.mapper.GardenMapper;
 import com.moonlighttalk.server.luna.service.LunaService;
+import com.moonlighttalk.server.presence.PresenceService;
 import com.moonlighttalk.server.store.service.EntitlementService;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -49,6 +53,8 @@ public class ChatService {
     private final SocketRegistry socketRegistry;
     private final FileStorageService fileStorageService;
     private final EntitlementService entitlementService;
+    private final FriendMapper friendMapper;
+    private final PresenceService presenceService;
 
     /** 무료 횟수를 다 쓴 뒤 대화 신청 1건당 차감할 루나. */
     private final int lunaCost;
@@ -58,6 +64,9 @@ public class ChatService {
 
     /** 음성 메시지 최대 길이(ms). 클라도 이 값에서 자동 정지한다. */
     private final int voiceMaxDurationMs;
+
+    /** 거절당한 뒤 다시 신청할 수 없는 시간(기획 §2-5의 "1일"). */
+    private final int rejectionCooldownHours;
 
     /**
      * 길이 검사 여유. 클라가 30초에서 멈춰도 인코더가 마지막 프레임을 채우며
@@ -73,10 +82,16 @@ public class ChatService {
                         SocketRegistry socketRegistry,
                         FileStorageService fileStorageService,
                         EntitlementService entitlementService,
+                        FriendMapper friendMapper,
+                        PresenceService presenceService,
                         @Value("${app.chat.request-luna-cost:5}") int lunaCost,
                         @Value("${app.chat.free-requests-per-day:10}") int freeRequestsPerDay,
-                        @Value("${app.chat.voice-max-duration-ms:30000}") int voiceMaxDurationMs) {
+                        @Value("${app.chat.voice-max-duration-ms:30000}") int voiceMaxDurationMs,
+                        @Value("${app.chat.rejection-cooldown-hours:24}")
+                        int rejectionCooldownHours) {
         this.chatMapper = chatMapper;
+        this.friendMapper = friendMapper;
+        this.presenceService = presenceService;
         this.userMapper = userMapper;
         this.gardenMapper = gardenMapper;
         this.lunaService = lunaService;
@@ -87,6 +102,7 @@ public class ChatService {
         this.lunaCost = lunaCost;
         this.freeRequestsPerDay = freeRequestsPerDay;
         this.voiceMaxDurationMs = voiceMaxDurationMs;
+        this.rejectionCooldownHours = rejectionCooldownHours;
     }
 
     // ── 대화 신청 ───────────────────────────────────────────
@@ -105,6 +121,14 @@ public class ChatService {
         if (chatMapper.existsPendingRequest(userId, targetUserId)) {
             throw new ApiException(ErrorCode.CHAT_REQUEST_PENDING, HttpStatus.CONFLICT,
                     "이미 대화를 신청했어요. 상대의 응답을 기다려 주세요.");
+        }
+        // 거절당한 상대에게는 하루 동안 다시 보낼 수 없다(기획 §2-5).
+        // 거절이 곧 근거이므로 차단 표를 따로 두지 않는다 — 만료도 시간이 알아서 한다.
+        if (chatMapper.existsRecentRejection(userId, targetUserId,
+                LocalDateTime.now().minusHours(rejectionCooldownHours))) {
+            throw new ApiException(ErrorCode.CHAT_REQUEST_REJECTED_COOLDOWN, HttpStatus.CONFLICT,
+                    "최근에 거절된 상대예요. 잠시 후 다시 시도해 주세요.",
+                    String.valueOf(rejectionCooldownHours));
         }
 
         User me = getUserOrThrow(userId);
@@ -162,7 +186,7 @@ public class ChatService {
                     "이미 처리된 신청이에요.");
         }
 
-        chatMapper.updateRequestStatus(requestId, "ACCEPTED");
+        chatMapper.updateRequestStatus(requestId, "ACCEPTED", LocalDateTime.now());
 
         ChatRoom room = new ChatRoom();
         room.setId(UUID.randomUUID().toString());
@@ -190,7 +214,7 @@ public class ChatService {
             throw new ApiException(ErrorCode.CHAT_REJECT_NOT_RECEIVER, HttpStatus.FORBIDDEN,
                     "내가 받은 신청만 거절할 수 있어요.");
         }
-        chatMapper.updateRequestStatus(requestId, "REJECTED");
+        chatMapper.updateRequestStatus(requestId, "REJECTED", LocalDateTime.now());
 
         socketRegistry.sendTo(request.getFromUser(), Packet.of(Opcodes.ROOM_STATE, Map.of(
                 "requestId", requestId, "state", "rejected")));
@@ -202,7 +226,18 @@ public class ChatService {
 
     // ── 대화방 ─────────────────────────────────────────────
 
+    /**
+     * 대화방 목록. 행마다 <b>접속 표시</b>와 <b>친구 관계 버튼</b>이 붙는다(기획 6-1).
+     *
+     * <p>관계는 방마다 질의하지 않고 <b>한 번에 읽어 맞춘다</b> — 방이 열 개면 질의도
+     * 열 번 나가던 자리다.
+     */
     public List<ChatRoomDto> myRooms(String userId) {
+        Map<String, Friendship> byPair = new HashMap<>();
+        for (Friendship f : friendMapper.selectAllByUser(userId)) {
+            byPair.put(f.getPairKey(), f);
+        }
+
         return chatMapper.selectMyRooms(userId).stream()
                 .map(s -> new ChatRoomDto(
                         s.getRoomId(),
@@ -215,7 +250,11 @@ public class ChatService {
                         s.getLastMessage(),
                         s.getLastMessageType(),
                         s.getLastMessageAt(),
-                        s.getUnreadCount()))
+                        s.getUnreadCount(),
+                        presenceService.isOnline(s.getPartnerId()),
+                        FriendRelations.of(
+                                byPair.get(FriendRelations.pairKey(userId, s.getPartnerId())),
+                                userId)))
                 .toList();
     }
 
@@ -382,11 +421,16 @@ public class ChatService {
         return user;
     }
 
+    /**
+     * 받은 신청 전용이다 — 상대는 언제나 {@code fromUser}다.
+     * (보낸 신청 탭은 Plan_3에서 없어졌다, ①단계)
+     */
     private ChatRequestDto toRequestDto(ChatRequestEntity r) {
         return new ChatRequestDto(
                 r.getId(), r.getFromUser(), r.getToUser(), r.getMessage(), r.getStatus(),
                 r.getPartnerNickname(), age(r.getPartnerBirthYear()), r.getPartnerCountry(),
-                photoUrl(r.getPartnerPhotoKey()), r.getCreatedAt());
+                photoUrl(r.getPartnerPhotoKey()), r.getCreatedAt(),
+                presenceService.isOnline(r.getFromUser()));
     }
 
     private ChatMessageDto toMessageDto(ChatMessage m) {

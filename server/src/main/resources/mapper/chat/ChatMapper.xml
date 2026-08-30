@@ -65,8 +65,16 @@
     </select>
 
     <update id="updateRequestStatus">
-        UPDATE chat_requests SET status = #{status} WHERE id = #{id}
+        UPDATE chat_requests SET status = #{status}, responded_at = #{respondedAt} WHERE id = #{id}
     </update>
+
+    <select id="existsRecentRejection" resultType="boolean">
+        SELECT EXISTS (SELECT 1 FROM chat_requests
+                       WHERE from_user = #{fromUser} AND to_user = #{toUser}
+                         AND status = 'REJECTED'
+                         AND responded_at IS NOT NULL
+                         AND responded_at &gt; #{since})
+    </select>
 
     <select id="selectReceivedRequests" resultMap="RequestResultMap">
         SELECT r.*, u.nickname AS partner_nickname, u.birth_year AS partner_birth_year,
@@ -82,6 +90,17 @@
     <select id="existsPendingRequest" resultType="boolean">
         SELECT EXISTS (SELECT 1 FROM chat_requests
                        WHERE from_user = #{fromUser} AND to_user = #{toUser} AND status = 'PENDING')
+    </select>
+
+    <!--
+      [포스트 정보]가 쓰는 단건 조회. 같은 상대에게 신청이 여러 번 쌓일 수 있으므로
+      **가장 최근 것**을 본다 — 화면에 보여 줄 메시지는 마지막에 한 말이다.
+    -->
+    <select id="selectPendingRequestBetween" resultMap="RequestResultMap">
+        SELECT * FROM chat_requests
+        WHERE from_user = #{fromUser} AND to_user = #{toUser} AND status = 'PENDING'
+        ORDER BY created_at DESC
+        LIMIT 1
     </select>
 
     <!-- ── 대화방 ── -->

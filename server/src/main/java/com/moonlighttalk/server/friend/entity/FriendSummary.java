@@ -16,6 +16,12 @@ public class FriendSummary {
     private String roomId;
     private LocalDateTime acceptedAt;
 
+    /** 활동 지역 코드 1개(시안은 도시 하나만 보여 준다). 없으면 null. */
+    private String region;
+
+    /** 마지막 접속(V16). null이면 한 번도 접속한 적이 없다. */
+    private LocalDateTime lastSeenAt;
+
     public String getFriendshipId() {
         return friendshipId;
     }
@@ -94,5 +100,21 @@ public class FriendSummary {
 
     public void setAcceptedAt(LocalDateTime acceptedAt) {
         this.acceptedAt = acceptedAt;
+    }
+
+    public String getRegion() {
+        return region;
+    }
+
+    public void setRegion(String region) {
+        this.region = region;
+    }
+
+    public LocalDateTime getLastSeenAt() {
+        return lastSeenAt;
+    }
+
+    public void setLastSeenAt(LocalDateTime lastSeenAt) {
+        this.lastSeenAt = lastSeenAt;
     }
 }

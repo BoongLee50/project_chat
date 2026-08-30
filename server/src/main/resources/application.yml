@@ -113,6 +113,9 @@ app:
     request-luna-cost: 5
     # 음성 메시지 최대 길이. 클라도 이 시간에서 자동 정지하므로 두 값을 함께 바꿀 것.
     voice-max-duration-ms: 30000
+    # 거절당한 상대에게 다시 신청할 수 없는 시간(기획 §2-5의 "1일").
+    # 시간 단위로 둔 건 "하루"의 경계가 영업일이 아니라 **거절한 순간부터**이기 때문이다.
+    rejection-cooldown-hours: 24
     # 메시지 보관 기간. 방 타입 기준으로 판정한다(친구를 끊어 ENDED가 된 방도 FRIEND 기준).
     retention-days: 30
     retention-days-friend: 365
@@ -124,11 +127,19 @@ app:
     presence-sweep-ms: 300000
     # 배치를 수동 실행하는 개발용 엔드포인트(운영에서는 절대 켜지 말 것).
     dev-trigger-enabled: false
+  presence:
+    # 마지막 접속 시각(users.last_seen_at)을 사람당 몇 초에 한 번만 쓸 것인가.
+    # 하트비트마다 쓰면 접속자 수만큼 초당 UPDATE가 생긴다. 친구 목록이 보여 주는 건
+    # "N시간 전 접속"이라 이 정도로 뒤처져도 표시가 달라지지 않는다.
+    last-seen-throttle-seconds: 300
   friend:
     # Plan_3에서 과금과 무관하게 100명으로 통일됐다(20 vs 30 모순이 이렇게 정리됨).
     # 다시 갈릴 수 있어 키는 둘 다 남겨 둔다.
     max-count: 100
     max-count-premium: 100
+    # 친구 신청과 함께 보내는 한마디(기획 5-1). 대화 신청 100자보다 훨씬 짧다 —
+    # 대화를 여는 자리가 아니라 인사 한 줄이기 때문이다.
+    request-message-max-length: 25
   redis:
     enabled: false
   storage:

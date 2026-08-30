@@ -6,6 +6,7 @@ import com.moonlighttalk.server.chat.dto.ChatMessageDto;
 import com.moonlighttalk.server.chat.service.ChatService;
 import com.moonlighttalk.server.common.exception.ApiException;
 import com.moonlighttalk.server.common.security.JwtProvider;
+import com.moonlighttalk.server.presence.LastSeenService;
 import com.moonlighttalk.server.presence.PresenceService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,17 +37,20 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
     private final SocketRegistry registry;
     private final ChatService chatService;
     private final PresenceService presenceService;
+    private final LastSeenService lastSeenService;
 
     public ChatWebSocketHandler(ObjectMapper objectMapper,
                                  JwtProvider jwtProvider,
                                  SocketRegistry registry,
                                  ChatService chatService,
-                                 PresenceService presenceService) {
+                                 PresenceService presenceService,
+                                 LastSeenService lastSeenService) {
         this.objectMapper = objectMapper;
         this.jwtProvider = jwtProvider;
         this.registry = registry;
         this.chatService = chatService;
         this.presenceService = presenceService;
+        this.lastSeenService = lastSeenService;
     }
 
     @Override
@@ -73,7 +77,11 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
             switch (op) {
                 case Opcodes.AUTH -> handleAuth(session, seq, data);
                 case Opcodes.PING -> {
-                    if (userId != null) presenceService.heartbeat(userId);
+                    if (userId != null) {
+                        presenceService.heartbeat(userId);
+                        // 60초 TTL의 프레즌스와 달리 이건 남는다 — 친구 목록의 "N시간 전 접속".
+                        lastSeenService.touch(userId);
+                    }
                     registry.send(session, Packet.of(Opcodes.PONG, seq, Map.of()));
                 }
                 case Opcodes.ROOM_SUBSCRIBE -> {
@@ -123,6 +131,7 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
             session.getAttributes().put(ATTR_USER_ID, userId);
             registry.register(userId, session);
             presenceService.heartbeat(userId);
+            lastSeenService.touch(userId);
             log.info("소켓 인증 성공 userId={} session={}", userId, session.getId());
             registry.send(session, Packet.of(Opcodes.AUTH_OK, seq, Map.of("userId", userId)));
         } catch (RuntimeException e) {

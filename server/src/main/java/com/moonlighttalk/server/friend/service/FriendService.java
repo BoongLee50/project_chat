@@ -66,6 +66,9 @@ public class FriendService {
     private final int maxFriends;
     private final int maxFriendsPremium;
 
+    /** 친구 신청 한마디의 최대 글자 수(기획 5-1). 숫자는 여기 하나뿐이다. */
+    private final int maxRequestMessage;
+
     public FriendService(FriendMapper friendMapper,
                           ChatMapper chatMapper,
                           UserMapper userMapper,
@@ -77,7 +80,9 @@ public class FriendService {
                           SocketRegistry socketRegistry,
                           FileStorageService fileStorageService,
                           @Value("${app.friend.max-count:100}") int maxFriends,
-                          @Value("${app.friend.max-count-premium:100}") int maxFriendsPremium) {
+                          @Value("${app.friend.max-count-premium:100}") int maxFriendsPremium,
+                          @Value("${app.friend.request-message-max-length:25}")
+                          int maxRequestMessage) {
         this.friendMapper = friendMapper;
         this.commentService = commentService;
         this.chatMapper = chatMapper;
@@ -90,13 +95,19 @@ public class FriendService {
         this.fileStorageService = fileStorageService;
         this.maxFriends = maxFriends;
         this.maxFriendsPremium = maxFriendsPremium;
+        this.maxRequestMessage = maxRequestMessage;
     }
 
     // ── 친구 요청 ───────────────────────────────────────────
 
     /** 친구 요청. 성공하면 상대에게 소켓으로 도착을 알린다. */
     @Transactional
-    public String request(String userId, String targetUserId) {
+    public String request(String userId, String targetUserId, String message) {
+        String trimmed = message == null ? null : message.trim();
+        if (trimmed != null && trimmed.codePointCount(0, trimmed.length()) > maxRequestMessage) {
+            throw new ApiException(ErrorCode.VALIDATION_FAILED, HttpStatus.BAD_REQUEST,
+                    "친구 신청 한마디가 너무 길어요.", "message");
+        }
         if (userId.equals(targetUserId)) {
             throw new ApiException(ErrorCode.FRIEND_SELF, HttpStatus.BAD_REQUEST,
                     "자신에게는 친구 요청을 보낼 수 없어요.");
@@ -128,6 +139,7 @@ public class FriendService {
         friendship.setAddresseeId(targetUserId);
         friendship.setStatus("PENDING");
         friendship.setPairKey(pairKey);
+        friendship.setMessage(trimmed == null || trimmed.isEmpty() ? null : trimmed);
         try {
             friendMapper.insert(friendship);
         } catch (DataIntegrityViolationException e) {
@@ -332,7 +344,7 @@ public class FriendService {
 
     /** 방향과 무관하게 같은 값이 나오도록 정렬해 잇는다. */
     private String pairKey(String a, String b) {
-        return a.compareTo(b) <= 0 ? a + "_" + b : b + "_" + a;
+        return FriendRelations.pairKey(a, b);
     }
 
     private FriendDto toFriendDto(FriendSummary s) {
@@ -347,6 +359,8 @@ public class FriendService {
                 photoUrl(s.getPhotoKey()),
                 s.getRoomId(),
                 presenceService.isOnline(s.getUserId()),
+                s.getRegion(),
+                s.getLastSeenAt(),
                 s.getAcceptedAt());
     }
 
@@ -354,7 +368,8 @@ public class FriendService {
         return new FriendRequestDto(
                 f.getId(), f.getRequesterId(), f.getAddresseeId(), f.getStatus(),
                 f.getPartnerNickname(), age(f.getPartnerBirthYear()), f.getPartnerCountry(),
-                photoUrl(f.getPartnerPhotoKey()), f.getCreatedAt());
+                photoUrl(f.getPartnerPhotoKey()), f.getMessage(),
+                presenceService.isOnline(f.getRequesterId()), f.getCreatedAt());
     }
 
     private Integer age(Integer birthYear) {

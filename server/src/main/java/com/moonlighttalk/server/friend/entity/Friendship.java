@@ -10,6 +10,8 @@ public class Friendship {
     private String addresseeId;
     private String status;
     private String pairKey;
+    /** 친구 신청 한마디(25자, V17). 이 컬럼 이전 요청은 null이다. */
+    private String message;
     private LocalDateTime createdAt;
     private LocalDateTime acceptedAt;
 
@@ -66,6 +68,14 @@ public class Friendship {
 
     public void setPairKey(String pairKey) {
         this.pairKey = pairKey;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
     }
 
     public LocalDateTime getCreatedAt() {

@@ -13,6 +13,7 @@ public record ChatRequestDto(
         Integer partnerAge,
         String partnerCountry,
         String partnerPhotoUrl,
-        LocalDateTime createdAt
+        LocalDateTime createdAt,
+        boolean partnerOnline
 ) {
 }

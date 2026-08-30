@@ -17,6 +17,9 @@ public class FeedCandidate {
     private String country;
     private boolean premium;
     private String intro;
+
+    /** 활동 지역 코드 1개 — 카드에 "한국, 서울"로 보여 준다(기획 §2-5). */
+    private String region;
     private LocalDateTime publishedAt;
     /** 사진이 마지막으로 바뀐 시각(V8). Recency는 공유 시각과 이 값 중 <b>나중</b>을 본다. */
     private LocalDateTime contentUpdatedAt;

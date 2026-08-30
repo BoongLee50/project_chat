@@ -42,7 +42,8 @@ public class FriendController {
     @PostMapping("/friends/requests")
     public AcceptFriendResponse request(@CurrentUserId String userId,
                                          @Valid @RequestBody CreateFriendRequestBody body) {
-        return new AcceptFriendResponse(friendService.request(userId, body.targetUserId()), null);
+        return new AcceptFriendResponse(
+                friendService.request(userId, body.targetUserId(), body.message()), null);
     }
 
     @PostMapping("/friends/requests/{friendshipId}:accept")

@@ -8,6 +8,7 @@ import '../features/store/data/datasources/store_api.dart';
 import '../features/daily/data/datasources/daily_api.dart';
 import '../features/garden/data/datasources/garden_api.dart';
 import '../features/post/data/datasources/post_api.dart';
+import '../features/postinfo/data/datasources/post_info_api.dart';
 import '../features/profile/data/datasources/profile_api.dart';
 import 'network/dio_client.dart';
 import 'network/packet.dart';
@@ -48,6 +49,10 @@ final chatApiProvider = Provider<ChatApi>(
 
 final friendApiProvider = Provider<FriendApi>(
   (ref) => FriendApi(ref.watch(dioClientProvider)),
+);
+
+final postInfoApiProvider = Provider<PostInfoApi>(
+  (ref) => PostInfoApi(ref.watch(dioClientProvider)),
 );
 
 final storeApiProvider = Provider<StoreApi>(

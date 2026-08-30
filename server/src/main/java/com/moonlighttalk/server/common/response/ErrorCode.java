@@ -69,6 +69,8 @@ public enum ErrorCode {
     CHAT_SELF,
     CHAT_TARGET_BLOCKED,
     CHAT_REQUEST_PENDING,
+    /** 거절당한 지 얼마 안 된 상대 — field에 남은 시간(시) 단위를 싣는다. */
+    CHAT_REQUEST_REJECTED_COOLDOWN,
     CHAT_REQUEST_NOT_FOUND,
     CHAT_REQUEST_ALREADY_HANDLED,
     CHAT_ACCEPT_NOT_RECEIVER,

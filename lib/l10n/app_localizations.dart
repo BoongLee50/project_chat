@@ -133,6 +133,12 @@ abstract class L10n {
   /// **'다시 시도'**
   String get commonRetry;
 
+  /// No description provided for @commonBack.
+  ///
+  /// In ko, this message translates to:
+  /// **'뒤로'**
+  String get commonBack;
+
   /// No description provided for @commonClose.
   ///
   /// In ko, this message translates to:
@@ -733,6 +739,18 @@ abstract class L10n {
   /// **'받은 신청'**
   String get chatTabReceived;
 
+  /// No description provided for @chatTabChats.
+  ///
+  /// In ko, this message translates to:
+  /// **'대화'**
+  String get chatTabChats;
+
+  /// No description provided for @chatRequestsEmpty.
+  ///
+  /// In ko, this message translates to:
+  /// **'받은 신청이 없어요.'**
+  String get chatRequestsEmpty;
+
   /// No description provided for @chatRoomsEmpty.
   ///
   /// In ko, this message translates to:
@@ -865,6 +883,30 @@ abstract class L10n {
   /// **'친구'**
   String get friendsTitle;
 
+  /// No description provided for @friendsTabList.
+  ///
+  /// In ko, this message translates to:
+  /// **'친구 목록'**
+  String get friendsTabList;
+
+  /// No description provided for @friendsRequestsEmpty.
+  ///
+  /// In ko, this message translates to:
+  /// **'받은 친구 신청이 없어요.'**
+  String get friendsRequestsEmpty;
+
+  /// 친구 카드의 마지막 접속 표시. time에는 "1시간 전" 같은 문구가 들어간다
+  ///
+  /// In ko, this message translates to:
+  /// **'{time} 접속'**
+  String friendsLastSeen(String time);
+
+  /// No description provided for @friendsNeverSeen.
+  ///
+  /// In ko, this message translates to:
+  /// **'접속 기록 없음'**
+  String get friendsNeverSeen;
+
   /// No description provided for @friendsOnlineNowLabel.
   ///
   /// In ko, this message translates to:
@@ -984,6 +1026,78 @@ abstract class L10n {
   /// In ko, this message translates to:
   /// **'메시지 보내기'**
   String get friendPostSendMessage;
+
+  /// No description provided for @postInfoMenuProfile.
+  ///
+  /// In ko, this message translates to:
+  /// **'프로필 보기'**
+  String get postInfoMenuProfile;
+
+  /// No description provided for @postInfoMenuUnfriend.
+  ///
+  /// In ko, this message translates to:
+  /// **'친구 해제'**
+  String get postInfoMenuUnfriend;
+
+  /// No description provided for @postInfoLoadFailed.
+  ///
+  /// In ko, this message translates to:
+  /// **'상대 정보를 불러오지 못했어요.'**
+  String get postInfoLoadFailed;
+
+  /// No description provided for @postInfoNoPost.
+  ///
+  /// In ko, this message translates to:
+  /// **'오늘 올린 포스트가 없어요.'**
+  String get postInfoNoPost;
+
+  /// No description provided for @postInfoChat.
+  ///
+  /// In ko, this message translates to:
+  /// **'대화하기'**
+  String get postInfoChat;
+
+  /// No description provided for @postInfoRequestChat.
+  ///
+  /// In ko, this message translates to:
+  /// **'대화 신청'**
+  String get postInfoRequestChat;
+
+  /// No description provided for @postInfoFriendAdd.
+  ///
+  /// In ko, this message translates to:
+  /// **'친구 신청'**
+  String get postInfoFriendAdd;
+
+  /// No description provided for @postInfoFriendPending.
+  ///
+  /// In ko, this message translates to:
+  /// **'신청 대기'**
+  String get postInfoFriendPending;
+
+  /// No description provided for @postInfoFriendIncoming.
+  ///
+  /// In ko, this message translates to:
+  /// **'친구 수락'**
+  String get postInfoFriendIncoming;
+
+  /// No description provided for @postInfoFriendLabel.
+  ///
+  /// In ko, this message translates to:
+  /// **'친구'**
+  String get postInfoFriendLabel;
+
+  /// No description provided for @postInfoProfileTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'{nickname}님의 프로필'**
+  String postInfoProfileTitle(String nickname);
+
+  /// No description provided for @postInfoRegions.
+  ///
+  /// In ko, this message translates to:
+  /// **'활동 지역'**
+  String get postInfoRegions;
 
   /// No description provided for @profileTitle.
   ///
@@ -2640,6 +2754,12 @@ abstract class L10n {
   /// In ko, this message translates to:
   /// **'이미 대화를 신청했어요. 상대의 응답을 기다려 주세요.'**
   String get errorChatRequestPending;
+
+  /// 거절 후 재신청 차단. hours는 서버 설정값(app.chat.rejection-cooldown-hours)
+  ///
+  /// In ko, this message translates to:
+  /// **'거절된 상대예요. {hours}시간 뒤에 다시 신청할 수 있어요.'**
+  String errorChatRequestRejectedCooldown(int hours);
 
   /// No description provided for @errorChatRequestNotFound.
   ///

@@ -27,6 +27,9 @@ class L10nJa extends L10n {
   String get commonRetry => '再試行';
 
   @override
+  String get commonBack => '戻る';
+
+  @override
   String get commonClose => '閉じる';
 
   @override
@@ -351,6 +354,12 @@ class L10nJa extends L10n {
   String get chatTabReceived => '受け取ったリクエスト';
 
   @override
+  String get chatTabChats => 'トーク';
+
+  @override
+  String get chatRequestsEmpty => '受け取ったリクエストはありません。';
+
+  @override
   String get chatRoomsEmpty => 'まだ会話がありません。\n月光ガーデンで気になる人に話しかけてみましょう。';
 
   @override
@@ -427,6 +436,20 @@ class L10nJa extends L10n {
   String get friendsTitle => '友だち';
 
   @override
+  String get friendsTabList => '友だちリスト';
+
+  @override
+  String get friendsRequestsEmpty => '受け取った友だちリクエストはありません。';
+
+  @override
+  String friendsLastSeen(String time) {
+    return '$timeにオンライン';
+  }
+
+  @override
+  String get friendsNeverSeen => '接続履歴なし';
+
+  @override
   String get friendsOnlineNowLabel => '現在オンライン ';
 
   @override
@@ -491,6 +514,44 @@ class L10nJa extends L10n {
 
   @override
   String get friendPostSendMessage => 'メッセージを送る';
+
+  @override
+  String get postInfoMenuProfile => 'プロフィールを見る';
+
+  @override
+  String get postInfoMenuUnfriend => '友達を解除';
+
+  @override
+  String get postInfoLoadFailed => '相手の情報を読み込めませんでした。';
+
+  @override
+  String get postInfoNoPost => '今日のポストはまだありません。';
+
+  @override
+  String get postInfoChat => 'トークする';
+
+  @override
+  String get postInfoRequestChat => 'トーク申請';
+
+  @override
+  String get postInfoFriendAdd => '友達申請';
+
+  @override
+  String get postInfoFriendPending => '申請中';
+
+  @override
+  String get postInfoFriendIncoming => '友達承認';
+
+  @override
+  String get postInfoFriendLabel => '友達';
+
+  @override
+  String postInfoProfileTitle(String nickname) {
+    return '$nicknameさんのプロフィール';
+  }
+
+  @override
+  String get postInfoRegions => '活動エリア';
 
   @override
   String get profileTitle => 'プロフィール';
@@ -1405,6 +1466,11 @@ class L10nJa extends L10n {
 
   @override
   String get errorChatRequestPending => 'すでに会話を申し込んでいます。相手の返事をお待ちください。';
+
+  @override
+  String errorChatRequestRejectedCooldown(int hours) {
+    return '断られた相手です。$hours時間後にもう一度リクエストできます。';
+  }
 
   @override
   String get errorChatRequestNotFound => '申し込みが見つかりません。';

@@ -15,6 +15,8 @@ class Friend {
     this.intro,
     this.photoUrl,
     this.roomId,
+    this.region,
+    this.lastSeenAt,
   });
 
   final String friendshipId;
@@ -30,6 +32,13 @@ class Friend {
   final String? country;
   final String? intro;
   final String? photoUrl;
+
+  /// 활동 지역 **코드** 1개. 시안은 카드에 도시 이름 하나만 보여 준다.
+  final String? region;
+
+  /// 마지막 접속. [online]이 false일 때 `1시간 전 접속`을 그리는 재료다.
+  /// null이면 한 번도 접속한 적이 없다(0으로 채우지 않는다).
+  final DateTime? lastSeenAt;
 
   String get flag => switch (country) {
     'KR' => '🇰🇷',
@@ -48,6 +57,10 @@ class Friend {
     country: json['country'] as String?,
     intro: json['intro'] as String?,
     photoUrl: json['photoUrl'] as String?,
+    region: json['region'] as String?,
+    lastSeenAt: json['lastSeenAt'] == null
+        ? null
+        : parseServerTime(json['lastSeenAt']),
   );
 }
 
@@ -62,6 +75,9 @@ class FriendRequest {
     this.partnerAge,
     this.partnerCountry,
     this.partnerPhotoUrl,
+    this.message,
+    this.partnerOnline = false,
+    this.createdAt,
   });
 
   final String id;
@@ -75,6 +91,13 @@ class FriendRequest {
   final int? partnerAge;
   final String? partnerCountry;
   final String? partnerPhotoUrl;
+
+  /// 신청자가 남긴 한마디(25자). null이면 이 기능 이전에 온 요청이다 —
+  /// 그때 화면이 채워 넣던 "친구 요청을 보냈어요"는 **상대가 한 말이 아니었다**.
+  final String? message;
+
+  final bool partnerOnline;
+  final DateTime? createdAt;
 
   String get flag => switch (partnerCountry) {
     'KR' => '🇰🇷',
@@ -91,6 +114,11 @@ class FriendRequest {
     partnerAge: json['partnerAge'] as int?,
     partnerCountry: json['partnerCountry'] as String?,
     partnerPhotoUrl: json['partnerPhotoUrl'] as String?,
+    message: json['message'] as String?,
+    partnerOnline: json['partnerOnline'] as bool? ?? false,
+    createdAt: json['createdAt'] == null
+        ? null
+        : parseServerTime(json['createdAt']),
   );
 }
 

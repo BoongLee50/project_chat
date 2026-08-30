@@ -9,6 +9,7 @@
   "commonConfirm": "확인",
   "commonDelete": "삭제",
   "commonRetry": "다시 시도",
+  "commonBack": "뒤로",
   "commonClose": "닫기",
   "loginTagline": "밤에만 열리는 채팅의 시간",
   "@loginTagline": {
@@ -202,6 +203,8 @@
   "chatRoomsSubtitle": "마음이 통하는 사람들과 이야기를 나눠보세요.",
   "chatTabFriend": "친구",
   "chatTabReceived": "받은 신청",
+  "chatTabChats": "대화",
+  "chatRequestsEmpty": "받은 신청이 없어요.",
   "chatRoomsEmpty": "아직 대화가 없어요.\n달빛가든에서 마음에 드는 사람에게 말을 걸어보세요.",
   "chatRoomsStart": "대화를 시작해보세요.",
   "chatRoomsOngoing": "대화 중",
@@ -259,6 +262,18 @@
     }
   },
   "friendsTitle": "친구",
+  "friendsTabList": "친구 목록",
+  "friendsRequestsEmpty": "받은 친구 신청이 없어요.",
+  "friendsLastSeen": "{time} 접속",
+  "@friendsLastSeen": {
+    "description": "친구 카드의 마지막 접속 표시. time에는 \"1시간 전\" 같은 문구가 들어간다",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "friendsNeverSeen": "접속 기록 없음",
   "friendsOnlineNowLabel": "지금 접속 중 ",
   "friendsOnlineCount": "{count}명",
   "@friendsOnlineCount": {
@@ -300,6 +315,25 @@
   "friendPostLoadFailed": "포스트를 불러오지 못했어요.",
   "friendPostMessage": "메시지",
   "friendPostSendMessage": "메시지 보내기",
+  "postInfoMenuProfile": "프로필 보기",
+  "postInfoMenuUnfriend": "친구 해제",
+  "postInfoLoadFailed": "상대 정보를 불러오지 못했어요.",
+  "postInfoNoPost": "오늘 올린 포스트가 없어요.",
+  "postInfoChat": "대화하기",
+  "postInfoRequestChat": "대화 신청",
+  "postInfoFriendAdd": "친구 신청",
+  "postInfoFriendPending": "신청 대기",
+  "postInfoFriendIncoming": "친구 수락",
+  "postInfoFriendLabel": "친구",
+  "postInfoProfileTitle": "{nickname}님의 프로필",
+  "@postInfoProfileTitle": {
+    "placeholders": {
+      "nickname": {
+        "type": "String"
+      }
+    }
+  },
+  "postInfoRegions": "활동 지역",
   "profileTitle": "프로필",
   "profilePhotoPrompt": "프로필 사진을 등록해 주세요",
   "photoSheetProfileTitle": "프로필 사진 변경",
@@ -866,6 +900,15 @@
   "errorChatSelf": "자신에게는 대화를 신청할 수 없어요.",
   "errorChatTargetBlocked": "지금은 이 사용자에게 대화를 신청할 수 없어요.",
   "errorChatRequestPending": "이미 대화를 신청했어요. 상대의 응답을 기다려 주세요.",
+  "errorChatRequestRejectedCooldown": "거절된 상대예요. {hours}시간 뒤에 다시 신청할 수 있어요.",
+  "@errorChatRequestRejectedCooldown": {
+    "description": "거절 후 재신청 차단. hours는 서버 설정값(app.chat.rejection-cooldown-hours)",
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
   "errorChatRequestNotFound": "신청을 찾을 수 없어요.",
   "errorChatRequestAlreadyHandled": "이미 처리된 신청이에요.",
   "errorChatAcceptNotReceiver": "내가 받은 신청만 수락할 수 있어요.",

@@ -11,6 +11,7 @@
         <result property="country" column="country"/>
         <result property="premium" column="is_premium"/>
         <result property="intro" column="intro"/>
+        <result property="region" column="region"/>
         <result property="publishedAt" column="published_at"/>
         <result property="contentUpdatedAt" column="content_updated_at"/>
         <result property="photoCount" column="photo_count"/>
@@ -34,6 +35,8 @@
                u.country,
                u.is_premium,
                pr.intro,
+               (SELECT ur.code FROM user_regions ur
+                 WHERE ur.user_id = u.id LIMIT 1) AS region,
                p.published_at,
                p.content_updated_at,
                (SELECT COUNT(*) FROM post_photos ph WHERE ph.post_id = p.id) AS photo_count,
@@ -104,6 +107,8 @@
                u.country,
                u.is_premium,
                pr.intro,
+               (SELECT ur.code FROM user_regions ur
+                 WHERE ur.user_id = u.id LIMIT 1) AS region,
                p.published_at,
                p.content_updated_at,
                (SELECT COUNT(*) FROM post_photos ph WHERE ph.post_id = p.id) AS photo_count,

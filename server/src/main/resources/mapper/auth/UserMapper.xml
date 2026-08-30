@@ -39,4 +39,8 @@
         SELECT COUNT(*) FROM users WHERE nickname = #{nickname}
     </select>
 
+    <update id="touchLastSeen">
+        UPDATE users SET last_seen_at = #{at} WHERE id = #{id}
+    </update>
+
 </mapper>

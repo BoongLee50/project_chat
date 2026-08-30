@@ -1,6 +1,7 @@
 // 채팅 DTO. (docs/01-protocol-api-spec.md §1.5~1.6)
 
 import '../../../../core/util/server_time.dart';
+import '../../../postinfo/data/models/post_info.dart';
 
 class ChatRoomSummary {
   const ChatRoomSummary({
@@ -15,6 +16,8 @@ class ChatRoomSummary {
     this.lastMessage,
     this.lastMessageType = ChatMessageType.text,
     this.lastMessageAt,
+    this.partnerOnline = false,
+    this.friendRelation = FriendRelation.none,
   });
 
   final String roomId;
@@ -35,6 +38,12 @@ class ChatRoomSummary {
 
   final DateTime? lastMessageAt;
   final int unreadCount;
+
+  /// 🟢 접속 표시(기획 6-1).
+  final bool partnerOnline;
+
+  /// 행 오른쪽 [친구]/[친구 신청]/[신청 대기] 버튼이 보는 값.
+  final FriendRelation friendRelation;
 
   String get flag => switch (partnerCountry) {
     'KR' => '🇰🇷',
@@ -57,6 +66,8 @@ class ChatRoomSummary {
             ? null
             : parseServerTime(json['lastMessageAt']),
         unreadCount: json['unreadCount'] as int? ?? 0,
+        partnerOnline: json['partnerOnline'] as bool? ?? false,
+        friendRelation: FriendRelation.parse(json['friendRelation'] as String?),
       );
 }
 
@@ -72,6 +83,8 @@ class ChatRequest {
     this.partnerAge,
     this.partnerCountry,
     this.partnerPhotoUrl,
+    this.partnerOnline = false,
+    this.createdAt,
   });
 
   final String id;
@@ -87,6 +100,17 @@ class ChatRequest {
   final String? partnerCountry;
   final String? partnerPhotoUrl;
 
+  /// 🟢 접속 표시. 받은 신청 그리드 카드에 붙는다(기획 6-1).
+  final bool partnerOnline;
+
+  /// 신청이 언제 왔는가 — 카드에 "2분 전"으로 보여 준다.
+  final DateTime? createdAt;
+
+  String get flag => switch (partnerCountry) {
+    'KR' => '🇰🇷',
+    'JP' => '🇯🇵',
+    _ => '',
+  };
 
   factory ChatRequest.fromJson(Map<String, dynamic> json) => ChatRequest(
     id: json['id'] as String,
@@ -98,6 +122,10 @@ class ChatRequest {
     partnerAge: json['partnerAge'] as int?,
     partnerCountry: json['partnerCountry'] as String?,
     partnerPhotoUrl: json['partnerPhotoUrl'] as String?,
+    partnerOnline: json['partnerOnline'] as bool? ?? false,
+    createdAt: json['createdAt'] == null
+        ? null
+        : parseServerTime(json['createdAt']),
   );
 }
 

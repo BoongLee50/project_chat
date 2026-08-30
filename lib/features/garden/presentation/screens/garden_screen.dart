@@ -9,6 +9,7 @@ import '../../../../core/util/freshness.dart';
 import '../../../../shared/widgets/authed_image.dart';
 import '../../data/models/feed_item.dart';
 import '../../../chat/presentation/providers/chat_provider.dart';
+import '../../../chat/presentation/widgets/chat_request_dialog.dart';
 import '../../../daily/presentation/screens/daily_intro_screen.dart';
 import '../../../profile/data/models/profile_catalog.dart';
 import '../../../store/presentation/screens/luna_store_screen.dart';
@@ -366,41 +367,12 @@ class _FeedPagerState extends ConsumerState<_FeedPager> {
   /// 대화 신청 팝업 — 하루 무료 2회 후 루나 5 차감(서버 판정).
   Future<void> _requestChat(FeedItem item) async {
     final l10n = L10n.of(context);
-    final controller = TextEditingController();
-    final message = await showDialog<String>(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppColors.surface,
-        title: Text(
-          l10n.gardenChatRequestTitle(item.nickname),
-          style: const TextStyle(color: AppColors.textPrimary, fontSize: 18),
-        ),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          maxLength: 100,
-          maxLines: 3,
-          cursorColor: AppColors.moonlight,
-          style: const TextStyle(color: AppColors.textPrimary),
-          decoration: InputDecoration(
-            hintText: l10n.gardenChatRequestHint,
-            hintStyle: TextStyle(color: AppColors.textMuted),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(l10n.commonCancel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, controller.text.trim()),
-            child: Text(l10n.commonSend),
-          ),
-        ],
-      ),
+    final message = await showChatRequestDialog(
+      context,
+      nickname: item.nickname,
     );
 
-    if (message == null || message.isEmpty || !mounted) return;
+    if (message == null || !mounted) return;
     final error = await ref
         .read(chatActionsProvider)
         .requestChat(item.userId, message);
@@ -477,12 +449,15 @@ class _FeedPagerState extends ConsumerState<_FeedPager> {
                   ),
                 ),
 
-                // 상단: 이름 · 국기 · PICK · 접속중
+                // 상단: 이름 · 국기 · PICK · 접속중 (+ 아래 줄에 활동 지역)
                 Positioned(
                   top: 16,
                   left: 16,
                   right: 16,
-                  child: Row(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
                     children: [
                       Flexible(
                         child: Text(
@@ -546,6 +521,35 @@ class _FeedPagerState extends ConsumerState<_FeedPager> {
                               fontSize: 12,
                               fontWeight: FontWeight.w700,
                             ),
+                          ),
+                        ),
+                    ],
+                  ),
+                      // 활동 지역(기획 §2-5) — 있는 사람만. 코드는 서버가, 문구는 여기서.
+                      if (item.region != null)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 4),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(
+                                Icons.place_outlined,
+                                size: 13,
+                                color: Colors.white70,
+                              ),
+                              const SizedBox(width: 3),
+                              Text(
+                                ProfileCatalog.regionLabel(
+                                  L10n.of(context),
+                                  item.region!,
+                                ),
+                                style: const TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                     ],

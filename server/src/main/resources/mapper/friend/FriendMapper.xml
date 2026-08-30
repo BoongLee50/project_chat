@@ -8,6 +8,7 @@
         <result property="addresseeId" column="addressee_id"/>
         <result property="status" column="status"/>
         <result property="pairKey" column="pair_key"/>
+        <result property="message" column="message"/>
         <result property="createdAt" column="created_at"/>
         <result property="acceptedAt" column="accepted_at"/>
         <result property="partnerNickname" column="partner_nickname"/>
@@ -27,11 +28,13 @@
         <result property="photoKey" column="photo_key"/>
         <result property="roomId" column="room_id"/>
         <result property="acceptedAt" column="accepted_at"/>
+        <result property="region" column="region"/>
+        <result property="lastSeenAt" column="last_seen_at"/>
     </resultMap>
 
     <insert id="insert">
-        INSERT INTO friendships (id, requester_id, addressee_id, status, pair_key, created_at)
-        VALUES (#{id}, #{requesterId}, #{addresseeId}, #{status}, #{pairKey}, NOW())
+        INSERT INTO friendships (id, requester_id, addressee_id, status, pair_key, message, created_at)
+        VALUES (#{id}, #{requesterId}, #{addresseeId}, #{status}, #{pairKey}, #{message}, NOW())
     </insert>
 
     <select id="selectById" resultMap="FriendshipResultMap">
@@ -40,6 +43,11 @@
 
     <select id="selectByPairKey" resultMap="FriendshipResultMap">
         SELECT * FROM friendships WHERE pair_key = #{pairKey}
+    </select>
+
+    <select id="selectAllByUser" resultMap="FriendshipResultMap">
+        SELECT * FROM friendships
+        WHERE requester_id = #{userId} OR addressee_id = #{userId}
     </select>
 
     <update id="accept">
@@ -60,7 +68,10 @@
                u.country,
                p.intro,
                p.photo_key,
+               u.last_seen_at,
                f.accepted_at,
+               (SELECT ur.code FROM user_regions ur
+                 WHERE ur.user_id = u.id LIMIT 1) AS region,
                (SELECT r.id FROM chat_rooms r
                  WHERE r.type = 'FRIEND' AND r.status = 'ACTIVE'
                    AND r.active_pair_key = f.pair_key LIMIT 1) AS room_id

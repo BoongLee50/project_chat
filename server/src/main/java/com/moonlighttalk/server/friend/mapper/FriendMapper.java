@@ -35,6 +35,15 @@ public interface FriendMapper {
     /** 내가 받은 친구 요청(PENDING). */
     List<Friendship> selectReceivedRequests(@Param("userId") String userId);
 
+    /**
+     * 나와 얽힌 관계 <b>전부</b>(요청 중이든 성립이든).
+     *
+     * <p>대화방 목록의 행마다 [친구]/[친구 신청]/[신청 대기]를 그려야 하는데,
+     * 행마다 {@code selectByPairKey}를 부르면 방 수만큼 질의가 나간다. 한 번에 읽어
+     * 메모리에서 맞춘다 — 한 사람의 관계는 많아야 수백 건이다.
+     */
+    List<Friendship> selectAllByUser(@Param("userId") String userId);
+
     /** 내가 보낸 친구 요청(PENDING). */
     /** 성립된 친구 수(최대 친구 수 제한 검사용). */
     int countFriends(@Param("userId") String userId);

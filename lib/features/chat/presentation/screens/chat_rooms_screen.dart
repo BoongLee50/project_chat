@@ -5,16 +5,24 @@ import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimens.dart';
 import '../../../../core/error/api_exception.dart';
 import '../../../../core/error/error_messages.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/authed_image.dart';
+import '../../../../shared/widgets/night_header.dart';
+import '../../../friend/presentation/providers/friend_provider.dart';
+import '../../../postinfo/data/models/post_info.dart';
+import '../../../postinfo/presentation/screens/post_info_screen.dart';
 import '../../data/models/chat_models.dart';
 import '../providers/chat_provider.dart';
 import 'chat_screen.dart';
-import '../../../../l10n/app_localizations.dart';
 
-/// 대화방 — 메인 셸의 l10n.chatRoomsTitle 탭 본문. (기획서 5장)
+/// 대화방 — 메인 셸의 l10n.chatRoomsTitle 탭 본문. (기획 6-1)
 ///
-/// [매칭 대화] 진행 중인 방 + 받은 신청 / [보낸 신청] 목록을 전환해 보여준다.
-/// 새 메시지·신청·방 상태 변화는 소켓 이벤트로 자동 갱신된다.
+/// 탭이 **둘**이다: `[💬 대화]`는 진행 중인 방, `[✉ 받은 신청]`은 아직 답하지 않은
+/// 대화 신청. 예전에는 한 목록에 섞여 있었는데, 섞어 두면 "답해야 할 것"과
+/// "이어서 할 것"이 구분되지 않는다.
+///
+/// **받은 신청은 여기서 수락/거절하지 않는다.** 카드를 누르면 [포스트 정보] 화면이 열리고
+/// 거기서 결정한다 — 사진과 한마디를 보고 판단하라는 것이 시안의 뜻이다.
 class ChatRoomsScreen extends ConsumerStatefulWidget {
   const ChatRoomsScreen({super.key});
 
@@ -23,45 +31,37 @@ class ChatRoomsScreen extends ConsumerStatefulWidget {
 }
 
 class _ChatRoomsScreenState extends ConsumerState<ChatRoomsScreen> {
+  int _tab = 0;
+
   @override
   Widget build(BuildContext context) {
     final l10n = L10n.of(context);
     final rooms = ref.watch(chatRoomsProvider);
     final received = ref.watch(receivedRequestsProvider);
 
+    final roomList = rooms.valueOrNull ?? const <ChatRoomSummary>[];
+    final requestList = received.valueOrNull ?? const <ChatRequest>[];
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(
-            AppDimens.pagePad,
-            AppDimens.gapMd,
-            AppDimens.pagePad,
-            0,
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Text(
-                    l10n.chatRoomsTitle,
-                    style: TextStyle(
-                      color: AppColors.textPrimary,
-                      fontSize: 24,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                  SizedBox(width: 8),
-                  _Dot(),
-                ],
+        NightHeader(
+          title: l10n.chatRoomsTitle,
+          subtitle: l10n.chatRoomsSubtitle,
+          child: PillTabs(
+            index: _tab,
+            onChanged: (i) => setState(() => _tab = i),
+            tabs: [
+              PillTab(
+                icon: Icons.chat_bubble_outline_rounded,
+                label: l10n.chatTabChats,
+                count: roomList.length,
               ),
-              const SizedBox(height: 4),
-              Text(
-                l10n.chatRoomsSubtitle,
-                style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
+              PillTab(
+                icon: Icons.mail_outline_rounded,
+                label: l10n.chatTabReceived,
+                count: requestList.length,
               ),
-              const SizedBox(height: AppDimens.gapMd),
             ],
           ),
         ),
@@ -73,9 +73,9 @@ class _ChatRoomsScreenState extends ConsumerState<ChatRoomsScreen> {
               await ref.read(chatRoomsProvider.notifier).refresh();
               ref.invalidate(receivedRequestsProvider);
             },
-            // Plan_3은 [대화]와 [받은 신청]을 탭으로 나누지만, 그 분리는 ⑥단계(포스트 정보 화면)와
-            // 함께 간다. 여기서는 [보낸 신청] 탭만 걷어내고 한 목록으로 둔다.
-            child: _MatchedList(rooms: rooms, received: received),
+            child: _tab == 0
+                ? _RoomList(rooms: rooms)
+                : _RequestGrid(requests: requestList),
           ),
         ),
       ],
@@ -83,130 +83,39 @@ class _ChatRoomsScreenState extends ConsumerState<ChatRoomsScreen> {
   }
 }
 
-/// 매칭 대화 + 받은 신청.
-class _MatchedList extends ConsumerWidget {
-  const _MatchedList({required this.rooms, required this.received});
+class _RoomList extends StatelessWidget {
+  const _RoomList({required this.rooms});
 
   final AsyncValue<List<ChatRoomSummary>> rooms;
-  final AsyncValue<List<ChatRequest>> received;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final l10n = L10n.of(context);
-    final roomList = rooms.valueOrNull ?? const <ChatRoomSummary>[];
-    final requestList = received.valueOrNull ?? const <ChatRequest>[];
+    final list = rooms.valueOrNull ?? const <ChatRoomSummary>[];
 
-    if (rooms.isLoading && roomList.isEmpty) {
-      return const _Loading();
-    }
-    if (roomList.isEmpty && requestList.isEmpty) {
-      return _Empty(l10n.chatRoomsEmpty);
+    if (rooms.isLoading && list.isEmpty) return const _Loading();
+    if (list.isEmpty) {
+      return _Empty(
+        icon: Icons.forum_outlined,
+        message: l10n.chatRoomsEmpty,
+      );
     }
 
-    return ListView(
+    return ListView.builder(
       physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.fromLTRB(
-        AppDimens.pagePad,
-        0,
-        AppDimens.pagePad,
+        AppDimens.gapMd,
+        AppDimens.gapSm,
+        AppDimens.gapMd,
         AppDimens.gapMd,
       ),
-      children: [
-        if (requestList.isNotEmpty) ...[
-          _SectionLabel(l10n.chatTabReceived),
-          for (final request in requestList)
-            _RequestTile(request: request),
-          const SizedBox(height: AppDimens.gapMd),
-          _SectionLabel(l10n.chatRoomsOngoing),
-        ],
-        for (final room in roomList) _RoomTile(room: room),
-      ],
+      itemCount: list.length,
+      itemBuilder: (context, i) => _RoomTile(room: list[i]),
     );
   }
 }
 
-class _RequestTile extends ConsumerWidget {
-  const _RequestTile({required this.request});
-
-  final ChatRequest request;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = L10n.of(context);
-    Future<void> run(Future<ApiException?> Function() action) async {
-      final error = await action();
-      if (error != null && context.mounted) {
-        ScaffoldMessenger.of(context)
-          ..hideCurrentSnackBar()
-          ..showSnackBar(SnackBar(content: Text(errorMessage(l10n, error))));
-      }
-    }
-
-    final actions = ref.read(chatActionsProvider);
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppDimens.gapSm),
-      child: _Card(
-        child: Column(
-          children: [
-            Row(
-              children: [
-                _Avatar(url: request.partnerPhotoUrl),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        _nameAge(request.partnerNickname, request.partnerAge),
-                        style: const TextStyle(
-                          color: AppColors.textPrimary,
-                          fontSize: 17,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        request.message,
-                        maxLines: 2,
-                        style: const TextStyle(
-                          color: AppColors.textSecondary,
-                          fontSize: 14,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: AppDimens.gapMd),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => run(() => actions.reject(request.id)),
-                    child: Text(l10n.commonReject),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: FilledButton(
-                    onPressed: () => run(() => actions.accept(request.id)),
-                    style: FilledButton.styleFrom(
-                      backgroundColor: AppColors.moonlight,
-                    ),
-                    child: Text(l10n.commonAccept),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
+/// 대화 목록 한 줄 — 아바타(+미확인 배지) · 이름 나이 국기 시간 접속 · 메시지 · 친구 버튼.
 class _RoomTile extends StatelessWidget {
   const _RoomTile({required this.room});
 
@@ -215,111 +124,87 @@ class _RoomTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = L10n.of(context);
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppDimens.gapSm),
-      child: Material(
-        color: AppColors.surface,
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
         borderRadius: BorderRadius.circular(AppDimens.radiusLg),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(AppDimens.radiusLg),
-          onTap: () => Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => ChatScreen(room: room)),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(14),
-            child: Row(
-              children: [
-                _Avatar(url: room.partnerPhotoUrl),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Text(
+        onTap: () => Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => ChatScreen(room: room)),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _Avatar(url: room.partnerPhotoUrl, unread: room.unreadCount),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Flexible(
+                          child: Text(
                             _nameAge(room.partnerNickname, room.partnerAge),
+                            overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
                               color: AppColors.textPrimary,
-                              fontSize: 17,
+                              fontSize: 16,
                               fontWeight: FontWeight.w700,
                             ),
                           ),
-                          const SizedBox(width: 6),
-                          Text(
-                            room.flag,
-                            style: const TextStyle(fontSize: 15),
+                        ),
+                        if (room.flag.isNotEmpty) ...[
+                          const SizedBox(width: 5),
+                          Text(room.flag, style: const TextStyle(fontSize: 14)),
+                        ],
+                        const SizedBox(width: 8),
+                        Text(
+                          _timeAgo(l10n, room.lastMessageAt),
+                          style: const TextStyle(
+                            color: AppColors.textMuted,
+                            fontSize: 12,
                           ),
-                          // 친구 상시 대화방은 운영시간과 무관하게 유지되므로 구분해 준다.
-                          if (room.type == 'FRIEND') ...[
-                            const SizedBox(width: 6),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 6,
-                                vertical: 2,
-                              ),
-                              decoration: BoxDecoration(
-                                color: AppColors.moonlight.withValues(
-                                  alpha: 0.18,
-                                ),
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: Text(
-                                l10n.chatTabFriend,
-                                style: TextStyle(
-                                  color: AppColors.moonlight,
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                            ),
-                          ],
+                        ),
+                        if (room.partnerOnline) ...[
                           const SizedBox(width: 8),
+                          const _OnlineDot(),
+                          const SizedBox(width: 4),
                           Text(
-                            _timeAgo(l10n, room.lastMessageAt),
+                            l10n.statusOnline,
                             style: const TextStyle(
-                              color: AppColors.textMuted,
-                              fontSize: 12,
+                              color: AppColors.line,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
                             ),
                           ),
                         ],
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        // 목록 미리보기는 25자까지만(기획서 5장)
-                        _preview(l10n, room.lastMessageType, room.lastMessage),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: AppColors.textSecondary,
-                          fontSize: 14,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                if (room.unreadCount > 0) ...[
-                  const SizedBox(width: 10),
-                  Container(
-                    width: 28,
-                    height: 28,
-                    alignment: Alignment.center,
-                    decoration: const BoxDecoration(
-                      color: AppColors.moonlight,
-                      shape: BoxShape.circle,
+                      ],
                     ),
-                    child: const Text(
-                      'N',
-                      style: TextStyle(
-                        color: Colors.white,
+                    const SizedBox(height: 5),
+                    Text(
+                      _preview(l10n, room.lastMessageType, room.lastMessage),
+                      // 시안은 원문과 번역을 두 줄로 보여 준다. 번역은 ⑦단계에서
+                      // 붙으므로 지금은 원문이 최대 두 줄까지 흐른다.
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: AppColors.textSecondary,
                         fontSize: 13,
-                        fontWeight: FontWeight.w700,
+                        height: 1.4,
                       ),
                     ),
-                  ),
-                ],
-              ],
-            ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 10),
+              FriendRelationButton(
+                relation: room.friendRelation,
+                targetUserId: room.partnerId,
+              ),
+            ],
           ),
         ),
       ),
@@ -345,69 +230,360 @@ class _RoomTile extends StatelessWidget {
   }
 }
 
-String _nameAge(String name, int? age) =>
-    age == null ? name : '$name $age';
+/// 받은 신청 — **2열 그리드**(기획 6-1). 카드를 누르면 [포스트 정보]로 간다.
+class _RequestGrid extends StatelessWidget {
+  const _RequestGrid({required this.requests});
 
-class _Avatar extends StatelessWidget {
-  const _Avatar({this.url});
-
-  final String? url;
+  final List<ChatRequest> requests;
 
   @override
   Widget build(BuildContext context) {
-    return ClipOval(
-      child: SizedBox(
-        width: 60,
-        height: 60,
-        child: url == null
-            ? const ColoredBox(
+    final l10n = L10n.of(context);
+    if (requests.isEmpty) {
+      return _Empty(
+        icon: Icons.mail_outline_rounded,
+        message: l10n.chatRequestsEmpty,
+      );
+    }
+
+    return GridView.builder(
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: const EdgeInsets.fromLTRB(
+        AppDimens.gapMd,
+        AppDimens.gapSm,
+        AppDimens.gapMd,
+        AppDimens.gapMd,
+      ),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        crossAxisSpacing: 12,
+        mainAxisSpacing: 12,
+        childAspectRatio: 0.74,
+      ),
+      itemCount: requests.length,
+      itemBuilder: (context, i) => _RequestCard(request: requests[i]),
+    );
+  }
+}
+
+class _RequestCard extends StatelessWidget {
+  const _RequestCard({required this.request});
+
+  final ChatRequest request;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
+    final photo = request.partnerPhotoUrl;
+
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => showPostInfo(context, request.fromUserId),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(AppDimens.radiusMd),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            if (photo == null)
+              const ColoredBox(
                 color: AppColors.surfaceHigh,
                 child: Icon(Icons.person, color: AppColors.textMuted),
               )
-            : AuthedImage(url: url!),
+            else
+              AuthedImage(url: photo),
+
+            // 아래쪽 글자를 살리는 그늘. 탭을 삼키지 않도록 IgnorePointer로 감싼다(함정 #38).
+            const IgnorePointer(
+              child: DecoratedBox(
+                decoration: BoxDecoration(gradient: AppColors.nightScrim),
+              ),
+            ),
+
+            if (request.partnerOnline)
+              Positioned(
+                left: 8,
+                top: 8,
+                child: _Badge(
+                  color: Colors.black.withValues(alpha: 0.5),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const _OnlineDot(),
+                      const SizedBox(width: 4),
+                      Text(
+                        l10n.statusOnline,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+            // 아직 답하지 않은 신청 표시(시안의 주황 N).
+            Positioned(
+              right: 8,
+              top: 8,
+              child: Container(
+                width: 20,
+                height: 20,
+                alignment: Alignment.center,
+                decoration: const BoxDecoration(
+                  color: AppColors.danger,
+                  shape: BoxShape.circle,
+                ),
+                child: const Text(
+                  'N',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+            ),
+
+            Positioned(
+              left: 10,
+              right: 10,
+              bottom: 10,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          _nameAge(request.partnerNickname, request.partnerAge),
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ),
+                      if (request.flag.isNotEmpty) ...[
+                        const SizedBox(width: 4),
+                        Text(
+                          request.flag,
+                          style: const TextStyle(fontSize: 13),
+                        ),
+                      ],
+                    ],
+                  ),
+                  const SizedBox(height: 3),
+                  Row(
+                    children: [
+                      Text(
+                        _RoomTile._timeAgo(l10n, request.createdAt),
+                        style: const TextStyle(
+                          color: AppColors.textSecondary,
+                          fontSize: 11,
+                        ),
+                      ),
+                      const Spacer(),
+                      const Icon(
+                        Icons.chevron_right_rounded,
+                        color: Colors.white,
+                        size: 18,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 
-class _Card extends StatelessWidget {
-  const _Card({required this.child});
+/// `[친구]` / `[친구 신청]` / `[신청 대기]` — 관계에 따라 글자도 동작도 달라진다.
+///
+/// 이미 친구이거나 답을 기다리는 중이면 **누를 것이 없다.** 그래도 자리를 비우지 않는 건
+/// 지금 어떤 사이인지가 목록에서 바로 보여야 하기 때문이다(기획 6-1 [친구 관계 표시]).
+class FriendRelationButton extends ConsumerWidget {
+  const FriendRelationButton({
+    super.key,
+    required this.relation,
+    required this.targetUserId,
+  });
 
+  final FriendRelation relation;
+  final String targetUserId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = L10n.of(context);
+
+    final (label, active) = switch (relation) {
+      FriendRelation.friend => (l10n.postInfoFriendLabel, false),
+      FriendRelation.requested => (l10n.postInfoFriendPending, false),
+      FriendRelation.incoming => (l10n.postInfoFriendIncoming, true),
+      FriendRelation.none => (l10n.postInfoFriendAdd, true),
+    };
+
+    Future<void> act() async {
+      final actions = ref.read(friendActionsProvider);
+      // 상대가 이미 걸어 둔 신청이 있으면 새로 거는 게 아니라 **수락**이다.
+      final error = relation == FriendRelation.incoming
+          ? await _acceptIncoming(ref)
+          : await actions.request(targetUserId);
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text(
+              error == null
+                  ? (relation == FriendRelation.incoming
+                        ? l10n.friendsAccepted
+                        : l10n.friendsRequestSent)
+                  : errorMessage(l10n, error),
+            ),
+          ),
+        );
+    }
+
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: active ? act : null,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+        decoration: BoxDecoration(
+          color: active
+              ? AppColors.moonlight.withValues(alpha: 0.16)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(
+            color: active ? AppColors.moonlight : AppColors.border,
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: active ? AppColors.moonlight : AppColors.textSecondary,
+            fontSize: 12,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 받은 친구 요청 중 이 상대의 것을 찾아 수락한다.
+  ///
+  /// 목록 행에는 friendshipId가 없다(관계만 온다). 요청 목록에서 되짚는 이유는
+  /// 행마다 id를 실어 보내면 목록이 낡았을 때 이미 사라진 요청을 수락하게 되기 때문이다.
+  Future<ApiException?> _acceptIncoming(WidgetRef ref) async {
+    final requests = await ref.read(friendRequestsProvider.future);
+    final match = requests
+        .where((r) => r.requesterId == targetUserId)
+        .firstOrNull;
+    if (match == null) return null;
+    return ref.read(friendActionsProvider).accept(match.id);
+  }
+}
+
+String _nameAge(String name, int? age) => age == null ? name : '$name $age';
+
+// ── 작은 조각들 ────────────────────────────────────────────
+
+/// 아바타 + 미확인 배지. 배지는 **읽지 않은 게 있을 때만** 붙는다.
+class _Avatar extends StatelessWidget {
+  const _Avatar({this.url, this.unread = 0});
+
+  final String? url;
+  final int unread;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 62,
+      height: 62,
+      child: Stack(
+        children: [
+          ClipOval(
+            child: SizedBox(
+              width: 58,
+              height: 58,
+              child: url == null
+                  ? const ColoredBox(
+                      color: AppColors.surfaceHigh,
+                      child: Icon(Icons.person, color: AppColors.textMuted),
+                    )
+                  : AuthedImage(url: url!),
+            ),
+          ),
+          if (unread > 0)
+            Positioned(
+              right: 0,
+              top: 0,
+              child: Container(
+                width: 20,
+                height: 20,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: AppColors.danger,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: AppColors.night, width: 2),
+                ),
+                child: Text(
+                  unread > 9 ? '9+' : '$unread',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _Badge extends StatelessWidget {
+  const _Badge({required this.color, required this.child});
+
+  final Color color;
   final Widget child;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppDimens.radiusLg),
+        color: color,
+        borderRadius: BorderRadius.circular(999),
       ),
       child: child,
     );
   }
 }
 
-class _SectionLabel extends StatelessWidget {
-  const _SectionLabel(this.text);
-
-  final String text;
+class _OnlineDot extends StatelessWidget {
+  const _OnlineDot();
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppDimens.gapSm),
-      child: Text(
-        text,
-        style: const TextStyle(
-          color: AppColors.textSecondary,
-          fontSize: 13,
-          fontWeight: FontWeight.w700,
-        ),
+    return Container(
+      width: 8,
+      height: 8,
+      decoration: const BoxDecoration(
+        color: AppColors.line,
+        shape: BoxShape.circle,
       ),
     );
   }
 }
+
 class _Loading extends StatelessWidget {
   const _Loading();
 
@@ -418,8 +594,9 @@ class _Loading extends StatelessWidget {
 }
 
 class _Empty extends StatelessWidget {
-  const _Empty(this.message);
+  const _Empty({required this.icon, required this.message});
 
+  final IconData icon;
   final String message;
 
   @override
@@ -427,12 +604,8 @@ class _Empty extends StatelessWidget {
     return ListView(
       physics: const AlwaysScrollableScrollPhysics(),
       children: [
-        SizedBox(height: MediaQuery.of(context).size.height * 0.2),
-        Icon(
-          Icons.forum_outlined,
-          color: AppColors.textMuted,
-          size: 48,
-        ),
+        SizedBox(height: MediaQuery.of(context).size.height * 0.15),
+        Icon(icon, color: AppColors.textMuted, size: 48),
         const SizedBox(height: 12),
         Text(
           message,
@@ -444,22 +617,6 @@ class _Empty extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-class _Dot extends StatelessWidget {
-  const _Dot();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 8,
-      height: 8,
-      decoration: const BoxDecoration(
-        color: AppColors.moonlight,
-        shape: BoxShape.circle,
-      ),
     );
   }
 }

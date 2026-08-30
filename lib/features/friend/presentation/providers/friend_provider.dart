@@ -62,8 +62,10 @@ class FriendActions {
 
   final Ref _ref;
 
-  Future<ApiException?> request(String targetUserId) =>
-      _run(() => _ref.read(friendApiProvider).request(targetUserId), sent: true);
+  Future<ApiException?> request(String targetUserId, {String? message}) => _run(
+    () => _ref.read(friendApiProvider).request(targetUserId, message: message),
+    sent: true,
+  );
 
   Future<ApiException?> accept(String friendshipId) async {
     try {
