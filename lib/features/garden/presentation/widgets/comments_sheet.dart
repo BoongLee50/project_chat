@@ -14,11 +14,21 @@ import '../../../../shared/widgets/authed_image.dart';
 import '../../data/models/feed_item.dart';
 import '../providers/garden_provider.dart';
 
-/// 포스트 댓글 시트(기획서 4-2). **3단계 답글** · 최대 50자 · 이미지 1장.
+/// 댓글이 달릴 대상. 서버의 `CommentTarget`과 짝이다.
 ///
-/// 달빛 한마디(8-2·8-3)의 댓글도 규칙이 같아 ⑤단계에서 이 화면을 재사용한다 —
-/// 그래서 [FeedItem]에 직접 매달지 않고 대상 사용자 id와 이름만 받는다.
-Future<void> showCommentsSheet(BuildContext context, FeedItem item) {
+/// 포스트와 달빛 한마디의 댓글 규칙이 **문장까지 같아**(기획 4-2 / 8-2 / 8-3)
+/// 화면도 한 벌만 둔다 — 두 벌이면 언젠가 조용히 갈라진다.
+enum CommentTargetKind { post, dailyAnswer }
+
+/// 댓글 시트. **3단계 답글** · 최대 50자 · 이미지 1장.
+///
+/// [title]은 시트 머리글, [targetId]는 포스트 주인의 userId(포스트) 또는 한마디 id다.
+Future<void> showCommentsSheet(
+  BuildContext context, {
+  required CommentTargetKind kind,
+  required String targetId,
+  required String title,
+}) {
   return showModalBottomSheet(
     context: context,
     backgroundColor: AppColors.panel,
@@ -26,14 +36,30 @@ Future<void> showCommentsSheet(BuildContext context, FeedItem item) {
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
     ),
-    builder: (context) => _CommentsSheet(item: item),
+    builder: (context) =>
+        _CommentsSheet(kind: kind, targetId: targetId, title: title),
   );
 }
 
-class _CommentsSheet extends ConsumerStatefulWidget {
-  const _CommentsSheet({required this.item});
+/// 포스트 카드에서 여는 지름길 — 대상이 [FeedItem] 하나로 정해져 있다.
+Future<void> showPostCommentsSheet(BuildContext context, FeedItem item) =>
+    showCommentsSheet(
+      context,
+      kind: CommentTargetKind.post,
+      targetId: item.userId,
+      title: L10n.of(context).commentsTitle(item.nickname),
+    );
 
-  final FeedItem item;
+class _CommentsSheet extends ConsumerStatefulWidget {
+  const _CommentsSheet({
+    required this.kind,
+    required this.targetId,
+    required this.title,
+  });
+
+  final CommentTargetKind kind;
+  final String targetId;
+  final String title;
 
   @override
   ConsumerState<_CommentsSheet> createState() => _CommentsSheetState();
@@ -50,6 +76,9 @@ class _CommentsSheetState extends ConsumerState<_CommentsSheet> {
 
   /// 답글 대상. null이면 1단계 댓글이다.
   Comment? _replyTo;
+
+  /// 목록 프로바이더의 키. 대상 종류가 다르면 같은 id라도 다른 목록이다.
+  String get _key => '${widget.kind.name}:${widget.targetId}';
 
   /// 첨부한 사진 — 올린 뒤 받은 키와, 미리보기용 바이트.
   String? _imageKey;
@@ -72,6 +101,7 @@ class _CommentsSheetState extends ConsumerState<_CommentsSheet> {
     setState(() => _sending = true);
     try {
       // 등록 버튼을 누르기 전에 올려 둔다 — 전송 순간이 짧아야 답답하지 않다.
+      // 이미지는 어느 쪽이든 같은 저장소(`comment-images/{userId}/`)를 쓴다.
       final key = await ref
           .read(gardenApiProvider)
           .uploadCommentImage(bytes: bytes);
@@ -93,21 +123,33 @@ class _CommentsSheetState extends ConsumerState<_CommentsSheet> {
 
     setState(() => _sending = true);
     try {
-      await ref
-          .read(gardenApiProvider)
-          .addComment(
-            widget.item.userId,
-            text,
-            parentId: _replyTo?.id,
-            imageKey: _imageKey,
-          );
+      switch (widget.kind) {
+        case CommentTargetKind.post:
+          await ref
+              .read(gardenApiProvider)
+              .addComment(
+                widget.targetId,
+                text,
+                parentId: _replyTo?.id,
+                imageKey: _imageKey,
+              );
+        case CommentTargetKind.dailyAnswer:
+          await ref
+              .read(dailyApiProvider)
+              .addComment(
+                widget.targetId,
+                text,
+                parentId: _replyTo?.id,
+                imageKey: _imageKey,
+              );
+      }
       _controller.clear();
       setState(() {
         _replyTo = null;
         _imageKey = null;
         _imageBytes = null;
       });
-      ref.invalidate(commentsProvider(widget.item.userId));
+      ref.invalidate(commentsProvider(_key));
     } on ApiException catch (e) {
       if (mounted) _toast(errorMessage(L10n.of(context), e));
     } finally {
@@ -124,7 +166,7 @@ class _CommentsSheetState extends ConsumerState<_CommentsSheet> {
   @override
   Widget build(BuildContext context) {
     final l10n = L10n.of(context);
-    final comments = ref.watch(commentsProvider(widget.item.userId));
+    final comments = ref.watch(commentsProvider(_key));
 
     return Padding(
       // 키보드가 올라와도 입력창이 가려지지 않도록.
@@ -149,7 +191,7 @@ class _CommentsSheetState extends ConsumerState<_CommentsSheet> {
               child: Row(
                 children: [
                   Text(
-                    l10n.commentsTitle(widget.item.nickname),
+                    widget.title,
                     style: const TextStyle(
                       color: AppColors.textPrimary,
                       fontSize: 16,

@@ -42,6 +42,15 @@ String errorMessage(L10n l10n, ApiException e) {
     'COMMENT_PARENT_NOT_FOUND' => l10n.errorCommentParentNotFound,
     'COMMENT_IMAGE_KEY_INVALID' => l10n.errorCommentImageKeyInvalid,
 
+    // ── 달빛 한마디 ───────────────────────────────────
+    'DAILY_QUESTION_NOT_READY' => l10n.errorDailyQuestionNotReady,
+    'DAILY_ANSWER_NOT_FOUND' => l10n.errorDailyAnswerNotFound,
+    // 아직 안 썼다는 건 오류가 아니라 안내다 — 화면이 문구를 그대로 쓴다.
+    'DAILY_ANSWER_NOT_YET' => l10n.dailyMineEmpty,
+    'DAILY_ANSWER_ALREADY' => l10n.errorDailyAnswerAlready,
+    'DAILY_ANSWER_TOO_LONG' => l10n.errorDailyAnswerTooLong(_count(e)),
+    'DAILY_ANSWER_IMAGE_KEY_INVALID' => l10n.errorDailyAnswerImageKeyInvalid,
+
     // ── translate ────────────────────────────────────
     'TRANSLATE_QUOTA_EXCEEDED' => l10n.errorTranslateQuotaExceeded,
     'TRANSLATE_TARGET_REQUIRED' => l10n.errorTranslateTargetRequired,

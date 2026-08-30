@@ -1,21 +1,23 @@
-package com.moonlighttalk.server.garden.entity;
+package com.moonlighttalk.server.comment.entity;
 
+import com.moonlighttalk.server.comment.dto.CommentTarget;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
 
 /**
- * 포스트 댓글(기획서 4-2). <b>3단계까지</b> · 50자 · 이미지 1장.
+ * 댓글(기획 4-2 / 8-2 / 8-3). <b>3단계까지</b> · 50자 · 이미지 1장.
  *
- * <p>달빛 한마디(8-2·8-3)의 댓글도 규칙이 같아 ⑤단계에서 이 구조를 재사용한다 —
- * 그래서 이름에 콘텐츠를 넣지 않았다(docs/12 §6 E).
+ * <p>포스트와 달빛 한마디 답변이 <b>같은 규칙</b>을 쓰므로 한 테이블에 담고
+ * {@code targetType}으로만 가른다(V14).
  */
 @Getter
 @Setter
-public class PostComment {
+public class Comment {
     private String id;
-    private String postId;
+    private CommentTarget targetType;
+    private String targetId;
     private String authorId;
     private String authorNickname;
     private String body;

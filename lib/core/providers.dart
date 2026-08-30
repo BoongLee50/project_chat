@@ -5,6 +5,7 @@ import '../features/chat/data/datasources/chat_api.dart';
 import '../features/friend/data/datasources/friend_api.dart';
 import '../features/moderation/data/datasources/moderation_api.dart';
 import '../features/store/data/datasources/store_api.dart';
+import '../features/daily/data/datasources/daily_api.dart';
 import '../features/garden/data/datasources/garden_api.dart';
 import '../features/post/data/datasources/post_api.dart';
 import '../features/profile/data/datasources/profile_api.dart';
@@ -31,6 +32,10 @@ final profileApiProvider = Provider<ProfileApi>(
 
 final postApiProvider = Provider<PostApi>(
   (ref) => PostApi(ref.watch(dioClientProvider)),
+);
+
+final dailyApiProvider = Provider<DailyApi>(
+  (ref) => DailyApi(ref.watch(dioClientProvider)),
 );
 
 final gardenApiProvider = Provider<GardenApi>(

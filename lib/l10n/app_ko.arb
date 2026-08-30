@@ -129,6 +129,30 @@
   },
   "gardenPhotoLockedBody": "오늘 내 포스트를 공유하면 상대의 사진을 모두 볼 수 있어요.",
   "gardenPhotoLockedAction": "내 포스트 등록하기",
+  "dailyTitle": "달빛 한마디",
+  "dailyMissionNotice": "매일 저녁 6시에 새로운 미션이 열려요 ✨",
+  "dailyTodayQuestion": "오늘의 질문",
+  "dailyParticipants": "지금까지 {count}명이 참여했어요",
+  "@dailyParticipants": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dailyRemaining": "남은 시간",
+  "dailyJoin": "참여하기",
+  "dailySortLatest": "최신순",
+  "dailySortPopular": "인기순",
+  "dailyMine": "내 한마디",
+  "dailyMineEmpty": "아직 작성한 내 한마디가 없어요. 오늘의 질문에 답해 보세요.",
+  "dailyWriteTitle": "달빛 한마디 작성",
+  "dailyWriteHint": "여기에 당신의 한마디를 입력해주세요...",
+  "dailyWriteImage": "이미지 추가 (선택)",
+  "dailyWriteSubmit": "등록하기",
+  "dailyEmpty": "아직 한마디가 없어요. 첫 번째로 답해 보세요.",
+  "dailyLoadFailed": "달빛 한마디를 불러오지 못했어요.",
+  "dailyDetailTitle": "내 달빛 한마디",
   "commentsTitle": "{nickname}님의 포스트",
   "@commentsTitle": {
     "placeholders": {
@@ -805,6 +829,18 @@
   },
   "errorCommentParentNotFound": "답글을 달 댓글을 찾을 수 없어요.",
   "errorCommentImageKeyInvalid": "첨부한 사진이 올바르지 않아요. 다시 선택해 주세요.",
+  "errorDailyQuestionNotReady": "오늘의 질문이 아직 준비되지 않았어요.",
+  "errorDailyAnswerNotFound": "한마디를 찾을 수 없어요.",
+  "errorDailyAnswerAlready": "오늘은 이미 한마디를 남겼어요.",
+  "errorDailyAnswerTooLong": "{count}자까지 입력할 수 있어요.",
+  "@errorDailyAnswerTooLong": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "errorDailyAnswerImageKeyInvalid": "첨부한 사진이 올바르지 않아요. 다시 선택해 주세요.",
   "errorTranslateQuotaExceeded": "오늘의 무료 번역을 모두 사용했어요. 자동 번역 패스를 이용해 보세요.",
   "errorTranslateTargetRequired": "번역할 상대를 지정해 주세요.",
   "errorChatSelf": "자신에게는 대화를 신청할 수 없어요.",

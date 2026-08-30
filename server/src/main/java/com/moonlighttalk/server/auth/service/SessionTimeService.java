@@ -31,6 +31,11 @@ public class SessionTimeService {
         this.rolloverHour = rolloverHour;
     }
 
+    /** 하루가 바뀌는 시각(KST). 달빛 한마디의 "남은 시간"이 이 값을 쓴다. */
+    public int rolloverHour() {
+        return rolloverHour;
+    }
+
     /** 현재 KST 시각. */
     public ZonedDateTime nowKst() {
         return ZonedDateTime.now(KST);

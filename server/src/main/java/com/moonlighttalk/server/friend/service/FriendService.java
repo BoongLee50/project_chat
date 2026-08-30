@@ -19,6 +19,8 @@ import com.moonlighttalk.server.friend.entity.FriendPost;
 import com.moonlighttalk.server.friend.entity.FriendSummary;
 import com.moonlighttalk.server.friend.entity.Friendship;
 import com.moonlighttalk.server.friend.mapper.FriendMapper;
+import com.moonlighttalk.server.comment.dto.CommentTarget;
+import com.moonlighttalk.server.comment.service.CommentService;
 import com.moonlighttalk.server.garden.mapper.GardenMapper;
 import com.moonlighttalk.server.presence.PresenceService;
 import com.moonlighttalk.server.store.service.EntitlementService;
@@ -50,6 +52,7 @@ public class FriendService {
     private final ChatMapper chatMapper;
     private final UserMapper userMapper;
     private final GardenMapper gardenMapper;
+    private final CommentService commentService;
     private final SessionTimeService sessionTime;
     private final PresenceService presenceService;
     private final EntitlementService entitlementService;
@@ -67,6 +70,7 @@ public class FriendService {
                           ChatMapper chatMapper,
                           UserMapper userMapper,
                           GardenMapper gardenMapper,
+                          CommentService commentService,
                           SessionTimeService sessionTime,
                           PresenceService presenceService,
                           EntitlementService entitlementService,
@@ -75,6 +79,7 @@ public class FriendService {
                           @Value("${app.friend.max-count:100}") int maxFriends,
                           @Value("${app.friend.max-count-premium:100}") int maxFriendsPremium) {
         this.friendMapper = friendMapper;
+        this.commentService = commentService;
         this.chatMapper = chatMapper;
         this.userMapper = userMapper;
         this.gardenMapper = gardenMapper;
@@ -251,7 +256,7 @@ public class FriendService {
                 photoUrls,
                 post.getIntro(),
                 post.getLikes(),
-                gardenMapper.countComments(post.getPostId()),
+                commentService.count(CommentTarget.POST, post.getPostId()),
                 post.getPublishedAt());
     }
 

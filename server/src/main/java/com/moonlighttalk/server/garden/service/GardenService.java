@@ -5,9 +5,11 @@ import com.moonlighttalk.server.common.exception.ApiException;
 import com.moonlighttalk.server.common.response.ErrorCode;
 import com.moonlighttalk.server.common.storage.FileStorageService;
 import com.moonlighttalk.server.garden.config.GardenProperties;
+import com.moonlighttalk.server.comment.dto.CommentDto;
+import com.moonlighttalk.server.comment.dto.CommentTarget;
+import com.moonlighttalk.server.comment.service.CommentService;
 import com.moonlighttalk.server.garden.dto.*;
 import com.moonlighttalk.server.garden.entity.FeedCandidate;
-import com.moonlighttalk.server.garden.entity.PostComment;
 import com.moonlighttalk.server.garden.mapper.GardenMapper;
 import com.moonlighttalk.server.post.dto.UploadUrlResponse;
 import com.moonlighttalk.server.garden.translate.TranslationProvider;
@@ -63,15 +65,13 @@ public class GardenService {
     private final TranslationProvider translationProvider;
     private final EntitlementService entitlementService;
     private final LunaService lunaService;
+    private final CommentService commentService;
 
     // 기획이 바꿀 수 있는 수치는 전부 설정으로 뺀다.
     /** 무료 번역: 댓글은 하루 N회, 채팅은 하루 N명(01 §1.4). */
     private final int freeTranslateComments;
     private final int freeTranslateChatTargets;
 
-    /** 댓글 규칙(기획 4-2). 달빛 한마디(8-2·8-3)도 같은 값을 쓴다. */
-    private final int maxCommentLength;
-    private final int maxCommentDepth;
 
     /** 피드 스코어·믹싱 수치 — 운영하며 튜닝할 값이라 재배포 없이 바꿀 수 있어야 한다. */
     private final GardenProperties garden;
@@ -84,12 +84,11 @@ public class GardenService {
                           TranslationProvider translationProvider,
                           EntitlementService entitlementService,
                           LunaService lunaService,
+                          CommentService commentService,
                           GardenProperties garden,
                           FeedSessionStore feedSessions,
                           @Value("${app.translate.free-comments-per-day:2}") int freeTranslateComments,
-                          @Value("${app.translate.free-chat-targets-per-day:2}") int freeTranslateChatTargets,
-                          @Value("${app.comment.max-length:50}") int maxCommentLength,
-                          @Value("${app.comment.max-depth:3}") int maxCommentDepth) {
+                          @Value("${app.translate.free-chat-targets-per-day:2}") int freeTranslateChatTargets) {
         this.gardenMapper = gardenMapper;
         this.sessionTime = sessionTime;
         this.presenceService = presenceService;
@@ -101,8 +100,7 @@ public class GardenService {
         this.feedSessions = feedSessions;
         this.freeTranslateComments = freeTranslateComments;
         this.freeTranslateChatTargets = freeTranslateChatTargets;
-        this.maxCommentLength = maxCommentLength;
-        this.maxCommentDepth = maxCommentDepth;
+        this.commentService = commentService;
     }
 
     /**
@@ -275,39 +273,22 @@ public class GardenService {
         gardenMapper.insertSkip(userId, targetUserId, sessionTime.currentSessionDate());
     }
 
-    /**
-     * 댓글 목록. <b>트리 순서로 평탄화</b>해서 준다 — 부모 바로 뒤에 그 답글이 오므로
-     * 클라는 {@code depth}만큼 들여쓰기만 하면 된다(재귀 조립을 클라에 시키지 않는다).
-     */
+    /** 포스트 댓글 목록(트리 순서). 규칙은 {@link CommentService}가 안다. */
     public List<CommentDto> comments(String targetUserId) {
-        String postId = requireTodayPostId(targetUserId);
-        return threaded(gardenMapper.selectComments(postId)).stream()
-                .map(c -> new CommentDto(
-                        c.getId(),
-                        c.getParentId(),
-                        c.getDepth(),
-                        c.getAuthorId(),
-                        c.getAuthorNickname(),
-                        c.getBody(),
-                        c.getImageKey() == null
-                                ? null
-                                : fileStorageService.issueDownloadUrl(c.getImageKey()),
-                        c.getCreatedAt()))
-                .toList();
+        return commentService.list(CommentTarget.POST, requireTodayPostId(targetUserId));
     }
 
-    /** 댓글 첨부 이미지 업로드 URL. 포스트 사진과 같은 흐름이다(직접 업로드 후 키를 등록). */
+    /** 댓글 첨부 이미지 업로드 URL(1장). */
     public UploadUrlResponse issueCommentImageUploadUrl(String userId, String contentType) {
-        String storageKey = commentImagePrefix(userId) + UUID.randomUUID() + extensionOf(contentType);
-        return new UploadUrlResponse(
-                fileStorageService.issueUploadUrl(storageKey, contentType), storageKey);
+        return commentService.issueImageUploadUrl(userId, contentType);
     }
 
     /**
-     * 댓글/답글 작성. <b>3단계까지</b>(기획 4-2) · 50자 · 이미지 1장.
+     * 포스트에 댓글/답글을 단다.
      *
-     * <p>길이는 요청 DTO의 {@code @Size}가 먼저 막지만 여기서도 본다 —
-     * 이 메서드는 ⑤단계에서 달빛 한마디 쪽에서도 불릴 자리이고, 그때 검증이 빠지면 조용히 새어 나간다.
+     * <p>여기서 판단하는 것은 <b>포스트에 고유한 것</b> 둘뿐이다 —
+     * 차단·신고 상대인지, 그리고 Engage 집계를 올리는 것.
+     * 3단계·50자·이미지 규칙은 달빛 한마디와 공유하므로 {@link CommentService}가 가진다.
      */
     @Transactional
     public void addComment(String userId, String targetUserId, String body,
@@ -316,121 +297,13 @@ public class GardenService {
             throw new ApiException(ErrorCode.GARDEN_TARGET_BLOCKED, HttpStatus.CONFLICT,
                     "현재 이 사용자에게 댓글을 남길 수 없어요.");
         }
-        if (body != null && body.length() > maxCommentLength) {
-            throw new ApiException(ErrorCode.COMMENT_TOO_LONG, HttpStatus.BAD_REQUEST,
-                    "댓글이 너무 깁니다.", String.valueOf(maxCommentLength));
-        }
 
         String postId = requireTodayPostId(targetUserId);
-        int depth = resolveDepth(parentId, postId);
-        requireMyImageKey(userId, imageKey);
-
-        PostComment comment = new PostComment();
-        comment.setId(UUID.randomUUID().toString());
-        comment.setPostId(postId);
-        comment.setAuthorId(userId);
-        comment.setBody(body);
-        comment.setParentId(emptyToNull(parentId));
-        comment.setDepth(depth);
-        comment.setImageKey(emptyToNull(imageKey));
-        gardenMapper.insertComment(comment);
+        commentService.add(CommentTarget.POST, postId, userId, body, parentId, imageKey);
 
         // Engage 전환율의 분자(댓글×2). **답글도 댓글로 센다** — 기획서가 나누지 않았고,
         // 대화가 이어지는 것도 반응이다.
         gardenMapper.incrementStat(targetUserId, sessionTime.currentSessionDate(), "comments", 1);
-    }
-
-    /** 부모를 확인하고 내 깊이를 정한다. 부모가 없으면 1단계. */
-    private int resolveDepth(String parentId, String postId) {
-        if (emptyToNull(parentId) == null) {
-            return 1;
-        }
-        PostComment parent = gardenMapper.selectCommentById(parentId);
-        if (parent == null || !parent.getPostId().equals(postId)) {
-            // 다른 포스트의 댓글에 답글을 달면 트리가 두 포스트에 걸친다.
-            throw new ApiException(ErrorCode.COMMENT_PARENT_NOT_FOUND, HttpStatus.NOT_FOUND,
-                    "답글을 달 댓글을 찾을 수 없어요.");
-        }
-        int depth = parent.getDepth() + 1;
-        if (depth > maxCommentDepth) {
-            throw new ApiException(ErrorCode.COMMENT_DEPTH_EXCEEDED, HttpStatus.CONFLICT,
-                    "답글은 " + maxCommentDepth + "단계까지만 달 수 있어요.",
-                    String.valueOf(maxCommentDepth));
-        }
-        return depth;
-    }
-
-    /**
-     * 첨부 이미지가 <b>내가 방금 올린 것</b>인지. 키에 업로더 id가 들어 있어 접두사로 판정한다
-     * (음성 메시지와 같은 방식) — 남의 키를 그대로 붙여 넣는 것을 막는다.
-     */
-    private void requireMyImageKey(String userId, String imageKey) {
-        if (emptyToNull(imageKey) == null) {
-            return;
-        }
-        if (!imageKey.startsWith(commentImagePrefix(userId))) {
-            throw new ApiException(ErrorCode.COMMENT_IMAGE_KEY_INVALID, HttpStatus.FORBIDDEN,
-                    "첨부 이미지가 올바르지 않아요.");
-        }
-    }
-
-    private static String commentImagePrefix(String userId) {
-        return "comment-images/" + userId + "/";
-    }
-
-    private static String extensionOf(String contentType) {
-        if (contentType == null) {
-            return "";
-        }
-        return switch (contentType) {
-            case "image/png" -> ".png";
-            case "image/webp" -> ".webp";
-            default -> ".jpg";
-        };
-    }
-
-    /**
-     * 시간순 목록을 <b>트리 순서</b>로 다시 늘어놓는다 — 각 댓글 뒤에 그 답글이 붙는다.
-     *
-     * <p>SQL로 하려면 경로 컬럼이나 재귀 CTE가 필요한데, 깊이가 3까지뿐이라
-     * 여기서 한 번 도는 편이 단순하고 정확하다. 부모를 잃은 답글(있을 수 없지만)은 뒤에 붙인다.
-     */
-    private List<PostComment> threaded(List<PostComment> all) {
-        Map<String, List<PostComment>> children = new HashMap<>();
-        List<PostComment> roots = new ArrayList<>();
-        for (PostComment c : all) {
-            if (c.getParentId() == null) {
-                roots.add(c);
-            } else {
-                children.computeIfAbsent(c.getParentId(), k -> new ArrayList<>()).add(c);
-            }
-        }
-
-        List<PostComment> ordered = new ArrayList<>(all.size());
-        for (PostComment root : roots) {
-            appendWithChildren(root, children, ordered);
-        }
-        if (ordered.size() < all.size()) {
-            Set<String> placed = new HashSet<>();
-            for (PostComment c : ordered) {
-                placed.add(c.getId());
-            }
-            for (PostComment c : all) {
-                if (!placed.contains(c.getId())) {
-                    ordered.add(c);
-                }
-            }
-        }
-        return ordered;
-    }
-
-    private void appendWithChildren(PostComment node,
-                                     Map<String, List<PostComment>> children,
-                                     List<PostComment> out) {
-        out.add(node);
-        for (PostComment child : children.getOrDefault(node.getId(), List.of())) {
-            appendWithChildren(child, children, out);
-        }
     }
 
     /** 번역 — 키 미설정 시 원문을 그대로 반환(패스스루). */
@@ -531,7 +404,7 @@ public class GardenService {
                 keys.size(),
                 gardenMapper.selectInterests(c.getUserId()),
                 c.getLikes(),
-                gardenMapper.countComments(c.getPostId()),
+                commentService.count(CommentTarget.POST, c.getPostId()),
                 score
         );
     }

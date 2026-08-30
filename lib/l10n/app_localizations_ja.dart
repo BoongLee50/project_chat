@@ -227,6 +227,59 @@ class L10nJa extends L10n {
   String get gardenPhotoLockedAction => '自分のポストを登録';
 
   @override
+  String get dailyTitle => '月あかりのひとこと';
+
+  @override
+  String get dailyMissionNotice => '毎晩6時に新しいミッションが開きます ✨';
+
+  @override
+  String get dailyTodayQuestion => '今日の質問';
+
+  @override
+  String dailyParticipants(int count) {
+    return 'これまでに$count人が参加しました';
+  }
+
+  @override
+  String get dailyRemaining => '残り時間';
+
+  @override
+  String get dailyJoin => '参加する';
+
+  @override
+  String get dailySortLatest => '新着順';
+
+  @override
+  String get dailySortPopular => '人気順';
+
+  @override
+  String get dailyMine => '自分のひとこと';
+
+  @override
+  String get dailyMineEmpty => 'まだ自分のひとことがありません。今日の質問に答えてみましょう。';
+
+  @override
+  String get dailyWriteTitle => 'ひとことを書く';
+
+  @override
+  String get dailyWriteHint => 'ここにあなたのひとことを入力してください...';
+
+  @override
+  String get dailyWriteImage => '画像を追加（任意）';
+
+  @override
+  String get dailyWriteSubmit => '登録する';
+
+  @override
+  String get dailyEmpty => 'まだひとことがありません。最初に答えてみましょう。';
+
+  @override
+  String get dailyLoadFailed => 'ひとことを読み込めませんでした。';
+
+  @override
+  String get dailyDetailTitle => '自分のひとこと';
+
+  @override
   String commentsTitle(String nickname) {
     return '$nicknameさんのポスト';
   }
@@ -1298,6 +1351,23 @@ class L10nJa extends L10n {
 
   @override
   String get errorCommentImageKeyInvalid => '添付した写真が正しくありません。選び直してください。';
+
+  @override
+  String get errorDailyQuestionNotReady => '今日の質問はまだ準備中です。';
+
+  @override
+  String get errorDailyAnswerNotFound => 'ひとことが見つかりません。';
+
+  @override
+  String get errorDailyAnswerAlready => '今日はすでにひとことを残しました。';
+
+  @override
+  String errorDailyAnswerTooLong(int count) {
+    return '$count文字まで入力できます。';
+  }
+
+  @override
+  String get errorDailyAnswerImageKeyInvalid => '添付した写真が正しくありません。選び直してください。';
 
   @override
   String get errorTranslateQuotaExceeded => '本日の無料翻訳をすべて使いました。自動翻訳パスをご利用ください。';

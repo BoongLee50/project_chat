@@ -505,6 +505,108 @@ abstract class L10n {
   /// **'내 포스트 등록하기'**
   String get gardenPhotoLockedAction;
 
+  /// No description provided for @dailyTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'달빛 한마디'**
+  String get dailyTitle;
+
+  /// No description provided for @dailyMissionNotice.
+  ///
+  /// In ko, this message translates to:
+  /// **'매일 저녁 6시에 새로운 미션이 열려요 ✨'**
+  String get dailyMissionNotice;
+
+  /// No description provided for @dailyTodayQuestion.
+  ///
+  /// In ko, this message translates to:
+  /// **'오늘의 질문'**
+  String get dailyTodayQuestion;
+
+  /// No description provided for @dailyParticipants.
+  ///
+  /// In ko, this message translates to:
+  /// **'지금까지 {count}명이 참여했어요'**
+  String dailyParticipants(int count);
+
+  /// No description provided for @dailyRemaining.
+  ///
+  /// In ko, this message translates to:
+  /// **'남은 시간'**
+  String get dailyRemaining;
+
+  /// No description provided for @dailyJoin.
+  ///
+  /// In ko, this message translates to:
+  /// **'참여하기'**
+  String get dailyJoin;
+
+  /// No description provided for @dailySortLatest.
+  ///
+  /// In ko, this message translates to:
+  /// **'최신순'**
+  String get dailySortLatest;
+
+  /// No description provided for @dailySortPopular.
+  ///
+  /// In ko, this message translates to:
+  /// **'인기순'**
+  String get dailySortPopular;
+
+  /// No description provided for @dailyMine.
+  ///
+  /// In ko, this message translates to:
+  /// **'내 한마디'**
+  String get dailyMine;
+
+  /// No description provided for @dailyMineEmpty.
+  ///
+  /// In ko, this message translates to:
+  /// **'아직 작성한 내 한마디가 없어요. 오늘의 질문에 답해 보세요.'**
+  String get dailyMineEmpty;
+
+  /// No description provided for @dailyWriteTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'달빛 한마디 작성'**
+  String get dailyWriteTitle;
+
+  /// No description provided for @dailyWriteHint.
+  ///
+  /// In ko, this message translates to:
+  /// **'여기에 당신의 한마디를 입력해주세요...'**
+  String get dailyWriteHint;
+
+  /// No description provided for @dailyWriteImage.
+  ///
+  /// In ko, this message translates to:
+  /// **'이미지 추가 (선택)'**
+  String get dailyWriteImage;
+
+  /// No description provided for @dailyWriteSubmit.
+  ///
+  /// In ko, this message translates to:
+  /// **'등록하기'**
+  String get dailyWriteSubmit;
+
+  /// No description provided for @dailyEmpty.
+  ///
+  /// In ko, this message translates to:
+  /// **'아직 한마디가 없어요. 첫 번째로 답해 보세요.'**
+  String get dailyEmpty;
+
+  /// No description provided for @dailyLoadFailed.
+  ///
+  /// In ko, this message translates to:
+  /// **'달빛 한마디를 불러오지 못했어요.'**
+  String get dailyLoadFailed;
+
+  /// No description provided for @dailyDetailTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'내 달빛 한마디'**
+  String get dailyDetailTitle;
+
   /// No description provided for @commentsTitle.
   ///
   /// In ko, this message translates to:
@@ -2442,6 +2544,36 @@ abstract class L10n {
   /// In ko, this message translates to:
   /// **'첨부한 사진이 올바르지 않아요. 다시 선택해 주세요.'**
   String get errorCommentImageKeyInvalid;
+
+  /// No description provided for @errorDailyQuestionNotReady.
+  ///
+  /// In ko, this message translates to:
+  /// **'오늘의 질문이 아직 준비되지 않았어요.'**
+  String get errorDailyQuestionNotReady;
+
+  /// No description provided for @errorDailyAnswerNotFound.
+  ///
+  /// In ko, this message translates to:
+  /// **'한마디를 찾을 수 없어요.'**
+  String get errorDailyAnswerNotFound;
+
+  /// No description provided for @errorDailyAnswerAlready.
+  ///
+  /// In ko, this message translates to:
+  /// **'오늘은 이미 한마디를 남겼어요.'**
+  String get errorDailyAnswerAlready;
+
+  /// No description provided for @errorDailyAnswerTooLong.
+  ///
+  /// In ko, this message translates to:
+  /// **'{count}자까지 입력할 수 있어요.'**
+  String errorDailyAnswerTooLong(int count);
+
+  /// No description provided for @errorDailyAnswerImageKeyInvalid.
+  ///
+  /// In ko, this message translates to:
+  /// **'첨부한 사진이 올바르지 않아요. 다시 선택해 주세요.'**
+  String get errorDailyAnswerImageKeyInvalid;
 
   /// No description provided for @errorTranslateQuotaExceeded.
   ///

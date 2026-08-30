@@ -227,6 +227,59 @@ class L10nKo extends L10n {
   String get gardenPhotoLockedAction => '내 포스트 등록하기';
 
   @override
+  String get dailyTitle => '달빛 한마디';
+
+  @override
+  String get dailyMissionNotice => '매일 저녁 6시에 새로운 미션이 열려요 ✨';
+
+  @override
+  String get dailyTodayQuestion => '오늘의 질문';
+
+  @override
+  String dailyParticipants(int count) {
+    return '지금까지 $count명이 참여했어요';
+  }
+
+  @override
+  String get dailyRemaining => '남은 시간';
+
+  @override
+  String get dailyJoin => '참여하기';
+
+  @override
+  String get dailySortLatest => '최신순';
+
+  @override
+  String get dailySortPopular => '인기순';
+
+  @override
+  String get dailyMine => '내 한마디';
+
+  @override
+  String get dailyMineEmpty => '아직 작성한 내 한마디가 없어요. 오늘의 질문에 답해 보세요.';
+
+  @override
+  String get dailyWriteTitle => '달빛 한마디 작성';
+
+  @override
+  String get dailyWriteHint => '여기에 당신의 한마디를 입력해주세요...';
+
+  @override
+  String get dailyWriteImage => '이미지 추가 (선택)';
+
+  @override
+  String get dailyWriteSubmit => '등록하기';
+
+  @override
+  String get dailyEmpty => '아직 한마디가 없어요. 첫 번째로 답해 보세요.';
+
+  @override
+  String get dailyLoadFailed => '달빛 한마디를 불러오지 못했어요.';
+
+  @override
+  String get dailyDetailTitle => '내 달빛 한마디';
+
+  @override
   String commentsTitle(String nickname) {
     return '$nickname님의 포스트';
   }
@@ -1299,6 +1352,23 @@ class L10nKo extends L10n {
 
   @override
   String get errorCommentImageKeyInvalid => '첨부한 사진이 올바르지 않아요. 다시 선택해 주세요.';
+
+  @override
+  String get errorDailyQuestionNotReady => '오늘의 질문이 아직 준비되지 않았어요.';
+
+  @override
+  String get errorDailyAnswerNotFound => '한마디를 찾을 수 없어요.';
+
+  @override
+  String get errorDailyAnswerAlready => '오늘은 이미 한마디를 남겼어요.';
+
+  @override
+  String errorDailyAnswerTooLong(int count) {
+    return '$count자까지 입력할 수 있어요.';
+  }
+
+  @override
+  String get errorDailyAnswerImageKeyInvalid => '첨부한 사진이 올바르지 않아요. 다시 선택해 주세요.';
 
   @override
   String get errorTranslateQuotaExceeded =>

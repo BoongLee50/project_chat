@@ -1,7 +1,6 @@
 package com.moonlighttalk.server.garden.mapper;
 
 import com.moonlighttalk.server.garden.entity.FeedCandidate;
-import com.moonlighttalk.server.garden.entity.PostComment;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -73,14 +72,6 @@ public interface GardenMapper {
     /** 특정 사용자의 오늘 포스트 id(없으면 null). */
     String selectTodayPostId(@Param("userId") String userId, @Param("sessionDate") LocalDate sessionDate);
 
-    List<PostComment> selectComments(@Param("postId") String postId);
-
-    void insertComment(PostComment comment);
-
-    /** 답글을 달 부모 댓글(없으면 null). */
-    PostComment selectCommentById(@Param("commentId") String commentId);
-
-    int countComments(@Param("postId") String postId);
 
     /** 차단/신고로 상호작용이 막힌 상대인지. */
     boolean existsBlockOrReport(@Param("userId") String userId, @Param("targetUserId") String targetUserId);

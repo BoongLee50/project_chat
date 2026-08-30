@@ -9,6 +9,7 @@ import '../../../../core/util/freshness.dart';
 import '../../../../shared/widgets/authed_image.dart';
 import '../../data/models/feed_item.dart';
 import '../../../chat/presentation/providers/chat_provider.dart';
+import '../../../daily/presentation/screens/daily_intro_screen.dart';
 import '../../../profile/data/models/profile_catalog.dart';
 import '../../../store/presentation/screens/luna_store_screen.dart';
 import '../../../store/presentation/screens/prime_screen.dart';
@@ -164,9 +165,8 @@ class _FilterBar extends ConsumerWidget {
     // 누르면 뜨는 **드롭다운 목록의 글자는 ARB**다(폰트). 칩만 이미지다.
     //
     // 시안(4-1)의 이 줄은 **네 칸**이다 — 성별·나이·국가 칩 셋 + **[달빛 한마디] 버튼**.
-    // 폐지된 스포트라이트 칩 자리에 같은 크기로 들어가는 **데일리 참여 이벤트 진입점**이고,
-    // ⑤단계에서 화면과 함께 만든다. 배율은 네 칸 기준이라(GardenArt.filterRowScale)
-    // 지금은 오른쪽에 그 버튼 자리만큼 여백이 남는다 — 비어 보이는 게 맞다.
+    // 폐지된 스포트라이트 칩 자리에 같은 크기로 들어가는 **데일리 참여 이벤트 진입점**이다.
+    // 아직 리소스가 없어 코드로 그린다(docs/08 — 시안이 오면 이 자리만 교체).
     return LayoutBuilder(
       builder: (context, constraints) {
         final s = GardenArt.filterRowScale(constraints.maxWidth);
@@ -213,9 +213,65 @@ class _FilterBar extends ConsumerWidget {
               current: filter.country,
               onPick: controller.selectCountry,
             ),
+            SizedBox(width: gap),
+            _DailyQuestionButton(scale: s),
           ],
         );
       },
+    );
+  }
+}
+
+/// 필터 줄 네 번째 칸 — **달빛 한마디**로 들어가는 버튼(기획 4-1 "데일리 참여 이벤트").
+///
+/// 다른 셋과 달리 드롭다운이 아니라 **누르면 화면이 바뀌는 버튼**이라 채워서 그린다.
+/// 아직 시안 리소스가 없어 코드로 그리고, 크기만 [GardenArt.filterDailyQuestionSize]로 맞춰
+/// 나중에 그림으로 갈아끼울 때 레이아웃이 흔들리지 않게 했다.
+class _DailyQuestionButton extends StatelessWidget {
+  const _DailyQuestionButton({required this.scale});
+
+  final double scale;
+
+  @override
+  Widget build(BuildContext context) {
+    final size = GardenArt.filterDailyQuestionSize * scale;
+    return GestureDetector(
+      onTap: () => Navigator.of(context).push(DailyIntroScreen.route()),
+      child: Container(
+        width: size.width,
+        height: size.height,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: AppColors.moonlight,
+          borderRadius: BorderRadius.circular(size.height / 2),
+        ),
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  Icons.nightlight_round,
+                  size: 16,
+                  color: AppColors.night,
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  L10n.of(context).dailyTitle,
+                  maxLines: 1,
+                  style: const TextStyle(
+                    color: AppColors.night,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
@@ -578,7 +634,7 @@ class _FeedPagerState extends ConsumerState<_FeedPager> {
                             width: 68,
                             height: 71,
                             label: '${item.comments}',
-                            onTap: () => showCommentsSheet(context, item),
+                            onTap: () => showPostCommentsSheet(context, item),
                           ),
                           const Spacer(),
                           // 대화 신청 — 100자 메시지를 적어 보낸다(기획서 4-3)

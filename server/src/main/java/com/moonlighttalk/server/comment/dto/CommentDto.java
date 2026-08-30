@@ -1,4 +1,4 @@
-package com.moonlighttalk.server.garden.dto;
+package com.moonlighttalk.server.comment.dto;
 
 import java.time.LocalDateTime;
 

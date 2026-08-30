@@ -1,6 +1,8 @@
 package com.moonlighttalk.server.garden.controller;
 
 import com.moonlighttalk.server.common.security.CurrentUserId;
+import com.moonlighttalk.server.comment.dto.CommentDto;
+import com.moonlighttalk.server.comment.dto.CreateCommentRequest;
 import com.moonlighttalk.server.garden.dto.*;
 import com.moonlighttalk.server.garden.service.GardenService;
 import com.moonlighttalk.server.post.dto.UploadUrlResponse;

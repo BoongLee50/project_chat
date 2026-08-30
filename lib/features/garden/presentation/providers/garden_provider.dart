@@ -152,7 +152,15 @@ final feedProvider = AsyncNotifierProvider<FeedController, List<FeedItem>>(
   FeedController.new,
 );
 
-/// 특정 사용자의 오늘 포스트 댓글 목록.
+/// 댓글 목록. 키는 `"<대상종류>:<대상id>"` —
+/// 포스트와 달빛 한마디가 **같은 화면**을 쓰므로 id만으로는 구분되지 않는다.
 final commentsProvider = FutureProvider.family<List<Comment>, String>(
-  (ref, targetUserId) => ref.read(gardenApiProvider).comments(targetUserId),
+  (ref, key) {
+    final i = key.indexOf(':');
+    final kind = key.substring(0, i);
+    final id = key.substring(i + 1);
+    return kind == 'dailyAnswer'
+        ? ref.read(dailyApiProvider).comments(id)
+        : ref.read(gardenApiProvider).comments(id);
+  },
 );

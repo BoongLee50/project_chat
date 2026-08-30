@@ -6,6 +6,8 @@ import com.moonlighttalk.server.chat.socket.Opcodes;
 import com.moonlighttalk.server.chat.socket.Packet;
 import com.moonlighttalk.server.chat.socket.SocketRegistry;
 import com.moonlighttalk.server.common.storage.FileStorageService;
+import com.moonlighttalk.server.comment.mapper.CommentMapper;
+import com.moonlighttalk.server.dailyquestion.mapper.DailyQuestionMapper;
 import com.moonlighttalk.server.scheduler.mapper.SchedulerMapper;
 import com.moonlighttalk.server.store.mapper.StoreMapper;
 import org.slf4j.Logger;
@@ -37,6 +39,8 @@ public class SchedulerService {
     private final SessionTimeService sessionTime;
     private final MessageRetentionPurger messageRetentionPurger;
     private final StoreMapper storeMapper;
+    private final CommentMapper commentMapper;
+    private final DailyQuestionMapper dailyQuestionMapper;
 
     private final int retentionDays;
     private final int retentionDaysFriend;
@@ -48,6 +52,8 @@ public class SchedulerService {
                              SessionTimeService sessionTime,
                              MessageRetentionPurger messageRetentionPurger,
                              StoreMapper storeMapper,
+                             CommentMapper commentMapper,
+                             DailyQuestionMapper dailyQuestionMapper,
                              @Value("${app.chat.retention-days:30}") int retentionDays,
                              @Value("${app.chat.retention-days-friend:365}") int retentionDaysFriend,
                              @Value("${app.chat.retention-batch-size:1000}") int retentionBatchSize) {
@@ -57,6 +63,8 @@ public class SchedulerService {
         this.sessionTime = sessionTime;
         this.messageRetentionPurger = messageRetentionPurger;
         this.storeMapper = storeMapper;
+        this.commentMapper = commentMapper;
+        this.dailyQuestionMapper = dailyQuestionMapper;
         this.retentionDays = retentionDays;
         this.retentionDaysFriend = retentionDaysFriend;
         this.retentionBatchSize = retentionBatchSize;
@@ -123,9 +131,14 @@ public class SchedulerService {
         int usage = schedulerMapper.deleteDailyUsageBefore(today);
         int translateTargets = schedulerMapper.deleteTranslateTargetsBefore(today);
         int posts = schedulerMapper.deleteStalePosts(today);
+        // 달빛 한마디는 18시에 초기화된다 — 지난 영업일 답변을 치운다(질문·좋아요는 FK로 따라간다).
+        int answers = dailyQuestionMapper.deleteAnswersBefore(today);
+        // 포스트·답변이 지워져도 댓글은 남는다 — V14에서 대상이 두 종류가 되며 FK가 사라졌다.
+        int orphanComments = commentMapper.deleteOrphans(today);
 
-        log.info("[배치] 지난 영업일 정리(<{}) 사진 {}건(파일 실패 {}) · 스코어 {} · 스킵 {} · 노출 {} · 일일사용량 {} · 번역상대 {} · 포스트 {}",
-                today, photos, failed, stats, skips, exposures, usage, translateTargets, posts);
+        log.info("[배치] 지난 영업일 정리(<{}) 사진 {}건(파일 실패 {}) · 스코어 {} · 스킵 {} · 노출 {} · 일일사용량 {} · 번역상대 {} · 포스트 {} · 한마디 {} · 고아댓글 {}",
+                today, photos, failed, stats, skips, exposures, usage, translateTargets, posts,
+                answers, orphanComments);
     }
 
     /**

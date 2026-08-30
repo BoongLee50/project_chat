@@ -42,6 +42,20 @@ public enum ErrorCode {
     /** 첨부 이미지 키가 내 것이 아니다. */
     COMMENT_IMAGE_KEY_INVALID,
 
+    // ── 달빛 한마디(기획 8장) ──
+    /** 오늘의 질문 후보가 비어 있다(운영이 채워야 한다). */
+    DAILY_QUESTION_NOT_READY,
+    /** 한마디를 찾을 수 없다. */
+    DAILY_ANSWER_NOT_FOUND,
+    /** 아직 오늘의 한마디를 쓰지 않았다([내 한마디] 안내용). */
+    DAILY_ANSWER_NOT_YET,
+    /** 오늘 이미 썼다(하루 한 번). */
+    DAILY_ANSWER_ALREADY,
+    /** 한마디가 100자를 넘었다. */
+    DAILY_ANSWER_TOO_LONG,
+    /** 메인 이미지 키가 내 것이 아니다. */
+    DAILY_ANSWER_IMAGE_KEY_INVALID,
+
     // ── translate ──────────────────────────────────────
     TRANSLATE_QUOTA_EXCEEDED,
     TRANSLATE_TARGET_REQUIRED,

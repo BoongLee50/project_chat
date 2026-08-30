@@ -134,6 +134,32 @@ API를 직접 부르는 것으로 뚫린다. 응답에 `photoLocked`(잠김 여�
 **상대를 행으로 남기는 `daily_translate_targets`(V7)** 를 쓴다 — 한 번 연 상대와는 그날 계속 무료.
 둘 다 06시 배치가 지난 영업일을 정리한다.
 
+### 1.9 달빛 한마디 (기획서 8장)
+| Method | Path | 설명 | 화면 |
+|--------|------|------|------|
+| GET | `/daily-question/today?lang=` | 오늘의 질문·참여 인원·남은 시간 | 8-1 |
+| GET | `/daily-question/answers?sort=&page=` | 목록(LATEST/POPULAR) | 8-1 |
+| GET | `/daily-question/answers/me` | 내 한마디(없으면 404) | 8-1 |
+| GET | `/daily-question/answers/:id` | 상세 | 8-2 |
+| POST | `/daily-question/answers` | 작성(≤100자, 이미지 1장) | 8-3 |
+| POST | `/daily-question/answers/image:upload-url` | 메인 이미지 업로드 URL | 8-3 |
+| POST | `/daily-question/answers/:id/like` | 좋아요(사람마다 한 번) | 8-2 |
+| GET·POST | `/daily-question/answers/:id/comments` | **댓글 — 포스트와 같은 규칙** | 8-2 |
+
+- **KST 18시에 초기화**되고 새 질문이 나온다 — ①단계의 영업일 경계와 **같은 시계**다.
+  `remainingSeconds`는 **서버가 계산**해 준다(기기 시계를 믿으면 사람마다 다른 시간이 보인다).
+- **하루에 한 사람 한 글.** 두 번째는 `DAILY_ANSWER_ALREADY`(409) — DB 유니크가 최종 방어선이다.
+- 질문 본문은 **콘텐츠**라 ARB에 없다. `daily_questions`에 **한·일 두 벌**로 두고 `lang`으로 고른다.
+  후보는 `daily_question_bank`이며, 오늘 질문이 없으면 **처음 들여다본 사람이 만든다**
+  (배치로 미리 만들면 한 번 실패했을 때 그날 이벤트가 통째로 빈다).
+- **인기순 = 좋아요 + 댓글 합**(기획 8-1).
+- 🚨 **경로·테이블에 콘텐츠 이름이 없다** — "달빛우편"이 "달빛 한마디"가 된 전례가 있어
+  이름이 또 바뀌어도 ARB 문구만 고치면 되게 했다(docs/12 §6 E).
+
+**댓글은 포스트와 한 표를 쓴다**(V14) — `comments(target_type, target_id)`.
+세 화면(4-2 / 8-2 / 8-3)의 규칙이 문장까지 같아 표도 판정도 한 벌만 둔다.
+⚠️ 대상이 두 종류가 되며 `posts` FK가 사라졌다 → **지난 영업일 정리 배치가 주인 없는 댓글을 지운다.**
+
 ### 1.5 대화 신청 (하이브리드: 생성=REST, 도착알림=소켓)
 | Method | Path | 설명 | 화면 |
 |--------|------|------|------|

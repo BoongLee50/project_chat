@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.moonlighttalk.server.dailyquestion.mapper.DailyQuestionMapper">
+
+    <resultMap id="QuestionResultMap" type="com.moonlighttalk.server.dailyquestion.entity.DailyQuestion">
+        <id property="id" column="id"/>
+        <result property="sessionDate" column="session_date"/>
+        <result property="bodyKo" column="body_ko"/>
+        <result property="bodyJa" column="body_ja"/>
+    </resultMap>
+
+    <resultMap id="AnswerResultMap" type="com.moonlighttalk.server.dailyquestion.entity.DailyAnswer">
+        <id property="id" column="id"/>
+        <result property="questionId" column="question_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="sessionDate" column="session_date"/>
+        <result property="body" column="body"/>
+        <result property="imageKey" column="image_key"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="nickname" column="nickname"/>
+        <result property="birthYear" column="birth_year"/>
+        <result property="country" column="country"/>
+        <result property="likes" column="likes"/>
+        <result property="likedByMe" column="liked_by_me"/>
+    </resultMap>
+
+    <select id="selectQuestionByDate" resultMap="QuestionResultMap">
+        SELECT * FROM daily_questions WHERE session_date = #{sessionDate}
+    </select>
+
+    <!-- 아직 안 쓴 질문 우선. 다 썼으면 가장 오래전에 쓴 것을 다시 돌린다. -->
+    <select id="selectUnusedFromBank" resultMap="QuestionResultMap">
+        SELECT b.id, b.body_ko, b.body_ja
+        FROM daily_question_bank b
+                 LEFT JOIN (SELECT body_ko, MAX(session_date) AS last_used
+                            FROM daily_questions GROUP BY body_ko) q
+                           ON q.body_ko = b.body_ko
+        ORDER BY q.last_used IS NOT NULL, q.last_used, b.id
+        LIMIT 1
+    </select>
+
+    <insert id="insertQuestion">
+        INSERT IGNORE INTO daily_questions (id, session_date, body_ko, body_ja, created_at)
+        VALUES (#{id}, #{sessionDate}, #{bodyKo}, #{bodyJa}, NOW())
+    </insert>
+
+    <select id="countAnswers" resultType="int">
+        SELECT COUNT(*) FROM daily_answers WHERE question_id = #{questionId}
+    </select>
+
+    <sql id="answerColumns">
+        a.*, u.nickname, u.birth_year, u.country,
+        (SELECT COUNT(*) FROM daily_answer_likes l WHERE l.answer_id = a.id) AS likes,
+        EXISTS (SELECT 1 FROM daily_answer_likes l2
+                WHERE l2.answer_id = a.id AND l2.user_id = #{viewerId}) AS liked_by_me
+    </sql>
+
+    <select id="selectMyAnswer" resultMap="AnswerResultMap">
+        SELECT a.*, u.nickname, u.birth_year, u.country,
+               (SELECT COUNT(*) FROM daily_answer_likes l WHERE l.answer_id = a.id) AS likes,
+               0 AS liked_by_me
+        FROM daily_answers a JOIN users u ON u.id = a.user_id
+        WHERE a.question_id = #{questionId} AND a.user_id = #{userId}
+    </select>
+
+    <select id="selectAnswerById" resultMap="AnswerResultMap">
+        SELECT <include refid="answerColumns"/>
+        FROM daily_answers a JOIN users u ON u.id = a.user_id
+        WHERE a.id = #{answerId}
+    </select>
+
+    <!--
+      차단·신고한 상대는 빼고 본다(가든과 같은 규칙). 인기순은 좋아요+댓글 합이라
+      정렬 키에 두 값을 더한다 — 댓글은 공용 comments에서 센다.
+    -->
+    <select id="selectAnswers" resultMap="AnswerResultMap">
+        SELECT <include refid="answerColumns"/>
+        FROM daily_answers a
+                 JOIN users u ON u.id = a.user_id
+        WHERE a.question_id = #{questionId}
+          AND u.status = 'ACTIVE'
+          AND NOT EXISTS (SELECT 1 FROM blocks b
+                          WHERE (b.blocker_id = #{viewerId} AND b.blocked_id = a.user_id)
+                             OR (b.blocker_id = a.user_id AND b.blocked_id = #{viewerId}))
+          AND NOT EXISTS (SELECT 1 FROM reports r
+                          WHERE (r.reporter_id = #{viewerId} AND r.target_id = a.user_id)
+                             OR (r.reporter_id = a.user_id AND r.target_id = #{viewerId}))
+        <choose>
+            <when test="sort == 'POPULAR'">
+                ORDER BY ((SELECT COUNT(*) FROM daily_answer_likes l WHERE l.answer_id = a.id)
+                        + (SELECT COUNT(*) FROM comments c
+                           WHERE c.target_type = 'DAILY_ANSWER' AND c.target_id = a.id)) DESC,
+                         a.created_at DESC
+            </when>
+            <otherwise>ORDER BY a.created_at DESC</otherwise>
+        </choose>
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <insert id="insertAnswer">
+        INSERT INTO daily_answers (id, question_id, user_id, session_date, body, image_key, created_at)
+        VALUES (#{id}, #{questionId}, #{userId}, #{sessionDate}, #{body}, #{imageKey}, NOW(3))
+    </insert>
+
+    <insert id="insertLike">
+        INSERT IGNORE INTO daily_answer_likes (answer_id, user_id, created_at)
+        VALUES (#{answerId}, #{userId}, NOW())
+    </insert>
+
+    <delete id="deleteAnswersBefore">
+        DELETE FROM daily_answers WHERE session_date &lt; #{sessionDate}
+    </delete>
+
+</mapper>
