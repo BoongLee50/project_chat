@@ -10,6 +10,7 @@ class FeedItem {
     required this.interests,
     required this.likes,
     required this.comments,
+    required this.likedByMe,
     required this.pick,
     required this.online,
     this.age,
@@ -53,6 +54,9 @@ class FeedItem {
   final int likes;
   final int comments;
 
+  /// 내가 이미 좋아요를 눌렀는가. **하루 한 번**이라 누른 뒤에는 채워진 하트로 둔다.
+  final bool likedByMe;
+
   /// 정렬에 쓰인 Post Score(검증용).
   final int score;
 
@@ -76,6 +80,7 @@ class FeedItem {
     interests: (json['interests'] as List? ?? const []).cast<String>(),
     likes: json['likes'] as int? ?? 0,
     comments: json['comments'] as int? ?? 0,
+    likedByMe: json['likedByMe'] as bool? ?? false,
     score: json['score'] as int? ?? 0,
   );
 }

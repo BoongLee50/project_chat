@@ -97,8 +97,10 @@ class FeedController extends AsyncNotifier<List<FeedItem>>
     }
   }
 
-  /// 좋아요. 성공하면 해당 카드의 카운트를 낙관적으로 올린다.
+  /// 좋아요. **하루 한 번**이라 이미 누른 카드에는 아무것도 하지 않는다(서버도 같은 판정).
+  /// 성공하면 해당 카드의 카운트를 낙관적으로 올린다.
   Future<ApiException?> like(FeedItem item) async {
+    if (item.likedByMe) return null;
     try {
       await ref.read(gardenApiProvider).like(item.userId);
       final current = state.valueOrNull;
@@ -130,6 +132,7 @@ class FeedController extends AsyncNotifier<List<FeedItem>>
     }
   }
 
+  /// 좋아요를 누른 뒤의 카드 — 수치를 올리고 **눌린 상태로 표시**한다.
   static FeedItem _withLikes(FeedItem item, int likes) => FeedItem(
     userId: item.userId,
     nickname: item.nickname,
@@ -144,6 +147,7 @@ class FeedController extends AsyncNotifier<List<FeedItem>>
     interests: item.interests,
     likes: likes,
     comments: item.comments,
+    likedByMe: true,
     score: item.score,
   );
 }

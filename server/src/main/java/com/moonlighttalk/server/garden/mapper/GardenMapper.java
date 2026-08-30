@@ -34,6 +34,7 @@ public interface GardenMapper {
      */
     List<FeedCandidate> selectCandidatesByIds(
             @Param("sessionDate") LocalDate sessionDate,
+            @Param("viewerId") String viewerId,
             @Param("ids") List<String> ids);
 
     /** 사진 URL 계산용 storage key 목록(노출 순서대로). */
@@ -63,6 +64,14 @@ public interface GardenMapper {
      */
     boolean existsPublishedPhotoToday(@Param("userId") String userId,
                                        @Param("sessionDate") LocalDate sessionDate);
+
+    /**
+     * 좋아요 기록. <b>이미 눌렀으면 0</b>을 돌려준다 — 그때는 카운터를 올리지 않는다.
+     * (post_id가 영업일마다 새로 생기므로 이 PK가 곧 "하루 한 번"이다)
+     *
+     * @return 처음 눌렀으면 1, 이미 눌렀으면 0
+     */
+    int insertPostLike(@Param("postId") String postId, @Param("userId") String userId);
 
     /** 스킵 등록(중복이어도 에러 없이 무시). */
     void insertSkip(@Param("userId") String userId,

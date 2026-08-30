@@ -10,6 +10,7 @@ import java.util.List;
  * @param photoUrls   실제로 볼 수 있는 사진. <b>열람 제한이 걸리면 메인 1장만 담긴다</b>
  * @param photoLocked 나머지 사진이 잠겨 있는가(오늘 내 포스트를 공유하지 않은 무료 사용자)
  * @param totalPhotos 원래 몇 장인지. 잠겨 있어도 "더 있다"를 보여줘야 안내가 말이 된다
+ * @param likedByMe   내가 이미 좋아요를 눌렀는가. <b>하루 한 번</b>이라 눌린 상태를 보여준다
  * @param score       정렬에 쓰인 Post Score(디버깅/검증용)
  */
 public record FeedItemDto(
@@ -26,6 +27,7 @@ public record FeedItemDto(
         List<String> interests,
         int likes,
         int comments,
+        boolean likedByMe,
         int score
 ) {
 }

@@ -18,6 +18,7 @@
         <result property="likes" column="likes"/>
         <result property="comments" column="comments"/>
         <result property="requests" column="requests"/>
+        <result property="likedByMe" column="liked_by_me"/>
     </resultMap>
 
     <!--
@@ -39,7 +40,9 @@
                COALESCE(ps.exposures, 0) AS exposures,
                COALESCE(ps.likes, 0)     AS likes,
                COALESCE(ps.comments, 0)  AS comments,
-               COALESCE(ps.requests, 0)  AS requests
+               COALESCE(ps.requests, 0)  AS requests,
+               EXISTS (SELECT 1 FROM post_likes pl
+                       WHERE pl.post_id = p.id AND pl.user_id = #{userId}) AS liked_by_me
         FROM posts p
                  JOIN users u ON u.id = p.user_id
                  LEFT JOIN post_stats ps
@@ -107,7 +110,9 @@
                COALESCE(ps.exposures, 0) AS exposures,
                COALESCE(ps.likes, 0)     AS likes,
                COALESCE(ps.comments, 0)  AS comments,
-               COALESCE(ps.requests, 0)  AS requests
+               COALESCE(ps.requests, 0)  AS requests,
+               EXISTS (SELECT 1 FROM post_likes pl
+                       WHERE pl.post_id = p.id AND pl.user_id = #{viewerId}) AS liked_by_me
         FROM posts p
                  JOIN users u ON u.id = p.user_id
                  LEFT JOIN post_stats ps
@@ -159,6 +164,12 @@
       갱신 후 재노출된 카드를 또 스킵했을 때 다시 숨겨지려면 스킵 시각이
       갱신 시각보다 나중이어야 하기 때문이다.
     -->
+    <!-- 이미 눌렀으면 아무 일도 없다(멱등). 호출부가 반환값으로 첫 클릭인지 안다. -->
+    <insert id="insertPostLike">
+        INSERT IGNORE INTO post_likes (post_id, user_id, created_at)
+        VALUES (#{postId}, #{userId}, NOW())
+    </insert>
+
     <insert id="insertSkip">
         INSERT INTO feed_skips (user_id, target_user_id, session_date, created_at)
         VALUES (#{userId}, #{targetUserId}, #{sessionDate}, NOW())

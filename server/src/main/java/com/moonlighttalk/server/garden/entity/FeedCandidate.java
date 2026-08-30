@@ -27,4 +27,6 @@ public class FeedCandidate {
     private int likes;
     private int comments;
     private int requests;
+    /** 내가 이미 좋아요를 눌렀는가 — 하루 한 번이라 눌린 상태를 화면이 보여줘야 한다. */
+    private boolean likedByMe;
 }

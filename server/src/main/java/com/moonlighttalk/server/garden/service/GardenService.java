@@ -143,7 +143,7 @@ public class GardenService {
 
         // 한 페이지분만 다시 읽는다 — 순서는 이미 정해져 있으니 후보 전체를 훑을 이유가 없다.
         Map<String, FeedCandidate> rows = new HashMap<>();
-        for (FeedCandidate c : gardenMapper.selectCandidatesByIds(sessionDate, pageIds)) {
+        for (FeedCandidate c : gardenMapper.selectCandidatesByIds(sessionDate, userId, pageIds)) {
             rows.put(c.getUserId(), c);
         }
 
@@ -261,10 +261,26 @@ public class GardenService {
         return emptyToNull(gender) + "|" + age + "|" + emptyToNull(country);
     }
 
-    /** 좋아요 +1(전환율 분자). */
+    /**
+     * 좋아요 — <b>한 사람이 한 포스트에 하루 한 번</b>(기획 4-1).
+     *
+     * <p>카운터만 올리던 때에는 같은 사람이 몇 번이고 누를 수 있었다. 누가 눌렀는지를
+     * {@code post_likes}에 남겨 막는다(V15) — 달빛 한마디의 좋아요와 같은 방식이다.
+     * 두 번째부터는 <b>조용히 아무 일도 하지 않는다</b> — 이미 누른 걸 다시 누른 것은
+     * 실수가 아니라 그냥 같은 뜻이라 오류로 돌려줄 이유가 없다.
+     */
     @Transactional
     public void like(String userId, String targetUserId) {
-        gardenMapper.incrementStat(targetUserId, sessionTime.currentSessionDate(), "likes", 1);
+        LocalDate sessionDate = sessionTime.currentSessionDate();
+        String postId = gardenMapper.selectTodayPostId(targetUserId, sessionDate);
+        if (postId == null) {
+            throw new ApiException(ErrorCode.POST_NOT_PUBLISHED_TODAY, HttpStatus.NOT_FOUND,
+                    "오늘 등록된 포스트가 없어요.");
+        }
+        // 처음 누른 경우에만 전환율 분자를 올린다.
+        if (gardenMapper.insertPostLike(postId, userId) > 0) {
+            gardenMapper.incrementStat(targetUserId, sessionDate, "likes", 1);
+        }
     }
 
     /** 스킵 — 당일 재노출 대상에서 제외. */
@@ -406,6 +422,7 @@ public class GardenService {
                 gardenMapper.selectInterests(c.getUserId()),
                 c.getLikes(),
                 commentService.count(CommentTarget.POST, c.getPostId()),
+                c.isLikedByMe(),
                 score
         );
     }

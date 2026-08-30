@@ -614,6 +614,8 @@ class _FeedPagerState extends ConsumerState<_FeedPager> {
                             width: 72,
                             height: 67,
                             label: '${item.likes}',
+                            // 하루 한 번 — 이미 눌렀으면 흐려지고 다시 눌러도 늘지 않는다.
+                            done: item.likedByMe,
                             onTap: _like,
                           ),
                           const SizedBox(width: 20),
@@ -670,6 +672,7 @@ class _ArtCount extends StatelessWidget {
     required this.height,
     required this.label,
     required this.onTap,
+    this.done = false,
   });
 
   final String asset;
@@ -678,24 +681,33 @@ class _ArtCount extends StatelessWidget {
   final String label;
   final VoidCallback onTap;
 
+  /// 이미 누른 상태(좋아요). **하루 한 번**이라 다시 눌러도 소용없다는 걸 흐리게 알린다 —
+  /// 눌리는데 아무 일도 안 일어나면 고장으로 읽힌다.
+  final bool done;
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
+      // 이미지는 자기를 히트테스트하지 않는다(함정 #38).
+      behavior: HitTestBehavior.opaque,
       onTap: onTap,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ArtImage(asset, width: width, height: height),
-          const SizedBox(width: 8),
-          Text(
-            label,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
+      child: Opacity(
+        opacity: done ? 0.55 : 1.0,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ArtImage(asset, width: width, height: height),
+            const SizedBox(width: 8),
+            Text(
+              label,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
