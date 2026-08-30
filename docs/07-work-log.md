@@ -248,7 +248,7 @@ adb shell cmd locale set-app-locales com.example.project_chat --locales ko-KR
 | 36 | **정규식으로 여러 줄 프로바이더를 지우면 엉뚱한 곳에서 끝난다** | `provider = ...(?:.\|
 )*?\}\);` 같은 비탐욕 패턴이 **안쪽 `ref.listen(...)`의 `});`** 에 먼저 걸려, 프로바이더 절반만 지우고 나머지가 남는다(실제로 `chat_provider`·`friend_provider`에서 분석 오류 60~78건). **여러 줄 블록 삭제는 정규식 말고 문자열 전체를 그대로 매칭**할 것 |
 | 37 | **"N개가 한 줄에 딱 맞게"식 배율은 개수가 줄면 확대된다** | 가든 필터가 `availableWidth / (칩 폭 합)`로 배율을 구하고 있었다. 스포트라이트 칩 하나를 지우자 남은 셋이 **1.5배로 부풀었다** — 폭을 셋이 나눠 갖기 때문이다. 개수에 의존하는 배율은 **시안 배율을 상한으로 두고 넘칠 때만 줄일 것**(`min(fit, design)`) |
-| 38 | **사진 위의 탭이 조용히 죽어 있었다 — 스크림이 먹고 있었다** | 달빛가든 카드에서 좌우를 눌러 사진을 넘기는 기능이 **한 번도 동작한 적이 없었다.** 원인은 가독성용 그라데이션 `DecoratedBox`다 — `RenderDecoratedBox.hitTestSelf()`가 `BoxDecoration.hitTest()`를 부르고, 사각형이면 **무조건 true**라 카드 전체를 덮은 스크림이 아래 사진의 탭을 전부 삼킨다. 겹쳐 놓는 **장식 레이어에는 항상 `IgnorePointer`**를 씌울 것(테두리에는 이미 씌워 두고 스크림에는 빠져 있었다). 더해서 `GestureDetector`의 기본값 `deferToChild`는 **`Image` 위에서 안 먹는다**(`RenderImage`는 자기를 히트테스트하지 않는다) → 사진을 탭 대상으로 쓸 땐 `behavior: HitTestBehavior.opaque`. **증상이 "아무 일도 안 일어남"이라 눈으로는 절대 못 찾는다** — 핸들러에 `debugPrint` 한 줄을 넣어 호출 자체가 오는지부터 확인할 것 |
+| 38 | **사진 위의 탭이 조용히 죽어 있었다 — 스크림이 먹고 있었다** | 달빛가든 카드에서 좌우를 눌러 사진을 넘기는 기능이 **한 번도 동작한 적이 없었다.** 원인은 가독성용 그라데이션 `DecoratedBox`다 — `RenderDecoratedBox.hitTestSelf()`가 `BoxDecoration.hitTest()`를 부르고, 사각형이면 **무조건 true**라 카드 전체를 덮은 스크림이 아래 사진의 탭을 전부 삼킨다. 겹쳐 놓는 **장식 레이어에는 항상 `IgnorePointer`**를 씌울 것(테두리에는 이미 씌워 두고 스크림에는 빠져 있었다). 더해서 `GestureDetector`의 기본값 `deferToChild`는 **`Image` 위에서 안 먹는다**(`RenderImage`는 자기를 히트테스트하지 않는다) → 사진을 탭 대상으로 쓸 땐 `behavior: HitTestBehavior.opaque`. **증상이 "아무 일도 안 일어남"이라 눈으로는 절대 못 찾는다** — 핸들러에 `debugPrint` 한 줄을 넣어 호출 자체가 오는지부터 확인할 것. <br>📌 **같은 실수가 반복돼 `TappableImage`(shared/widgets/image_viewer.dart)로 모아 뒀다** — 사진을 누르는 자리는 그걸 쓸 것 |
 
 ---
 
@@ -339,6 +339,37 @@ adb shell cmd locale set-app-locales com.example.project_chat --locales ko-KR
 >
 > **⚠️ 다른 기기에서 받을 때**: `git pull` 후 **서버를 한 번 띄워 V7을 적용**해야 한다(`daily_translate_targets`).
 > ARB를 건드렸으므로 `flutter gen-l10n`도 필요하다(함정 #28). 자세한 절차는 §2-2.
+
+### 2026-08-30(4) — 사진 원본 팝업: 댓글 사진과 글 사진 모두
+
+**사용자 확인 요청에서 출발했다** — "댓글 이미지 첨부는 잘 되나? 누르면 원본이 팝업으로 떠야 하고,
+**글에 올라온 이미지도 마찬가지**다."
+
+#### 첨부는 되고 있었지만, 누르는 건 안 되고 있었다
+
+API로는 ④단계에서 검증했지만(업로드·키 등록·URL 응답) **누르는 동작은 확인한 적이 없었다.**
+그리고 실제로 안 먹었다 — **함정 #38과 같은 구조**였다:
+`GestureDetector(child: ClipRRect → SizedBox → AuthedImage)`에서 기본값 `deferToChild`는
+`Image`가 자기를 히트테스트하지 않아 탭이 들어오지 않는다.
+
+**세 번째 재발이라 공용 위젯으로 모았다** — `shared/widgets/image_viewer.dart`의
+`TappableImage`(항상 `HitTestBehavior.opaque`)와 `showOriginalImage()`.
+앞으로 사진을 누르는 자리는 이걸 쓴다. 같은 실수를 손으로 반복하지 않게 하는 게 목적이다.
+
+#### 글 사진에도 붙였다
+
+달빛 한마디 **상세의 메인 이미지**도 누르면 원본이 뜬다(기획 8-2의 댓글 사진과 같은 동작).
+목록의 썸네일은 그대로 뒀다 — 거기서 카드를 누르면 **상세로 가는 것**이 기획 8-1이다.
+
+> ⚠️ **달빛가든·포스트 사진에는 붙이지 않았다.** 그쪽은 좌우 탭이 **사진을 넘기는 동작**이라
+> (기획 4-1) 팝업과 충돌한다. 거기도 원본 보기가 필요하면 **길게 누르기** 같은 다른 제스처가 맞다.
+
+#### 팝업 닫기 버튼
+
+원본 위에 얹히는 버튼이라 **밝은 사진에서 흰 아이콘이 묻혔다**(첫 확인에서 실제로 안 보였다).
+어두운 원을 깔아 어떤 사진에서도 보이게 했다. 배경을 눌러도 닫힌다.
+
+---
 
 ### 2026-08-30(3) — 답글 자격: 스레드는 두 사람의 1:1 대화다
 

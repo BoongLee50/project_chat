@@ -311,6 +311,8 @@ class _AnswerTile extends ConsumerWidget {
             ),
             if (answer.imageUrl != null) ...[
               const SizedBox(width: AppDimens.gapMd),
+              // 목록의 썸네일은 **누르면 상세로 간다**(카드 전체가 상세 진입이다 — 기획 8-1).
+              // 원본 팝업은 상세 화면의 사진에서 뜬다.
               ClipRRect(
                 borderRadius: BorderRadius.circular(AppDimens.radiusMd),
                 child: SizedBox(

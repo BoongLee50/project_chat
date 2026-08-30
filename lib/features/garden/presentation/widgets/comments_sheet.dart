@@ -10,7 +10,7 @@ import '../../../../core/error/api_exception.dart';
 import '../../../../core/error/error_messages.dart';
 import '../../../../core/providers.dart';
 import '../../../../l10n/app_localizations.dart';
-import '../../../../shared/widgets/authed_image.dart';
+import '../../../../shared/widgets/image_viewer.dart';
 import '../../data/models/feed_item.dart';
 import '../../../auth/presentation/providers/session_provider.dart';
 import '../providers/garden_provider.dart';
@@ -427,45 +427,13 @@ class _CommentTile extends StatelessWidget {
           if (comment.imageUrl != null) ...[
             const SizedBox(height: 8),
             // 누르면 원본만 팝업으로 띄운다(기획 4-2).
-            GestureDetector(
-              onTap: () => _showImage(context, comment.imageUrl!),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(AppDimens.radiusMd),
-                child: SizedBox(
-                  width: 160,
-                  height: 120,
-                  child: AuthedImage(url: comment.imageUrl!),
-                ),
-              ),
-            ),
+            TappableImage(url: comment.imageUrl!, width: 160, height: 120),
           ],
         ],
       ),
     );
   }
 
-  void _showImage(BuildContext context, String url) {
-    showDialog<void>(
-      context: context,
-      builder: (context) => Dialog(
-        backgroundColor: Colors.transparent,
-        insetPadding: const EdgeInsets.all(16),
-        child: Stack(
-          alignment: Alignment.topRight,
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(AppDimens.radiusLg),
-              child: AuthedImage(url: url, fit: BoxFit.contain),
-            ),
-            IconButton(
-              onPressed: () => Navigator.pop(context),
-              icon: const Icon(Icons.close_rounded, color: Colors.white),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }
 
 /// 지금 누구에게 답글을 쓰는지 알려 주는 줄. 없으면 1단계 댓글이 된다.

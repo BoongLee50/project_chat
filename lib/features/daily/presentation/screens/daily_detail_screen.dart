@@ -5,7 +5,7 @@ import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimens.dart';
 import '../../../../core/error/error_messages.dart';
 import '../../../../l10n/app_localizations.dart';
-import '../../../../shared/widgets/authed_image.dart';
+import '../../../../shared/widgets/image_viewer.dart';
 import '../../../garden/presentation/widgets/comments_sheet.dart';
 import '../providers/daily_provider.dart';
 
@@ -72,12 +72,11 @@ class DailyDetailScreen extends ConsumerWidget {
             ),
             if (a.imageUrl != null) ...[
               const SizedBox(height: AppDimens.gapMd),
-              ClipRRect(
+              // 글에 올라온 사진도 누르면 원본만 팝업으로 뜬다(댓글 사진과 같다).
+              TappableImage(
+                url: a.imageUrl!,
+                aspectRatio: 4 / 3,
                 borderRadius: BorderRadius.circular(AppDimens.radiusLg),
-                child: AspectRatio(
-                  aspectRatio: 4 / 3,
-                  child: AuthedImage(url: a.imageUrl!),
-                ),
               ),
             ],
             const SizedBox(height: AppDimens.gapLg),
