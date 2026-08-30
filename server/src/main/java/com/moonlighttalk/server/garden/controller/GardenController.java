@@ -5,6 +5,7 @@ import com.moonlighttalk.server.comment.dto.CommentDto;
 import com.moonlighttalk.server.comment.dto.CreateCommentRequest;
 import com.moonlighttalk.server.garden.dto.*;
 import com.moonlighttalk.server.garden.service.GardenService;
+import com.moonlighttalk.server.garden.service.TranslateAccessService;
 import com.moonlighttalk.server.post.dto.UploadUrlResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.MediaType;
@@ -17,9 +18,12 @@ import java.util.List;
 public class GardenController {
 
     private final GardenService gardenService;
+    private final TranslateAccessService translateAccess;
 
-    public GardenController(GardenService gardenService) {
+    public GardenController(GardenService gardenService,
+                             TranslateAccessService translateAccess) {
         this.gardenService = gardenService;
+        this.translateAccess = translateAccess;
     }
 
     @GetMapping("/feed")
@@ -61,6 +65,33 @@ public class GardenController {
             @CurrentUserId String userId,
             @RequestParam(defaultValue = MediaType.IMAGE_JPEG_VALUE) String contentType) {
         return gardenService.issueCommentImageUploadUrl(userId, contentType);
+    }
+
+    /**
+     * 댓글창을 열며 무료 자리를 하나 쓴다(기획 4-2 · 8-3 — "댓글창 5회 호출까지 무료").
+     *
+     * <p>포스트 댓글과 달빛 한마디가 같은 통을 쓴다 — 기획서의 두 문장이 글자까지 같다.
+     */
+    @PostMapping("/translate/comment-sheet")
+    public TranslateAccessDto openCommentSheet(@CurrentUserId String userId) {
+        return translateAccess.openCommentSheet(userId);
+    }
+
+    /** 자리를 쓰지 않고 상태만 본다 — `[번역 | …]` 버튼 문구를 그릴 때. */
+    @GetMapping("/translate/comment-sheet")
+    public TranslateAccessDto peekCommentSheet(@CurrentUserId String userId) {
+        return translateAccess.peekCommentSheet(userId);
+    }
+
+    /**
+     * 대화방에 들어가며 자리를 잡는다(기획 5장 — "대화방 5개까지, 삭제 전까지 계속").
+     *
+     * <p>이미 연 방이면 자리를 더 쓰지 않는다.
+     */
+    @PostMapping("/translate/rooms/{roomId}")
+    public TranslateAccessDto openChatRoom(@CurrentUserId String userId,
+                                            @PathVariable String roomId) {
+        return translateAccess.openChatRoom(userId, roomId);
     }
 
     @PostMapping("/translate")

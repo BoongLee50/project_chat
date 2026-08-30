@@ -7,6 +7,7 @@ import '../../../../app/main_shell.dart';
 import '../../../../core/error/error_messages.dart';
 import '../../../../core/util/freshness.dart';
 import '../../../../shared/widgets/authed_image.dart';
+import '../../../../shared/widgets/gradient_ring.dart';
 import '../../data/models/feed_item.dart';
 import '../../../chat/presentation/providers/chat_provider.dart';
 import '../../../chat/presentation/widgets/chat_request_dialog.dart';
@@ -689,17 +690,28 @@ class _FeedPagerState extends ConsumerState<_FeedPager> {
 
           // 카드 테두리 — 클립 **바깥**에 얹어야 모서리가 안 깎인다.
           // 이미지가 아니라 코드로 그린다(이유는 GardenArt.cardBorderWidth 주석).
-          IgnorePointer(
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(GardenArt.cardCornerRadius),
-                border: Border.all(
-                  color: GardenArt.cardBorderColor,
-                  width: GardenArt.cardBorderWidth,
+          //
+          // 앨범 패스·프라임을 가진 사람의 포스트는 **무지개빛**이다(기획 화면 26·29).
+          if (item.decorated)
+            const GradientRing(
+              radius: GardenArt.cardCornerRadius,
+              width: GardenArt.decoratedBorderWidth,
+              colors: GardenArt.decoratedBorderColors,
+            )
+          else
+            IgnorePointer(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(
+                    GardenArt.cardCornerRadius,
+                  ),
+                  border: Border.all(
+                    color: GardenArt.cardBorderColor,
+                    width: GardenArt.cardBorderWidth,
+                  ),
                 ),
               ),
             ),
-          ),
         ],
       ),
     );

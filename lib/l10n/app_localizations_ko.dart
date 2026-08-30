@@ -475,6 +475,40 @@ class L10nKo extends L10n {
   String get chatDateYesterday => '어제';
 
   @override
+  String get translateNotReady => '준비 중';
+
+  @override
+  String translateFreeLeft(int count) {
+    return '무료 $count회';
+  }
+
+  @override
+  String translateHours(int hours) {
+    return '$hours시간';
+  }
+
+  @override
+  String get translateCommentExhausted =>
+      '무료 번역을 모두 사용했어요. 번역 기능을 계속 사용하시려면 자동 번역 패스를 이용해 주세요.';
+
+  @override
+  String get translateRoomExhausted =>
+      '무료 번역 대화방을 모두 사용했어요. PRIME 구독 시 모든 대화에서 자동 번역을 이용할 수 있어요.';
+
+  @override
+  String get translateProviderNotReady => '번역 기능은 아직 준비 중이에요.';
+
+  @override
+  String get voiceQuotaExhausted =>
+      '무료 음성 메시지를 모두 사용했어요.\nPRIME 구독 시 음성 메시지를 계속 이용할 수 있어요.';
+
+  @override
+  String get chatEmoji => '이모지';
+
+  @override
+  String get chatEmojiRecent => '자주 쓰는 이모지';
+
+  @override
   String get chatFriendRequestSent => '친구 요청을 보냈어요. 상대가 수락하면 친구가 돼요.';
 
   @override
@@ -1013,10 +1047,14 @@ class L10nKo extends L10n {
   String get passAlbumHeadline => '더 많은 포스트 사진을 등록하고 다양한 매력을 보여주세요!';
 
   @override
-  String get passAlbumBenefit1 => '포스트 사진 최대 9장까지 등록';
+  String passAlbumBenefit1(int max) {
+    return '포스트 사진 최대 $max장까지 등록';
+  }
 
   @override
-  String get passAlbumBenefit1Desc => '기본 2장에서 최대 9장까지 여러 장의 사진을 등록할 수 있어요.';
+  String passAlbumBenefit1Desc(int free, int max) {
+    return '기본 $free장에서 최대 $max장까지 여러 장의 사진을 등록할 수 있어요.';
+  }
 
   @override
   String get passAlbumBenefit2 => '등록 시간 제한 없음 (24시간 자유롭게)';

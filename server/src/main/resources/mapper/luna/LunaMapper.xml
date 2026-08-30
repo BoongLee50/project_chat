@@ -35,4 +35,16 @@
         ON DUPLICATE KEY UPDATE used_count = used_count + 1
     </update>
 
+    <!-- ── 초기화되지 않는 사용량 (V21) ── -->
+    <select id="selectLifetimeUsage" resultType="int">
+        SELECT COALESCE((SELECT used FROM lifetime_usage
+                         WHERE user_id = #{userId} AND kind = #{kind}), 0)
+    </select>
+
+    <update id="incrementLifetimeUsage">
+        INSERT INTO lifetime_usage (user_id, kind, used)
+        VALUES (#{userId}, #{kind}, 1)
+        ON DUPLICATE KEY UPDATE used = used + 1
+    </update>
+
 </mapper>

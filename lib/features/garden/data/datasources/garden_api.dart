@@ -1,5 +1,6 @@
 import '../../../../core/network/dio_client.dart';
 import '../models/feed_item.dart';
+import '../models/translate_access.dart';
 
 /// 달빛가든 REST 호출. (docs/01-protocol-api-spec.md §1.4)
 class GardenApi {
@@ -70,5 +71,25 @@ class GardenApi {
       contentType: contentType,
     );
     return map['storageKey'] as String;
+  }
+
+  // ── 무료 번역 자리 (⑦단계) ────────────────────────────────
+
+  /// 댓글창을 열며 무료 자리를 하나 쓴다(기획 4-2 · 8-3 — "댓글창 5회 호출까지 무료").
+  Future<TranslateAccess> openCommentSheetTranslate() async {
+    final data = await _client.post('/translate/comment-sheet');
+    return TranslateAccess.fromJson(Map<String, dynamic>.from(data as Map));
+  }
+
+  /// 자리를 쓰지 않고 상태만 본다 — 버튼 문구를 그릴 때.
+  Future<TranslateAccess> peekCommentSheetTranslate() async {
+    final data = await _client.get('/translate/comment-sheet');
+    return TranslateAccess.fromJson(Map<String, dynamic>.from(data as Map));
+  }
+
+  /// 대화방에 들어가며 자리를 잡는다(기획 5장 — "대화방 5개까지, 삭제 전까지 계속").
+  Future<TranslateAccess> openRoomTranslate(String roomId) async {
+    final data = await _client.post('/translate/rooms/$roomId');
+    return TranslateAccess.fromJson(Map<String, dynamic>.from(data as Map));
   }
 }

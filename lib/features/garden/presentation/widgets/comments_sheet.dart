@@ -11,6 +11,8 @@ import '../../../../core/error/error_messages.dart';
 import '../../../../core/providers.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/image_viewer.dart';
+import '../../../../shared/widgets/translate_pass_button.dart';
+import '../../data/models/translate_access.dart';
 import '../../data/models/feed_item.dart';
 import '../../../auth/presentation/providers/session_provider.dart';
 import '../providers/garden_provider.dart';
@@ -123,6 +125,36 @@ class _CommentsSheetState extends ConsumerState<_CommentsSheet> {
   /// 첨부한 사진 — 올린 뒤 받은 키와, 미리보기용 바이트.
   String? _imageKey;
   List<int>? _imageBytes;
+
+  /// 이 창에서 번역이 되는가(기획 4-2 · 8-3 — "댓글창 5회 호출까지 무료").
+  ///
+  /// **창을 열 때 한 번** 자리를 잡는다. 댓글 하나하나가 아니라 창이 단위라
+  /// 여기서 한 번 물으면 그 안의 댓글은 몇 개든 번역된다.
+  TranslateAccess? _translate;
+
+  @override
+  void initState() {
+    super.initState();
+    _openTranslate();
+  }
+
+  Future<void> _openTranslate() async {
+    try {
+      final access = await ref.read(gardenApiProvider).openCommentSheetTranslate();
+      if (!mounted) return;
+      setState(() => _translate = access);
+
+      // 다 썼으면 기획서가 정해 둔 문구로 알려 준다.
+      // 공급자가 아직 없을 때는 "다 썼다"가 아니라 "준비 중"이다 — 자리도 안 깎였다.
+      if (!access.granted && !access.unlimited && access.providerReady) {
+        _toast(L10n.of(context).translateCommentExhausted);
+      }
+    } on ApiException {
+      // 번역은 곁가지다 — 실패해도 댓글창은 그대로 쓴다.
+      if (mounted) setState(() => _translate = TranslateAccess.unavailable);
+    }
+  }
+
 
   @override
   void dispose() {
@@ -239,13 +271,8 @@ class _CommentsSheetState extends ConsumerState<_CommentsSheet> {
                     ),
                   ),
                   const Spacer(),
-                  Text(
-                    l10n.commentsSection,
-                    style: TextStyle(
-                      color: AppColors.textSecondary,
-                      fontSize: 13,
-                    ),
-                  ),
+                  // 시안(4-2·8-3)의 `[번역 | …]`. 누르면 자동 번역 패스 화면으로 간다.
+                  TranslatePassButton(access: _translate),
                 ],
               ),
             ),

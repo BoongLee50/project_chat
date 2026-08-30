@@ -1,5 +1,6 @@
 package com.moonlighttalk.server.store.service;
 
+import com.moonlighttalk.server.store.entity.Entitlement;
 import com.moonlighttalk.server.store.entity.Subscription;
 import com.moonlighttalk.server.store.mapper.StoreMapper;
 import org.springframework.stereotype.Service;
@@ -55,6 +56,30 @@ public class EntitlementService {
 
     public boolean hasTranslatePass(String userId) {
         return has(userId, TRANSLATE_PASS);
+    }
+
+    /**
+     * 살아 있는 권리 한 건(없으면 null).
+     *
+     * <p>있고 없고만 보는 {@link #has}와 달리 <b>만료 시각</b>이 필요할 때 쓴다 —
+     * 번역 패스의 "남은 시간 일·시·분" 표시(기획 4-2).
+     */
+    public Entitlement activeEntitlement(String userId, String kind) {
+        for (Entitlement e : storeMapper.selectActiveEntitlements(userId, LocalDateTime.now())) {
+            if (kind.equals(e.getKind())) return e;
+        }
+        return null;
+    }
+
+    /**
+     * 이 권리를 지금 가진 사람들(한 번에 읽는다).
+     *
+     * <p>피드는 카드마다 "이 사람이 앨범 패스를 가졌나"를 물어야 한다
+     * (기획 화면 26·29 — 포스트 사진 <b>꾸미기 외곽선</b>). 한 명씩 물으면
+     * 한 페이지에 열 번 질의가 나간다.
+     */
+    public List<String> userIdsWith(String kind) {
+        return storeMapper.selectUserIdsWithEntitlement(kind, LocalDateTime.now());
     }
 
     /** 지금 부스트를 켜 둔 사용자들 — 피드 Pick Point 판정에 쓴다. */

@@ -66,10 +66,12 @@
         DELETE FROM daily_usage WHERE session_date &lt; #{sessionDate}
     </delete>
 
-    <!-- 번역 무료 쿼터(채팅 2명)도 같은 주기로 비운다. 안 지우면 어제 연 상대가 오늘도 무료가 된다. -->
-    <delete id="deleteTranslateTargetsBefore">
-        DELETE FROM daily_translate_targets WHERE session_date &lt; #{sessionDate}
-    </delete>
+    <!--
+      ⚠️ 번역 대화방(`translate_rooms`)은 **지우지 않는다.**
+      기획서가 "대화방 삭제 전까지 계속 번역 지원"이라 했다 — 날짜와 무관하고,
+      방이 끝나면 자리는 저절로 빈다(살아 있는 방만 세므로).
+      마찬가지로 `lifetime_usage`도 어떤 배치도 건드리지 않는다(V21).
+    -->
 
     <!--
       사용자별 최신 1건은 남긴다. one_liner를 다음 영업일로 이어받는 원본이라

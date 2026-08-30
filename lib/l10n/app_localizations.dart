@@ -943,6 +943,60 @@ abstract class L10n {
   /// **'어제'**
   String get chatDateYesterday;
 
+  /// No description provided for @translateNotReady.
+  ///
+  /// In ko, this message translates to:
+  /// **'준비 중'**
+  String get translateNotReady;
+
+  /// count는 서버가 준 남은 무료 자리 수
+  ///
+  /// In ko, this message translates to:
+  /// **'무료 {count}회'**
+  String translateFreeLeft(int count);
+
+  /// No description provided for @translateHours.
+  ///
+  /// In ko, this message translates to:
+  /// **'{hours}시간'**
+  String translateHours(int hours);
+
+  /// No description provided for @translateCommentExhausted.
+  ///
+  /// In ko, this message translates to:
+  /// **'무료 번역을 모두 사용했어요. 번역 기능을 계속 사용하시려면 자동 번역 패스를 이용해 주세요.'**
+  String get translateCommentExhausted;
+
+  /// No description provided for @translateRoomExhausted.
+  ///
+  /// In ko, this message translates to:
+  /// **'무료 번역 대화방을 모두 사용했어요. PRIME 구독 시 모든 대화에서 자동 번역을 이용할 수 있어요.'**
+  String get translateRoomExhausted;
+
+  /// No description provided for @translateProviderNotReady.
+  ///
+  /// In ko, this message translates to:
+  /// **'번역 기능은 아직 준비 중이에요.'**
+  String get translateProviderNotReady;
+
+  /// No description provided for @voiceQuotaExhausted.
+  ///
+  /// In ko, this message translates to:
+  /// **'무료 음성 메시지를 모두 사용했어요.\nPRIME 구독 시 음성 메시지를 계속 이용할 수 있어요.'**
+  String get voiceQuotaExhausted;
+
+  /// No description provided for @chatEmoji.
+  ///
+  /// In ko, this message translates to:
+  /// **'이모지'**
+  String get chatEmoji;
+
+  /// No description provided for @chatEmojiRecent.
+  ///
+  /// In ko, this message translates to:
+  /// **'자주 쓰는 이모지'**
+  String get chatEmojiRecent;
+
   /// No description provided for @chatFriendRequestSent.
   ///
   /// In ko, this message translates to:
@@ -1885,17 +1939,17 @@ abstract class L10n {
   /// **'더 많은 포스트 사진을 등록하고 다양한 매력을 보여주세요!'**
   String get passAlbumHeadline;
 
-  /// No description provided for @passAlbumBenefit1.
+  /// max는 서버 카탈로그의 maxPhotosPass. 설정이 바뀌면 문구도 따라간다
   ///
   /// In ko, this message translates to:
-  /// **'포스트 사진 최대 9장까지 등록'**
-  String get passAlbumBenefit1;
+  /// **'포스트 사진 최대 {max}장까지 등록'**
+  String passAlbumBenefit1(int max);
 
   /// No description provided for @passAlbumBenefit1Desc.
   ///
   /// In ko, this message translates to:
-  /// **'기본 2장에서 최대 9장까지 여러 장의 사진을 등록할 수 있어요.'**
-  String get passAlbumBenefit1Desc;
+  /// **'기본 {free}장에서 최대 {max}장까지 여러 장의 사진을 등록할 수 있어요.'**
+  String passAlbumBenefit1Desc(int free, int max);
 
   /// No description provided for @passAlbumBenefit2.
   ///

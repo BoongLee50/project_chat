@@ -53,9 +53,15 @@
         order_idx는 등록 순서대로 증가하는 값이라 내림차순이 곧 최신순이다.
         번호를 다시 매기지 않으므로 삭제가 있어도 순서가 흐트러지지 않는다.
     -->
+    <!--
+      🚨 COALESCE가 **바깥**에 있어야 한다.
+      안쪽에 두면 컬럼의 NULL만 막을 뿐, **행이 아예 없을 때**는 결과가 0행이라
+      MyBatis가 null을 돌려주고 int로 받는 순간 BindingException이 난다.
+      통계 행은 첫 노출 때 생기므로, 공유 직후에는 늘 없는 상태다.
+    -->
     <select id="selectLikes" resultType="int">
-        SELECT COALESCE(likes, 0) FROM post_stats
-        WHERE user_id = #{userId} AND session_date = #{sessionDate}
+        SELECT COALESCE((SELECT likes FROM post_stats
+                         WHERE user_id = #{userId} AND session_date = #{sessionDate}), 0)
     </select>
 
     <select id="selectPhotos" resultMap="PostPhotoResultMap">

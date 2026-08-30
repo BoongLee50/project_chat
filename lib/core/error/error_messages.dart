@@ -111,6 +111,8 @@ String errorMessage(L10n l10n, ApiException e) {
     'CHAT_VOICE_KEY_INVALID' => l10n.errorChatVoiceKeyInvalid,
     // 최대 초는 서버 설정을 따르므로 field로 받아 문장에 끼운다.
     'CHAT_VOICE_TOO_LONG' => l10n.errorChatVoiceTooLong(e.field ?? '30'),
+    // 무료 음성은 **초기화되지 않는다**(기획 5장) — "오늘"이 아니라 아예 다 쓴 것이다.
+    'CHAT_VOICE_QUOTA_EXCEEDED' => l10n.voiceQuotaExhausted,
     ClientErrorCode.networkTimeout => l10n.errorNetworkTimeout,
     ClientErrorCode.networkUnreachable => l10n.errorNetworkUnreachable,
     ClientErrorCode.networkUnknown => l10n.errorNetworkUnknown,

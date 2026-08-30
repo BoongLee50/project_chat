@@ -38,8 +38,6 @@ public interface SchedulerMapper {
 
     int deleteDailyUsageBefore(@Param("sessionDate") LocalDate sessionDate);
 
-    /** 번역 무료 쿼터(채팅 2명)의 지난 영업일 기록. */
-    int deleteTranslateTargetsBefore(@Param("sessionDate") LocalDate sessionDate);
 
     /**
      * 지난 영업일 posts 정리. 단 <b>사용자별 가장 최근 1건은 남긴다</b> —

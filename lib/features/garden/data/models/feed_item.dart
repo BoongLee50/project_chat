@@ -17,6 +17,7 @@ class FeedItem {
     this.country,
     this.intro,
     this.region,
+    this.decorated = false,
     this.score = 0,
   });
 
@@ -37,6 +38,10 @@ class FeedItem {
 
   /// 활동 지역 **코드** 1개. "한국, 서울" 문구는 `ProfileCatalog.regionLabel`이 만든다.
   final String? region;
+
+  /// **올린 사람**이 앨범 패스·프라임을 가졌는가 — 사진에 꾸미기 외곽선이 붙는다
+  /// (기획 화면 26·29). 보는 사람이 산 혜택이 아니다.
+  final bool decorated;
 
   /// 서버가 준 사진 URL(상대경로) 목록.
   ///
@@ -79,6 +84,7 @@ class FeedItem {
     online: json['online'] as bool? ?? false,
     intro: json['intro'] as String?,
     region: json['region'] as String?,
+    decorated: json['decorated'] as bool? ?? false,
     photoUrls: (json['photoUrls'] as List? ?? const []).cast<String>(),
     photoLocked: json['photoLocked'] as bool? ?? false,
     totalPhotos: json['totalPhotos'] as int? ?? 0,

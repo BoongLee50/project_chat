@@ -217,24 +217,18 @@
 
     <!-- 번역 무료 쿼터: 채팅 "하루 2명" (V7) -->
 
-    <select id="countTranslateTargets" resultType="int">
-        SELECT COUNT(*) FROM daily_translate_targets
-        WHERE user_id = #{userId} AND session_date = #{sessionDate}
-    </select>
-
-    <select id="existsTranslateTarget" resultType="boolean">
+    <!-- ── 번역 무료 쿼터: 대화방 동시 5개 (V20) ── -->
+    <select id="existsTranslateRoom" resultType="boolean">
         SELECT EXISTS (
-            SELECT 1 FROM daily_translate_targets
-            WHERE user_id = #{userId}
-              AND session_date = #{sessionDate}
-              AND target_id = #{targetId}
+            SELECT 1 FROM translate_rooms
+            WHERE user_id = #{userId} AND room_id = #{roomId}
         )
     </select>
 
-    <!-- 같은 순간 두 요청이 들어와도 사람 수가 두 번 늘지 않도록 IGNORE. -->
-    <insert id="insertTranslateTarget">
-        INSERT IGNORE INTO daily_translate_targets (user_id, session_date, target_id)
-        VALUES (#{userId}, #{sessionDate}, #{targetId})
+    <!-- 같은 순간 두 요청이 들어와도 자리가 두 개 나가지 않도록 IGNORE. -->
+    <insert id="insertTranslateRoom">
+        INSERT IGNORE INTO translate_rooms (user_id, room_id)
+        VALUES (#{userId}, #{roomId})
     </insert>
 
 </mapper>

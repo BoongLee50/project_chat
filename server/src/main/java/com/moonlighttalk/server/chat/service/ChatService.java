@@ -45,6 +45,9 @@ public class ChatService {
     private static final int MESSAGE_PAGE_SIZE = 30;
     private static final String USAGE_CHAT_REQUEST = "CHAT_REQUEST";
 
+    /** 음성 메시지 무료 횟수 카운터. **초기화되지 않는다**(V21). */
+    private static final String USAGE_VOICE_MESSAGE = "VOICE_MESSAGE";
+
     private final ChatMapper chatMapper;
     private final UserMapper userMapper;
     private final GardenMapper gardenMapper;
@@ -67,6 +70,16 @@ public class ChatService {
 
     /** 거절당한 뒤 다시 신청할 수 없는 시간(기획 §2-5의 "1일"). */
     private final int rejectionCooldownHours;
+
+    /**
+     * 음성 메시지 무료 횟수 — 기획서: *"계정별 5회 무료. <b>초기화 되지 않음.</b>"*
+     *
+     * <p>하루가 아니라 <b>평생</b>이다. `daily_usage`가 아니라 `lifetime_usage`에 쌓인다.
+     */
+    private final int freeVoiceMessages;
+
+    /** 프라임의 대화 신청이 상대 목록 최상단에 머무는 시간(기획 9-1 — "1일간"). */
+    private final int requestPriorityHours;
 
     /** 대화 신청 한마디의 최대 글자 수(기획 4-3 시안의 `0/200`). */
     private final int requestMessageMaxLength;
@@ -93,7 +106,10 @@ public class ChatService {
                         @Value("${app.chat.rejection-cooldown-hours:24}")
                         int rejectionCooldownHours,
                         @Value("${app.chat.request-message-max-length:200}")
-                        int requestMessageMaxLength) {
+                        int requestMessageMaxLength,
+                        @Value("${app.chat.free-voice-messages:5}") int freeVoiceMessages,
+                        @Value("${app.chat.request-priority-hours:24}")
+                        int requestPriorityHours) {
         this.chatMapper = chatMapper;
         this.friendMapper = friendMapper;
         this.presenceService = presenceService;
@@ -109,6 +125,8 @@ public class ChatService {
         this.voiceMaxDurationMs = voiceMaxDurationMs;
         this.rejectionCooldownHours = rejectionCooldownHours;
         this.requestMessageMaxLength = requestMessageMaxLength;
+        this.freeVoiceMessages = freeVoiceMessages;
+        this.requestPriorityHours = requestPriorityHours;
     }
 
     // ── 대화 신청 ───────────────────────────────────────────
@@ -172,6 +190,14 @@ public class ChatService {
         request.setMessage(message);
         request.setStatus("PENDING");
         request.setLunaCost(cost);
+        // 프라임의 신청은 상대 목록에서 1일간 최상단(기획 9-1 화면 26).
+        // 지금 찍어 두는 이유: 구독이 끝났다고 이미 보낸 신청이 아래로 떨어지면 안 된다.
+        //
+        // ⚠️ 루나 면제(`premium`)가 아니라 **구독**을 본다. 지금은 UNLIMITED_CHAT_REQ가
+        // 프라임으로만 나오지만, 따로 팔게 되면 "무제한"과 "우선 노출"은 다른 혜택이다.
+        if (entitlementService.isPrime(userId)) {
+            request.setPriorityUntil(LocalDateTime.now().plusHours(requestPriorityHours));
+        }
         chatMapper.insertRequest(request);
 
         // 전환율(Engage) 반영 — 대화 신청도 분자에 포함(기획서 4-1)
@@ -347,7 +373,22 @@ public class ChatService {
                     "음성 메시지는 최대 " + (voiceMaxDurationMs / 1000) + "초까지예요.",
                     String.valueOf(voiceMaxDurationMs / 1000));
         }
-        return saveAndDeliver(userId, roomId, "VOICE", "", audioKey, durationMs);
+
+        // 무료 5회는 **평생**이다(기획 5장 "초기화 되지 않음"). 프라임이면 세지 않는다.
+        boolean unlimited = entitlementService.isPrime(userId);
+        if (!unlimited && lunaService.lifetimeUsed(userId, USAGE_VOICE_MESSAGE)
+                >= freeVoiceMessages) {
+            throw new ApiException(ErrorCode.CHAT_VOICE_QUOTA_EXCEEDED, HttpStatus.CONFLICT,
+                    "무료 음성 메시지를 모두 사용했어요.",
+                    String.valueOf(freeVoiceMessages));
+        }
+
+        ChatMessageDto sent = saveAndDeliver(userId, roomId, "VOICE", "", audioKey, durationMs);
+        // 보낸 뒤에 센다 — 저장이 실패하면 횟수가 날아가면 안 된다(되돌릴 수 없는 값이다).
+        if (!unlimited) {
+            lunaService.useLifetime(userId, USAGE_VOICE_MESSAGE);
+        }
+        return sent;
     }
 
     /** 음성 파일 업로드 URL 발급. key에 발신자 id가 들어가 소유자를 나중에 확인할 수 있다. */

@@ -115,6 +115,8 @@ public enum ErrorCode {
     CHAT_VOICE_KEY_REQUIRED,
     CHAT_VOICE_KEY_INVALID,
     CHAT_VOICE_TOO_LONG,
+    /** 무료 음성 메시지 소진 — field에 무료 횟수를 싣는다. 이 값은 초기화되지 않는다. */
+    CHAT_VOICE_QUOTA_EXCEEDED,
     VALIDATION_FAILED,
     NOT_FOUND,
     INTERNAL_ERROR

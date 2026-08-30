@@ -12,6 +12,7 @@ import com.moonlighttalk.server.store.entity.Entitlement;
 import com.moonlighttalk.server.store.entity.Subscription;
 import com.moonlighttalk.server.store.mapper.StoreMapper;
 import org.springframework.http.HttpStatus;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,16 +41,24 @@ public class StoreService {
     private final EntitlementService entitlementService;
     private final SessionTimeService sessionTime;
 
+    /** BM 화면의 혜택 문구가 말하는 사진 장수(기획 화면 26·29). 포스트 규칙과 같은 설정을 본다. */
+    private final int maxPhotosFree;
+    private final int maxPhotosPass;
+
     public StoreService(StoreProperties properties,
                          StoreMapper storeMapper,
                          LunaService lunaService,
                          EntitlementService entitlementService,
-                         SessionTimeService sessionTime) {
+                         SessionTimeService sessionTime,
+                         @Value("${app.post.max-photos-free:2}") int maxPhotosFree,
+                         @Value("${app.post.max-photos-pass:9}") int maxPhotosPass) {
         this.properties = properties;
         this.storeMapper = storeMapper;
         this.lunaService = lunaService;
         this.entitlementService = entitlementService;
         this.sessionTime = sessionTime;
+        this.maxPhotosFree = maxPhotosFree;
+        this.maxPhotosPass = maxPhotosPass;
     }
 
     /** 카탈로그. 가격·구성은 설정에서 온다(코드 하드코딩 금지 — 01 §1.8). */
@@ -67,7 +76,7 @@ public class StoreService {
                 id, p.getProduct(), p.getDurationDays(), p.getLuna(),
                 p.getEntitlements(), p.getBoosts())));
 
-        return new ProductCatalogDto(lunaProducts, packs, plans);
+        return new ProductCatalogDto(lunaProducts, packs, plans, maxPhotosFree, maxPhotosPass);
     }
 
     /** 화면이 필요로 하는 상태를 한 번에. */

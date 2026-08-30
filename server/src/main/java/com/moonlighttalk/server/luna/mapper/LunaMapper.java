@@ -33,4 +33,12 @@ public interface LunaMapper {
     void incrementDailyUsage(@Param("userId") String userId,
                               @Param("sessionDate") LocalDate sessionDate,
                               @Param("kind") String kind);
+
+    // ── 초기화되지 않는 사용량 (V21) ──────────────────────────
+
+    /** 지금까지 몇 번 썼나. 없으면 0. */
+    int selectLifetimeUsage(@Param("userId") String userId, @Param("kind") String kind);
+
+    /** 한 번 썼다고 기록한다. ⚠️ 이 값은 <b>어떤 배치도 되돌리지 않는다.</b> */
+    void incrementLifetimeUsage(@Param("userId") String userId, @Param("kind") String kind);
 }

@@ -43,6 +43,13 @@ public interface StoreMapper {
 
     int deleteExpiredEntitlements(@Param("now") LocalDateTime now);
 
+    /**
+     * 이 권리를 지금 가진 사람들. 한 명씩 묻지 않으려고 한 번에 읽는다 —
+     * 피드 한 페이지가 열 장이면 질의도 열 번 나가던 자리다(부스트와 같은 방식).
+     */
+    List<String> selectUserIdsWithEntitlement(@Param("kind") String kind,
+                                               @Param("now") LocalDateTime now);
+
     // ── 부스트 ──
     void addBoostStock(@Param("userId") String userId, @Param("kind") String kind,
                         @Param("quantity") int quantity);

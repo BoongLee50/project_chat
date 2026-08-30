@@ -121,6 +121,11 @@
         SELECT * FROM boost_activations WHERE user_id = #{userId} AND expires_at &gt; #{now}
     </select>
 
+    <select id="selectUserIdsWithEntitlement" resultType="string">
+        SELECT user_id FROM user_entitlements
+        WHERE kind = #{kind} AND expires_at &gt; #{now}
+    </select>
+
     <select id="selectBoostedUserIds" resultType="string">
         SELECT DISTINCT user_id FROM boost_activations WHERE expires_at &gt; #{now}
     </select>

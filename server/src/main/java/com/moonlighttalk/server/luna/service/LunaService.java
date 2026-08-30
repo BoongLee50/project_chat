@@ -68,4 +68,17 @@ public class LunaService {
     public void useDaily(String userId, LocalDate sessionDate, String kind) {
         lunaMapper.incrementDailyUsage(userId, sessionDate, kind);
     }
+
+    /**
+     * 초기화되지 않는 누적 사용량(V21) — 기획서의 *"계정별 5회 무료. 초기화 되지 않음"*.
+     *
+     * <p>{@link #dailyUsed}와 헷갈리지 말 것. 저쪽은 영업일마다 0으로 돌아온다.
+     */
+    public int lifetimeUsed(String userId, String kind) {
+        return lunaMapper.selectLifetimeUsage(userId, kind);
+    }
+
+    public void useLifetime(String userId, String kind) {
+        lunaMapper.incrementLifetimeUsage(userId, kind);
+    }
 }

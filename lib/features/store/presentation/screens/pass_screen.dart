@@ -204,11 +204,16 @@ class _PassScreenState extends ConsumerState<PassScreen> {
 
   List<Widget> _benefits(L10n l10n) {
     if (_isAlbum) {
+      // 🚨 장수는 **서버 설정**이다(`app.post.max-photos-*`). 문구에 굳혀 두면
+      // 설정이 바뀌는 순간 화면이 거짓말을 한다 — 카탈로그가 준 값으로 조립한다.
+      final catalog = ref.watch(catalogProvider).valueOrNull;
+      final maxPhotos = catalog?.maxPhotosPass ?? 0;
+      final freePhotos = catalog?.maxPhotosFree ?? 0;
       return [
         BenefitRow(
           icon: Icons.photo_library_outlined,
-          title: l10n.passAlbumBenefit1,
-          description: l10n.passAlbumBenefit1Desc,
+          title: l10n.passAlbumBenefit1(maxPhotos),
+          description: l10n.passAlbumBenefit1Desc(freePhotos, maxPhotos),
           accent: Color(0xFF2F7BF6),
           checked: false,
         ),

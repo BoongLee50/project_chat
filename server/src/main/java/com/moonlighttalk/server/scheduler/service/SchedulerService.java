@@ -129,15 +129,14 @@ public class SchedulerService {
         int exposures = schedulerMapper.deleteExposuresBefore(
                 sessionTime.nowKst().toLocalDateTime().minusDays(1));
         int usage = schedulerMapper.deleteDailyUsageBefore(today);
-        int translateTargets = schedulerMapper.deleteTranslateTargetsBefore(today);
         int posts = schedulerMapper.deleteStalePosts(today);
         // 달빛 한마디는 18시에 초기화된다 — 지난 영업일 답변을 치운다(질문·좋아요는 FK로 따라간다).
         int answers = dailyQuestionMapper.deleteAnswersBefore(today);
         // 포스트·답변이 지워져도 댓글은 남는다 — V14에서 대상이 두 종류가 되며 FK가 사라졌다.
         int orphanComments = commentMapper.deleteOrphans(today);
 
-        log.info("[배치] 지난 영업일 정리(<{}) 사진 {}건(파일 실패 {}) · 스코어 {} · 스킵 {} · 노출 {} · 일일사용량 {} · 번역상대 {} · 포스트 {} · 한마디 {} · 고아댓글 {}",
-                today, photos, failed, stats, skips, exposures, usage, translateTargets, posts,
+        log.info("[배치] 지난 영업일 정리(<{}) 사진 {}건(파일 실패 {}) · 스코어 {} · 스킵 {} · 노출 {} · 일일사용량 {} · 포스트 {} · 한마디 {} · 고아댓글 {}",
+                today, photos, failed, stats, skips, exposures, usage, posts,
                 answers, orphanComments);
     }
 

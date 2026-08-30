@@ -10,7 +10,9 @@ import '../../../../core/error/api_exception.dart';
 import '../../../../core/error/error_messages.dart';
 import '../../../../core/providers.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../../shared/widgets/gradient_ring.dart';
 import '../../../../shared/widgets/photo_source_sheet.dart';
+import '../../../garden/presentation/widgets/garden_art.dart';
 import '../../../auth/presentation/providers/session_provider.dart';
 import '../../../garden/presentation/widgets/comments_sheet.dart';
 import '../../../profile/data/models/profile_catalog.dart';
@@ -381,7 +383,16 @@ class _PostPhotoCardState extends ConsumerState<_PostPhotoCard> {
     // 시안(3-1)은 **모든 것이 사진 위에 얹힌 한 장**이다 — 이름·지역·PICK은 좌상단,
     // [메인]·장수·삭제는 우상단, 좋아요·댓글은 좌하단, [포스트 공유하기]는 우하단.
     // 카드 바깥에 줄을 따로 두면 시안과 다른 화면이 된다.
-    return ClipRRect(
+    // 앨범 패스·프라임을 가지고 있으면 **내 포스트에도** 꾸미기 외곽선이 붙는다
+    // (기획 화면 26·29). 산 사람이 자기 화면에서 먼저 확인할 수 있어야 한다.
+    final wallet = ref.watch(walletProvider).valueOrNull;
+    final decorated =
+        wallet != null && (wallet.prime || wallet.has(StoreKind.albumPass));
+
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        ClipRRect(
       borderRadius: BorderRadius.circular(AppDimens.radiusLg),
       child: SizedBox.expand(
         child: Stack(
@@ -515,6 +526,15 @@ class _PostPhotoCardState extends ConsumerState<_PostPhotoCard> {
           ],
         ),
       ),
+        ),
+        // 꾸미기 외곽선은 클립 **바깥**에 얹어야 모서리가 안 깎인다.
+        if (decorated)
+          const GradientRing(
+            radius: AppDimens.radiusLg,
+            width: GardenArt.decoratedBorderWidth,
+            colors: GardenArt.decoratedBorderColors,
+          ),
+      ],
     );
   }
 }

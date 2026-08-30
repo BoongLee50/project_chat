@@ -13,7 +13,6 @@ import com.moonlighttalk.server.garden.entity.FeedCandidate;
 import com.moonlighttalk.server.garden.mapper.GardenMapper;
 import com.moonlighttalk.server.post.dto.UploadUrlResponse;
 import com.moonlighttalk.server.garden.translate.TranslationProvider;
-import com.moonlighttalk.server.luna.service.LunaService;
 import com.moonlighttalk.server.presence.PresenceService;
 import com.moonlighttalk.server.store.service.EntitlementService;
 import org.springframework.http.HttpStatus;
@@ -56,7 +55,6 @@ import java.util.*;
 public class GardenService {
 
     private static final int PAGE_SIZE = 10;
-    private static final String USAGE_COMMENT_TRANSLATE = "COMMENT_TRANSLATE";
 
     private final GardenMapper gardenMapper;
     private final SessionTimeService sessionTime;
@@ -64,13 +62,10 @@ public class GardenService {
     private final FileStorageService fileStorageService;
     private final TranslationProvider translationProvider;
     private final EntitlementService entitlementService;
-    private final LunaService lunaService;
     private final CommentService commentService;
 
-    // 기획이 바꿀 수 있는 수치는 전부 설정으로 뺀다.
-    /** 무료 번역: 댓글은 하루 N회, 채팅은 하루 N명(01 §1.4). */
-    private final int freeTranslateComments;
-    private final int freeTranslateChatTargets;
+    /** 무료 번역 자리 판정 — 단위가 자리마다 달라 따로 산다(⑦단계). */
+    private final TranslateAccessService translateAccess;
 
 
     /** 피드 스코어·믹싱 수치 — 운영하며 튜닝할 값이라 재배포 없이 바꿀 수 있어야 한다. */
@@ -83,23 +78,19 @@ public class GardenService {
                           FileStorageService fileStorageService,
                           TranslationProvider translationProvider,
                           EntitlementService entitlementService,
-                          LunaService lunaService,
                           CommentService commentService,
                           GardenProperties garden,
                           FeedSessionStore feedSessions,
-                          @Value("${app.translate.free-comments-per-day:2}") int freeTranslateComments,
-                          @Value("${app.translate.free-chat-targets-per-day:2}") int freeTranslateChatTargets) {
+                          TranslateAccessService translateAccess) {
         this.gardenMapper = gardenMapper;
         this.sessionTime = sessionTime;
         this.presenceService = presenceService;
         this.fileStorageService = fileStorageService;
         this.translationProvider = translationProvider;
         this.entitlementService = entitlementService;
-        this.lunaService = lunaService;
         this.garden = garden;
         this.feedSessions = feedSessions;
-        this.freeTranslateComments = freeTranslateComments;
-        this.freeTranslateChatTargets = freeTranslateChatTargets;
+        this.translateAccess = translateAccess;
         this.commentService = commentService;
     }
 
@@ -148,6 +139,9 @@ public class GardenService {
         }
 
         Set<String> boosted = new HashSet<>(entitlementService.boostedUserIds());
+        // 꾸미기 외곽선은 **올린 사람**이 산 혜택이다(기획 화면 26·29).
+        Set<String> decorated = new HashSet<>(
+                entitlementService.userIdsWith(EntitlementService.ALBUM_PASS));
         boolean canViewAllPhotos = canViewAllPhotos(userId, sessionDate);
 
         List<FeedItemDto> items = new ArrayList<>();
@@ -160,7 +154,8 @@ public class GardenService {
             // 같은 한 번의 노출이 두 번 잡혀 전환율 분모가 부풀어 오른다.
             gardenMapper.incrementStat(targetId, sessionDate, "exposures", 1);
             gardenMapper.touchExposure(userId, targetId);
-            items.add(toItem(c, score(c), boosted.contains(targetId), canViewAllPhotos));
+            items.add(toItem(c, score(c), boosted.contains(targetId),
+                    decorated.contains(targetId), canViewAllPhotos));
         }
 
         int next = offset + pageIds.size();
@@ -330,62 +325,45 @@ public class GardenService {
         gardenMapper.incrementStat(targetUserId, sessionTime.currentSessionDate(), "comments", 1);
     }
 
-    /** 번역 — 키 미설정 시 원문을 그대로 반환(패스스루). */
     /**
-     * 번역 — 무료 쿼터/패스를 먼저 판정하고 공급자를 부른다. (01 §1.4)
+     * 번역 — 자리(댓글창·대화방)는 <b>미리 잡혀 있다</b>(⑦단계, {@link TranslateAccessService}).
      *
-     * <p>자리마다 무료 범위가 다르다. 댓글은 <b>하루 2회</b>(횟수), 채팅은 <b>하루 2명</b>(사람 수),
-     * 프로필 보기는 항상 무료. 채팅이 "명" 단위인 건 한 대화를 번역해 놓고 이어지는 말마다
-     * 쿼터가 깎이면 쓸 수 없기 때문이다 — 한 번 연 상대와는 그날 계속 무료다.
+     * <p>🚨 여기서는 더 이상 쿼터를 세지 않는다. 기획서의 무료 단위가
+     * "번역 건수"가 아니라 <b>창 호출 / 방 수</b>이기 때문이다 —
+     * 창 하나를 열면 그 안의 댓글은 몇 개든 번역된다. 요청마다 세면
+     * 댓글이 열 개인 창 하나가 무료 다섯 자리를 다 먹는다.
      *
-     * <p>자동번역패스나 프라임이 있으면 세지 않는다. 여기가 TRANSLATE_PASS가
-     * 실제 혜택을 갖는 지점이다(그 전까지는 팔기만 하고 효과가 없었다).
+     * <p>자리를 잡지 않고 부르면 거절한다. 화면이 창을 열 때
+     * {@code POST /translate/comment-sheet}(또는 {@code /translate/room})를 먼저 부른다.
      */
     @Transactional
     public TranslateResponse translate(String userId, TranslateRequest request) {
         String provider = translationProvider.name();
 
-        // 프로필 보기는 쿼터 밖이다.
+        // 프로필 보기는 쿼터 밖이다(기획 4-2).
         if (request.scope() == TranslateScope.PROFILE) {
             return TranslateResponse.unlimited(translated(request), provider);
         }
-        if (entitlementService.hasTranslatePass(userId) || entitlementService.isPrime(userId)) {
-            return TranslateResponse.unlimited(translated(request), provider);
-        }
 
-        LocalDate sessionDate = sessionTime.currentSessionDate();
-        int remaining = request.scope() == TranslateScope.CHAT
-                ? consumeChatQuota(userId, sessionDate, request.targetId())
-                : consumeCommentQuota(userId, sessionDate);
+        TranslateAccessDto access = request.scope() == TranslateScope.CHAT
+                ? translateAccess.openChatRoom(userId, requireTargetId(request))
+                : translateAccess.peekCommentSheet(userId);
 
-        return TranslateResponse.free(translated(request), provider, remaining);
-    }
-
-    /** 채팅 — 오늘 이미 연 상대면 그냥 통과, 아니면 새 사람으로 세고 기록한다. */
-    private int consumeChatQuota(String userId, LocalDate sessionDate, String targetId) {
-        if (targetId == null || targetId.isBlank()) {
-            throw new ApiException(ErrorCode.TRANSLATE_TARGET_REQUIRED, HttpStatus.BAD_REQUEST,
-                    "번역할 상대를 지정해 주세요.", "targetId");
-        }
-        if (gardenMapper.existsTranslateTarget(userId, sessionDate, targetId)) {
-            return Math.max(0, freeTranslateChatTargets
-                    - gardenMapper.countTranslateTargets(userId, sessionDate));
-        }
-        if (gardenMapper.countTranslateTargets(userId, sessionDate) >= freeTranslateChatTargets) {
+        if (!access.granted()) {
             throw quotaExceeded();
         }
-        // INSERT IGNORE라 0이 나오면 같은 순간 다른 요청이 이미 넣은 것 — 어느 쪽이든 이 상대는 열렸다.
-        gardenMapper.insertTranslateTarget(userId, sessionDate, targetId);
-        return Math.max(0, freeTranslateChatTargets
-                - gardenMapper.countTranslateTargets(userId, sessionDate));
+        return access.unlimited()
+                ? TranslateResponse.unlimited(translated(request), provider)
+                : TranslateResponse.free(translated(request), provider, access.remaining());
     }
 
-    /** 댓글 — 단순 횟수. daily_usage 카운터를 그대로 쓴다. */
-    private int consumeCommentQuota(String userId, LocalDate sessionDate) {
-        int used = lunaService.dailyUsed(userId, sessionDate, USAGE_COMMENT_TRANSLATE);
-        if (used >= freeTranslateComments) throw quotaExceeded();
-        lunaService.useDaily(userId, sessionDate, USAGE_COMMENT_TRANSLATE);
-        return Math.max(0, freeTranslateComments - (used + 1));
+    private String requireTargetId(TranslateRequest request) {
+        String targetId = request.targetId();
+        if (targetId == null || targetId.isBlank()) {
+            throw new ApiException(ErrorCode.TRANSLATE_TARGET_REQUIRED, HttpStatus.BAD_REQUEST,
+                    "번역할 대화방을 지정해 주세요.", "targetId");
+        }
+        return targetId;
     }
 
     private ApiException quotaExceeded() {
@@ -406,7 +384,8 @@ public class GardenService {
      * <p>{@code selectPhotoKeys}가 <b>메인을 첫 장</b>으로 주므로(②단계) 앞에서 1장만 자르면
      * 그게 곧 "메인 사진 1장"이다.
      */
-    private FeedItemDto toItem(FeedCandidate c, int score, boolean boosted, boolean canViewAll) {
+    private FeedItemDto toItem(FeedCandidate c, int score, boolean boosted,
+                                boolean decorated, boolean canViewAll) {
         List<String> keys = gardenMapper.selectPhotoKeys(c.getPostId());
         boolean locked = !canViewAll && keys.size() > 1;
         List<String> visible = locked ? keys.subList(0, 1) : keys;
@@ -431,6 +410,7 @@ public class GardenService {
                 commentService.count(CommentTarget.POST, c.getPostId()),
                 c.isLikedByMe(),
                 c.getRegion(),
+                decorated,
                 score
         );
     }

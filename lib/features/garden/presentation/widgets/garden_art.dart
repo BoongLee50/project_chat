@@ -106,6 +106,21 @@ class GardenArt {
   static const double cardBorderWidth = 1.4;
   static const Color cardBorderColor = Color(0xCCFFFFFF);
 
+  /// **꾸미기 외곽선** — 앨범 패스·프라임을 가진 사람의 포스트에 붙는다
+  /// (기획 화면 26·29 "포스트 사진 꾸미기 외곽선 적용" · "무지개빛 테두리 효과").
+  ///
+  /// 산 사람의 포스트가 **한눈에 달라 보여야** 파는 값이 생기므로 굵기도 함께 키운다.
+  /// 그림이 아니라 코드로 그리는 이유는 위 주석과 같다 — 크기가 기기마다 달라서다.
+  static const double decoratedBorderWidth = 3.0;
+  static const List<Color> decoratedBorderColors = [
+    Color(0xFFFF6B9D),
+    Color(0xFFFFD24C),
+    Color(0xFF7BE8A8),
+    Color(0xFF6EC7FF),
+    Color(0xFF8B7CF6),
+    Color(0xFFFF6B9D),
+  ];
+
   /// 시안 좌표 1단위의 픽셀 크기(캔버스 기준).
   static const double unit = 28.4;
 

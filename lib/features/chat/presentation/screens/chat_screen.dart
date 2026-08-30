@@ -10,13 +10,15 @@ import '../../../friend/presentation/providers/friend_provider.dart';
 import '../../../moderation/presentation/widgets/block_dialog.dart';
 import '../../../moderation/presentation/widgets/report_dialog.dart';
 import '../../../postinfo/presentation/screens/profile_view_screen.dart';
-import '../../../store/data/models/store_models.dart';
-import '../../../store/presentation/providers/store_provider.dart';
-import '../../../store/presentation/screens/pass_screen.dart';
+import '../../../../core/error/api_exception.dart';
+import '../../../../core/providers.dart';
+import '../../../../shared/widgets/translate_pass_button.dart';
+import '../../../garden/data/models/translate_access.dart';
 import '../../data/models/chat_models.dart';
 import '../providers/chat_provider.dart';
 import '../providers/voice_player.dart';
 import '../providers/voice_recorder.dart';
+import '../widgets/emoji_sheet.dart';
 import '../widgets/voice_message.dart';
 import '../../../../l10n/app_localizations.dart';
 
@@ -38,6 +40,40 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   /// 음성 전송 중. 올리기 버튼을 두 번 눌러 같은 녹음이 두 번 가는 걸 막는다.
   bool _sendingVoice = false;
+
+  /// 이 방에서 번역이 되는가(기획 5장 — "대화방 5개까지, 삭제 전까지 계속").
+  ///
+  /// **방에 들어올 때 한 번** 자리를 잡는다. 이미 연 방이면 자리를 더 쓰지 않는다.
+  TranslateAccess? _translate;
+
+  @override
+  void initState() {
+    super.initState();
+    _openTranslate();
+  }
+
+  Future<void> _openTranslate() async {
+    try {
+      final access = await ref
+          .read(gardenApiProvider)
+          .openRoomTranslate(widget.room.roomId);
+      if (!mounted) return;
+      setState(() => _translate = access);
+
+      // 다 썼으면 기획서가 정해 둔 문구를 하단에 띄운다.
+      // 공급자가 아직 없을 때는 "다 썼다"가 아니다 — 자리도 안 깎였다.
+      if (!access.granted && !access.unlimited && access.providerReady) {
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            SnackBar(content: Text(L10n.of(context).translateRoomExhausted)),
+          );
+      }
+    } on ApiException {
+      // 번역은 곁가지다 — 실패해도 대화는 그대로 한다.
+      if (mounted) setState(() => _translate = TranslateAccess.unavailable);
+    }
+  }
 
   @override
   void dispose() {
@@ -120,6 +156,24 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       return;
     }
     _scrollToBottom();
+  }
+
+  /// 이모지를 골라 입력칸 **커서 자리**에 끼워 넣는다(기획 §2-5).
+  ///
+  /// 끝에 붙이지 않는 이유: 문장 가운데에 넣고 싶을 때가 더 많다.
+  Future<void> _pickEmoji() async {
+    final emoji = await showEmojiSheet(context);
+    if (emoji == null || !mounted) return;
+
+    final value = _controller.value;
+    final start = value.selection.start < 0 ? value.text.length : value.selection.start;
+    final end = value.selection.end < 0 ? value.text.length : value.selection.end;
+    final text = value.text.replaceRange(start, end, emoji);
+    _controller.value = value.copyWith(
+      text: text,
+      selection: TextSelection.collapsed(offset: start + emoji.length),
+      composing: TextRange.empty,
+    );
   }
 
   void _scrollToBottom() {
@@ -210,6 +264,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     return Scaffold(
       appBar: _ChatAppBar(
         room: widget.room,
+        translate: _translate,
         onLeave: _leave,
         onRequestFriend: _requestFriend,
         onReport: _report,
@@ -270,6 +325,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 controller: _controller,
                 onSend: _send,
                 onRecord: _startRecording,
+                onEmoji: _pickEmoji,
               ),
           ],
         ),
@@ -281,6 +337,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 class _ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
   const _ChatAppBar({
     required this.room,
+    required this.translate,
     required this.onLeave,
     required this.onRequestFriend,
     required this.onReport,
@@ -288,6 +345,7 @@ class _ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
   });
 
   final ChatRoomSummary room;
+  final TranslateAccess? translate;
   final VoidCallback onLeave;
   final VoidCallback onRequestFriend;
   final VoidCallback onReport;
@@ -343,7 +401,7 @@ class _ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
             Text(room.flag, style: const TextStyle(fontSize: 14)),
           ],
           const SizedBox(width: 8),
-          const _TranslatePassChip(),
+          TranslatePassButton(access: translate, compact: true),
         ],
       ),
       actions: [
@@ -436,79 +494,6 @@ class _DateDivider extends StatelessWidget {
               fontWeight: FontWeight.w600,
             ),
           ),
-        ),
-      ),
-    );
-  }
-}
-
-/// 상단 바의 `[⭐ 번역 | 4일]` 칩(기획 5장 img11).
-///
-/// **패스를 가지고 있으면 남은 일수**, 없으면 `구매`. 누르면 자동 번역 패스 화면으로 간다.
-///
-/// 📌 여기는 **상태를 보여 주고 사는 자리**일 뿐, 메시지를 실제로 번역하는 버튼은 아니다.
-/// 번역 공급자가 아직 패스스루라 지금 번역을 붙이면 "번역했는데 원문 그대로"가 된다 —
-/// 그 작업은 ⑦단계다(docs/09).
-class _TranslatePassChip extends ConsumerWidget {
-  const _TranslatePassChip();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = L10n.of(context);
-    final wallet = ref.watch(walletProvider).valueOrNull ?? Wallet.empty;
-
-    // 프라임은 번역이 무제한이라 남은 날짜라는 개념이 없다.
-    final days = wallet.prime
-        ? null
-        : wallet.remainingDays(StoreKind.translatePass);
-    final owned = wallet.prime || (days != null && days > 0);
-
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: () => Navigator.of(context)
-          .push(PassScreen.route(StoreKind.translatePass)),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(999),
-          border: Border.all(
-            color: owned ? AppColors.gold : AppColors.border,
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.star_rounded,
-              size: 13,
-              color: owned ? AppColors.gold : AppColors.textMuted,
-            ),
-            const SizedBox(width: 4),
-            Text(
-              l10n.chatTranslatePass,
-              style: TextStyle(
-                color: owned ? AppColors.gold : AppColors.textSecondary,
-                fontSize: 11,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            const SizedBox(width: 5),
-            Container(width: 1, height: 10, color: AppColors.border),
-            const SizedBox(width: 5),
-            Text(
-              wallet.prime
-                  ? l10n.chatTranslateUnlimited
-                  : (days != null && days > 0
-                        ? l10n.homePassRemainingDays(days)
-                        : l10n.homeBuy),
-              style: TextStyle(
-                color: owned ? AppColors.gold : AppColors.textSecondary,
-                fontSize: 11,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ],
         ),
       ),
     );
@@ -689,11 +674,13 @@ class _InputBar extends StatelessWidget {
     required this.controller,
     required this.onSend,
     required this.onRecord,
+    required this.onEmoji,
   });
 
   final TextEditingController controller;
   final VoidCallback onSend;
   final VoidCallback onRecord;
+  final VoidCallback onEmoji;
 
   @override
   Widget build(BuildContext context) {
@@ -730,7 +717,30 @@ class _InputBar extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 6),
+          // 이모지 — 시안(화면 5)의 😊 자리.
+          //
+          // 📌 GIF 버튼은 넣지 않았다. 기획서가 *"GIF는 구글의 TenorGIF나 다른 검색 API 적용
+          // (**문제 있을 경우 해당 기능 삭제**)"* 라고 적어 두었고, 검색 API 키가 없다.
+          // 자리만 비워 두면 눌러도 아무 일이 없는 버튼이 남는다.
+          Material(
+            color: AppColors.surfaceHigh,
+            shape: const CircleBorder(),
+            child: InkWell(
+              customBorder: const CircleBorder(),
+              onTap: onEmoji,
+              child: const SizedBox(
+                width: 44,
+                height: 44,
+                child: Icon(
+                  Icons.emoji_emotions_outlined,
+                  color: AppColors.moonlight,
+                  size: 21,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 6),
           // 마이크 — 누르면 녹음이 시작되고 이 줄이 녹음 바로 바뀐다.
           Material(
             color: AppColors.surfaceHigh,

@@ -111,11 +111,21 @@ class ProductCatalog {
     required this.lunaProducts,
     required this.lunaPacks,
     required this.primePlans,
+    this.maxPhotosFree = 0,
+    this.maxPhotosPass = 0,
   });
 
   final List<LunaProduct> lunaProducts;
   final List<LunaPack> lunaPacks;
   final List<PrimePlan> primePlans;
+
+  /// BM 화면의 혜택 문구가 말하는 사진 장수(기획 화면 26·29).
+  ///
+  /// 🚨 서버가 주는 이유: *"포스트 사진 최대 9장 등록"*, *"기본 2장에서 최대 9장까지"* 는
+  /// 설정값(`app.post.max-photos-*`)이다. 여기서 받지 않으면 그 숫자가
+  /// 앱 코드나 번역 파일에 굳어, 설정이 바뀌는 순간 화면이 거짓말을 한다.
+  final int maxPhotosFree;
+  final int maxPhotosPass;
 
   /// 같은 kind의 옵션들(예: 포스트 부스트 5매/10매)을 가격 오름차순으로.
   List<LunaProduct> optionsOf(String kind) =>
@@ -123,6 +133,8 @@ class ProductCatalog {
         ..sort((a, b) => a.price.compareTo(b.price));
 
   factory ProductCatalog.fromJson(Map<String, dynamic> json) => ProductCatalog(
+    maxPhotosFree: json['maxPhotosFree'] as int? ?? 0,
+    maxPhotosPass: json['maxPhotosPass'] as int? ?? 0,
     lunaProducts: (json['lunaProducts'] as List? ?? const [])
         .map((e) => LunaProduct.fromJson(Map<String, dynamic>.from(e as Map)))
         .toList(),

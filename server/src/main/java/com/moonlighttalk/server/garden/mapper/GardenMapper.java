@@ -85,25 +85,15 @@ public interface GardenMapper {
     /** 차단/신고로 상호작용이 막힌 상대인지. */
     boolean existsBlockOrReport(@Param("userId") String userId, @Param("targetUserId") String targetUserId);
 
-    // ── 번역 무료 쿼터: 채팅 "하루 2명" (V7) ──────────────────────
+    // ── 번역 무료 쿼터: 대화방 **동시 5개** (V20) ──────────────────
 
-    /** 오늘 번역을 연 상대 수. 행 하나가 사람 한 명이다. */
-    int countTranslateTargets(
-            @Param("userId") String userId, @Param("sessionDate") LocalDate sessionDate);
-
-    /** 이 상대와는 오늘 이미 열었는지(열었으면 계속 무료). */
-    boolean existsTranslateTarget(
-            @Param("userId") String userId,
-            @Param("sessionDate") LocalDate sessionDate,
-            @Param("targetId") String targetId);
+    /** 이 방에 번역을 이미 열어 두었는가(열었으면 방이 끝날 때까지 무료). */
+    boolean existsTranslateRoom(@Param("userId") String userId, @Param("roomId") String roomId);
 
     /**
-     * 상대를 기록한다. 이미 있으면 무시(동시 요청이 겹쳐도 사람 수가 늘지 않도록).
+     * 방 하나를 연다. 이미 있으면 무시 — 같은 순간 두 번 들어와도 자리가 두 개 나가지 않는다.
      *
-     * @return 실제로 새로 기록됐으면 1, 이미 있었으면 0
+     * @return 실제로 새로 열렸으면 1, 이미 열려 있었으면 0
      */
-    int insertTranslateTarget(
-            @Param("userId") String userId,
-            @Param("sessionDate") LocalDate sessionDate,
-            @Param("targetId") String targetId);
+    int insertTranslateRoom(@Param("userId") String userId, @Param("roomId") String roomId);
 }

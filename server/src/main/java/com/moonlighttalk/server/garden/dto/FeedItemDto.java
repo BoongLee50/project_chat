@@ -12,6 +12,9 @@ import java.util.List;
  * @param totalPhotos 원래 몇 장인지. 잠겨 있어도 "더 있다"를 보여줘야 안내가 말이 된다
  * @param likedByMe   내가 이미 좋아요를 눌렀는가. <b>하루 한 번</b>이라 눌린 상태를 보여준다
  * @param region      활동 지역 <b>코드</b> 1개. 문구("한국, 서울")는 클라가 만든다
+ * @param decorated   <b>글쓴이</b>가 앨범 패스·프라임을 가졌는가 — 사진에 꾸미기 외곽선이 붙는다
+ *                    (기획 화면 26·29 "포스트 사진 꾸미기 외곽선 적용").
+ *                    보는 사람이 아니라 <b>올린 사람</b>이 산 혜택이다
  * @param score       정렬에 쓰인 Post Score(디버깅/검증용)
  */
 public record FeedItemDto(
@@ -30,6 +33,7 @@ public record FeedItemDto(
         int comments,
         boolean likedByMe,
         String region,
+        boolean decorated,
         int score
 ) {
 }

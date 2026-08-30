@@ -10,6 +10,7 @@
         <result property="status" column="status"/>
         <result property="lunaCost" column="luna_cost"/>
         <result property="createdAt" column="created_at"/>
+        <result property="priorityUntil" column="priority_until"/>
         <result property="partnerNickname" column="partner_nickname"/>
         <result property="partnerBirthYear" column="partner_birth_year"/>
         <result property="partnerCountry" column="partner_country"/>
@@ -56,8 +57,10 @@
 
     <!-- ── 대화 신청 ── -->
     <insert id="insertRequest">
-        INSERT INTO chat_requests (id, from_user, to_user, message, status, luna_cost, created_at)
-        VALUES (#{id}, #{fromUser}, #{toUser}, #{message}, #{status}, #{lunaCost}, NOW())
+        INSERT INTO chat_requests (id, from_user, to_user, message, status, luna_cost,
+                                   priority_until, created_at)
+        VALUES (#{id}, #{fromUser}, #{toUser}, #{message}, #{status}, #{lunaCost},
+                #{priorityUntil}, NOW())
     </insert>
 
     <select id="selectRequest" resultMap="RequestResultMap">
@@ -83,7 +86,12 @@
                  JOIN users u ON u.id = r.from_user
                  LEFT JOIN user_profiles p ON p.user_id = u.id
         WHERE r.to_user = #{userId} AND r.status = 'PENDING'
-        ORDER BY r.created_at DESC
+        <!--
+          프라임이 산 것은 **1일간 최상단**(기획 9-1). 그 뒤로는 무료 사용자와 같은 줄에 선다.
+          프라임끼리는 "신청 시간에 따라" — 같은 우선 구간 안에서는 최신이 위다.
+        -->
+        ORDER BY (r.priority_until IS NOT NULL AND r.priority_until &gt; NOW()) DESC,
+                 r.created_at DESC
     </select>
 
 
@@ -112,6 +120,13 @@
 
     <select id="selectRoom" resultMap="RoomResultMap">
         SELECT * FROM chat_rooms WHERE id = #{id}
+    </select>
+
+    <select id="countActiveTranslateRooms" resultType="int">
+        SELECT COUNT(*)
+        FROM translate_rooms t
+                 JOIN chat_rooms r ON r.id = t.room_id
+        WHERE t.user_id = #{userId} AND r.status = 'ACTIVE'
     </select>
 
     <!-- 상대 정보 + 마지막 메시지 + 내가 안 읽은 수 -->
