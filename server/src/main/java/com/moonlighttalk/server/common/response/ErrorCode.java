@@ -33,6 +33,14 @@ public enum ErrorCode {
 
     // ── garden ─────────────────────────────────────────
     GARDEN_TARGET_BLOCKED,
+    /** 댓글이 50자를 넘었다(기획 4-2). */
+    COMMENT_TOO_LONG,
+    /** 3단계보다 깊은 답글을 달려 했다. */
+    COMMENT_DEPTH_EXCEEDED,
+    /** 답글을 달 부모 댓글이 없다(또는 다른 포스트의 댓글이다). */
+    COMMENT_PARENT_NOT_FOUND,
+    /** 첨부 이미지 키가 내 것이 아니다. */
+    COMMENT_IMAGE_KEY_INVALID,
 
     // ── translate ──────────────────────────────────────
     TRANSLATE_QUOTA_EXCEEDED,

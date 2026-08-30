@@ -38,6 +38,37 @@ class GardenApi {
         .toList();
   }
 
-  Future<void> addComment(String targetUserId, String body) =>
-      _client.post('/posts/$targetUserId/comments', body: {'body': body});
+  /// 댓글/답글 작성. [parentId]가 있으면 답글이고, 서버가 깊이를 계산해 3단계에서 막는다.
+  Future<void> addComment(
+    String targetUserId,
+    String body, {
+    String? parentId,
+    String? imageKey,
+  }) => _client.post(
+    '/posts/$targetUserId/comments',
+    body: {
+      'body': body,
+      'parentId': ?parentId,
+      'imageKey': ?imageKey,
+    },
+  );
+
+  /// 댓글 첨부 이미지 업로드: URL 발급 → 바이트 직접 전송 → **키를 돌려준다**.
+  /// 키는 댓글을 등록할 때 함께 보낸다(포스트 사진과 같은 흐름).
+  Future<String> uploadCommentImage({
+    required List<int> bytes,
+    String contentType = 'image/jpeg',
+  }) async {
+    final issued = await _client.post(
+      '/posts/comments/image:upload-url',
+      query: {'contentType': contentType},
+    );
+    final map = Map<String, dynamic>.from(issued as Map);
+    await _client.putBytes(
+      map['uploadUrl'] as String,
+      bytes: bytes,
+      contentType: contentType,
+    );
+    return map['storageKey'] as String;
+  }
 }

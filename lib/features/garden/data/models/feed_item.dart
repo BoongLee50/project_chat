@@ -94,13 +94,19 @@ class FeedPage {
   );
 }
 
-/// 포스트 댓글.
+/// 포스트 댓글(기획 4-2). **3단계**까지 · 50자 · 이미지 1장.
+///
+/// 서버가 **트리 순서로 평탄화**해서 준다 — 부모 바로 뒤에 그 답글이 오므로
+/// 화면은 [depth]만큼 들여쓰기만 하면 된다.
 class Comment {
   const Comment({
     required this.id,
     required this.authorId,
     required this.authorNickname,
     required this.body,
+    this.parentId,
+    this.depth = 1,
+    this.imageUrl,
   });
 
   final String id;
@@ -108,11 +114,23 @@ class Comment {
   final String authorNickname;
   final String body;
 
+  /// 부모 댓글. 1단계면 null.
+  final String? parentId;
+
+  /// 1=댓글, 2=대댓글, 3=대대댓글.
+  final int depth;
+
+  /// 첨부 이미지(없으면 null). 서버 상대경로라 [AuthedImage]로 그린다.
+  final String? imageUrl;
+
   factory Comment.fromJson(Map<String, dynamic> json) => Comment(
     id: json['id'] as String,
     authorId: json['authorId'] as String? ?? '',
     authorNickname: json['authorNickname'] as String? ?? '',
     body: json['body'] as String? ?? '',
+    parentId: json['parentId'] as String?,
+    depth: json['depth'] as int? ?? 1,
+    imageUrl: json['imageUrl'] as String?,
   );
 }
 

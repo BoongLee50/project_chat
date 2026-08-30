@@ -99,6 +99,11 @@ app:
         entitlements: [ALBUM_PASS, UNLIMITED_CHAT_REQ]
         # ⚠️ 6개월 부스트를 일괄 지급할지 매월 지급할지 기획 확인 필요 — 일단 6배로 둔다
         boosts: { POST_BOOST: 60 }
+  comment:
+    # 댓글 규칙(기획 4-2). 달빛 한마디(8-2·8-3)의 댓글도 규칙이 같아 이 값을 함께 쓴다.
+    max-length: 50
+    # 3단계까지 = 댓글 / 대댓글 / 대대댓글. 그 이상은 서버가 거절한다.
+    max-depth: 3
   chat:
     # 대화 신청 — 하루 N회는 공짜, 그 뒤로는 1건당 루나를 뺀다(기획서 5장).
     free-requests-per-day: 10

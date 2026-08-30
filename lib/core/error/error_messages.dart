@@ -36,6 +36,11 @@ String errorMessage(L10n l10n, ApiException e) {
 
     // ── garden ───────────────────────────────────────
     'GARDEN_TARGET_BLOCKED' => l10n.errorGardenTargetBlocked,
+    // 글자 수·단계 수도 설정값이라 서버가 field로 실어 보낸다(②단계와 같은 방식).
+    'COMMENT_TOO_LONG' => l10n.errorCommentTooLong(_count(e)),
+    'COMMENT_DEPTH_EXCEEDED' => l10n.errorCommentDepthExceeded(_count(e)),
+    'COMMENT_PARENT_NOT_FOUND' => l10n.errorCommentParentNotFound,
+    'COMMENT_IMAGE_KEY_INVALID' => l10n.errorCommentImageKeyInvalid,
 
     // ── translate ────────────────────────────────────
     'TRANSLATE_QUOTA_EXCEEDED' => l10n.errorTranslateQuotaExceeded,

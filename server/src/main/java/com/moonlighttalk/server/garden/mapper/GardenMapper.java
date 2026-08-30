@@ -77,6 +77,9 @@ public interface GardenMapper {
 
     void insertComment(PostComment comment);
 
+    /** 답글을 달 부모 댓글(없으면 null). */
+    PostComment selectCommentById(@Param("commentId") String commentId);
+
     int countComments(@Param("postId") String postId);
 
     /** 차단/신고로 상호작용이 막힌 상대인지. */

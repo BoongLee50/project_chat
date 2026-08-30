@@ -3,7 +3,9 @@ package com.moonlighttalk.server.garden.controller;
 import com.moonlighttalk.server.common.security.CurrentUserId;
 import com.moonlighttalk.server.garden.dto.*;
 import com.moonlighttalk.server.garden.service.GardenService;
+import com.moonlighttalk.server.post.dto.UploadUrlResponse;
 import jakarta.validation.Valid;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -47,7 +49,16 @@ public class GardenController {
     public void addComment(@CurrentUserId String userId,
                             @PathVariable String targetUserId,
                             @Valid @RequestBody CreateCommentRequest request) {
-        gardenService.addComment(userId, targetUserId, request.body());
+        gardenService.addComment(userId, targetUserId, request.body(),
+                request.parentId(), request.imageKey());
+    }
+
+    /** 댓글 첨부 이미지 업로드 URL 발급(1장). 포스트 사진과 같은 흐름이다. */
+    @PostMapping("/posts/comments/image:upload-url")
+    public UploadUrlResponse issueCommentImageUploadUrl(
+            @CurrentUserId String userId,
+            @RequestParam(defaultValue = MediaType.IMAGE_JPEG_VALUE) String contentType) {
+        return gardenService.issueCommentImageUploadUrl(userId, contentType);
     }
 
     @PostMapping("/translate")

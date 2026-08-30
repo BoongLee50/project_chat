@@ -235,13 +235,36 @@ class L10nKo extends L10n {
   String get commentsSection => '댓글';
 
   @override
-  String get commentsHint => '댓글을 남겨보세요 (최대 25자)';
+  String get commentsHint => '댓글을 남겨보세요 (최대 50자)';
 
   @override
   String get commentsEmpty => '첫 댓글을 남겨보세요.';
 
   @override
   String get commentsLoadFailed => '댓글을 불러오지 못했어요.';
+
+  @override
+  String get commentsReply => '답글';
+
+  @override
+  String commentsReplyingTo(String name) {
+    return '$name님에게 답글 남기는 중';
+  }
+
+  @override
+  String get commentsCancelReply => '답글 취소';
+
+  @override
+  String get commentsAttachImage => '사진 첨부';
+
+  @override
+  String get commentsImageAttached => '사진 1장 첨부됨';
+
+  @override
+  String get commentsRemoveImage => '첨부 사진 삭제';
+
+  @override
+  String get commentsImageViewer => '첨부 사진';
 
   @override
   String get chatRoomsTitle => '대화방';
@@ -1260,6 +1283,22 @@ class L10nKo extends L10n {
 
   @override
   String get errorGardenTargetBlocked => '지금은 이 사용자에게 댓글을 남길 수 없어요.';
+
+  @override
+  String errorCommentTooLong(int count) {
+    return '댓글은 $count자까지 입력할 수 있어요.';
+  }
+
+  @override
+  String errorCommentDepthExceeded(int count) {
+    return '답글은 $count단계까지만 달 수 있어요.';
+  }
+
+  @override
+  String get errorCommentParentNotFound => '답글을 달 댓글을 찾을 수 없어요.';
+
+  @override
+  String get errorCommentImageKeyInvalid => '첨부한 사진이 올바르지 않아요. 다시 선택해 주세요.';
 
   @override
   String get errorTranslateQuotaExceeded =>

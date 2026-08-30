@@ -1,15 +1,23 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimens.dart';
 import '../../../../core/error/api_exception.dart';
+import '../../../../core/error/error_messages.dart';
 import '../../../../core/providers.dart';
+import '../../../../l10n/app_localizations.dart';
+import '../../../../shared/widgets/authed_image.dart';
 import '../../data/models/feed_item.dart';
 import '../providers/garden_provider.dart';
-import '../../../../l10n/app_localizations.dart';
 
-/// 포스트 댓글 시트(기획서 4-2). 대댓글 없음, 최대 25자.
+/// 포스트 댓글 시트(기획서 4-2). **3단계 답글** · 최대 50자 · 이미지 1장.
+///
+/// 달빛 한마디(8-2·8-3)의 댓글도 규칙이 같아 ⑤단계에서 이 화면을 재사용한다 —
+/// 그래서 [FeedItem]에 직접 매달지 않고 대상 사용자 id와 이름만 받는다.
 Future<void> showCommentsSheet(BuildContext context, FeedItem item) {
   return showModalBottomSheet(
     context: context,
@@ -32,13 +40,51 @@ class _CommentsSheet extends ConsumerStatefulWidget {
 }
 
 class _CommentsSheetState extends ConsumerState<_CommentsSheet> {
+  /// 서버 설정(`app.comment.*`)과 같은 값. 클라는 **미리 막아 주는 역할**이고
+  /// 최종 판정은 서버가 한다 — 화면만 막으면 API를 직접 부르는 것으로 뚫린다.
+  static const int _maxLength = 50;
+  static const int _maxDepth = 3;
+
   final _controller = TextEditingController();
   bool _sending = false;
+
+  /// 답글 대상. null이면 1단계 댓글이다.
+  Comment? _replyTo;
+
+  /// 첨부한 사진 — 올린 뒤 받은 키와, 미리보기용 바이트.
+  String? _imageKey;
+  List<int>? _imageBytes;
 
   @override
   void dispose() {
     _controller.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickImage() async {
+    final file = await ImagePicker().pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 85,
+    );
+    if (file == null) return;
+
+    final bytes = await file.readAsBytes();
+    setState(() => _sending = true);
+    try {
+      // 등록 버튼을 누르기 전에 올려 둔다 — 전송 순간이 짧아야 답답하지 않다.
+      final key = await ref
+          .read(gardenApiProvider)
+          .uploadCommentImage(bytes: bytes);
+      if (!mounted) return;
+      setState(() {
+        _imageKey = key;
+        _imageBytes = bytes;
+      });
+    } on ApiException catch (e) {
+      if (mounted) _toast(errorMessage(L10n.of(context), e));
+    } finally {
+      if (mounted) setState(() => _sending = false);
+    }
   }
 
   Future<void> _send() async {
@@ -47,18 +93,32 @@ class _CommentsSheetState extends ConsumerState<_CommentsSheet> {
 
     setState(() => _sending = true);
     try {
-      await ref.read(gardenApiProvider).addComment(widget.item.userId, text);
+      await ref
+          .read(gardenApiProvider)
+          .addComment(
+            widget.item.userId,
+            text,
+            parentId: _replyTo?.id,
+            imageKey: _imageKey,
+          );
       _controller.clear();
+      setState(() {
+        _replyTo = null;
+        _imageKey = null;
+        _imageBytes = null;
+      });
       ref.invalidate(commentsProvider(widget.item.userId));
     } on ApiException catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context)
-          ..hideCurrentSnackBar()
-          ..showSnackBar(SnackBar(content: Text(e.message)));
-      }
+      if (mounted) _toast(errorMessage(L10n.of(context), e));
     } finally {
       if (mounted) setState(() => _sending = false);
     }
+  }
+
+  void _toast(String message) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
@@ -72,7 +132,7 @@ class _CommentsSheetState extends ConsumerState<_CommentsSheet> {
         bottom: MediaQuery.of(context).viewInsets.bottom,
       ),
       child: SizedBox(
-        height: MediaQuery.of(context).size.height * 0.6,
+        height: MediaQuery.of(context).size.height * 0.7,
         child: Column(
           children: [
             const SizedBox(height: 12),
@@ -132,45 +192,65 @@ class _CommentsSheetState extends ConsumerState<_CommentsSheet> {
                         itemCount: list.length,
                         separatorBuilder: (_, _) =>
                             const SizedBox(height: AppDimens.gapMd),
-                        itemBuilder: (context, i) {
-                          final c = list[i];
-                          return Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                c.authorNickname,
-                                style: const TextStyle(
-                                  color: AppColors.moonlight,
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                c.body,
-                                style: const TextStyle(
-                                  color: AppColors.textPrimary,
-                                  fontSize: 15,
-                                ),
-                              ),
-                            ],
-                          );
-                        },
+                        itemBuilder: (context, i) => _CommentTile(
+                          comment: list[i],
+                          // 3단계에 달린 댓글에는 더 답글을 달 수 없다(기획 4-2).
+                          canReply: list[i].depth < _maxDepth,
+                          onReply: () => setState(() => _replyTo = list[i]),
+                        ),
                       ),
               ),
             ),
+            if (_replyTo != null)
+              _ReplyBanner(
+                nickname: _replyTo!.authorNickname,
+                onCancel: () => setState(() => _replyTo = null),
+              ),
+            if (_imageBytes != null)
+              _AttachedImageBar(
+                bytes: _imageBytes!,
+                onRemove: () => setState(() {
+                  _imageKey = null;
+                  _imageBytes = null;
+                }),
+              ),
             Padding(
               padding: const EdgeInsets.all(AppDimens.pagePad),
               child: Row(
                 children: [
+                  IconButton(
+                    onPressed: _sending || _imageBytes != null
+                        ? null
+                        : _pickImage,
+                    tooltip: l10n.commentsAttachImage,
+                    icon: Icon(
+                      Icons.image_outlined,
+                      color: _imageBytes != null
+                          ? AppColors.textMuted
+                          : AppColors.moonlight,
+                    ),
+                  ),
                   Expanded(
                     child: TextField(
                       controller: _controller,
-                      maxLength: 25,
+                      maxLength: _maxLength,
+                      // 남은 글자를 보여 준다 — 50자에서 잘리는 이유가 드러나야 한다.
+                      buildCounter:
+                          (
+                            _, {
+                            required currentLength,
+                            required isFocused,
+                            maxLength,
+                          }) => Text(
+                            '$currentLength/$maxLength',
+                            style: const TextStyle(
+                              color: AppColors.textMuted,
+                              fontSize: 11,
+                            ),
+                          ),
                       cursorColor: AppColors.moonlight,
                       style: const TextStyle(color: AppColors.textPrimary),
                       decoration: InputDecoration(
-                        counterText: '',
                         hintText: l10n.commentsHint,
                         hintStyle: const TextStyle(color: AppColors.textMuted),
                         filled: true,
@@ -195,6 +275,202 @@ class _CommentsSheetState extends ConsumerState<_CommentsSheet> {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// 댓글 한 줄. [Comment.depth]만큼 들여쓴다 —
+/// 서버가 트리 순서로 평탄화해 주므로 화면은 깊이만 보면 된다.
+class _CommentTile extends StatelessWidget {
+  const _CommentTile({
+    required this.comment,
+    required this.canReply,
+    required this.onReply,
+  });
+
+  final Comment comment;
+  final bool canReply;
+  final VoidCallback onReply;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
+    return Padding(
+      padding: EdgeInsets.only(left: (comment.depth - 1) * 22.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              // 답글은 한 단계 안으로 들어왔다는 걸 꺾쇠로도 알린다(들여쓰기만으로는 약하다).
+              if (comment.depth > 1) ...[
+                Icon(
+                  Icons.subdirectory_arrow_right,
+                  size: 14,
+                  color: AppColors.textMuted,
+                ),
+                const SizedBox(width: 4),
+              ],
+              Flexible(
+                child: Text(
+                  comment.authorNickname,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: AppColors.moonlight,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              const Spacer(),
+              if (canReply)
+                GestureDetector(
+                  onTap: onReply,
+                  child: Text(
+                    l10n.commentsReply,
+                    style: const TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            comment.body,
+            style: const TextStyle(color: AppColors.textPrimary, fontSize: 15),
+          ),
+          if (comment.imageUrl != null) ...[
+            const SizedBox(height: 8),
+            // 누르면 원본만 팝업으로 띄운다(기획 4-2).
+            GestureDetector(
+              onTap: () => _showImage(context, comment.imageUrl!),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(AppDimens.radiusMd),
+                child: SizedBox(
+                  width: 160,
+                  height: 120,
+                  child: AuthedImage(url: comment.imageUrl!),
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  void _showImage(BuildContext context, String url) {
+    showDialog<void>(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.all(16),
+        child: Stack(
+          alignment: Alignment.topRight,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(AppDimens.radiusLg),
+              child: AuthedImage(url: url, fit: BoxFit.contain),
+            ),
+            IconButton(
+              onPressed: () => Navigator.pop(context),
+              icon: const Icon(Icons.close_rounded, color: Colors.white),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// 지금 누구에게 답글을 쓰는지 알려 주는 줄. 없으면 1단계 댓글이 된다.
+class _ReplyBanner extends StatelessWidget {
+  const _ReplyBanner({required this.nickname, required this.onCancel});
+
+  final String nickname;
+  final VoidCallback onCancel;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
+    return Container(
+      width: double.infinity,
+      color: AppColors.surface,
+      padding: const EdgeInsets.fromLTRB(AppDimens.pagePad, 8, 8, 8),
+      child: Row(
+        children: [
+          const Icon(
+            Icons.subdirectory_arrow_right,
+            size: 16,
+            color: AppColors.moonlight,
+          ),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Text(
+              l10n.commentsReplyingTo(nickname),
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 13,
+              ),
+            ),
+          ),
+          IconButton(
+            onPressed: onCancel,
+            tooltip: l10n.commentsCancelReply,
+            icon: const Icon(Icons.close_rounded, color: AppColors.textMuted),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// 첨부한 사진 미리보기(1장). 올리기는 이미 끝난 상태이고 키만 들고 있다.
+class _AttachedImageBar extends StatelessWidget {
+  const _AttachedImageBar({required this.bytes, required this.onRemove});
+
+  final List<int> bytes;
+  final VoidCallback onRemove;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
+    return Container(
+      width: double.infinity,
+      color: AppColors.surface,
+      padding: const EdgeInsets.fromLTRB(AppDimens.pagePad, 8, 8, 8),
+      child: Row(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(6),
+            child: Image.memory(
+              Uint8List.fromList(bytes),
+              width: 40,
+              height: 40,
+              fit: BoxFit.cover,
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              l10n.commentsImageAttached,
+              style: const TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 13,
+              ),
+            ),
+          ),
+          IconButton(
+            onPressed: onRemove,
+            tooltip: l10n.commentsRemoveImage,
+            icon: const Icon(Icons.close_rounded, color: AppColors.textMuted),
+          ),
+        ],
       ),
     );
   }

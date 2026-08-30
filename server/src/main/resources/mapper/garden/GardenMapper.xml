@@ -26,6 +26,9 @@
         <result property="authorId" column="author_id"/>
         <result property="authorNickname" column="author_nickname"/>
         <result property="body" column="body"/>
+        <result property="parentId" column="parent_id"/>
+        <result property="depth" column="depth"/>
+        <result property="imageKey" column="image_key"/>
         <result property="createdAt" column="created_at"/>
     </resultMap>
 
@@ -205,9 +208,17 @@
     </select>
 
     <insert id="insertComment">
-        INSERT INTO post_comments (id, post_id, author_id, body, created_at)
-        VALUES (#{id}, #{postId}, #{authorId}, #{body}, NOW(3))
+        INSERT INTO post_comments (id, post_id, author_id, body, parent_id, depth, image_key, created_at)
+        VALUES (#{id}, #{postId}, #{authorId}, #{body}, #{parentId}, #{depth}, #{imageKey}, NOW(3))
     </insert>
+
+    <!-- 답글을 달 부모. 같은 포스트인지까지 서비스가 확인하므로 post_id도 함께 읽는다. -->
+    <select id="selectCommentById" resultMap="PostCommentResultMap">
+        SELECT c.*, u.nickname AS author_nickname
+        FROM post_comments c
+                 JOIN users u ON u.id = c.author_id
+        WHERE c.id = #{commentId}
+    </select>
 
     <select id="countComments" resultType="int">
         SELECT COUNT(*) FROM post_comments WHERE post_id = #{postId}

@@ -77,8 +77,9 @@
 | GET | `/feed?gender=&age=&country=&cursor=` | 스코어순 피드(필터) | 7 |
 | POST | `/feed/:userId/like` | 좋아요 +1 (스코어/전환율 반영) | 7 |
 | POST | `/feed/:userId/skip` | 스킵 처리 | 7 |
-| GET | `/posts/:userId/comments` | 포스트 댓글 목록 | 9 |
-| POST | `/posts/:userId/comments` | 댓글 작성(≤25자, 대댓글 없음) | 9 |
+| GET | `/posts/:userId/comments` | 포스트 댓글 목록(**트리 순서**) | 9 |
+| POST | `/posts/:userId/comments` | 댓글/답글 작성(≤50자, **3단계**, 이미지 1장) | 9 |
+| POST | `/posts/comments/image:upload-url` | 댓글 첨부 이미지 업로드 URL | 9 |
 | POST | `/translate` | 번역(text, targetLang, **scope**, targetId) 한↔일 | 9 |
 
 필터 기본값 [전체]. 수치는 전부 `app.garden.*` 설정이다(`GardenProperties`).
@@ -109,6 +110,19 @@ Engage  : {(좋아요×1)+(댓글×2)+(대화신청×4)} / 총 노출 × 100
 ⚠️ **자르는 일은 서버가 한다** — 잠긴 사진의 URL은 응답에 담기지 않는다. 화면에서만 가리면
 API를 직접 부르는 것으로 뚫린다. 응답에 `photoLocked`(잠김 여부)와 `totalPhotos`(원래 장수)가 실려
 클라가 "몇 장이 더 있다"를 안내할 수 있다.
+**댓글(Plan_3 4-2 / 8-2 / 8-3)** — 세 화면의 규칙이 **완전히 같아** 한 구조를 쓴다.
+- **3단계까지**(댓글/대댓글/대대댓글). 그 이상은 `COMMENT_DEPTH_EXCEEDED`(409).
+- **50자**까지. 넘으면 `COMMENT_TOO_LONG`(400) — 숫자는 `field`로 실어 보내 ARB가 문장을 만든다.
+- **이미지 1장**. 포스트 사진과 같은 흐름(URL 발급 → 직접 업로드 → `imageKey`로 등록).
+  키에 업로더 id가 들어 있어 **남의 키를 붙이면** `COMMENT_IMAGE_KEY_INVALID`(403).
+- 목록은 서버가 **트리 순서로 평탄화**해 준다 — 부모 바로 뒤에 그 답글이 온다.
+  클라는 `depth`만큼 들여쓰면 되고 재귀 조립을 하지 않는다.
+- 수치는 `app.comment.max-length` · `app.comment.max-depth`.
+- Engage 집계(`post_stats.comments`)는 **답글도 댓글로 센다**.
+
+⚠️ **번역 무료 단위가 기획서와 다르다(⑦단계 확인 대상)** — 지금은 `free-comments-per-day: 2`(번역 **건수**)인데
+기획서 4-2·8-2는 *"댓글창 **5회 호출**까지 무료"* 다. **값(2→5)뿐 아니라 세는 단위가 다르다.**
+
 `/translate`는 번역 API 키 설정 전엔 원문을 그대로 반환하는 패스스루로 동작(`app.translate.provider=none`), 추후 실제 번역 공급자로 전환. [05 서버구조 §9.2](05-server-structure.md#92-번역) 참고.
 무료 번역 쿼터(Plan_2): **댓글 하루 2회 / 채팅 매일 2명**, 초과 시 자동번역패스 유도. **자동번역패스**(TRANSLATE_PASS) 보유 시 무제한. 프로필 보기는 항상 무료. 프라임 구독은 번역 무제한.
 

@@ -520,7 +520,7 @@ abstract class L10n {
   /// No description provided for @commentsHint.
   ///
   /// In ko, this message translates to:
-  /// **'댓글을 남겨보세요 (최대 25자)'**
+  /// **'댓글을 남겨보세요 (최대 50자)'**
   String get commentsHint;
 
   /// No description provided for @commentsEmpty.
@@ -534,6 +534,48 @@ abstract class L10n {
   /// In ko, this message translates to:
   /// **'댓글을 불러오지 못했어요.'**
   String get commentsLoadFailed;
+
+  /// No description provided for @commentsReply.
+  ///
+  /// In ko, this message translates to:
+  /// **'답글'**
+  String get commentsReply;
+
+  /// No description provided for @commentsReplyingTo.
+  ///
+  /// In ko, this message translates to:
+  /// **'{name}님에게 답글 남기는 중'**
+  String commentsReplyingTo(String name);
+
+  /// No description provided for @commentsCancelReply.
+  ///
+  /// In ko, this message translates to:
+  /// **'답글 취소'**
+  String get commentsCancelReply;
+
+  /// No description provided for @commentsAttachImage.
+  ///
+  /// In ko, this message translates to:
+  /// **'사진 첨부'**
+  String get commentsAttachImage;
+
+  /// No description provided for @commentsImageAttached.
+  ///
+  /// In ko, this message translates to:
+  /// **'사진 1장 첨부됨'**
+  String get commentsImageAttached;
+
+  /// No description provided for @commentsRemoveImage.
+  ///
+  /// In ko, this message translates to:
+  /// **'첨부 사진 삭제'**
+  String get commentsRemoveImage;
+
+  /// No description provided for @commentsImageViewer.
+  ///
+  /// In ko, this message translates to:
+  /// **'첨부 사진'**
+  String get commentsImageViewer;
 
   /// No description provided for @chatRoomsTitle.
   ///
@@ -2376,6 +2418,30 @@ abstract class L10n {
   /// In ko, this message translates to:
   /// **'지금은 이 사용자에게 댓글을 남길 수 없어요.'**
   String get errorGardenTargetBlocked;
+
+  /// No description provided for @errorCommentTooLong.
+  ///
+  /// In ko, this message translates to:
+  /// **'댓글은 {count}자까지 입력할 수 있어요.'**
+  String errorCommentTooLong(int count);
+
+  /// No description provided for @errorCommentDepthExceeded.
+  ///
+  /// In ko, this message translates to:
+  /// **'답글은 {count}단계까지만 달 수 있어요.'**
+  String errorCommentDepthExceeded(int count);
+
+  /// No description provided for @errorCommentParentNotFound.
+  ///
+  /// In ko, this message translates to:
+  /// **'답글을 달 댓글을 찾을 수 없어요.'**
+  String get errorCommentParentNotFound;
+
+  /// No description provided for @errorCommentImageKeyInvalid.
+  ///
+  /// In ko, this message translates to:
+  /// **'첨부한 사진이 올바르지 않아요. 다시 선택해 주세요.'**
+  String get errorCommentImageKeyInvalid;
 
   /// No description provided for @errorTranslateQuotaExceeded.
   ///

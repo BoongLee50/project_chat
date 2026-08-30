@@ -235,13 +235,36 @@ class L10nJa extends L10n {
   String get commentsSection => 'コメント';
 
   @override
-  String get commentsHint => 'コメントを残してみましょう（最大25文字）';
+  String get commentsHint => 'コメントを残してみましょう（最大50文字）';
 
   @override
   String get commentsEmpty => '最初のコメントを残してみましょう。';
 
   @override
   String get commentsLoadFailed => 'コメントを読み込めませんでした。';
+
+  @override
+  String get commentsReply => '返信';
+
+  @override
+  String commentsReplyingTo(String name) {
+    return '$nameさんに返信中';
+  }
+
+  @override
+  String get commentsCancelReply => '返信をやめる';
+
+  @override
+  String get commentsAttachImage => '写真を添付';
+
+  @override
+  String get commentsImageAttached => '写真1枚を添付しました';
+
+  @override
+  String get commentsRemoveImage => '添付写真を削除';
+
+  @override
+  String get commentsImageViewer => '添付写真';
 
   @override
   String get chatRoomsTitle => 'チャットルーム';
@@ -1259,6 +1282,22 @@ class L10nJa extends L10n {
 
   @override
   String get errorGardenTargetBlocked => '今はこのユーザーにコメントを残せません。';
+
+  @override
+  String errorCommentTooLong(int count) {
+    return 'コメントは$count文字まで入力できます。';
+  }
+
+  @override
+  String errorCommentDepthExceeded(int count) {
+    return '返信は$count段階までです。';
+  }
+
+  @override
+  String get errorCommentParentNotFound => '返信するコメントが見つかりません。';
+
+  @override
+  String get errorCommentImageKeyInvalid => '添付した写真が正しくありません。選び直してください。';
 
   @override
   String get errorTranslateQuotaExceeded => '本日の無料翻訳をすべて使いました。自動翻訳パスをご利用ください。';
