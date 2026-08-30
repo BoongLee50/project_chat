@@ -16,6 +16,7 @@ import '../../../store/presentation/screens/prime_screen.dart';
 import '../providers/garden_provider.dart';
 import '../widgets/comments_sheet.dart';
 import '../widgets/garden_art.dart';
+import '../widgets/post_photo_viewer.dart';
 import '../../../../l10n/app_localizations.dart';
 
 /// 달빛가든 — 포스트 사진 피드. 메인 셸의 l10n.gardenTitle 탭 본문. (기획서 4장)
@@ -343,12 +344,6 @@ class _FeedPager extends ConsumerStatefulWidget {
 }
 
 class _FeedPagerState extends ConsumerState<_FeedPager> {
-  int _photoIndex = 0;
-
-  /// 잠긴 사진을 넘기려 했는가 — 안내창은 **시도했을 때만** 뜬다(기획 4-1).
-  /// 처음부터 띄워 두면 사진을 볼 생각도 없던 사람에게 광고가 되고, 카드가 가려진다.
-  bool _lockNotice = false;
-
   FeedItem get _item => widget.items.first;
 
   Future<void> _skip() async {
@@ -356,8 +351,6 @@ class _FeedPagerState extends ConsumerState<_FeedPager> {
     // await 이전에 notifier를 확보해 둔다(dispose 후 ref 사용 방지).
     final notifier = ref.read(feedProvider.notifier);
     final nearlyEmpty = widget.items.length <= 2;
-    _photoIndex = 0;
-    _lockNotice = false;
 
     final error = await notifier.skip(_item);
     if (error != null && mounted) _toast(errorMessage(L10n.of(context), error));
@@ -427,9 +420,10 @@ class _FeedPagerState extends ConsumerState<_FeedPager> {
   Widget build(BuildContext context) {
     final item = _item;
     final photos = item.photoUrls;
-    final index = photos.isEmpty ? 0 : _photoIndex.clamp(0, photos.length - 1);
-    // 사진을 넘겨 보는 중에는 하루 한마디 대신 관심사를 노출(기획서 4-1).
-    final showInterests = index > 0 && item.interests.isNotEmpty;
+    // 카드에는 **메인 사진 한 장**만 보여준다. 나머지는 카드를 눌러 뜨는 뷰어에서 넘겨 본다
+    // (기획 4-1 — 카드의 좌우 스와이프는 사람을 넘기는 동작이라 사진 넘기기와 겹칠 수 없다).
+    const index = 0;
+    final showInterests = item.interests.isNotEmpty;
 
     return Dismissible(
       key: ValueKey(item.userId),
@@ -451,21 +445,11 @@ class _FeedPagerState extends ConsumerState<_FeedPager> {
                     // deferToChild이고 Image는 자기 자신을 히트테스트하지 않아, 사진 위를 눌러도
                     // 아무 일이 일어나지 않는다(함정 #38).
                     behavior: HitTestBehavior.opaque,
-                    onTapUp: (details) {
-                      final width = context.size?.width ?? 1;
-                      final forward = details.localPosition.dx > width / 2;
-                      // 잠긴 다음 장을 넘기려 하면 사진 대신 안내창을 띄운다.
-                      if (forward &&
-                          index == photos.length - 1 &&
-                          item.photoLocked) {
-                        setState(() => _lockNotice = true);
-                        return;
-                      }
-                      final next = forward ? index + 1 : index - 1;
-                      setState(
-                        () => _photoIndex = next.clamp(0, photos.length - 1),
-                      );
-                    },
+                    // **누르고 뗐을 때만** 사진 뷰어를 연다(`onTapUp` = tap-up).
+                    // 이 카드의 좌우 스와이프는 **사람을 넘기는 동작**이라, 손가락이 닿자마자
+                    // 열면 스와이프하려던 손짓이 창을 열어 버린다. 탭 인식기는 손가락이
+                    // 조금이라도 밀리면 스스로 물러나므로 두 제스처가 부딪히지 않는다.
+                    onTapUp: (_) => showPostPhotoViewer(context, item),
                     child: AuthedImage(url: photos[index]),
                   ),
 
@@ -540,25 +524,29 @@ class _FeedPagerState extends ConsumerState<_FeedPager> {
                         const _OnlineBadge(),
                       ],
                       const Spacer(),
-                      // 잠겨 있어도 **몇 장이 있는지는 보여준다.** 눈금이 1개면 한 장뿐인 줄 알고
-                      // 넘겨 볼 생각조차 안 하게 되고, 그러면 등록을 유도하는 장치가 죽는다.
+                      // 시안(4-1)은 눈금이 아니라 **`1/8` 같은 숫자 표기**다.
+                      // 카드는 메인 한 장만 보여주므로 "1 / 전체"가 된다.
+                      //
+                      // **잠겨 있어도 전체 장수는 알린다** — 몇 장이 더 있는지 보여야
+                      // 눌러 볼 마음이 생기고, 그게 사진 등록을 유도하는 장치다.
                       if (item.totalPhotos > 1)
-                        Row(
-                          children: List.generate(item.totalPhotos, (i) {
-                            final locked = i >= photos.length;
-                            return Container(
-                              width: 16,
-                              height: 3,
-                              margin: const EdgeInsets.only(left: 4),
-                              color: Colors.white.withValues(
-                                alpha: i == index
-                                    ? 0.9
-                                    : locked
-                                    ? 0.18
-                                    : 0.4,
-                              ),
-                            );
-                          }),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 3,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.45),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Text(
+                            '1/${item.totalPhotos}',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
                         ),
                     ],
                   ),
@@ -655,23 +643,6 @@ class _FeedPagerState extends ConsumerState<_FeedPager> {
             ),
           ),
 
-          // 잠긴 사진을 넘기려 했을 때 뜨는 [사진 등록 안내창](기획 4-1).
-          // 테두리보다 앞에 둬야 버튼이 눌린다.
-          if (_lockNotice)
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
-              child: _PhotoLockNotice(
-                lockedCount: item.lockedPhotoCount,
-                onClose: () => setState(() => _lockNotice = false),
-                onGoPost: () {
-                  setState(() => _lockNotice = false);
-                  ref.read(selectedTabProvider.notifier).state = MainTab.post;
-                },
-              ),
-            ),
-
           // 카드 테두리 — 클립 **바깥**에 얹어야 모서리가 안 깎인다.
           // 이미지가 아니라 코드로 그린다(이유는 GardenArt.cardBorderWidth 주석).
           IgnorePointer(
@@ -692,85 +663,6 @@ class _FeedPagerState extends ConsumerState<_FeedPager> {
 }
 
 /// 시안 아이콘 + 숫자. 숫자는 **폰트**라 그대로 두고 아이콘만 그림으로 바꿨다.
-/// 잠긴 사진 안내창(기획 4-1). 카드 하단에 얹혀 "왜 안 보이는지"와 "어떻게 열리는지"를 알린다.
-///
-/// 열쇠는 **상품이 아니라 내 포스트**다 — 그래서 상점이 아니라 포스트 탭으로 보낸다.
-class _PhotoLockNotice extends StatelessWidget {
-  const _PhotoLockNotice({
-    required this.lockedCount,
-    required this.onClose,
-    required this.onGoPost,
-  });
-
-  final int lockedCount;
-  final VoidCallback onClose;
-  final VoidCallback onGoPost;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = L10n.of(context);
-    return Container(
-      padding: const EdgeInsets.fromLTRB(18, 16, 12, 18),
-      decoration: BoxDecoration(
-        color: AppColors.surface.withValues(alpha: 0.96),
-        borderRadius: const BorderRadius.vertical(
-          top: Radius.circular(AppDimens.radiusLg),
-        ),
-        border: const Border(top: BorderSide(color: AppColors.moonlight)),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.lock_outline_rounded,
-                      color: AppColors.moonlight,
-                      size: 18,
-                    ),
-                    const SizedBox(width: 6),
-                    Flexible(
-                      child: Text(
-                        l10n.gardenPhotoLockedTitle(lockedCount),
-                        style: const TextStyle(
-                          color: AppColors.textPrimary,
-                          fontSize: 15,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  l10n.gardenPhotoLockedBody,
-                  style: const TextStyle(
-                    color: AppColors.textSecondary,
-                    fontSize: 13,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                FilledButton(
-                  onPressed: onGoPost,
-                  child: Text(l10n.gardenPhotoLockedAction),
-                ),
-              ],
-            ),
-          ),
-          IconButton(
-            onPressed: onClose,
-            icon: const Icon(Icons.close_rounded, color: AppColors.textMuted),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 class _ArtCount extends StatelessWidget {
   const _ArtCount({
     required this.asset,
