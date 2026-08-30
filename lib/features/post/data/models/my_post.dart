@@ -27,6 +27,8 @@ class MyPost {
     required this.photos,
     required this.mainPhotoId,
     required this.published,
+    required this.likes,
+    required this.comments,
     required this.maxPhotos,
     required this.replaceRemaining,
   });
@@ -44,6 +46,10 @@ class MyPost {
   final String? mainPhotoId;
 
   final bool published;
+
+  /// 오늘 달빛가든에서 받은 좋아요·댓글 수(기획 3-1 — "사진 종류와 상관없음").
+  final int likes;
+  final int comments;
 
   /// 등록 가능한 최대 사진 수. 무료·앨범패스에 따라 서버가 정해 준다.
   final int maxPhotos;
@@ -70,6 +76,8 @@ class MyPost {
         .toList(),
     mainPhotoId: json['mainPhotoId'] as String?,
     published: json['published'] as bool? ?? false,
+    likes: json['likes'] as int? ?? 0,
+    comments: json['comments'] as int? ?? 0,
     maxPhotos: json['maxPhotos'] as int? ?? 2,
     replaceRemaining: json['replaceRemaining'] as int? ?? 0,
   );

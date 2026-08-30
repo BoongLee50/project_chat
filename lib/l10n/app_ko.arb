@@ -91,8 +91,27 @@
     }
   },
   "homeShare": "포스트 공유하기",
-  "homeShareAgain": "공유됨 · 다시 공유하기",
+  "homeShareAgain": "다시 공유",
   "homeShared": "포스트를 공유했어요 🌙",
+  "homeBuy": "구매",
+  "homeBoostReady": "가능",
+  "homeBoostRemaining": "{minutes}분",
+  "@homeBoostRemaining": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "homePassRemainingDays": "{days}일",
+  "@homePassRemainingDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "homePick": "PICK",
   "commonAll": "전체",
   "commonSend": "보내기",
   "commonOnline": "접속 중",

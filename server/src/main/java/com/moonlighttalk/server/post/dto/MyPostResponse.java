@@ -11,6 +11,8 @@ import java.util.List;
  *
  * @param photos           표시 순서(<b>최신이 1번 슬롯</b>)
  * @param mainPhotoId      달빛가든에 노출할 대표 사진. 사진이 없으면 null
+ * @param likes            오늘 달빛가든에서 받은 좋아요 수(기획 3-1)
+ * @param comments         오늘 내 포스트에 달린 댓글 수
  * @param maxPhotos        등록 가능한 최대 사진 수(`app.post.max-photos-*`)
  * @param replaceRemaining 남은 사진 교체 횟수(`app.post.replace-limit-*`)
  */
@@ -19,6 +21,8 @@ public record MyPostResponse(
         List<PostPhotoDto> photos,
         String mainPhotoId,
         boolean published,
+        int likes,
+        int comments,
         int maxPhotos,
         int replaceRemaining
 ) {

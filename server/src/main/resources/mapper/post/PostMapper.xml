@@ -53,6 +53,11 @@
         order_idx는 등록 순서대로 증가하는 값이라 내림차순이 곧 최신순이다.
         번호를 다시 매기지 않으므로 삭제가 있어도 순서가 흐트러지지 않는다.
     -->
+    <select id="selectLikes" resultType="int">
+        SELECT COALESCE(likes, 0) FROM post_stats
+        WHERE user_id = #{userId} AND session_date = #{sessionDate}
+    </select>
+
     <select id="selectPhotos" resultMap="PostPhotoResultMap">
         SELECT * FROM post_photos WHERE post_id = #{postId} ORDER BY order_idx DESC
     </select>

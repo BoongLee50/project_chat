@@ -406,7 +406,7 @@ abstract class L10n {
   /// No description provided for @homeShareAgain.
   ///
   /// In ko, this message translates to:
-  /// **'공유됨 · 다시 공유하기'**
+  /// **'다시 공유'**
   String get homeShareAgain;
 
   /// No description provided for @homeShared.
@@ -414,6 +414,36 @@ abstract class L10n {
   /// In ko, this message translates to:
   /// **'포스트를 공유했어요 🌙'**
   String get homeShared;
+
+  /// No description provided for @homeBuy.
+  ///
+  /// In ko, this message translates to:
+  /// **'구매'**
+  String get homeBuy;
+
+  /// No description provided for @homeBoostReady.
+  ///
+  /// In ko, this message translates to:
+  /// **'가능'**
+  String get homeBoostReady;
+
+  /// No description provided for @homeBoostRemaining.
+  ///
+  /// In ko, this message translates to:
+  /// **'{minutes}분'**
+  String homeBoostRemaining(int minutes);
+
+  /// No description provided for @homePassRemainingDays.
+  ///
+  /// In ko, this message translates to:
+  /// **'{days}일'**
+  String homePassRemainingDays(int days);
+
+  /// No description provided for @homePick.
+  ///
+  /// In ko, this message translates to:
+  /// **'PICK'**
+  String get homePick;
 
   /// No description provided for @commonAll.
   ///

@@ -19,6 +19,12 @@ public interface PostMapper {
 
     void incrementReplaceCount(@Param("postId") String postId);
 
+    /**
+     * 오늘 달빛가든에서 받은 좋아요 수(기획 3-1 — "사진 종류와 상관없음").
+     * 집계는 {@code post_stats}에 있고 영업일 단위로 초기화된다.
+     */
+    int selectLikes(@Param("userId") String userId, @Param("sessionDate") LocalDate sessionDate);
+
     List<PostPhoto> selectPhotos(@Param("postId") String postId);
 
     PostPhoto selectPhotoById(@Param("photoId") String photoId);

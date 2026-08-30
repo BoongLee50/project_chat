@@ -11,6 +11,8 @@ import com.moonlighttalk.server.post.dto.PostPhotoDto;
 import com.moonlighttalk.server.post.dto.UploadUrlResponse;
 import com.moonlighttalk.server.post.entity.Post;
 import com.moonlighttalk.server.post.entity.PostPhoto;
+import com.moonlighttalk.server.comment.dto.CommentTarget;
+import com.moonlighttalk.server.comment.service.CommentService;
 import com.moonlighttalk.server.post.mapper.PostMapper;
 import com.moonlighttalk.server.store.service.EntitlementService;
 import org.springframework.http.HttpStatus;
@@ -47,6 +49,7 @@ public class PostService {
     private final SessionTimeService sessionTime;
     private final FileStorageService fileStorageService;
     private final EntitlementService entitlementService;
+    private final CommentService commentService;
 
     // 기획이 바꿀 수 있는 수치는 전부 설정으로 뺀다 — 값이 바뀌어도 코드 수정·배포가 없다.
     // 등록 창(1시간)은 Plan_3에서 폐지됐다. 이제 영업일 안이면 언제든 올릴 수 있다.
@@ -60,6 +63,7 @@ public class PostService {
                         SessionTimeService sessionTime,
                         FileStorageService fileStorageService,
                         EntitlementService entitlementService,
+                        CommentService commentService,
                         @Value("${app.post.max-photos-free:2}") int maxPhotosFree,
                         @Value("${app.post.max-photos-pass:9}") int maxPhotosPass,
                         @Value("${app.post.replace-limit-free:3}") int replaceLimitFree,
@@ -69,6 +73,7 @@ public class PostService {
         this.sessionTime = sessionTime;
         this.fileStorageService = fileStorageService;
         this.entitlementService = entitlementService;
+        this.commentService = commentService;
         this.maxPhotosFree = maxPhotosFree;
         this.maxPhotosPass = maxPhotosPass;
         this.replaceLimitFree = replaceLimitFree;
@@ -91,6 +96,9 @@ public class PostService {
                 photos,
                 resolveMainPhotoId(post, rows),
                 post.getPublishedAt() != null,
+                // 화면(3-1)에 "달빛가든에서 받은 좋아요·댓글"을 보여준다.
+                postMapper.selectLikes(userId, post.getSessionDate()),
+                commentService.count(CommentTarget.POST, post.getId()),
                 unlimited ? maxPhotosPass : maxPhotosFree,
                 Math.max(0, (unlimited ? replaceLimitPass : replaceLimitFree) - post.getReplaceCount())
         );

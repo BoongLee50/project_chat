@@ -12,6 +12,8 @@ import '../../../../core/providers.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/photo_source_sheet.dart';
 import '../../../auth/presentation/providers/session_provider.dart';
+import '../../../garden/presentation/widgets/comments_sheet.dart';
+import '../../../profile/data/models/profile_catalog.dart';
 import '../../../store/data/models/store_models.dart';
 import '../../../store/presentation/providers/store_provider.dart';
 import '../../../store/presentation/screens/boost_screen.dart';
@@ -22,9 +24,10 @@ import '../providers/post_provider.dart';
 
 /// 홈 — 오늘의 포스트. 메인 셸의 '포스트' 탭 본문. (기획서 3장, 01 문서 §1.3)
 ///
-/// 사진 등록/삭제, 하루 한 마디, 공유하기를 서버와 연동한다.
-/// 상단 Prime 배지·루나 잔액과 앨범패스 배지·부스트 버튼은 store 도메인(지갑) 기준.
-/// 달 위상·좋아요/댓글 수치는 아직 미연결.
+/// 사진 등록/삭제·메인 지정·공유하기를 서버와 연동한다.
+///
+/// 시안(3-1)의 구성은 셋뿐이다 — **상단 바 / 패스·부스트 두 버튼 / 포스트 카드**.
+/// 이름·지역·PICK·좋아요·댓글·[포스트 공유하기]는 전부 **카드 안에 얹힌다.**
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
@@ -110,32 +113,39 @@ class _PostBody extends ConsumerWidget {
 
   final MyPost post;
 
+  /// 카드 위에 놓이는 것들(상단 바 + 두 버튼 + 사이 여백)의 높이.
+  /// 카드가 **남은 공간을 채우도록** 하려고 빼 준다 — 시안에서 카드는 화면을 거의 채운다.
+  static const double _aboveCard = 132;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return SingleChildScrollView(
-      physics: const AlwaysScrollableScrollPhysics(),
-      padding: const EdgeInsets.fromLTRB(
-        AppDimens.pagePad,
-        AppDimens.gapMd,
-        AppDimens.pagePad,
-        AppDimens.gapMd,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const _TopBar(),
-          const SizedBox(height: AppDimens.gapMd),
-          _InfoCards(post: post),
-          const SizedBox(height: AppDimens.gapMd),
-          _PostPhotoCard(post: post),
-          const SizedBox(height: AppDimens.gapMd),
-          const _NameLikeRow(),
-          const SizedBox(height: AppDimens.gapMd),
-          const _BoostRow(),
-          const SizedBox(height: AppDimens.gapLg),
-          const SizedBox(height: AppDimens.gapLg),
-          _ShareButton(post: post),
-        ],
+    // 시안(3-1)의 세로 구성은 셋뿐이다 — 상단 바 / 패스·부스트 두 버튼 / 포스트 카드.
+    // 이름·좋아요·공유 버튼은 **카드 안**에 얹힌다.
+    //
+    // ⚠️ "오늘의 달" 카드는 시안에도 3-1 본문에도 없어 걷어냈다(Plan_2 잔재).
+    return LayoutBuilder(
+      builder: (context, constraints) => SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(
+          AppDimens.pagePad,
+          AppDimens.gapMd,
+          AppDimens.pagePad,
+          AppDimens.gapMd,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const _TopBar(),
+            const SizedBox(height: AppDimens.gapMd),
+            const _PassBoostRow(),
+            const SizedBox(height: AppDimens.gapMd),
+            SizedBox(
+              // 작은 기기에서 카드가 찌그러지지 않게 최소 높이를 둔다.
+              height: (constraints.maxHeight - _aboveCard).clamp(320.0, 1200.0),
+              child: _PostPhotoCard(post: post),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -250,76 +260,6 @@ class _TopPill extends StatelessWidget {
   }
 }
 
-// ── 달 정보 / 남은 시간 카드 ─────────────────────────────
-class _InfoCards extends StatelessWidget {
-  const _InfoCards({required this.post});
-
-  final MyPost post;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = L10n.of(context);
-    return Row(
-      children: [
-        Expanded(
-          child: _InfoCard(
-            child: Row(
-              children: [
-                Icon(Icons.nightlight_round, color: AppColors.gold, size: 30),
-                SizedBox(width: 12),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      l10n.homeTodayMoon,
-                      style: TextStyle(
-                        color: AppColors.textSecondary,
-                        fontSize: 13,
-                      ),
-                    ),
-                    SizedBox(height: 2),
-                    // 달 위상은 별도 이벤트 테이블 예정(기획서 3-1).
-                    Text(
-                      l10n.homeMoonCrescent,
-                      style: TextStyle(
-                        color: AppColors.textPrimary,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _InfoCard extends StatelessWidget {
-  const _InfoCard({required this.child});
-
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 76,
-      alignment: Alignment.center,
-      padding: const EdgeInsets.symmetric(horizontal: 14),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppDimens.radiusMd),
-        border: Border.all(color: AppColors.moonlight.withValues(alpha: 0.6)),
-      ),
-      child: child,
-    );
-  }
-}
-
 // ── 포스트 사진 카드 ─────────────────────────────────────
 class _PostPhotoCard extends ConsumerStatefulWidget {
   const _PostPhotoCard({required this.post});
@@ -396,7 +336,9 @@ class _PostPhotoCardState extends ConsumerState<_PostPhotoCard> {
     if (_busy || _photos.isEmpty) return;
     setState(() => _busy = true);
     final target = _photos[_index.clamp(0, _photos.length - 1)];
-    final error = await ref.read(myPostProvider.notifier).deletePhoto(target.id);
+    final error = await ref
+        .read(myPostProvider.notifier)
+        .deletePhoto(target.id);
     if (!mounted) return;
     setState(() {
       _busy = false;
@@ -436,15 +378,19 @@ class _PostPhotoCardState extends ConsumerState<_PostPhotoCard> {
     // index는 hasPhoto인 가지에서만 쓰이므로 빈 경우엔 0으로 둔다.
     final index = hasPhoto ? _index.clamp(0, _photos.length - 1) : 0;
 
+    // 시안(3-1)은 **모든 것이 사진 위에 얹힌 한 장**이다 — 이름·지역·PICK은 좌상단,
+    // [메인]·장수·삭제는 우상단, 좋아요·댓글은 좌하단, [포스트 공유하기]는 우하단.
+    // 카드 바깥에 줄을 따로 두면 시안과 다른 화면이 된다.
     return ClipRRect(
       borderRadius: BorderRadius.circular(AppDimens.radiusLg),
-      child: AspectRatio(
-        aspectRatio: 0.86,
+      child: SizedBox.expand(
         child: Stack(
           fit: StackFit.expand,
           children: [
             if (hasPhoto)
               // 좌/우 탭으로 등록된 사진을 순차 검색(기획서 3-1).
+              // ⚠️ **내 포스트는 달빛가든과 다르다** — 가든 카드는 좌우 스와이프가 "사람"이라
+              // 사진 넘기기를 창으로 뺐지만, 여기는 겹치는 제스처가 없어 탭으로 넘긴다.
               GestureDetector(
                 // Image는 자기 자신을 히트테스트하지 않아 기본값(deferToChild)으로는
                 // 탭이 안 들어온다 — 좌우로 넘겨 보는 기능이 조용히 죽는다(함정 #38).
@@ -454,17 +400,33 @@ class _PostPhotoCardState extends ConsumerState<_PostPhotoCard> {
                   final next = details.localPosition.dx > width / 2
                       ? index + 1
                       : index - 1;
-                  setState(
-                    () => _index = next.clamp(0, _photos.length - 1),
-                  );
+                  setState(() => _index = next.clamp(0, _photos.length - 1));
                 },
-                child: _AuthedImage(
-                  url: _photos[index].url,
-                  headers: headers,
-                ),
+                child: _AuthedImage(url: _photos[index].url, headers: headers),
               )
             else
               const _EmptyPhoto(),
+
+            // 가독성 스크림 — 위아래 글자가 사진에 묻히지 않게.
+            // ⚠️ IgnorePointer가 없으면 아래 사진의 탭을 전부 먹는다(함정 #38).
+            if (hasPhoto)
+              const IgnorePointer(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Color(0xB3000000),
+                        Color(0x00000000),
+                        Color(0x00000000),
+                        Color(0xCC000000),
+                      ],
+                      stops: [0.0, 0.25, 0.55, 1.0],
+                    ),
+                  ),
+                ),
+              ),
 
             if (_busy)
               Container(
@@ -475,98 +437,221 @@ class _PostPhotoCardState extends ConsumerState<_PostPhotoCard> {
                 ),
               ),
 
-            // 앨범 패스 배지 — 보유 중일 때만. 남은 기간과 등록 가능 장수를 알려준다.
-            Consumer(
-              builder: (context, ref, _) {
-                final wallet =
-                    ref.watch(walletProvider).valueOrNull ?? Wallet.empty;
-                if (!wallet.has(StoreKind.albumPass)) {
-                  return const SizedBox.shrink();
-                }
-                final days = wallet.remainingDays(StoreKind.albumPass);
-                return Positioned(
-                  right: 12,
-                  top: 12,
-                  child: _AlbumPassBadge(
-                    remainingDays: days,
-                    maxPhotos: widget.post.maxPhotos,
-                  ),
-                );
-              },
+            // 좌상단 — 이름·나이·국기·PICK, 그 아래 지역(기획 3-1).
+            const Positioned(
+              top: 14,
+              left: 16,
+              right: 120,
+              child: _CardIdentity(),
             ),
 
-            // 메인 사진 — 보고 있는 사진이 대표면 배지, 아니면 지정 버튼.
-            //
-            // 배지와 버튼을 같은 자리에 두는 이유: 둘을 나란히 놓으면 "지금 뭐가 메인인지"와
-            // "누르면 뭐가 되는지"가 헷갈린다. 한 자리에서 상태가 바뀌면 관계가 분명해진다.
+            // 우상단 — [메인] · 장수 · 삭제.
             if (hasPhoto)
               Positioned(
-                left: 12,
                 top: 12,
-                child: _MainPhotoChip(
-                  isMain: _photos[index].id == widget.post.mainPhotoId,
-                  onTap: _setMain,
+                right: 12,
+                child: Row(
+                  children: [
+                    // 배지와 버튼을 같은 자리에 둔다 — 둘을 나란히 놓으면 "지금 뭐가 메인인지"와
+                    // "누르면 뭐가 되는지"가 헷갈린다.
+                    _MainPhotoChip(
+                      isMain: _photos[index].id == widget.post.mainPhotoId,
+                      onTap: _setMain,
+                    ),
+                    const SizedBox(width: 8),
+                    // 시안은 눈금이 아니라 `1/9` **숫자 표기**다.
+                    Text(
+                      '${index + 1}/${widget.post.maxPhotos}',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    _RoundButton(
+                      icon: Icons.delete_outline,
+                      background: Colors.black.withValues(alpha: 0.45),
+                      iconColor: AppColors.textPrimary,
+                      size: 36,
+                      onTap: _delete,
+                    ),
+                  ],
                 ),
               ),
 
-            // 삭제 버튼
-            if (hasPhoto)
-              Positioned(
-                left: 14,
-                bottom: 14,
-                child: _RoundButton(
-                  icon: Icons.delete_outline,
-                  background: Colors.black.withValues(alpha: 0.5),
-                  iconColor: AppColors.textPrimary,
-                  size: 44,
-                  onTap: _delete,
-                ),
-              ),
-
-            // 촬영 버튼 — 등록 가능 시간/장수를 넘기면 흐려지지만 **눌리기는 한다**.
-            // 아무 반응이 없으면 고장으로 보이므로, 막힌 이유를 알려준다.
-            Align(
-              alignment: const Alignment(0, 0.92),
-              child: _RoundButton(
-                icon: Icons.photo_camera_rounded,
-                background: widget.post.canAddPhoto
-                    ? AppColors.moonlight
-                    : AppColors.surfaceHigh,
-                iconColor: widget.post.canAddPhoto
-                    ? Colors.white
-                    : AppColors.textMuted,
-                size: 60,
-                onTap: _captureOrExplain,
+            // 하단 한 줄 — 좋아요·댓글 / 촬영 / 공유하기(시안 3-1).
+            //
+            // 셋을 각각 Positioned로 두면 글자가 길어질 때 **서로 겹친다**
+            // (실제로 "공유됨 · 다시 공유하기"가 촬영 버튼을 가렸다).
+            // 한 Row에 넣어 자리를 나눠 갖게 한다.
+            Positioned(
+              left: 14,
+              right: 14,
+              bottom: 18,
+              child: Row(
+                children: [
+                  // 댓글을 누르면 [포스트 댓글]이 뜬다(기획 3-1).
+                  _CardCounts(post: widget.post),
+                  const Spacer(),
+                  // 촬영 버튼 — 장수를 넘기면 흐려지지만 **눌리기는 한다**.
+                  // 아무 반응이 없으면 고장으로 보이므로, 막힌 이유를 알려준다.
+                  _RoundButton(
+                    icon: Icons.photo_camera_rounded,
+                    background: widget.post.canAddPhoto
+                        ? AppColors.moonlight
+                        : AppColors.surfaceHigh,
+                    iconColor: widget.post.canAddPhoto
+                        ? Colors.white
+                        : AppColors.textMuted,
+                    size: 56,
+                    onTap: _captureOrExplain,
+                  ),
+                  const Spacer(),
+                  Flexible(flex: 0, child: _ShareButton(post: widget.post)),
+                ],
               ),
             ),
-
-            // 페이지 인디케이터(등록된 사진 수 기준)
-            if (hasPhoto)
-              Positioned(
-                right: 16,
-                bottom: 24,
-                child: Row(
-                  children: List.generate(_photos.length, (i) {
-                    final active = i == index;
-                    return Container(
-                      width: active ? 18 : 8,
-                      height: 6,
-                      margin: const EdgeInsets.only(left: 4),
-                      decoration: BoxDecoration(
-                        color: active
-                            ? AppColors.moonlight
-                            : Colors.white.withValues(alpha: 0.5),
-                        borderRadius: BorderRadius.circular(3),
-                      ),
-                    );
-                  }),
-                ),
-              ),
           ],
         ),
       ),
     );
   }
+}
+
+/// 카드 좌상단 — 이름·나이·국기·PICK, 그 아래 지역(기획 3-1).
+///
+/// 값은 전부 **내 프로필**에서 온다. PICK은 부스트를 켰을 때만 뜬다.
+class _CardIdentity extends ConsumerWidget {
+  const _CardIdentity();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = L10n.of(context);
+    final profile = ref.watch(sessionProvider).profile;
+    final wallet = ref.watch(walletProvider).valueOrNull ?? Wallet.empty;
+
+    final age = profile?.birthYear == null
+        ? null
+        : DateTime.now().year - profile!.birthYear!;
+    final flag = switch (profile?.country) {
+      'KR' => '🇰🇷',
+      'JP' => '🇯🇵',
+      _ => '',
+    };
+    final region = (profile?.regions ?? const <String>[]).isEmpty
+        ? null
+        : ProfileCatalog.regionLabel(l10n, profile!.regions.first);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Row(
+          children: [
+            Flexible(
+              child: Text(
+                [
+                  profile?.nickname ?? '',
+                  if (age != null) '$age',
+                ].join(' ').trim(),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ),
+            if (flag.isNotEmpty) ...[
+              const SizedBox(width: 6),
+              Text(flag, style: const TextStyle(fontSize: 16)),
+            ],
+            // 부스트를 켠 동안만 PICK이 붙는다(기획 3-1).
+            if (wallet.isBoostOn(StoreKind.postBoost)) ...[
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: AppColors.gold,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  l10n.homePick,
+                  style: const TextStyle(
+                    color: AppColors.night,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+        if (region != null) ...[
+          const SizedBox(height: 2),
+          Text(
+            region,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(color: Colors.white70, fontSize: 13),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+/// 카드 좌하단 — 달빛가든에서 받은 좋아요·댓글(기획 3-1, "사진 종류와 상관없음").
+class _CardCounts extends ConsumerWidget {
+  const _CardCounts({required this.post});
+
+  final MyPost post;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final profile = ref.watch(sessionProvider).profile;
+
+    return Row(
+      children: [
+        const Icon(Icons.favorite, color: AppColors.danger, size: 20),
+        const SizedBox(width: 6),
+        Text('${post.likes}', style: _countStyle),
+        const SizedBox(width: 16),
+        GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          // [댓글] 버튼 → [포스트 댓글] 화면(기획 3-1). 내 포스트라 대상도 나다.
+          onTap: profile == null
+              ? null
+              : () => showCommentsSheet(
+                  context,
+                  kind: CommentTargetKind.post,
+                  targetId: profile.id,
+                  ownerId: profile.id,
+                  title: L10n.of(context).commentsTitle(profile.nickname ?? ''),
+                ),
+          child: Row(
+            children: [
+              const Icon(
+                Icons.mode_comment_outlined,
+                color: Colors.white,
+                size: 19,
+              ),
+              const SizedBox(width: 6),
+              Text('${post.comments}', style: _countStyle),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  static const _countStyle = TextStyle(
+    color: Colors.white,
+    fontSize: 15,
+    fontWeight: FontWeight.w700,
+  );
 }
 
 /// 대표 사진 표시 겸 지정 버튼(Plan_3 §3-1 `[메인]`).
@@ -616,95 +701,32 @@ class _MainPhotoChip extends StatelessWidget {
   }
 }
 
-/// 앨범 패스 보유 배지. 시안 6의 사진 우상단 오버레이.
-class _AlbumPassBadge extends StatelessWidget {
-  const _AlbumPassBadge({required this.remainingDays, required this.maxPhotos});
-
-  final int? remainingDays;
-  final int maxPhotos;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = L10n.of(context);
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.62),
-        borderRadius: BorderRadius.circular(AppDimens.radiusMd),
-        border: Border.all(color: AppColors.moonlight),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.star_rounded, color: AppColors.moonlight, size: 16),
-              SizedBox(width: 4),
-              Text(
-                l10n.homeAlbumPass,
-                style: TextStyle(
-                  color: AppColors.moonlight,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-            ],
-          ),
-          if (remainingDays != null) ...[
-            const SizedBox(height: 2),
-            Text(
-              l10n.homeAlbumPassRemaining(remainingDays!),
-              style: const TextStyle(
-                color: AppColors.textPrimary,
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ],
-          const SizedBox(height: 4),
-          Container(
-            padding: const EdgeInsets.only(top: 4),
-            decoration: const BoxDecoration(
-              border: Border(
-                top: BorderSide(color: AppColors.border),
-              ),
-            ),
-            child: Text(
-              l10n.homeAlbumPassMaxPhotos(maxPhotos),
-              style: const TextStyle(
-                color: AppColors.textSecondary,
-                fontSize: 11,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// 부스트 버튼. 사용 중이면 남은 시간을 1초마다 갱신해 보여준다(시안 6-부스트 사용).
-class _BoostRow extends ConsumerStatefulWidget {
-  const _BoostRow();
+/// 상단 두 버튼 — `[포스트 앨범 패스 | 상태]` `[⚡ 부스트 | 상태]` (기획 3-1).
+///
+/// 둘 다 **상태에 따라 오른쪽 라벨만 바뀐다**:
+/// - 앨범 패스: 미구매 `구매` / 사용 중 `4일`
+/// - 부스트: 미구매 `구매` / 보유했지만 미사용 `가능` / 사용 중 `45분`
+///
+/// 라벨을 상태로 쓰지 않고 **지갑 상태에서 매번 계산**한다 — 문구는 언어를 타므로
+/// 상태 판정의 기준이 될 수 없다(함정 #25).
+class _PassBoostRow extends ConsumerStatefulWidget {
+  const _PassBoostRow();
 
   @override
-  ConsumerState<_BoostRow> createState() => _BoostRowState();
+  ConsumerState<_PassBoostRow> createState() => _PassBoostRowState();
 }
 
-class _BoostRowState extends ConsumerState<_BoostRow> {
+class _PassBoostRowState extends ConsumerState<_PassBoostRow> {
   Timer? _ticker;
 
   @override
   void initState() {
     super.initState();
-    // 남은 시간이 흘러가는 걸 보여주기 위한 것. 활성 부스트가 없으면 굳이 돌지 않는다.
-    _ticker = Timer.periodic(const Duration(seconds: 1), (_) {
+    // 부스트 남은 시간이 흘러가는 걸 보여준다. 켜진 부스트가 없으면 굳이 다시 그리지 않는다.
+    _ticker = Timer.periodic(const Duration(seconds: 30), (_) {
       if (!mounted) return;
       final wallet = ref.read(walletProvider).valueOrNull;
-      if (wallet != null && wallet.activeBoosts.isNotEmpty) {
-        setState(() {});
-      }
+      if (wallet != null && wallet.activeBoosts.isNotEmpty) setState(() {});
     });
   }
 
@@ -718,61 +740,122 @@ class _BoostRowState extends ConsumerState<_BoostRow> {
   Widget build(BuildContext context) {
     final l10n = L10n.of(context);
     final wallet = ref.watch(walletProvider).valueOrNull ?? Wallet.empty;
-    final active = wallet.activeBoost(StoreKind.postBoost);
-    final stock = wallet.stockOf(StoreKind.postBoost);
 
-    return SizedBox(
-      width: double.infinity,
-      height: 52,
-      child: OutlinedButton(
-        style: OutlinedButton.styleFrom(
-          side: BorderSide(
-            color: active != null ? const Color(0xFFE8386D) : AppColors.border,
-          ),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppDimens.radiusMd),
+    final passDays = wallet.remainingDays(StoreKind.albumPass);
+    final boost = wallet.activeBoost(StoreKind.postBoost);
+    final boostStock = wallet.stockOf(StoreKind.postBoost);
+
+    return Row(
+      children: [
+        Expanded(
+          child: _StatusButton(
+            icon: Icons.photo_library_outlined,
+            label: l10n.homeAlbumPass,
+            // 사용 중이면 남은 일수, 아니면 "구매".
+            status: passDays == null
+                ? l10n.homeBuy
+                : l10n.homePassRemainingDays(passDays),
+            active: passDays != null,
+            accent: AppColors.moonlight,
+            onTap: () => Navigator.of(
+              context,
+            ).push(BoostScreen.route(StoreKind.albumPass)),
           ),
         ),
-        onPressed: () => Navigator.of(context)
-            .push(BoostScreen.route(StoreKind.postBoost)),
+        const SizedBox(width: AppDimens.gapSm),
+        Expanded(
+          child: _StatusButton(
+            icon: Icons.bolt,
+            label: l10n.homeBoost,
+            // 사용 중이면 남은 분, 보유만 했으면 "가능", 없으면 "구매".
+            status: boost != null
+                ? l10n.homeBoostRemaining(boost.remaining.inMinutes + 1)
+                : boostStock > 0
+                ? l10n.homeBoostReady
+                : l10n.homeBuy,
+            active: boost != null,
+            accent: AppColors.gold,
+            onTap: () => Navigator.of(
+              context,
+            ).push(BoostScreen.route(StoreKind.postBoost)),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// `[아이콘 이름 | 상태]` 한 칸. 상태 칸만 색이 채워진다(시안 3-1).
+class _StatusButton extends StatelessWidget {
+  const _StatusButton({
+    required this.icon,
+    required this.label,
+    required this.status,
+    required this.active,
+    required this.accent,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final String status;
+  final bool active;
+  final Color accent;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      child: Container(
+        height: 40,
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: active ? accent : AppColors.border),
+        ),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.bolt,
-              color: active != null ? const Color(0xFFE8386D) : AppColors.gold,
-              size: 22,
-            ),
-            const SizedBox(width: 8),
-            Text(
-              active != null ? l10n.homeBoostActive : l10n.homeBoost,
-              style: TextStyle(
-                color: active != null
-                    ? const Color(0xFFE8386D)
-                    : AppColors.textPrimary,
-                fontSize: 16,
-                fontWeight: FontWeight.w800,
+            const SizedBox(width: 12),
+            Icon(icon, size: 16, color: accent),
+            const SizedBox(width: 6),
+            Expanded(
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  style: const TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
               ),
             ),
-            const SizedBox(width: 10),
-            Text(
-              active != null ? _clock(active.remaining) : l10n.homeBoostStock(stock),
-              style: const TextStyle(
-                color: AppColors.textSecondary,
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
+            const SizedBox(width: 6),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              margin: const EdgeInsets.only(right: 4),
+              decoration: BoxDecoration(
+                color: accent,
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Text(
+                status,
+                style: const TextStyle(
+                  color: AppColors.night,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w800,
+                ),
               ),
             ),
           ],
         ),
       ),
     );
-  }
-
-  String _clock(Duration remaining) {
-    final mm = remaining.inMinutes.toString().padLeft(2, '0');
-    final ss = (remaining.inSeconds % 60).toString().padLeft(2, '0');
-    return '$mm:$ss';
   }
 }
 
@@ -880,97 +963,6 @@ class _RoundButton extends StatelessWidget {
   }
 }
 
-// ── 이름 + 좋아요/댓글 ───────────────────────────────────
-class _NameLikeRow extends ConsumerWidget {
-  const _NameLikeRow();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    // 이름·나이·국가는 내 프로필(GET /me) 기준.
-    // 좋아요/댓글 수치는 garden 도메인 구현 후 연결 예정.
-    final profile = ref.watch(sessionProvider).profile;
-    final age = profile?.birthYear == null
-        ? null
-        : DateTime.now().year - profile!.birthYear!;
-    final flag = switch (profile?.country) {
-      'KR' => '🇰🇷',
-      'JP' => '🇯🇵',
-      _ => '',
-    };
-
-    return Row(
-      children: [
-        Flexible(
-          child: Text(
-            [profile?.nickname ?? '', if (age != null) '$age'].join(' ').trim(),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              color: AppColors.textPrimary,
-              fontSize: 22,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-        ),
-        if (flag.isNotEmpty) ...[
-          const SizedBox(width: 6),
-          Text(flag, style: const TextStyle(fontSize: 20)),
-        ],
-        const Spacer(),
-        const _StatPill(
-          icon: Icons.favorite,
-          iconColor: Color(0xFFE85D6E),
-          label: '—',
-        ),
-        const SizedBox(width: 8),
-        const _StatPill(
-          icon: Icons.chat_bubble_outline,
-          iconColor: AppColors.textSecondary,
-          label: '—',
-        ),
-      ],
-    );
-  }
-}
-
-class _StatPill extends StatelessWidget {
-  const _StatPill({
-    required this.icon,
-    required this.iconColor,
-    required this.label,
-  });
-
-  final IconData icon;
-  final Color iconColor;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, color: iconColor, size: 18),
-          const SizedBox(width: 6),
-          Text(
-            label,
-            style: const TextStyle(
-              color: AppColors.textPrimary,
-              fontSize: 15,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// ── 하루 한 마디 ─────────────────────────────────────────
 class _ShareButton extends ConsumerWidget {
   const _ShareButton({required this.post});
 
@@ -981,35 +973,39 @@ class _ShareButton extends ConsumerWidget {
     final l10n = L10n.of(context);
     final enabled = post.photos.isNotEmpty;
 
-    return SizedBox(
-      width: double.infinity,
-      height: AppDimens.buttonHeight,
-      child: FilledButton.icon(
-        onPressed: enabled
-            ? () async {
-                final error = await ref.read(myPostProvider.notifier).publish();
-                if (!context.mounted) return;
-                ScaffoldMessenger.of(context)
-                  ..hideCurrentSnackBar()
-                  ..showSnackBar(
-                    SnackBar(content: Text(error == null ? l10n.homeShared : errorMessage(l10n, error))),
-                  );
-              }
-            : null,
-        style: FilledButton.styleFrom(
-          backgroundColor: const Color(0xFF3A3E9E),
-          disabledBackgroundColor: AppColors.surfaceHigh,
-          foregroundColor: Colors.white,
-          disabledForegroundColor: AppColors.textMuted,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppDimens.radiusMd),
-          ),
-        ),
-        icon: Icon(post.published ? Icons.check : Icons.ios_share, size: 20),
-        label: Text(
-          post.published ? l10n.homeShareAgain : l10n.homeShare,
-          style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
-        ),
+    // 시안(3-1)에서 이 버튼은 **카드 안 우하단의 작은 노란 버튼**이다.
+    // 전체 폭 버튼으로 카드 밖에 두면 화면 구성이 시안과 달라진다.
+    return FilledButton(
+      onPressed: enabled
+          ? () async {
+              final error = await ref.read(myPostProvider.notifier).publish();
+              if (!context.mounted) return;
+              ScaffoldMessenger.of(context)
+                ..hideCurrentSnackBar()
+                ..showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      error == null
+                          ? l10n.homeShared
+                          : errorMessage(l10n, error),
+                    ),
+                  ),
+                );
+            }
+          : null,
+      style: FilledButton.styleFrom(
+        backgroundColor: AppColors.gold,
+        disabledBackgroundColor: Colors.black.withValues(alpha: 0.4),
+        foregroundColor: AppColors.night,
+        disabledForegroundColor: AppColors.textMuted,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        minimumSize: Size.zero,
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
+      ),
+      child: Text(
+        post.published ? l10n.homeShareAgain : l10n.homeShare,
+        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
       ),
     );
   }

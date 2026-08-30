@@ -170,10 +170,29 @@ class L10nJa extends L10n {
   String get homeShare => 'ポストを共有する';
 
   @override
-  String get homeShareAgain => '共有済み · もう一度共有';
+  String get homeShareAgain => '再シェア';
 
   @override
   String get homeShared => 'ポストを共有しました 🌙';
+
+  @override
+  String get homeBuy => '購入';
+
+  @override
+  String get homeBoostReady => '使用可';
+
+  @override
+  String homeBoostRemaining(int minutes) {
+    return '$minutes分';
+  }
+
+  @override
+  String homePassRemainingDays(int days) {
+    return '$days日';
+  }
+
+  @override
+  String get homePick => 'PICK';
 
   @override
   String get commonAll => 'すべて';

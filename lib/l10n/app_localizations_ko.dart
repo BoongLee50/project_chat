@@ -170,10 +170,29 @@ class L10nKo extends L10n {
   String get homeShare => '포스트 공유하기';
 
   @override
-  String get homeShareAgain => '공유됨 · 다시 공유하기';
+  String get homeShareAgain => '다시 공유';
 
   @override
   String get homeShared => '포스트를 공유했어요 🌙';
+
+  @override
+  String get homeBuy => '구매';
+
+  @override
+  String get homeBoostReady => '가능';
+
+  @override
+  String homeBoostRemaining(int minutes) {
+    return '$minutes분';
+  }
+
+  @override
+  String homePassRemainingDays(int days) {
+    return '$days일';
+  }
+
+  @override
+  String get homePick => 'PICK';
 
   @override
   String get commonAll => '전체';
