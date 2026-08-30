@@ -16,6 +16,12 @@ class ChatApi {
     body: {'targetUserId': targetUserId, 'message': message},
   );
 
+  /// 신청 팝업이 열리기 전 안내(남은 무료 횟수·루나·글자 수).
+  Future<ChatRequestQuota> requestQuota() async {
+    final data = await _client.get('/chat-requests/quota');
+    return ChatRequestQuota.fromJson(Map<String, dynamic>.from(data as Map));
+  }
+
   Future<List<ChatRoomSummary>> rooms() async {
     final data = await _client.get('/chat/rooms');
     return (data as List)

@@ -203,6 +203,8 @@ class ChatActions {
       await _ref
           .read(chatApiProvider)
           .createRequest(targetUserId: targetUserId, message: message);
+      // 무료 횟수가 하나 줄었다 — 다음에 팝업을 열 때 옛 숫자를 보여 주면 안 된다.
+      _ref.invalidate(chatRequestQuotaProvider);
       return null;
     } on ApiException catch (e) {
       return e;
@@ -242,3 +244,10 @@ class ChatActions {
 }
 
 final chatActionsProvider = Provider<ChatActions>(ChatActions.new);
+
+/// 대화 신청 안내(남은 무료 횟수·루나·글자 수).
+///
+/// 신청을 보내면 남은 횟수가 줄어드므로 `ChatActions.requestChat`이 무효화한다.
+final chatRequestQuotaProvider = FutureProvider<ChatRequestQuota>(
+  (ref) => ref.read(chatApiProvider).requestQuota(),
+);

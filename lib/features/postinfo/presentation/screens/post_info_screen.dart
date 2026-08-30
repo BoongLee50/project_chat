@@ -17,6 +17,8 @@ import '../../../moderation/presentation/widgets/report_dialog.dart';
 import '../../../profile/data/models/profile_catalog.dart';
 import '../../data/models/post_info.dart';
 import '../providers/post_info_provider.dart';
+import '../widgets/info_cards.dart';
+import 'profile_view_screen.dart';
 
 /// [포스트 정보] — 상대 한 사람을 보여 주는 **공통** 풀스크린(기획 6-1 · 7-1 우측).
 ///
@@ -127,19 +129,18 @@ class _BodyState extends ConsumerState<_Body> {
 
   Future<void> _requestChat() async {
     final l10n = L10n.of(context);
-    final message = await showChatRequestDialog(
-      context,
-      nickname: _info.nickname,
-    );
+    final message = await showChatRequestDialog(context, info: _info);
     if (message == null || !mounted) return;
 
     final error = await ref
         .read(chatActionsProvider)
         .requestChat(_info.userId, message);
     if (!mounted) return;
-    _toast(
-      error == null ? l10n.gardenChatRequestSent : errorMessage(l10n, error),
-    );
+    if (error != null) {
+      _toast(errorMessage(l10n, error));
+      return;
+    }
+    await showChatRequestSentDialog(context);
   }
 
   @override
@@ -353,10 +354,7 @@ class _OverflowMenu extends ConsumerWidget {
       onSelected: (value) async {
         switch (value) {
           case 'profile':
-            await showDialog<void>(
-              context: context,
-              builder: (_) => _ProfileDialog(info: info),
-            );
+            await showProfileView(context, info.userId);
           case 'report':
             final done = await ReportDialog.show(
               context,
@@ -445,72 +443,6 @@ class _MenuRow extends StatelessWidget {
   }
 }
 
-/// [프로필 보기] — 포스트 사진이 아니라 **프로필 사진**과 활동 지역을 보여 준다.
-/// 포스트 사진은 열람 제한이 걸리지만 프로필은 원래 누구나 본다.
-class _ProfileDialog extends StatelessWidget {
-  const _ProfileDialog({required this.info});
-
-  final PostInfo info;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = L10n.of(context);
-    final photo = info.profilePhotoUrl;
-
-    return AlertDialog(
-      backgroundColor: AppColors.surface,
-      title: Text(
-        l10n.postInfoProfileTitle(info.nickname),
-        style: const TextStyle(color: AppColors.textPrimary, fontSize: 17),
-      ),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ClipOval(
-            child: SizedBox(
-              width: 96,
-              height: 96,
-              child: photo == null
-                  ? const ColoredBox(
-                      color: AppColors.surfaceHigh,
-                      child: Icon(Icons.person, color: AppColors.textMuted),
-                    )
-                  : AuthedImage(url: photo),
-            ),
-          ),
-          const SizedBox(height: AppDimens.gapMd),
-          if (info.regions.isNotEmpty) ...[
-            Text(
-              l10n.postInfoRegions,
-              style: const TextStyle(
-                color: AppColors.textSecondary,
-                fontSize: 13,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            const SizedBox(height: AppDimens.gapSm),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                for (final code in info.regions)
-                  _Chip(label: ProfileCatalog.regionLabel(l10n, code)),
-              ],
-            ),
-          ],
-        ],
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: Text(l10n.commonClose),
-        ),
-      ],
-    );
-  }
-}
-
 /// 대화 신청 메시지 → 관심사 → 소개 한마디.
 class _Details extends StatelessWidget {
   const _Details({required this.info});
@@ -548,7 +480,7 @@ class _Details extends StatelessWidget {
         ],
 
         if (info.interests.isNotEmpty)
-          _Card(
+          InfoCard(
             icon: Icons.favorite_border_rounded,
             title: l10n.profileInterests,
             child: Wrap(
@@ -556,13 +488,13 @@ class _Details extends StatelessWidget {
               runSpacing: 8,
               children: [
                 for (final code in info.interests)
-                  _Chip(label: ProfileCatalog.interestLabel(l10n, code)),
+                  InfoChip(label: ProfileCatalog.interestLabel(l10n, code)),
               ],
             ),
           ),
 
         if (info.intro != null && info.intro!.isNotEmpty)
-          _Card(
+          InfoCard(
             icon: Icons.format_quote_rounded,
             title: l10n.profileIntro,
             child: Text(
@@ -692,70 +624,6 @@ class _Decide extends StatelessWidget {
 }
 
 // ── 작은 조각들 ────────────────────────────────────────────
-
-class _Card extends StatelessWidget {
-  const _Card({required this.icon, required this.title, required this.child});
-
-  final IconData icon;
-  final String title;
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      margin: const EdgeInsets.only(bottom: AppDimens.gapSm),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppDimens.radiusMd),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(icon, size: 16, color: AppColors.moonlight),
-              const SizedBox(width: 8),
-              Text(
-                title,
-                style: const TextStyle(
-                  color: AppColors.textPrimary,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: AppDimens.gapSm),
-          child,
-        ],
-      ),
-    );
-  }
-}
-
-class _Chip extends StatelessWidget {
-  const _Chip({required this.label});
-
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceHigh,
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Text(
-        label,
-        style: const TextStyle(color: AppColors.textPrimary, fontSize: 13),
-      ),
-    );
-  }
-}
 
 class _Pill extends StatelessWidget {
   const _Pill({required this.child});

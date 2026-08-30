@@ -115,9 +115,14 @@ class ProfileScreen extends ConsumerWidget {
                     ),
             ),
             const SizedBox(height: AppDimens.gapLg),
+            // 시안(7장 img18)은 활동 지역 **바로 아래**에 프라임 배너를 둔다.
+            // 루나·부스트 카드는 시안에 없지만 이미지가 그 아래에서 잘려 있어
+            // 없앤 것으로 볼 수 없다 — 순서만 시안에 맞추고 뒤로 미뤘다.
+            if (!profile.premium) ...[
+              const _PremiumBanner(),
+              const SizedBox(height: AppDimens.gapMd),
+            ],
             const _StoreEntry(),
-            const SizedBox(height: AppDimens.gapMd),
-            if (!profile.premium) const _PremiumBanner(),
           ],
         ),
       ),
@@ -350,7 +355,47 @@ class _NameRow extends StatelessWidget {
           Text(flag, style: const TextStyle(fontSize: 20)),
         ],
         const Spacer(),
-        if (profile.premium) const _PrimeBadge(),
+        if (profile.premium) ...[
+          const _PrimeBadge(),
+          const SizedBox(width: 8),
+        ],
+        // 시안(img18)의 오른쪽 `🟢 접속 중`.
+        //
+        // 내 프로필이므로 **항상 접속 중**이다 — 이 화면을 보고 있다는 것이 곧 접속이다.
+        // 프레즌스에 물을 이유가 없고(내 하트비트를 내가 확인하는 꼴), 물어 봐야
+        // 소켓이 잠깐 끊긴 순간에 "오프라인"이 떠서 오히려 이상해진다.
+        const _OnlineLabel(),
+      ],
+    );
+  }
+}
+
+class _OnlineLabel extends StatelessWidget {
+  const _OnlineLabel();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 8,
+          height: 8,
+          decoration: const BoxDecoration(
+            color: AppColors.line,
+            shape: BoxShape.circle,
+          ),
+        ),
+        const SizedBox(width: 5),
+        Text(
+          l10n.commonOnline,
+          style: const TextStyle(
+            color: AppColors.line,
+            fontSize: 13,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
       ],
     );
   }
@@ -457,10 +502,12 @@ class _SectionCard extends StatelessWidget {
                       color: AppColors.moonlight.withValues(alpha: 0.15),
                       shape: BoxShape.circle,
                     ),
+                    // 시안(img18)은 연필이 아니라 **`+`** 다 — 관심사·지역은
+                    // 고치는 것보다 **더하는** 동작이 앞선다.
                     child: const Icon(
-                      Icons.edit,
+                      Icons.add_rounded,
                       color: AppColors.moonlight,
-                      size: 16,
+                      size: 20,
                     ),
                   ),
                 ),
@@ -628,12 +675,29 @@ class _StoreShortcut extends StatelessWidget {
   }
 }
 
-class _PremiumBanner extends StatelessWidget {
+/// 프라임 가입 유도 배너(기획 7장 img18).
+///
+/// 시안은 **혜택 네 칸**을 정확히 이렇게 세운다 —
+/// 앨범 패스 / 포스트 부스트 / 대화 신청 무제한 / 자동 번역 무제한.
+/// 예전에는 매칭 부스트·무료 업로드·방문자 확인·광고 제거였는데,
+/// **매칭 부스트는 Plan_3에서 사라졌고** 나머지 셋은 기획서 어디에도 없다.
+///
+/// 🚨 **숫자는 문구에 굳히지 않는다.** `30일`·`10매`는 서버 설정(`app.store.*`)이라
+/// 카탈로그가 준 값으로 조립한다. 시안의 *"사진 최대 9장"* 은 카탈로그에 없는 값이라
+/// 숫자 없이 적었다 — 서버가 알려 주게 되면 그때 넣으면 된다(docs/13 §5).
+class _PremiumBanner extends ConsumerWidget {
   const _PremiumBanner();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = L10n.of(context);
+    // 가장 짧은 플랜을 기준으로 보여 준다 — 배너는 "얼마나 오래"가 아니라
+    // "무엇을 받는가"를 말하는 자리다.
+    final plans = ref.watch(catalogProvider).valueOrNull?.primePlans ?? const [];
+    final plan = plans.isEmpty
+        ? null
+        : plans.reduce((a, b) => a.durationDays <= b.durationDays ? a : b);
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(18),
@@ -667,17 +731,17 @@ class _PremiumBanner extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      l10n.profilePrimeTitle,
-                      style: TextStyle(
+                      l10n.primeTitle,
+                      style: const TextStyle(
                         color: AppColors.textPrimary,
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
-                    SizedBox(height: 4),
+                    const SizedBox(height: 4),
                     Text(
-                      l10n.profilePrimeBenefits,
-                      style: TextStyle(
+                      l10n.primeSubtitle,
+                      style: const TextStyle(
                         color: AppColors.textSecondary,
                         fontSize: 12,
                       ),
@@ -685,62 +749,144 @@ class _PremiumBanner extends StatelessWidget {
                   ],
                 ),
               ),
+              const SizedBox(width: 8),
+              // 시안의 `자세히 보기 >` — 폭을 다 먹는 버튼이 아니라 제목 줄 오른쪽의 작은 칩이다.
+              _SeeDetailChip(
+                onTap: () => Navigator.of(context).push(PrimeScreen.route()),
+              ),
             ],
           ),
           const SizedBox(height: AppDimens.gapMd),
-          SizedBox(
-            width: double.infinity,
-            height: 46,
-            child: FilledButton(
-              onPressed: () =>
-                  Navigator.of(context).push(PrimeScreen.route()),
-              style: FilledButton.styleFrom(
-                backgroundColor: AppColors.moonlightDeep,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppDimens.radiusMd),
+          const Divider(color: AppColors.border, height: 1),
+          const SizedBox(height: AppDimens.gapMd),
+          IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _Feature(
+                  icon: Icons.photo_camera_outlined,
+                  title: plan == null
+                      ? l10n.storeKindAlbumPass
+                      : l10n.primeAlbumBenefit(plan.durationDays),
+                  body: l10n.profilePrimeBenefitAlbumDesc,
                 ),
-              ),
-              child: Text(
-                l10n.profileSeeDetail,
-                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
-              ),
+                _Feature(
+                  icon: Icons.bolt,
+                  title: _boostTitle(l10n, plan),
+                  body: l10n.profilePrimeBenefitBoostDesc,
+                ),
+                _Feature(
+                  icon: Icons.chat_bubble_outline,
+                  title: l10n.primeUnlimitedChat,
+                  body: l10n.profilePrimeBenefitChatDesc,
+                ),
+                _Feature(
+                  icon: Icons.language,
+                  title: l10n.profilePrimeBenefitTranslate,
+                  body: l10n.profilePrimeBenefitTranslateDesc,
+                ),
+              ],
             ),
-          ),
-          const SizedBox(height: AppDimens.gapMd),
-          Row(
-            children: [
-              _Feature(icon: Icons.bolt, label: l10n.profileBoostMatch),
-              _Feature(icon: Icons.cloud_upload_outlined, label: l10n.profileFreeUpload),
-              _Feature(icon: Icons.visibility_outlined, label: l10n.profileVisitors),
-              _Feature(icon: Icons.block, label: l10n.profileNoAds),
-            ],
           ),
         ],
       ),
     );
   }
+
+  /// "포스트 부스트 1시간, 10매". 카탈로그가 아직 없으면 매수 없이 이름만.
+  static String _boostTitle(L10n l10n, PrimePlan? plan) {
+    final count = plan?.boosts[StoreKind.postBoost];
+    final name = StoreKind.label(l10n, StoreKind.postBoost);
+    return count == null ? name : l10n.primeBoostBenefit(name, count);
+  }
 }
 
+class _SeeDetailChip extends StatelessWidget {
+  const _SeeDetailChip({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(12, 8, 8, 8),
+        decoration: BoxDecoration(
+          color: AppColors.moonlightDeep,
+          borderRadius: BorderRadius.circular(999),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              l10n.profileSeeDetail,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const Icon(
+              Icons.chevron_right_rounded,
+              color: Colors.white,
+              size: 18,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// 혜택 한 칸 — 아이콘 · 굵은 제목 · 설명 두세 줄(시안 img18).
 class _Feature extends StatelessWidget {
-  const _Feature({required this.icon, required this.label});
+  const _Feature({
+    required this.icon,
+    required this.title,
+    required this.body,
+  });
 
   final IconData icon;
-  final String label;
+  final String title;
+  final String body;
 
   @override
   Widget build(BuildContext context) {
     return Expanded(
-      child: Column(
-        children: [
-          Icon(icon, color: AppColors.moonlight, size: 24),
-          const SizedBox(height: 6),
-          Text(
-            label,
-            textAlign: TextAlign.center,
-            style: const TextStyle(color: AppColors.textSecondary, fontSize: 11),
-          ),
-        ],
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 2),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Icon(icon, color: AppColors.moonlight, size: 26),
+            const SizedBox(height: 8),
+            // 한 칸이 좁아 한국어가 낱말 가운데서 끊긴다("무제 / 한").
+            // 글자를 줄이는 것보다 **칸에 맞춰 줄이는** 편이 안전하다.
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: AppColors.textPrimary,
+                fontSize: 10,
+                height: 1.3,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: 5),
+            Text(
+              body,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 9.5,
+                height: 1.35,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

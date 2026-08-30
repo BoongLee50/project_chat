@@ -9,6 +9,10 @@ import '../../../auth/presentation/providers/session_provider.dart';
 import '../../../friend/presentation/providers/friend_provider.dart';
 import '../../../moderation/presentation/widgets/block_dialog.dart';
 import '../../../moderation/presentation/widgets/report_dialog.dart';
+import '../../../postinfo/presentation/screens/profile_view_screen.dart';
+import '../../../store/data/models/store_models.dart';
+import '../../../store/presentation/providers/store_provider.dart';
+import '../../../store/presentation/screens/pass_screen.dart';
 import '../../data/models/chat_models.dart';
 import '../providers/chat_provider.dart';
 import '../providers/voice_player.dart';
@@ -232,12 +236,17 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   children: [
                     _SystemMessage(l10n.chatMatchedNotice),
                     const SizedBox(height: AppDimens.gapMd),
-                    for (final message in list)
+                    // 날짜가 바뀌는 자리마다 구분선을 넣는다(시안의 `오늘`).
+                    // 없으면 어제 밤 대화와 오늘 대화가 한 덩어리로 붙어 보인다.
+                    for (var i = 0; i < list.length; i++) ...[
+                      if (_startsNewDay(list, i))
+                        _DateDivider(date: list[i].createdAt),
                       _Bubble(
-                        message: message,
-                        mine: message.senderId == myId,
+                        message: list[i],
+                        mine: list[i].senderId == myId,
                         avatarUrl: widget.room.partnerPhotoUrl,
                       ),
+                    ],
                   ],
                 ),
               ),
@@ -313,34 +322,28 @@ class _ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
             ),
           ),
           const SizedBox(width: 10),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Row(
-                children: [
-                  Text(
-                    room.partnerNickname,
-                    style: const TextStyle(
-                      color: AppColors.textPrimary,
-                      fontSize: 17,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const SizedBox(width: 6),
-                  Text(room.flag, style: const TextStyle(fontSize: 14)),
-                ],
+          // 시안(5장)은 **한 줄**이다 — `지우 28 🇰🇷`. 나이를 아래로 내리면
+          // 두 줄이 되어 번역 칩이 들어갈 자리가 사라진다.
+          Flexible(
+            child: Text(
+              room.partnerAge == null
+                  ? room.partnerNickname
+                  : '${room.partnerNickname} ${room.partnerAge}',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: AppColors.textPrimary,
+                fontSize: 17,
+                fontWeight: FontWeight.w700,
               ),
-              if (room.partnerAge != null)
-                Text(
-                  l10n.ageYears(room.partnerAge!),
-                  style: const TextStyle(
-                    color: AppColors.textSecondary,
-                    fontSize: 12,
-                  ),
-                ),
-            ],
+            ),
           ),
+          if (room.flag.isNotEmpty) ...[
+            const SizedBox(width: 6),
+            Text(room.flag, style: const TextStyle(fontSize: 14)),
+          ],
+          const SizedBox(width: 8),
+          const _TranslatePassChip(),
         ],
       ),
       actions: [
@@ -352,14 +355,11 @@ class _ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
             if (value == 'friend') onRequestFriend();
             if (value == 'report') onReport();
             if (value == 'block') onBlock();
+            // 지금까지 이 항목은 **눌러도 아무 일도 하지 않았다**(핸들러 누락).
+            if (value == 'profile') showProfileView(context, room.partnerId);
           },
+          // 순서도 시안(img11)을 따른다 — 보기 → 신고 → 차단 → 친구 → 나가기.
           itemBuilder: (context) => [
-            // 이미 친구인 방(FRIEND)에서는 요청 항목을 숨긴다.
-            if (room.type != 'FRIEND')
-              PopupMenuItem(
-                value: 'friend',
-                child: _MenuRow(Icons.person_add_alt, l10n.chatMenuFriendRequest),
-              ),
             PopupMenuItem(
               value: 'profile',
               child: _MenuRow(Icons.person_outline, l10n.chatMenuProfile),
@@ -372,6 +372,12 @@ class _ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
               value: 'block',
               child: _MenuRow(Icons.block, l10n.chatMenuBlock),
             ),
+            // 이미 친구인 방(FRIEND)에서는 요청 항목을 숨긴다.
+            if (room.type != 'FRIEND')
+              PopupMenuItem(
+                value: 'friend',
+                child: _MenuRow(Icons.person_add_alt, l10n.chatMenuFriendRequest),
+              ),
             PopupMenuItem(
               value: 'leave',
               child: _MenuRow(Icons.logout, l10n.chatMenuLeave),
@@ -380,6 +386,131 @@ class _ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
         ),
         const SizedBox(width: 8),
       ],
+    );
+  }
+}
+
+/// 앞 메시지와 **날짜가 다른가**. 첫 메시지는 언제나 새 날이다.
+bool _startsNewDay(List<ChatMessage> list, int i) {
+  if (i == 0) return true;
+  final a = list[i - 1].createdAt;
+  final b = list[i].createdAt;
+  return a.year != b.year || a.month != b.month || a.day != b.day;
+}
+
+/// `오늘` / `어제` / `2026. 08. 28.` 구분선(시안 5장).
+class _DateDivider extends StatelessWidget {
+  const _DateDivider({required this.date});
+
+  final DateTime date;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
+    final today = DateTime.now();
+    final days = DateTime(today.year, today.month, today.day)
+        .difference(DateTime(date.year, date.month, date.day))
+        .inDays;
+
+    final label = switch (days) {
+      0 => l10n.chatDateToday,
+      1 => l10n.chatDateYesterday,
+      _ => '${date.year}. ${date.month.toString().padLeft(2, '0')}. '
+          '${date.day.toString().padLeft(2, '0')}.',
+    };
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppDimens.gapMd),
+      child: Center(
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(999),
+          ),
+          child: Text(
+            label,
+            style: const TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// 상단 바의 `[⭐ 번역 | 4일]` 칩(기획 5장 img11).
+///
+/// **패스를 가지고 있으면 남은 일수**, 없으면 `구매`. 누르면 자동 번역 패스 화면으로 간다.
+///
+/// 📌 여기는 **상태를 보여 주고 사는 자리**일 뿐, 메시지를 실제로 번역하는 버튼은 아니다.
+/// 번역 공급자가 아직 패스스루라 지금 번역을 붙이면 "번역했는데 원문 그대로"가 된다 —
+/// 그 작업은 ⑦단계다(docs/09).
+class _TranslatePassChip extends ConsumerWidget {
+  const _TranslatePassChip();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = L10n.of(context);
+    final wallet = ref.watch(walletProvider).valueOrNull ?? Wallet.empty;
+
+    // 프라임은 번역이 무제한이라 남은 날짜라는 개념이 없다.
+    final days = wallet.prime
+        ? null
+        : wallet.remainingDays(StoreKind.translatePass);
+    final owned = wallet.prime || (days != null && days > 0);
+
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => Navigator.of(context)
+          .push(PassScreen.route(StoreKind.translatePass)),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(
+            color: owned ? AppColors.gold : AppColors.border,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.star_rounded,
+              size: 13,
+              color: owned ? AppColors.gold : AppColors.textMuted,
+            ),
+            const SizedBox(width: 4),
+            Text(
+              l10n.chatTranslatePass,
+              style: TextStyle(
+                color: owned ? AppColors.gold : AppColors.textSecondary,
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(width: 5),
+            Container(width: 1, height: 10, color: AppColors.border),
+            const SizedBox(width: 5),
+            Text(
+              wallet.prime
+                  ? l10n.chatTranslateUnlimited
+                  : (days != null && days > 0
+                        ? l10n.homePassRemainingDays(days)
+                        : l10n.homeBuy),
+              style: TextStyle(
+                color: owned ? AppColors.gold : AppColors.textSecondary,
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -421,9 +552,10 @@ class _SystemMessage extends StatelessWidget {
       ),
       child: Row(
         children: [
+          // 시안은 자물쇠가 아니라 **달**이다 — 보안 안내가 아니라 매칭 인사다.
           const Icon(
-            Icons.lock_outline,
-            color: AppColors.textSecondary,
+            Icons.nightlight_round,
+            color: AppColors.moonlight,
             size: 18,
           ),
           const SizedBox(width: 10),

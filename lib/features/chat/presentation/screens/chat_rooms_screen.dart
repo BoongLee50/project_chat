@@ -9,6 +9,8 @@ import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/authed_image.dart';
 import '../../../../shared/widgets/night_header.dart';
 import '../../../friend/presentation/providers/friend_provider.dart';
+import '../../../friend/presentation/widgets/friend_request_dialog.dart';
+import '../../../postinfo/presentation/providers/post_info_provider.dart';
 import '../../../postinfo/data/models/post_info.dart';
 import '../../../postinfo/presentation/screens/post_info_screen.dart';
 import '../../data/models/chat_models.dart';
@@ -428,24 +430,45 @@ class FriendRelationButton extends ConsumerWidget {
       FriendRelation.none => (l10n.postInfoFriendAdd, true),
     };
 
+    // 누르면 곧바로 보내지 않고 **팝업으로 한 번 보여 준다**(기획 5-1 img13).
+    //
+    // 목록에 있는 건 이름과 관계뿐이라, 팝업에 넣을 사진·지역·접속은 여기서 다시 묻는다.
+    // 한 번 더 부르는 값이지만 그 덕에 팝업이 **지금 상태**를 보여 준다 —
+    // 목록이 낡아 이미 수락된 신청에 [친구 수락]이 떠 있었더라도 여기서 드러난다.
     Future<void> act() async {
-      final actions = ref.read(friendActionsProvider);
-      // 상대가 이미 걸어 둔 신청이 있으면 새로 거는 게 아니라 **수락**이다.
-      final error = relation == FriendRelation.incoming
-          ? await _acceptIncoming(ref)
-          : await actions.request(targetUserId);
+      final info = await ref.read(postInfoProvider(targetUserId).future);
+      if (!context.mounted) return;
+
+      final ApiException? error;
+      final String done;
+      if (relation == FriendRelation.incoming) {
+        final accepted = await showIncomingFriendRequestDialog(
+          context,
+          info: info,
+        );
+        if (accepted == null || !context.mounted) return;
+        final id = info.friendshipId;
+        if (id == null) return;
+        error = accepted
+            ? await ref.read(friendActionsProvider).accept(id)
+            : await ref.read(friendActionsProvider).reject(id);
+        done = accepted ? l10n.friendsAccepted : l10n.friendsRejected;
+      } else {
+        final message = await showFriendRequestDialog(context, info: info);
+        if (message == null || !context.mounted) return;
+        error = await ref.read(friendActionsProvider).request(
+          targetUserId,
+          message: message.isEmpty ? null : message,
+        );
+        done = l10n.friendsRequestSent;
+      }
+
       if (!context.mounted) return;
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
         ..showSnackBar(
           SnackBar(
-            content: Text(
-              error == null
-                  ? (relation == FriendRelation.incoming
-                        ? l10n.friendsAccepted
-                        : l10n.friendsRequestSent)
-                  : errorMessage(l10n, error),
-            ),
+            content: Text(error == null ? done : errorMessage(l10n, error)),
           ),
         );
     }
@@ -476,18 +499,6 @@ class FriendRelationButton extends ConsumerWidget {
     );
   }
 
-  /// 받은 친구 요청 중 이 상대의 것을 찾아 수락한다.
-  ///
-  /// 목록 행에는 friendshipId가 없다(관계만 온다). 요청 목록에서 되짚는 이유는
-  /// 행마다 id를 실어 보내면 목록이 낡았을 때 이미 사라진 요청을 수락하게 되기 때문이다.
-  Future<ApiException?> _acceptIncoming(WidgetRef ref) async {
-    final requests = await ref.read(friendRequestsProvider.future);
-    final match = requests
-        .where((r) => r.requesterId == targetUserId)
-        .firstOrNull;
-    if (match == null) return null;
-    return ref.read(friendActionsProvider).accept(match.id);
-  }
 }
 
 String _nameAge(String name, int? age) => age == null ? name : '$name $age';

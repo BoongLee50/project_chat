@@ -68,6 +68,9 @@ public class ChatService {
     /** 거절당한 뒤 다시 신청할 수 없는 시간(기획 §2-5의 "1일"). */
     private final int rejectionCooldownHours;
 
+    /** 대화 신청 한마디의 최대 글자 수(기획 4-3 시안의 `0/200`). */
+    private final int requestMessageMaxLength;
+
     /**
      * 길이 검사 여유. 클라가 30초에서 멈춰도 인코더가 마지막 프레임을 채우며
      * 몇십 ms 넘길 수 있다. 여기서 칼같이 자르면 정상 녹음이 거부된다.
@@ -88,7 +91,9 @@ public class ChatService {
                         @Value("${app.chat.free-requests-per-day:10}") int freeRequestsPerDay,
                         @Value("${app.chat.voice-max-duration-ms:30000}") int voiceMaxDurationMs,
                         @Value("${app.chat.rejection-cooldown-hours:24}")
-                        int rejectionCooldownHours) {
+                        int rejectionCooldownHours,
+                        @Value("${app.chat.request-message-max-length:200}")
+                        int requestMessageMaxLength) {
         this.chatMapper = chatMapper;
         this.friendMapper = friendMapper;
         this.presenceService = presenceService;
@@ -103,6 +108,7 @@ public class ChatService {
         this.freeRequestsPerDay = freeRequestsPerDay;
         this.voiceMaxDurationMs = voiceMaxDurationMs;
         this.rejectionCooldownHours = rejectionCooldownHours;
+        this.requestMessageMaxLength = requestMessageMaxLength;
     }
 
     // ── 대화 신청 ───────────────────────────────────────────
@@ -110,6 +116,13 @@ public class ChatService {
     /** 대화 신청 생성 — 무료 2회 소진 후 루나 5 차감. 성공 시 상대에게 소켓 알림. */
     @Transactional
     public void createRequest(String userId, String targetUserId, String message) {
+        // 애노테이션(@Size)으로 막으면 일반 VALIDATION_FAILED가 나가서 화면이
+        // "몇 자까지인지"를 말해 줄 수 없다(댓글 50자에서 겪은 일).
+        if (message != null
+                && message.codePointCount(0, message.length()) > requestMessageMaxLength) {
+            throw new ApiException(ErrorCode.VALIDATION_FAILED, HttpStatus.BAD_REQUEST,
+                    "대화 신청 한마디가 너무 길어요.", String.valueOf(requestMessageMaxLength));
+        }
         if (userId.equals(targetUserId)) {
             throw new ApiException(ErrorCode.CHAT_SELF, HttpStatus.BAD_REQUEST,
                     "자신에게는 대화를 신청할 수 없어요.");
@@ -170,6 +183,25 @@ public class ChatService {
                 "fromNickname", me.getNickname() == null ? "" : me.getNickname(),
                 "message", message
         )));
+    }
+
+    /**
+     * 신청 전에 화면이 보여 줄 안내(남은 무료 횟수·루나·글자 수).
+     *
+     * <p>판정이 아니라 <b>안내</b>다 — 실제 차감과 차단은 {@link #createRequest}가 다시 본다.
+     */
+    public ChatRequestQuotaDto requestQuota(String userId) {
+        boolean unlimited = entitlementService.hasUnlimitedChatRequests(userId);
+        int used = unlimited
+                ? 0
+                : lunaService.dailyUsed(userId, sessionTime.currentSessionDate(),
+                        USAGE_CHAT_REQUEST);
+        return new ChatRequestQuotaDto(
+                Math.max(0, freeRequestsPerDay - used),
+                freeRequestsPerDay,
+                lunaCost,
+                requestMessageMaxLength,
+                unlimited);
     }
 
     /** 신청 수락 → 대화방 생성. 양쪽에 방 상태를 알린다. */

@@ -514,7 +514,7 @@ abstract class L10n {
   /// No description provided for @gardenChatRequestHint.
   ///
   /// In ko, this message translates to:
-  /// **'첫 인사를 남겨보세요 (최대 100자)'**
+  /// **'첫 인사를 남겨보세요'**
   String get gardenChatRequestHint;
 
   /// No description provided for @gardenChatRequestSent.
@@ -522,6 +522,66 @@ abstract class L10n {
   /// In ko, this message translates to:
   /// **'대화 신청을 보냈어요. 상대의 응답을 기다려 주세요.'**
   String get gardenChatRequestSent;
+
+  /// No description provided for @gardenChatRequestShort.
+  ///
+  /// In ko, this message translates to:
+  /// **'대화 신청'**
+  String get gardenChatRequestShort;
+
+  /// No description provided for @gardenChatRequestPrompt.
+  ///
+  /// In ko, this message translates to:
+  /// **'{nickname}님에게 대화를 신청해 보세요.\n상대방이 수락해야 대화를 시작할 수 있어요.'**
+  String gardenChatRequestPrompt(String nickname);
+
+  /// count는 오늘 남은 무료 신청 횟수(서버가 준다)
+  ///
+  /// In ko, this message translates to:
+  /// **'대화 신청 (무료 {count}회)'**
+  String gardenChatRequestFree(int count);
+
+  /// No description provided for @gardenChatRequestCost.
+  ///
+  /// In ko, this message translates to:
+  /// **'대화 신청 (루나 {luna})'**
+  String gardenChatRequestCost(int luna);
+
+  /// No description provided for @gardenChatRequestFreeNotice.
+  ///
+  /// In ko, this message translates to:
+  /// **'처음 {count}회까지는 무료로 대화 신청 가능해요.'**
+  String gardenChatRequestFreeNotice(int count);
+
+  /// No description provided for @gardenChatRequestCostNotice.
+  ///
+  /// In ko, this message translates to:
+  /// **'이후 대화는 {luna} 루나가 필요해요. ✨'**
+  String gardenChatRequestCostNotice(int luna);
+
+  /// No description provided for @gardenChatRequestPrimeNotice.
+  ///
+  /// In ko, this message translates to:
+  /// **'Prime 구독 시 대화 신청 무제한!'**
+  String get gardenChatRequestPrimeNotice;
+
+  /// No description provided for @gardenChatRequestUnlimited.
+  ///
+  /// In ko, this message translates to:
+  /// **'대화 신청을 무제한으로 보낼 수 있어요.'**
+  String get gardenChatRequestUnlimited;
+
+  /// No description provided for @gardenChatRequestSentTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'대화 신청을 보냈어요! ✨'**
+  String get gardenChatRequestSentTitle;
+
+  /// No description provided for @gardenChatRequestWhere.
+  ///
+  /// In ko, this message translates to:
+  /// **'상대방의 수락 여부는 하단 메뉴 \'대화방 > 받은 신청\'에서 확인할 수 있어요.'**
+  String get gardenChatRequestWhere;
 
   /// No description provided for @gardenPhotoLockedTitle.
   ///
@@ -859,6 +919,30 @@ abstract class L10n {
   /// **'대화방 나가기'**
   String get chatMenuLeave;
 
+  /// No description provided for @chatTranslatePass.
+  ///
+  /// In ko, this message translates to:
+  /// **'번역'**
+  String get chatTranslatePass;
+
+  /// No description provided for @chatTranslateUnlimited.
+  ///
+  /// In ko, this message translates to:
+  /// **'무제한'**
+  String get chatTranslateUnlimited;
+
+  /// No description provided for @chatDateToday.
+  ///
+  /// In ko, this message translates to:
+  /// **'오늘'**
+  String get chatDateToday;
+
+  /// No description provided for @chatDateYesterday.
+  ///
+  /// In ko, this message translates to:
+  /// **'어제'**
+  String get chatDateYesterday;
+
   /// No description provided for @chatFriendRequestSent.
   ///
   /// In ko, this message translates to:
@@ -960,6 +1044,42 @@ abstract class L10n {
   /// In ko, this message translates to:
   /// **'친구 요청을 보냈어요.'**
   String get friendsRequestSent;
+
+  /// No description provided for @friendRequestTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'친구 신청'**
+  String get friendRequestTitle;
+
+  /// max는 화면의 입력 한도. 실제 검사는 서버가 한다(app.friend.request-message-max-length)
+  ///
+  /// In ko, this message translates to:
+  /// **'{nickname}님에게 친구 신청과 함께\n메시지를 보내세요. (최대 {max}자)'**
+  String friendRequestPrompt(String nickname, int max);
+
+  /// No description provided for @friendRequestHint.
+  ///
+  /// In ko, this message translates to:
+  /// **'메시지를 입력하세요 (선택)'**
+  String get friendRequestHint;
+
+  /// No description provided for @friendRequestNotice.
+  ///
+  /// In ko, this message translates to:
+  /// **'상대방이 친구 신청을 수락해야 친구가 될 수 있습니다.'**
+  String get friendRequestNotice;
+
+  /// No description provided for @friendRequestIncomingTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'친구 신청이 도착했어요'**
+  String get friendRequestIncomingTitle;
+
+  /// No description provided for @friendRequestIncomingBody.
+  ///
+  /// In ko, this message translates to:
+  /// **'{nickname}님과 한 걸음 더 가까워져 보세요.\n친구가 되면 서로의 최신 포스트를 만나고,\n언제든지 편하게 이야기를 나눌 수 있어요.'**
+  String friendRequestIncomingBody(String nickname);
 
   /// No description provided for @friendsRoomNotFound.
   ///
@@ -1188,6 +1308,36 @@ abstract class L10n {
   /// In ko, this message translates to:
   /// **'자세히 보기'**
   String get profileSeeDetail;
+
+  /// No description provided for @profilePrimeBenefitAlbumDesc.
+  ///
+  /// In ko, this message translates to:
+  /// **'포스트 사진을 더 많이 등록하고\n상대방 포스트도 제한 없이 볼 수 있어요.'**
+  String get profilePrimeBenefitAlbumDesc;
+
+  /// No description provided for @profilePrimeBenefitBoostDesc.
+  ///
+  /// In ko, this message translates to:
+  /// **'포스트가 우선 노출되고\nPICK 추천과 테두리 효과가 붙어요.'**
+  String get profilePrimeBenefitBoostDesc;
+
+  /// No description provided for @profilePrimeBenefitChatDesc.
+  ///
+  /// In ko, this message translates to:
+  /// **'횟수 제한 없이 자유롭게!\n상대방에게 상단 노출돼요.'**
+  String get profilePrimeBenefitChatDesc;
+
+  /// No description provided for @profilePrimeBenefitTranslate.
+  ///
+  /// In ko, this message translates to:
+  /// **'자동 번역 무제한'**
+  String get profilePrimeBenefitTranslate;
+
+  /// No description provided for @profilePrimeBenefitTranslateDesc.
+  ///
+  /// In ko, this message translates to:
+  /// **'대화와 댓글을 무제한으로 번역해\n언어 걱정 없이 소통할 수 있어요.'**
+  String get profilePrimeBenefitTranslateDesc;
 
   /// No description provided for @profileBoostPost.
   ///
@@ -1966,7 +2116,7 @@ abstract class L10n {
   /// No description provided for @primeAlbumBenefitDesc.
   ///
   /// In ko, this message translates to:
-  /// **'하루에 여러 장의 사진을 자유롭게 업로드!'**
+  /// **'포스트 사진을 더 많이 등록하고, 상대방 포스트도 제한 없이 열람할 수 있어요.'**
   String get primeAlbumBenefitDesc;
 
   /// No description provided for @primeBoostBenefit.
@@ -1984,7 +2134,7 @@ abstract class L10n {
   /// No description provided for @primePostBoostDesc.
   ///
   /// In ko, this message translates to:
-  /// **'내 포스트를 더 많은 사람에게 노출! (일일제한 없음)'**
+  /// **'1시간 동안 포스트가 우선 노출돼요! PICK 마크 추천으로 더 눈에 띄게 보여요.'**
   String get primePostBoostDesc;
 
   /// No description provided for @primeUnlimitedChat.
@@ -1998,6 +2148,12 @@ abstract class L10n {
   /// In ko, this message translates to:
   /// **'하루 무료 횟수에 관계없이 대화를 신청할 수 있어요.'**
   String get primeUnlimitedChatDesc;
+
+  /// No description provided for @primeTranslateDesc.
+  ///
+  /// In ko, this message translates to:
+  /// **'대화와 댓글을 자동 번역해 언어 걱정 없이 소통할 수 있어요.'**
+  String get primeTranslateDesc;
 
   /// No description provided for @primeAutoRenewNotice.
   ///

@@ -455,6 +455,15 @@ class _Benefits extends StatelessWidget {
               title: l10n.primeUnlimitedChat,
               description: l10n.primeUnlimitedChatDesc,
             ),
+          // 시안(화면 26)의 네 번째 혜택. 번역은 예전부터 프라임에게 무제한이었지만
+          // 권리 목록에 없어 **여기 그려지지 않았다** — 설정에 TRANSLATE_PASS를 넣어
+          // 데이터가 곧 화면이 되게 했다.
+          if (plan.entitlements.contains(StoreKind.translatePass))
+            BenefitRow(
+              icon: Icons.language,
+              title: l10n.profilePrimeBenefitTranslate,
+              description: l10n.primeTranslateDesc,
+            ),
         ],
       ),
     );

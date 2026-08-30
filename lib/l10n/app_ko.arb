@@ -137,8 +137,54 @@
       }
     }
   },
-  "gardenChatRequestHint": "첫 인사를 남겨보세요 (최대 100자)",
+  "gardenChatRequestHint": "첫 인사를 남겨보세요",
   "gardenChatRequestSent": "대화 신청을 보냈어요. 상대의 응답을 기다려 주세요.",
+  "gardenChatRequestShort": "대화 신청",
+  "gardenChatRequestPrompt": "{nickname}님에게 대화를 신청해 보세요.\n상대방이 수락해야 대화를 시작할 수 있어요.",
+  "@gardenChatRequestPrompt": {
+    "placeholders": {
+      "nickname": {
+        "type": "String"
+      }
+    }
+  },
+  "gardenChatRequestFree": "대화 신청 (무료 {count}회)",
+  "@gardenChatRequestFree": {
+    "description": "count는 오늘 남은 무료 신청 횟수(서버가 준다)",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "gardenChatRequestCost": "대화 신청 (루나 {luna})",
+  "@gardenChatRequestCost": {
+    "placeholders": {
+      "luna": {
+        "type": "int"
+      }
+    }
+  },
+  "gardenChatRequestFreeNotice": "처음 {count}회까지는 무료로 대화 신청 가능해요.",
+  "@gardenChatRequestFreeNotice": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "gardenChatRequestCostNotice": "이후 대화는 {luna} 루나가 필요해요. ✨",
+  "@gardenChatRequestCostNotice": {
+    "placeholders": {
+      "luna": {
+        "type": "int"
+      }
+    }
+  },
+  "gardenChatRequestPrimeNotice": "Prime 구독 시 대화 신청 무제한!",
+  "gardenChatRequestUnlimited": "대화 신청을 무제한으로 보낼 수 있어요.",
+  "gardenChatRequestSentTitle": "대화 신청을 보냈어요! ✨",
+  "gardenChatRequestWhere": "상대방의 수락 여부는 하단 메뉴 '대화방 > 받은 신청'에서 확인할 수 있어요.",
   "gardenPhotoLockedTitle": "사진 {count}장이 더 있어요",
   "@gardenPhotoLockedTitle": {
     "placeholders": {
@@ -251,6 +297,10 @@
   "chatMenuReport": "신고하기",
   "chatMenuBlock": "차단하기",
   "chatMenuLeave": "대화방 나가기",
+  "chatTranslatePass": "번역",
+  "chatTranslateUnlimited": "무제한",
+  "chatDateToday": "오늘",
+  "chatDateYesterday": "어제",
   "chatFriendRequestSent": "친구 요청을 보냈어요. 상대가 수락하면 친구가 돼요.",
   "chatReportDone": "신고가 접수됐어요. 대화가 종료됩니다.",
   "chatBlockDone": "{nickname}님을 차단했어요.",
@@ -297,6 +347,30 @@
   "friendsAccepted": "친구가 되었어요. 이제 언제든 대화할 수 있어요.",
   "friendsRejected": "요청을 거절했어요.",
   "friendsRequestSent": "친구 요청을 보냈어요.",
+  "friendRequestTitle": "친구 신청",
+  "friendRequestPrompt": "{nickname}님에게 친구 신청과 함께\n메시지를 보내세요. (최대 {max}자)",
+  "@friendRequestPrompt": {
+    "description": "max는 화면의 입력 한도. 실제 검사는 서버가 한다(app.friend.request-message-max-length)",
+    "placeholders": {
+      "nickname": {
+        "type": "String"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "friendRequestHint": "메시지를 입력하세요 (선택)",
+  "friendRequestNotice": "상대방이 친구 신청을 수락해야 친구가 될 수 있습니다.",
+  "friendRequestIncomingTitle": "친구 신청이 도착했어요",
+  "friendRequestIncomingBody": "{nickname}님과 한 걸음 더 가까워져 보세요.\n친구가 되면 서로의 최신 포스트를 만나고,\n언제든지 편하게 이야기를 나눌 수 있어요.",
+  "@friendRequestIncomingBody": {
+    "placeholders": {
+      "nickname": {
+        "type": "String"
+      }
+    }
+  },
   "friendsRoomNotFound": "대화방을 찾을 수 없어요. 새로고침해 주세요.",
   "friendsDeleteConfirm": "{nickname}님을 친구에서 삭제할까요?",
   "@friendsDeleteConfirm": {
@@ -349,6 +423,11 @@
   "profilePrimeTitle": "프라임으로 더 특별하게 ✨",
   "profilePrimeBenefits": "포스트 9장·부스트·무제한 대화·자동 번역",
   "profileSeeDetail": "자세히 보기",
+  "profilePrimeBenefitAlbumDesc": "포스트 사진을 더 많이 등록하고\n상대방 포스트도 제한 없이 볼 수 있어요.",
+  "profilePrimeBenefitBoostDesc": "포스트가 우선 노출되고\nPICK 추천과 테두리 효과가 붙어요.",
+  "profilePrimeBenefitChatDesc": "횟수 제한 없이 자유롭게!\n상대방에게 상단 노출돼요.",
+  "profilePrimeBenefitTranslate": "자동 번역 무제한",
+  "profilePrimeBenefitTranslateDesc": "대화와 댓글을 무제한으로 번역해\n언어 걱정 없이 소통할 수 있어요.",
   "profileBoostPost": "포스트 부스트",
   "profileBoostMatch": "매칭 부스트",
   "profileBoostCount": "{count}매",
@@ -696,7 +775,7 @@
       }
     }
   },
-  "primeAlbumBenefitDesc": "하루에 여러 장의 사진을 자유롭게 업로드!",
+  "primeAlbumBenefitDesc": "포스트 사진을 더 많이 등록하고, 상대방 포스트도 제한 없이 열람할 수 있어요.",
   "primeBoostBenefit": "{item} 1시간, {count}매",
   "@primeBoostBenefit": {
     "placeholders": {
@@ -719,9 +798,10 @@
       }
     }
   },
-  "primePostBoostDesc": "내 포스트를 더 많은 사람에게 노출! (일일제한 없음)",
+  "primePostBoostDesc": "1시간 동안 포스트가 우선 노출돼요! PICK 마크 추천으로 더 눈에 띄게 보여요.",
   "primeUnlimitedChat": "대화 신청 무제한",
   "primeUnlimitedChatDesc": "하루 무료 횟수에 관계없이 대화를 신청할 수 있어요.",
+  "primeTranslateDesc": "대화와 댓글을 자동 번역해 언어 걱정 없이 소통할 수 있어요.",
   "primeAutoRenewNotice": "* PRIME은 선택하신 기간 동안 혜택이 자동 갱신됩니다.",
   "primeSubscriptionNotice": "구독 서비스는 동일한 기간, 동일한 가격으로 자동 갱신되며,\n언제든 구독을 해지할 수 있습니다.",
   "chargeTitle": "루나 충전",

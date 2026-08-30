@@ -11,7 +11,9 @@ import '../../data/models/feed_item.dart';
 import '../../../chat/presentation/providers/chat_provider.dart';
 import '../../../chat/presentation/widgets/chat_request_dialog.dart';
 import '../../../daily/presentation/screens/daily_intro_screen.dart';
+import '../../../postinfo/presentation/providers/post_info_provider.dart';
 import '../../../profile/data/models/profile_catalog.dart';
+import '../../../store/presentation/providers/store_provider.dart';
 import '../../../store/presentation/screens/luna_store_screen.dart';
 import '../../../store/presentation/screens/prime_screen.dart';
 import '../providers/garden_provider.dart';
@@ -146,9 +148,40 @@ class _GardenHeader extends StatelessWidget {
         const SizedBox(width: 6),
         GestureDetector(
           onTap: () => Navigator.of(context).push(LunaStoreScreen.route()),
-          child: const ArtImage(GardenArt.btnLuna, width: 216, height: 83),
+          // 그림에는 별만 있고 **숫자가 없다.** 시안의 `[★ 80]`처럼 보이려면
+          // 보유 루나를 위에 얹어야 한다 — 대화방·친구 머리글은 이미 그렇게 한다.
+          // (숫자를 그림에 굽지 않는 편이 옳다. 사람마다 다른 값이다)
+          child: Stack(
+            alignment: Alignment.centerRight,
+            children: [
+              const ArtImage(GardenArt.btnLuna, width: 216, height: 83),
+              const Padding(
+                padding: EdgeInsets.only(right: 14),
+                child: _LunaCount(),
+              ),
+            ],
+          ),
         ),
       ],
+    );
+  }
+}
+
+/// 가든 머리글의 루나 잔액. 그림 위에 얹는다.
+class _LunaCount extends ConsumerWidget {
+  const _LunaCount();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final luna = ref.watch(walletProvider).valueOrNull?.luna;
+    if (luna == null) return const SizedBox.shrink();
+    return Text(
+      '$luna',
+      style: const TextStyle(
+        color: AppColors.gold,
+        fontSize: 15,
+        fontWeight: FontWeight.w800,
+      ),
     );
   }
 }
@@ -364,22 +397,27 @@ class _FeedPagerState extends ConsumerState<_FeedPager> {
     if (error != null && mounted) _toast(errorMessage(L10n.of(context), error));
   }
 
-  /// 대화 신청 팝업 — 하루 무료 2회 후 루나 5 차감(서버 판정).
+  /// 대화 신청 팝업(기획 4-3). 무료 횟수·루나·글자 수는 **서버가 알려 준다**.
+  ///
+  /// 팝업이 상대의 사진·지역·접속을 보여 주므로 [포스트 정보]와 같은 응답을 쓴다 —
+  /// 피드 카드에는 프로필 사진이 없다(카드에 뜨는 건 오늘의 포스트 사진이다).
   Future<void> _requestChat(FeedItem item) async {
     final l10n = L10n.of(context);
-    final message = await showChatRequestDialog(
-      context,
-      nickname: item.nickname,
-    );
+    final info = await ref.read(postInfoProvider(item.userId).future);
+    if (!mounted) return;
 
+    final message = await showChatRequestDialog(context, info: info);
     if (message == null || !mounted) return;
+
     final error = await ref
         .read(chatActionsProvider)
         .requestChat(item.userId, message);
     if (!mounted) return;
-    _toast(
-      error == null ? l10n.gardenChatRequestSent : errorMessage(l10n, error),
-    );
+    if (error != null) {
+      _toast(errorMessage(l10n, error));
+      return;
+    }
+    await showChatRequestSentDialog(context);
   }
 
   void _toast(String message) {

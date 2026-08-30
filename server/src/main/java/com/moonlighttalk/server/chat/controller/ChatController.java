@@ -24,6 +24,17 @@ public class ChatController {
         chatService.createRequest(userId, request.targetUserId(), request.message());
     }
 
+    /**
+     * 신청 팝업이 열리기 전에 필요한 안내 — 남은 무료 횟수 · 루나 · 글자 수(기획 4-3).
+     *
+     * <p>화면이 `대화 신청 (무료 2회)`처럼 숫자를 적어야 하는데, 이 값이 없으면
+     * 숫자를 코드에 굳히게 된다.
+     */
+    @GetMapping("/chat-requests/quota")
+    public ChatRequestQuotaDto requestQuota(@CurrentUserId String userId) {
+        return chatService.requestQuota(userId);
+    }
+
     /** 매칭 대화 목록. */
     @GetMapping("/chat/rooms")
     public List<ChatRoomDto> rooms(@CurrentUserId String userId) {

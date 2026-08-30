@@ -232,10 +232,51 @@ class L10nKo extends L10n {
   }
 
   @override
-  String get gardenChatRequestHint => '첫 인사를 남겨보세요 (최대 100자)';
+  String get gardenChatRequestHint => '첫 인사를 남겨보세요';
 
   @override
   String get gardenChatRequestSent => '대화 신청을 보냈어요. 상대의 응답을 기다려 주세요.';
+
+  @override
+  String get gardenChatRequestShort => '대화 신청';
+
+  @override
+  String gardenChatRequestPrompt(String nickname) {
+    return '$nickname님에게 대화를 신청해 보세요.\n상대방이 수락해야 대화를 시작할 수 있어요.';
+  }
+
+  @override
+  String gardenChatRequestFree(int count) {
+    return '대화 신청 (무료 $count회)';
+  }
+
+  @override
+  String gardenChatRequestCost(int luna) {
+    return '대화 신청 (루나 $luna)';
+  }
+
+  @override
+  String gardenChatRequestFreeNotice(int count) {
+    return '처음 $count회까지는 무료로 대화 신청 가능해요.';
+  }
+
+  @override
+  String gardenChatRequestCostNotice(int luna) {
+    return '이후 대화는 $luna 루나가 필요해요. ✨';
+  }
+
+  @override
+  String get gardenChatRequestPrimeNotice => 'Prime 구독 시 대화 신청 무제한!';
+
+  @override
+  String get gardenChatRequestUnlimited => '대화 신청을 무제한으로 보낼 수 있어요.';
+
+  @override
+  String get gardenChatRequestSentTitle => '대화 신청을 보냈어요! ✨';
+
+  @override
+  String get gardenChatRequestWhere =>
+      '상대방의 수락 여부는 하단 메뉴 \'대화방 > 받은 신청\'에서 확인할 수 있어요.';
 
   @override
   String gardenPhotoLockedTitle(int count) {
@@ -422,6 +463,18 @@ class L10nKo extends L10n {
   String get chatMenuLeave => '대화방 나가기';
 
   @override
+  String get chatTranslatePass => '번역';
+
+  @override
+  String get chatTranslateUnlimited => '무제한';
+
+  @override
+  String get chatDateToday => '오늘';
+
+  @override
+  String get chatDateYesterday => '어제';
+
+  @override
   String get chatFriendRequestSent => '친구 요청을 보냈어요. 상대가 수락하면 친구가 돼요.';
 
   @override
@@ -479,6 +532,28 @@ class L10nKo extends L10n {
 
   @override
   String get friendsRequestSent => '친구 요청을 보냈어요.';
+
+  @override
+  String get friendRequestTitle => '친구 신청';
+
+  @override
+  String friendRequestPrompt(String nickname, int max) {
+    return '$nickname님에게 친구 신청과 함께\n메시지를 보내세요. (최대 $max자)';
+  }
+
+  @override
+  String get friendRequestHint => '메시지를 입력하세요 (선택)';
+
+  @override
+  String get friendRequestNotice => '상대방이 친구 신청을 수락해야 친구가 될 수 있습니다.';
+
+  @override
+  String get friendRequestIncomingTitle => '친구 신청이 도착했어요';
+
+  @override
+  String friendRequestIncomingBody(String nickname) {
+    return '$nickname님과 한 걸음 더 가까워져 보세요.\n친구가 되면 서로의 최신 포스트를 만나고,\n언제든지 편하게 이야기를 나눌 수 있어요.';
+  }
 
   @override
   String get friendsRoomNotFound => '대화방을 찾을 수 없어요. 새로고침해 주세요.';
@@ -598,6 +673,24 @@ class L10nKo extends L10n {
 
   @override
   String get profileSeeDetail => '자세히 보기';
+
+  @override
+  String get profilePrimeBenefitAlbumDesc =>
+      '포스트 사진을 더 많이 등록하고\n상대방 포스트도 제한 없이 볼 수 있어요.';
+
+  @override
+  String get profilePrimeBenefitBoostDesc =>
+      '포스트가 우선 노출되고\nPICK 추천과 테두리 효과가 붙어요.';
+
+  @override
+  String get profilePrimeBenefitChatDesc => '횟수 제한 없이 자유롭게!\n상대방에게 상단 노출돼요.';
+
+  @override
+  String get profilePrimeBenefitTranslate => '자동 번역 무제한';
+
+  @override
+  String get profilePrimeBenefitTranslateDesc =>
+      '대화와 댓글을 무제한으로 번역해\n언어 걱정 없이 소통할 수 있어요.';
 
   @override
   String get profileBoostPost => '포스트 부스트';
@@ -1046,7 +1139,8 @@ class L10nKo extends L10n {
   }
 
   @override
-  String get primeAlbumBenefitDesc => '하루에 여러 장의 사진을 자유롭게 업로드!';
+  String get primeAlbumBenefitDesc =>
+      '포스트 사진을 더 많이 등록하고, 상대방 포스트도 제한 없이 열람할 수 있어요.';
 
   @override
   String primeBoostBenefit(String item, int count) {
@@ -1059,13 +1153,17 @@ class L10nKo extends L10n {
   }
 
   @override
-  String get primePostBoostDesc => '내 포스트를 더 많은 사람에게 노출! (일일제한 없음)';
+  String get primePostBoostDesc =>
+      '1시간 동안 포스트가 우선 노출돼요! PICK 마크 추천으로 더 눈에 띄게 보여요.';
 
   @override
   String get primeUnlimitedChat => '대화 신청 무제한';
 
   @override
   String get primeUnlimitedChatDesc => '하루 무료 횟수에 관계없이 대화를 신청할 수 있어요.';
+
+  @override
+  String get primeTranslateDesc => '대화와 댓글을 자동 번역해 언어 걱정 없이 소통할 수 있어요.';
 
   @override
   String get primeAutoRenewNotice => '* PRIME은 선택하신 기간 동안 혜택이 자동 갱신됩니다.';

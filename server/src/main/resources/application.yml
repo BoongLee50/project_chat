@@ -87,16 +87,21 @@ app:
       LUNA_10000: { luna: 8000,  bonus: 2000 }   # 20% 할인 · 80,000원
       LUNA_25000: { luna: 17500, bonus: 7500 }   # 30% 할인 · 175,000원
     # 프라임(인앱결제) — 화면 26. 1개월 12,900원 / 6개월 61,900원(20% 할인)
+    #
+    # 🚨 TRANSLATE_PASS가 여기 들어 있어야 한다(기획 화면 26의 네 번째 혜택 "자동 번역 무제한").
+    #    번역은 예전부터 프라임에게 무제한이었지만, 그건 `translate()`가 isPrime을 따로
+    #    보고 있어서였다 — **혜택 목록에는 없는 혜택**이라 화면이 그릴 수 없었다.
+    #    권리를 실제로 지급해 두면 데이터가 곧 화면이 되고, 특별 취급이 사라진다.
     prime-plans:
       PRIME_1M:
         product: PRIME_1M
         duration-days: 30
-        entitlements: [ALBUM_PASS, UNLIMITED_CHAT_REQ]
+        entitlements: [ALBUM_PASS, UNLIMITED_CHAT_REQ, TRANSLATE_PASS]
         boosts: { POST_BOOST: 10 }
       PRIME_6M:
         product: PRIME_6M
         duration-days: 180
-        entitlements: [ALBUM_PASS, UNLIMITED_CHAT_REQ]
+        entitlements: [ALBUM_PASS, UNLIMITED_CHAT_REQ, TRANSLATE_PASS]
         # ⚠️ 6개월 부스트를 일괄 지급할지 매월 지급할지 기획 확인 필요 — 일단 6배로 둔다
         boosts: { POST_BOOST: 60 }
   comment:
@@ -111,6 +116,9 @@ app:
     # 대화 신청 — 하루 N회는 공짜, 그 뒤로는 1건당 루나를 뺀다(기획서 5장).
     free-requests-per-day: 10
     request-luna-cost: 5
+    # 대화 신청 한마디(기획 4-3 시안의 `0/200`). 친구 신청 25자와 자리가 다르다 —
+    # 이쪽은 첫인사를 제대로 쓰는 칸이다.
+    request-message-max-length: 200
     # 음성 메시지 최대 길이. 클라도 이 시간에서 자동 정지하므로 두 값을 함께 바꿀 것.
     voice-max-duration-ms: 30000
     # 거절당한 상대에게 다시 신청할 수 없는 시간(기획 §2-5의 "1일").
@@ -137,7 +145,7 @@ app:
     # 다시 갈릴 수 있어 키는 둘 다 남겨 둔다.
     max-count: 100
     max-count-premium: 100
-    # 친구 신청과 함께 보내는 한마디(기획 5-1). 대화 신청 100자보다 훨씬 짧다 —
+    # 친구 신청과 함께 보내는 한마디(기획 5-1). 대화 신청 200자보다 훨씬 짧다 —
     # 대화를 여는 자리가 아니라 인사 한 줄이기 때문이다.
     request-message-max-length: 25
   redis:

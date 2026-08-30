@@ -71,6 +71,43 @@ class ChatRoomSummary {
       );
 }
 
+/// 대화 신청을 하기 **전에** 팝업이 알아야 하는 것(기획 4-3 img09).
+///
+/// 시안의 버튼은 `대화 신청 (무료 2회)`처럼 남은 횟수를 적고, 안내 상자는
+/// "처음 N회 무료 · 이후 M 루나 · Prime이면 무제한"을 말한다.
+/// 이 값이 없으면 화면이 **숫자를 지어내게** 된다.
+///
+/// 🚨 이건 안내일 뿐 판정이 아니다 — 실제 차감·차단은 보낼 때 서버가 다시 본다.
+class ChatRequestQuota {
+  const ChatRequestQuota({
+    required this.freeRemaining,
+    required this.freePerDay,
+    required this.lunaCost,
+    required this.maxLength,
+    required this.unlimited,
+  });
+
+  final int freeRemaining;
+  final int freePerDay;
+  final int lunaCost;
+  final int maxLength;
+  final bool unlimited;
+
+  /// 지금 보내면 루나가 나가는가.
+  bool get costsLuna => !unlimited && freeRemaining <= 0;
+
+  factory ChatRequestQuota.fromJson(Map<String, dynamic> json) =>
+      ChatRequestQuota(
+        freeRemaining: json['freeRemaining'] as int? ?? 0,
+        freePerDay: json['freePerDay'] as int? ?? 0,
+        lunaCost: json['lunaCost'] as int? ?? 0,
+        // 서버가 못 주면 입력칸이 아예 막히지 않도록 넉넉히 둔다 —
+        // 진짜 한도는 어차피 서버가 잰다.
+        maxLength: json['maxLength'] as int? ?? 200,
+        unlimited: json['unlimited'] as bool? ?? false,
+      );
+}
+
 /// 대화 신청(받은/보낸 공용).
 class ChatRequest {
   const ChatRequest({
