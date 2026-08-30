@@ -1354,6 +1354,10 @@ class L10nKo extends L10n {
   String get errorCommentImageKeyInvalid => '첨부한 사진이 올바르지 않아요. 다시 선택해 주세요.';
 
   @override
+  String get errorCommentReplyNotAllowed =>
+      '답글은 글쓴이와 댓글을 단 사람이 번갈아 주고받을 수 있어요.';
+
+  @override
   String get errorDailyQuestionNotReady => '오늘의 질문이 아직 준비되지 않았어요.';
 
   @override

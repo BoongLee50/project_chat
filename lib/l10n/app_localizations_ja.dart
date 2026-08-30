@@ -1353,6 +1353,9 @@ class L10nJa extends L10n {
   String get errorCommentImageKeyInvalid => '添付した写真が正しくありません。選び直してください。';
 
   @override
+  String get errorCommentReplyNotAllowed => '返信は投稿者とコメントした人が交互にやり取りできます。';
+
+  @override
   String get errorDailyQuestionNotReady => '今日の質問はまだ準備中です。';
 
   @override

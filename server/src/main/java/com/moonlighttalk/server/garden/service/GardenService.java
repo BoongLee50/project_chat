@@ -299,7 +299,8 @@ public class GardenService {
         }
 
         String postId = requireTodayPostId(targetUserId);
-        commentService.add(CommentTarget.POST, postId, userId, body, parentId, imageKey);
+        // 글쓴이는 포스트 주인이다 — 답글은 그와 스레드 시작자가 번갈아 단다.
+        commentService.add(CommentTarget.POST, postId, targetUserId, userId, body, parentId, imageKey);
 
         // Engage 전환율의 분자(댓글×2). **답글도 댓글로 센다** — 기획서가 나누지 않았고,
         // 대화가 이어지는 것도 반응이다.

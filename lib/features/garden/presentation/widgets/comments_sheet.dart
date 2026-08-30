@@ -12,6 +12,7 @@ import '../../../../core/providers.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/authed_image.dart';
 import '../../data/models/feed_item.dart';
+import '../../../auth/presentation/providers/session_provider.dart';
 import '../providers/garden_provider.dart';
 
 /// 댓글이 달릴 대상. 서버의 `CommentTarget`과 짝이다.
@@ -23,10 +24,12 @@ enum CommentTargetKind { post, dailyAnswer }
 /// 댓글 시트. **3단계 답글** · 최대 50자 · 이미지 1장.
 ///
 /// [title]은 시트 머리글, [targetId]는 포스트 주인의 userId(포스트) 또는 한마디 id다.
+/// [ownerId]는 **글쓴이**다 — 답글 자격을 가리는 데 쓴다(아래 [_canReply]).
 Future<void> showCommentsSheet(
   BuildContext context, {
   required CommentTargetKind kind,
   required String targetId,
+  required String ownerId,
   required String title,
 }) {
   return showModalBottomSheet(
@@ -36,8 +39,12 @@ Future<void> showCommentsSheet(
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
     ),
-    builder: (context) =>
-        _CommentsSheet(kind: kind, targetId: targetId, title: title),
+    builder: (context) => _CommentsSheet(
+      kind: kind,
+      targetId: targetId,
+      ownerId: ownerId,
+      title: title,
+    ),
   );
 }
 
@@ -47,6 +54,8 @@ Future<void> showPostCommentsSheet(BuildContext context, FeedItem item) =>
       context,
       kind: CommentTargetKind.post,
       targetId: item.userId,
+      // 포스트는 대상 id가 곧 글쓴이다.
+      ownerId: item.userId,
       title: L10n.of(context).commentsTitle(item.nickname),
     );
 
@@ -54,11 +63,13 @@ class _CommentsSheet extends ConsumerStatefulWidget {
   const _CommentsSheet({
     required this.kind,
     required this.targetId,
+    required this.ownerId,
     required this.title,
   });
 
   final CommentTargetKind kind;
   final String targetId;
+  final String ownerId;
   final String title;
 
   @override
@@ -79,6 +90,35 @@ class _CommentsSheetState extends ConsumerState<_CommentsSheet> {
 
   /// 목록 프로바이더의 키. 대상 종류가 다르면 같은 id라도 다른 목록이다.
   String get _key => '${widget.kind.name}:${widget.targetId}';
+
+  /// 이 댓글에 **내가** 답글을 달 수 있는가.
+  ///
+  /// 한 스레드는 **글쓴이와 그 스레드를 시작한 사람**의 1:1 대화이고 답글은 **번갈아** 달린다:
+  /// `A가 글 → B가 댓글 → A가 답글 → B가 답글`. 그래서 조건은 셋이다.
+  /// 1. 3단계에는 더 못 단다
+  /// 2. **내 댓글에는 내가 못 단다**(자기 말에 자기가 답하면 대화가 아니다)
+  /// 3. 나는 이 스레드의 두 사람 중 하나여야 한다 — 제3자는 **1단계 댓글로 새 스레드**를 연다
+  ///
+  /// 서버가 같은 규칙으로 다시 판정한다(`COMMENT_REPLY_NOT_ALLOWED`).
+  /// 여기서 가리는 건 **버튼을 안 보이게 해서 헛걸음을 막으려는 것**이지 방어가 아니다.
+  bool _canReply(Comment comment, List<Comment> all) {
+    final me = ref.read(sessionProvider).profile?.id;
+    if (me == null) return false;
+    if (comment.depth >= _maxDepth) return false;
+    if (comment.authorId == me) return false;
+    return me == widget.ownerId || me == _threadStarterId(comment, all);
+  }
+
+  /// 스레드를 시작한 사람(1단계 댓글의 작성자). 깊이가 3까지라 한 번만 거슬러 올라가면 된다.
+  String? _threadStarterId(Comment comment, List<Comment> all) {
+    if (comment.depth == 1) return comment.authorId;
+    for (final c in all) {
+      if (c.id == comment.parentId) {
+        return c.depth == 1 ? c.authorId : null;
+      }
+    }
+    return null;
+  }
 
   /// 첨부한 사진 — 올린 뒤 받은 키와, 미리보기용 바이트.
   String? _imageKey;
@@ -236,8 +276,7 @@ class _CommentsSheetState extends ConsumerState<_CommentsSheet> {
                             const SizedBox(height: AppDimens.gapMd),
                         itemBuilder: (context, i) => _CommentTile(
                           comment: list[i],
-                          // 3단계에 달린 댓글에는 더 답글을 달 수 없다(기획 4-2).
-                          canReply: list[i].depth < _maxDepth,
+                          canReply: _canReply(list[i], list),
                           onReply: () => setState(() => _replyTo = list[i]),
                         ),
                       ),

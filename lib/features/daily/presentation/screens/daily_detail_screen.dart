@@ -125,6 +125,8 @@ class DailyDetailScreen extends ConsumerWidget {
                       context,
                       kind: CommentTargetKind.dailyAnswer,
                       targetId: a.id,
+                      // 글쓴이는 한마디를 쓴 사람 — 답글 자격 판정에 쓰인다.
+                      ownerId: a.userId,
                       title: a.nickname,
                     );
                     ref.invalidate(dailyAnswerProvider(answerId));

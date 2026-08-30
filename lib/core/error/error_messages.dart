@@ -41,6 +41,7 @@ String errorMessage(L10n l10n, ApiException e) {
     'COMMENT_DEPTH_EXCEEDED' => l10n.errorCommentDepthExceeded(_count(e)),
     'COMMENT_PARENT_NOT_FOUND' => l10n.errorCommentParentNotFound,
     'COMMENT_IMAGE_KEY_INVALID' => l10n.errorCommentImageKeyInvalid,
+    'COMMENT_REPLY_NOT_ALLOWED' => l10n.errorCommentReplyNotAllowed,
 
     // ── 달빛 한마디 ───────────────────────────────────
     'DAILY_QUESTION_NOT_READY' => l10n.errorDailyQuestionNotReady,

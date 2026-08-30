@@ -160,10 +160,13 @@ public class DailyQuestionService {
     @Transactional
     public void addComment(String userId, String answerId, String body,
                             String parentId, String imageKey) {
-        if (mapper.selectAnswerById(answerId, userId) == null) {
+        DailyAnswer answer = mapper.selectAnswerById(answerId, userId);
+        if (answer == null) {
             throw notFound();
         }
-        commentService.add(CommentTarget.DAILY_ANSWER, answerId, userId, body, parentId, imageKey);
+        // 글쓴이는 한마디를 쓴 사람이다 — 답글은 그와 스레드 시작자가 번갈아 단다.
+        commentService.add(CommentTarget.DAILY_ANSWER, answerId, answer.getUserId(),
+                userId, body, parentId, imageKey);
     }
 
     // ── 내부 ────────────────────────────────────────────────

@@ -2545,6 +2545,12 @@ abstract class L10n {
   /// **'첨부한 사진이 올바르지 않아요. 다시 선택해 주세요.'**
   String get errorCommentImageKeyInvalid;
 
+  /// No description provided for @errorCommentReplyNotAllowed.
+  ///
+  /// In ko, this message translates to:
+  /// **'답글은 글쓴이와 댓글을 단 사람이 번갈아 주고받을 수 있어요.'**
+  String get errorCommentReplyNotAllowed;
+
   /// No description provided for @errorDailyQuestionNotReady.
   ///
   /// In ko, this message translates to:

@@ -41,6 +41,11 @@ public enum ErrorCode {
     COMMENT_PARENT_NOT_FOUND,
     /** 첨부 이미지 키가 내 것이 아니다. */
     COMMENT_IMAGE_KEY_INVALID,
+    /**
+     * 답글을 달 자격이 없다 — 한 스레드는 <b>글쓴이와 스레드를 시작한 사람</b>의 1:1 대화이고
+     * 답글은 <b>번갈아</b> 달린다. 자기 댓글에 자기가 달거나, 제3자가 끼어들 때 나온다.
+     */
+    COMMENT_REPLY_NOT_ALLOWED,
 
     // ── 달빛 한마디(기획 8장) ──
     /** 오늘의 질문 후보가 비어 있다(운영이 채워야 한다). */
