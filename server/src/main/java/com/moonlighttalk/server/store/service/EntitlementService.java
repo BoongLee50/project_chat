@@ -82,8 +82,21 @@ public class EntitlementService {
         return storeMapper.selectUserIdsWithEntitlement(kind, LocalDateTime.now());
     }
 
-    /** 지금 부스트를 켜 둔 사용자들 — 피드 Pick Point 판정에 쓴다. */
+    /** 지금 부스트를 켜 둔 사용자들 — 피드가 별도 풀로 가르는 기준. */
     public List<String> boostedUserIds() {
         return storeMapper.selectBoostedUserIds(LocalDateTime.now());
+    }
+
+    /**
+     * 부스트를 <b>막 사용해서</b> 아직 최우선권이 남은 사용자들. (기획 답변 2026-09-06)
+     *
+     * <p>부스트 풀 안에서 앞줄에 세우는 용도다 — 일반 풀과의 6:4 믹싱은 건드리지 않는다.
+     * 소진 기준은 노출 횟수가 아니라 <b>그 포스트를 본 사람 수</b>이고,
+     * 부스트를 다시 쓰면 <b>횟수가 새로 붙는다</b>.
+     *
+     * @param viewerLimit 우선권이 유지되는 사람 수({@code app.garden.boost.priority-viewers})
+     */
+    public List<String> boostPriorityUserIds(int viewerLimit) {
+        return storeMapper.selectBoostPriorityUserIds(LocalDateTime.now(), viewerLimit);
     }
 }

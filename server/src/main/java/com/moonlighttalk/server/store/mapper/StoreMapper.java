@@ -67,6 +67,14 @@ public interface StoreMapper {
     /** 지금 부스트가 켜져 있는 사용자들(피드 Pick Point 판정용). */
     List<String> selectBoostedUserIds(@Param("now") LocalDateTime now);
 
+    /**
+     * 부스트를 막 사용해 아직 최우선권이 남은 사용자들.
+     *
+     * @param viewerLimit 우선권이 유지되는 <b>본 사람 수</b>(노출 횟수가 아니다)
+     */
+    List<String> selectBoostPriorityUserIds(@Param("now") LocalDateTime now,
+                                            @Param("viewerLimit") int viewerLimit);
+
     int deleteExpiredBoostActivations(@Param("now") LocalDateTime now);
 
     // ── 인앱결제 영수증(멱등) ──

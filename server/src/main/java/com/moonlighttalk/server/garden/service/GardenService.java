@@ -196,8 +196,42 @@ public class GardenService {
             (boosted.contains(c.getUserId()) ? boostPool : normalPool).add(c);
         }
 
-        List<String> ordered = mix(sortByScore(normalPool), sortByScore(boostPool));
+        List<String> ordered = mix(sortByScore(normalPool), orderBoostPool(boostPool));
         return feedSessions.put(userId, filterKey, ordered);
+    }
+
+    /**
+     * 부스트 풀 안의 순서 — <b>막 사용한 사람이 앞줄</b>이다. (기획 답변 2026-09-06)
+     *
+     * <p>부스트를 쓰면 잠깐 동안 같은 부스트 사용자들보다도 먼저 나간다. 점수를 더 주는 게
+     * 아니라 <b>두 층으로 나눌 뿐</b>이라, 각 층 안에서는 평소 스코어 그대로 정렬된다 —
+     * 우선권이 끝나면 아래층으로 내려올 뿐 규칙이 달라지지 않는다.
+     *
+     * <p>일반 풀과의 6:4 믹싱에는 손대지 않는다. 이 우선권은 <b>부스트 사용자끼리</b>의 문제다.
+     *
+     * <p>⚠️ 순서는 세션 진입 시 한 번만 정해지므로(스냅샷), 보는 도중에 우선권이 끝나도
+     * <b>그 사람의 화면에서는</b> 순서가 바뀌지 않는다. 다음에 새로 산정될 때 반영된다.
+     */
+    private List<String> orderBoostPool(List<FeedCandidate> boostPool) {
+        if (boostPool.size() < 2) {
+            return sortByScore(boostPool);
+        }
+        Set<String> priority = new HashSet<>(
+                entitlementService.boostPriorityUserIds(garden.getBoost().getPriorityViewers()));
+        if (priority.isEmpty()) {
+            return sortByScore(boostPool);
+        }
+
+        List<FeedCandidate> front = new ArrayList<>();
+        List<FeedCandidate> rest = new ArrayList<>();
+        for (FeedCandidate c : boostPool) {
+            (priority.contains(c.getUserId()) ? front : rest).add(c);
+        }
+
+        List<String> ordered = new ArrayList<>(boostPool.size());
+        ordered.addAll(sortByScore(front));
+        ordered.addAll(sortByScore(rest));
+        return ordered;
     }
 
     /** 스코어 내림차순. 동점은 랜덤 — 순서를 한 번만 정하므로 여기서 섞으면 그대로 고정된다. */

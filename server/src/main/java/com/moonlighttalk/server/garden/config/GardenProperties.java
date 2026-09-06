@@ -21,6 +21,7 @@ public class GardenProperties {
     private Recency recency = new Recency();
     private Engage engage = new Engage();
     private Mix mix = new Mix();
+    private Boost boost = new Boost();
 
     /** 한 번 보여준 상대를 다시 후보에 넣지 않는 시간(분). */
     private int exposureCooldownMinutes = 15;
@@ -101,6 +102,29 @@ public class GardenProperties {
         public void setBoost(int v) { this.boost = v; }
     }
 
+    /**
+     * 부스트를 <b>사용한 직후</b> 주어지는 최우선권. (기획 답변 2026-09-06)
+     *
+     * <p>부스트 풀 안에서 갓 사용한 사람을 앞줄에 세운다. 6:4 믹싱은 건드리지 않는다 —
+     * 우선권은 <b>부스트 사용자끼리 겨룰 때</b>만 작동한다.
+     *
+     * <p>⚠️ <b>단위가 "노출 횟수"가 아니라 "본 사람 수"다.</b> 한 사람이 세 번 봐도 1로 센다.
+     * {@code feed_exposures}가 (본 사람, 보여진 사람) 한 행만 유지하므로 그 행 수가 곧 사람 수다.
+     */
+    public static class Boost {
+        /**
+         * 우선권이 유지되는 <b>사람 수</b>. 기획서 값은 3이고 바꿀 수 있다고 명시돼 있다.
+         *
+         * <p>⚠️ 서버는 "카드를 목록에 실어 보낸 것"까지만 안다 — 받은 사람이 실제로 스크롤해
+         * 그 카드를 봤는지는 모른다. 그래서 <b>가든에 들어온 사람 수만큼 빠르게 줄어든다.</b>
+         * 혜택으로 체감되지 않으면 이 값부터 올릴 것(재배포 불필요).
+         */
+        private int priorityViewers = 3;
+
+        public int getPriorityViewers() { return priorityViewers; }
+        public void setPriorityViewers(int v) { this.priorityViewers = v; }
+    }
+
     public int getScoreOnline() { return scoreOnline; }
     public void setScoreOnline(int v) { this.scoreOnline = v; }
     public Recency getRecency() { return recency; }
@@ -109,6 +133,8 @@ public class GardenProperties {
     public void setEngage(Engage v) { this.engage = v; }
     public Mix getMix() { return mix; }
     public void setMix(Mix v) { this.mix = v; }
+    public Boost getBoost() { return boost; }
+    public void setBoost(Boost v) { this.boost = v; }
     public int getExposureCooldownMinutes() { return exposureCooldownMinutes; }
     public void setExposureCooldownMinutes(int v) { this.exposureCooldownMinutes = v; }
     public int getSessionTtlMinutes() { return sessionTtlMinutes; }
