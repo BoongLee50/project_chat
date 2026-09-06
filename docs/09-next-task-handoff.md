@@ -272,9 +272,16 @@ git pull origin main
 
 - **실기기**: `--dart-define=API_BASE_URL=http://localhost:8080` 필수(함정 #29)
 - **에뮬 2대**: `Pixel_10` + **`Pixel_B`**(함정 #32)
+- 📌 **검증 스크립트가 이제 저장소에 있다 — [`tools/`](../tools/README.md).**
+  ```bash
+  python tools/verify/verify_moderation.py        # 신청 만료 · 신고/차단 정리 범위
+  python tools/verify/verify_feed_block_page2.py  # 차단이 캐시된 순서에도 먹는가
+  python tools/spec/diff_docx_text.py "<옛 기획서>" "<새 기획서>"
+  ```
+  `_common.py`의 `login()`·`publish_post()`·`clear_ties()`로 **새 검증도 몇 줄이면 쓴다.**
+  (예전엔 `scratchpad/`에 두고 커밋하지 않아 다른 기기에서는 **문서만 있고 실물이 없었다.**)
 - **18시가 지나면 가든이 빈다** — 오늘 공유한 사람이 아직 없어서다(버그가 아니다).
-  ⚠️ `scratchpad/verify_garden.py`는 **저장소에 없다**(scratchpad가 gitignore 대상).
-  DB로 직접 만들면 된다 — 후보 조건은 `posts.published_at IS NOT NULL` + 그날 `session_date`다:
+  `publish_post()`가 하는 일이 이것이고, 직접 하려면 이렇다:
   ```sql
   INSERT INTO posts (id, user_id, session_date, published_at, content_updated_at)
   VALUES ('p-x', '<userId>', '<영업일>', NOW(), NOW())

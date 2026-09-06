@@ -8,6 +8,8 @@
 > *"기획서 이미지와 대조했는가"* 를 넣지 않으면 이렇게 빠진다.
 >
 > **원본 이미지 꺼내는 법**(이 PC엔 pandoc·LibreOffice가 없다):
+> 📌 기획서 비교 도구는 [`tools/spec/diff_docx_text.py`](../tools/spec/diff_docx_text.py)에 있다
+> (본문 diff · `--media`로 교체된 그림 찾기). 아래 추출 스크립트는 저장소에 없다.
 > `scratchpad/extract_plan3.py` — docx의 이미지는 **Visio OLE의 EMF 미리보기**라
 > VML `v:imagedata`의 `r:id`를 rels로 따라가야 한다. DrawingML `blip`으로 찾으면 0장이 나온다.
 
