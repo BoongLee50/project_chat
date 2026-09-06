@@ -88,7 +88,8 @@ JAVA_HOME="/c/경로/jdk-17" ./gradlew assemble
 cd server
 JAVA_HOME="<jdk17경로>" ./gradlew bootRun    # Flyway가 V1 스키마 자동 적용, 8080 기동
 ```
-- 확인: `Started ServerApplication` 로그 + `curl http://localhost:8080/system/gate` → `{"open":...,"nextOpenAt":"..."}`.
+- 확인: `Started ServerApplication` 로그 + `curl -s -o /dev/null -w "%{http_code}" -X POST http://localhost:8080/auth/social` → **400**(본문이 없으니 400이 정상 — 라우팅과 검증이 산다는 뜻).
+  > 🚨 옛 확인법 `curl /system/gate`는 쓰지 말 것. 게이트와 함께 삭제된 경로인데 **없는 경로도 401**이 와서 서버가 죽은 줄 알게 된다([07 §3 함정 #57](07-work-log.md)).
 - ⚠️ MariaDB 11.4는 생성 컬럼에서 문자열 함수 불허 → V1의 `chat_rooms.active_pair_key`는 앱 세팅 일반 컬럼으로 수정됨(커밋 `40d9130`).
 - 상세: [05 서버 구조](05-server-structure.md).
 - 이 PC 실제 경로(참고): MariaDB=`D:\dev-tools\mariadb-11.4.5-winx64`, data=`D:\dev-tools\mariadb-data`.

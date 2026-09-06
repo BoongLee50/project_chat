@@ -292,7 +292,9 @@ common/config/
 ```
 
 `JwtAuthInterceptor` 동작:
-- `preHandle(request, response, handler)`: `handler`가 `HandlerMethod`이고 메서드 또는 클래스에 `@NoAuth`가 있으면(예: `/auth/social`, `/auth/refresh`, `/system/gate`) 인증 없이 통과.
+- `preHandle(request, response, handler)`: `handler`가 `HandlerMethod`이고 메서드 또는 클래스에 `@NoAuth`가 있으면(`/auth/social`, `/auth/refresh`) 인증 없이 통과.
+  > 🚨 **인터셉터가 라우팅보다 먼저 돌아서, 없는 경로도 404가 아니라 401이 된다.**
+  > 오타난 URL·삭제된 API가 전부 "인증 실패"로 보인다 — 배포 확인할 때 헷갈리기 쉽다(함정 #57).
 - 그 외에는 `Authorization` 헤더 파싱 → `JwtProvider`로 검증. 실패 시 커스텀 `UnauthorizedException`을 던짐 → `GlobalExceptionHandler`가 잡아 401 응답(`ApiResponse` 에러 포맷)으로 변환.
 - **경로 기반 제외**: `@NoAuth`는 `HandlerMethod`(컨트롤러 메서드)에만 붙일 수 있는 애노테이션이라, 컨트롤러가 아닌 요청 — WebSocket 핸드셰이크(`/ws/**`, §4의 `WebSocketHttpRequestHandler`가 처리) — 에는 애노테이션으로 인증 제외를 표시할 방법이 없음. 인터셉터 등록 시 경로로 명시적으로 빼줘야 함:
   ```java
