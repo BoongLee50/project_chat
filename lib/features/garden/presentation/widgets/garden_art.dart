@@ -53,6 +53,18 @@ class GardenArt {
   static const Size btnDailyQuestionSize = Size(330, 94);
   static const Offset btnDailyQuestionAt = Offset(724, 356);
 
+  /// 카드 윗변(시안 `23, 475`의 y) — **포스트 화면과 같은 값**이다.
+  /// 두 화면의 카드가 같은 자리·같은 폭이라 하단 주메뉴와도 선이 맞는다.
+  static const double cardTop = 475;
+
+  /// 타이틀 아랫변 → 필터 줄 윗변.
+  static double get titleToFilters =>
+      filterGenderAt.dy - (titleAt.dy + titleSize.height);
+
+  /// 필터 줄 아랫변 → 카드 윗변.
+  static double get filtersToCard =>
+      cardTop - (filterGenderAt.dy + filterGenderSize.height);
+
   /// 칩의 **글자 영역 시작** — 아이콘을 뺀 오른쪽 부분이다.
   /// 고른 값을 여기에 덮어 그린다(그림에는 `성별`·`나이`·`국가`가 구워져 있다).
   static const double filterLabelLeft = 92;

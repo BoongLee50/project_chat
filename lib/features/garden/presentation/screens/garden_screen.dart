@@ -67,7 +67,7 @@ class GardenScreen extends ConsumerWidget {
               // 하단 5탭과 **좌우 폭을 맞춘다** — 시안에서 카드·필터·내비가 같은 선(23)에 있다.
               DesignCanvas.contentLeft * scale,
               // 시안 타이틀 위치(y=106).
-              DesignCanvas.titleTop * scale,
+              DesignCanvas.titleTopInSafeArea(context),
               DesignCanvas.contentLeft * scale,
               AppDimens.gapMd,
             ),
@@ -83,9 +83,9 @@ class GardenScreen extends ConsumerWidget {
                   ),
                   child: const _GardenHeader(),
                 ),
-                const SizedBox(height: AppDimens.gapMd),
+                SizedBox(height: GardenArt.titleToFilters * scale),
                 const _FilterBar(),
-                const SizedBox(height: AppDimens.gapMd),
+                SizedBox(height: GardenArt.filtersToCard * scale),
                 Expanded(
                   child: feed.when(
                     loading: () => const Center(

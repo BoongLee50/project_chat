@@ -65,6 +65,37 @@ class PostArt {
   static const String btnShare = '$_dir/btn_share.png';
   static const Size btnShareSize = Size(418, 103);
 
+  /// 카드 윗변(시안 `23, 475`의 y). 위에 놓이는 것들의 높이 합이기도 하다 —
+  /// 타이틀(106+66) + 간격(184) + 두 버튼(96) + 간격(23) = 475.
+  ///
+  /// 카드 **높이**는 시안 값(1797)을 쓰지 않는다. 화면 세로가 기기마다 달라
+  /// 그대로 쓰면 넘치거나 남는다 — 남은 공간을 카드가 채우게 한다.
+  static const double cardTop = 475;
+
+  /// 타이틀 아랫변 → 두 버튼 윗변.
+  static double get titleToButtons =>
+      btnAlbumPassAt.dy - (titleAt.dy + titleSize.height);
+
+  /// 두 버튼 아랫변 → 카드 윗변.
+  static double get buttonsToCard =>
+      cardTop - (btnAlbumPassAt.dy + btnAlbumPassSize.height);
+
+  /// 카드 안 요소들의 **카드 바닥 기준** 위치(시안 원본 픽셀).
+  ///
+  /// 세로를 카드 윗변이 아니라 **아랫변 기준으로** 잡는 이유 — 카드 높이가 기기마다
+  /// 달라지기 때문이다. 윗변 기준으로 두면 화면이 짧을 때 아래로 밀려 잘린다.
+  /// (카드 바닥 = 시안 2272)
+  static const double _cardBottom = 2272;
+
+  /// 촬영 버튼 아랫변(시안 1838 + 164 = 2002).
+  static const double cameraBottom = _cardBottom - 2002;
+
+  /// 좋아요·공유 줄의 아랫변(시안에서 둘 다 ≈2201).
+  static const double bottomRowBottom = _cardBottom - 2201;
+
+  /// 카드 안쪽 좌우 여백 — 하트가 시안 64, 카드 왼쪽이 23이므로 41이다.
+  static const double cardSidePad = 41;
+
   /// 촬영 버튼은 그림으로 오지 않았다 — 무지개 링 + 흰 카메라라 코드로 그린다.
   /// 시안 `441, 1838` 자리이고 지름은 약 164다.
   static const double cameraSize = 164;

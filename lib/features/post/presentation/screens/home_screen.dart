@@ -141,35 +141,52 @@ class _PostBody extends ConsumerWidget {
 
   final MyPost post;
 
-  /// 카드 위에 놓이는 것들(상단 바 + 두 버튼 + 사이 여백)의 높이.
-  /// 카드가 **남은 공간을 채우도록** 하려고 빼 준다 — 시안에서 카드는 화면을 거의 채운다.
-  static const double _aboveCard = 132;
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // 시안(3-1)의 세로 구성은 셋뿐이다 — 상단 바 / 패스·부스트 두 버튼 / 포스트 카드.
     // 이름·좋아요·공유 버튼은 **카드 안**에 얹힌다.
     //
-    // ⚠️ "오늘의 달" 카드는 시안에도 3-1 본문에도 없어 걷어냈다(Plan_2 잔재).
+    // ⚠️ **좌우는 반드시 시안 값(23)을 써야 한다.** `AppDimens.pagePad`(24 **논리**px)를
+    // 쓰면 배율이 안 걸려 카드가 **하단 주메뉴보다 좁아진다** — 시안에서 둘은 같은 선에 있다.
+    // (달빛가든은 처음부터 시안 값을 써서 이 어긋남이 없었다)
+    final s = DesignCanvas.scaleOf(context);
+    final topPad = DesignCanvas.titleTopInSafeArea(context);
+    // 카드 아래 여백도 시안 값(카드 바닥 2272 → 주메뉴 2295)을 쓴다.
+    final bottomPad = (2295 - 2272) * s;
+
+    // ⚠️ 카드 높이는 **실제로 위에 쌓인 것들의 높이**를 빼서 구한다.
+    // 시안의 `cardTop`(475)을 그대로 빼면, 위 여백이 상태바만큼 줄어든 만큼(위 주석 참고)
+    // 카드가 그만큼 짧아져 **아래에 빈 공간이 남는다.**
+    final aboveCard =
+        topPad +
+        (PostArt.titleSize.height +
+                PostArt.titleToButtons +
+                PostArt.btnAlbumPassSize.height +
+                PostArt.buttonsToCard) *
+            s;
+
     return LayoutBuilder(
       builder: (context, constraints) => SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.fromLTRB(
-          AppDimens.pagePad,
-          AppDimens.gapMd,
-          AppDimens.pagePad,
-          AppDimens.gapMd,
+        padding: EdgeInsets.fromLTRB(
+          DesignCanvas.contentLeft * s,
+          topPad,
+          DesignCanvas.contentLeft * s,
+          bottomPad,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const _TopBar(),
-            const SizedBox(height: AppDimens.gapMd),
+            SizedBox(height: PostArt.titleToButtons * s),
             const _PassBoostRow(),
-            const SizedBox(height: AppDimens.gapMd),
+            SizedBox(height: PostArt.buttonsToCard * s),
             SizedBox(
-              // 작은 기기에서 카드가 찌그러지지 않게 최소 높이를 둔다.
-              height: (constraints.maxHeight - _aboveCard).clamp(320.0, 1200.0),
+              // 카드는 **남은 높이를 채운다.** 시안 높이(1797)를 그대로 쓰면
+              // 화면이 짧은 기기에서 넘치고 긴 기기에서는 아래가 뜬다.
+              // 작은 기기에서 찌그러지지 않게 최소 높이만 둔다.
+              height: (constraints.maxHeight - aboveCard - bottomPad)
+                  .clamp(320.0, 1600.0),
               child: _PostPhotoCard(post: post),
             ),
           ],
@@ -388,6 +405,9 @@ class _PostPhotoCardState extends ConsumerState<_PostPhotoCard> {
     final decorated =
         wallet != null && (wallet.prime || wallet.has(StoreKind.albumPass));
 
+    // 카드 안 요소는 **화면 폭 배율**로 그린다(카드 폭이 곧 화면 폭에 비례하므로).
+    final cardScale = DesignCanvas.scaleOf(context);
+
     return Stack(
       fit: StackFit.expand,
       children: [
@@ -419,8 +439,8 @@ class _PostPhotoCardState extends ConsumerState<_PostPhotoCard> {
 
             // 가독성 스크림 — 위아래 글자가 사진에 묻히지 않게.
             // ⚠️ IgnorePointer가 없으면 아래 사진의 탭을 전부 먹는다(함정 #38).
-            if (hasPhoto)
-              const IgnorePointer(
+            // 빈 상태 배경도 사진이라 아래 글자가 묻힌다 — **항상** 스크림을 깐다.
+            const IgnorePointer(
                 child: DecoratedBox(
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
@@ -498,27 +518,36 @@ class _PostPhotoCardState extends ConsumerState<_PostPhotoCard> {
                 ),
               ),
 
-            // 하단 한 줄 — 좋아요·댓글 / 촬영 / 공유하기(시안 3-1).
+            // 촬영 버튼 — 시안에서 **한 줄 위, 가로 가운데**다(1838, 카드 바닥에서 270 위).
+            // 좋아요·공유와 같은 줄에 두면 시안과 달라지고 서로 밀어낸다.
             //
-            // 셋을 각각 Positioned로 두면 글자가 길어질 때 **서로 겹친다**
+            // 그림으로 오지 않아 코드로 그린다(무지개 링 + 흰 카메라).
+            // 장수를 넘기면 흐려지지만 **눌리기는 한다** — 아무 반응이 없으면 고장으로 보인다.
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: PostArt.cameraBottom * cardScale,
+              child: Center(
+                child: _CameraButton(
+                  enabled: widget.post.canAddPhoto,
+                  onTap: _captureOrExplain,
+                ),
+              ),
+            ),
+
+            // 맨 아랫줄 — 좋아요·댓글(좌) / 공유하기(우). 시안에서 둘의 아랫변이 같다.
+            //
+            // 각각 Positioned로 두면 글자가 길어질 때 **서로 겹친다**
             // (실제로 "공유됨 · 다시 공유하기"가 촬영 버튼을 가렸다).
             // 한 Row에 넣어 자리를 나눠 갖게 한다.
             Positioned(
-              left: 14,
-              right: 14,
-              bottom: 18,
+              left: PostArt.cardSidePad * cardScale,
+              right: PostArt.cardSidePad * cardScale,
+              bottom: PostArt.bottomRowBottom * cardScale,
               child: Row(
                 children: [
                   // 댓글을 누르면 [포스트 댓글]이 뜬다(기획 3-1).
                   _CardCounts(post: widget.post),
-                  const Spacer(),
-                  // 촬영 버튼 — 그림으로 오지 않아 코드로 그린다(무지개 링 + 흰 카메라).
-                  // 장수를 넘기면 흐려지지만 **눌리기는 한다**. 아무 반응이 없으면
-                  // 고장으로 보이므로, 막힌 이유를 알려준다.
-                  _CameraButton(
-                    enabled: widget.post.canAddPhoto,
-                    onTap: _captureOrExplain,
-                  ),
                   const Spacer(),
                   Flexible(flex: 0, child: _ShareButton(post: widget.post)),
                 ],

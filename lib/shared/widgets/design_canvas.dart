@@ -24,12 +24,19 @@ class DesignCanvas {
   static const double contentLeft = 23;
   static const double contentWidth = 1032;
 
-  /// 타이틀 윗변(시안 `47, 106`의 y).
-  ///
-  /// ⚠️ 시안은 상태바를 고려하지 않고 화면 맨 위부터 재지만, 화면은 SafeArea 안에 그린다.
-  /// 그래서 실제로는 `상태바 + 이 값`이 된다 — 시안보다 조금 내려오지만 그게 맞다.
-  /// 상태바를 무시하고 올리면 시계·카메라홀에 글자가 걸린다.
+  /// 타이틀 윗변(시안 `47, 106`의 y). **화면 맨 위 기준**이다.
   static const double titleTop = 106;
+
+  /// SafeArea 안에서 쓸 타이틀 위 여백.
+  ///
+  /// ⚠️ 시안의 106은 상태바를 고려하지 않은 값인데, 실제로 그 높이가 **상태바와 거의 같다**
+  /// (완성 화면에서 타이틀이 상태바 바로 아래에 붙어 있다). SafeArea 안에서 106을 그대로
+  /// 더하면 **상태바 높이만큼 두 번 밀려** 배경 사진과 아래 버튼 사이가 벌어진다.
+  /// 그래서 이미 밀린 만큼을 빼 준다. 상태바가 106보다 큰 기기에서는 0이 된다.
+  static double titleTopInSafeArea(BuildContext context) {
+    final statusBar = MediaQueryData.fromView(View.of(context)).padding.top;
+    return (titleTop * scaleOf(context) - statusBar).clamp(0.0, double.infinity);
+  }
 
   /// 화면 폭에 맞춘 배율. 폭이 좁은 기기에서도 시안 비율이 유지된다.
   static double scaleOf(BuildContext context) =>
