@@ -39,7 +39,7 @@ project_chat/                   (레포 루트)
    │  ├─ moderation/             # 신고/차단
    │  ├─ luna/                   # 재화(원장) 잔액/충전/차감
    │  ├─ presence/                # 온라인 상태 (Redis 선택 구성)
-   │  └─ scheduler/               # 17/06시 배치, 지난 영업일 정리 (30일 FIFO는 2차)
+   │  └─ scheduler/               # 18시대 배치: 영업일 정리 · 신청 만료 · 메시지/방 정리 · BM 만료
    ├─ src/main/resources/
    │  ├─ application.yml          # 공통 설정 (+ -local / -dev / -prod 프로필)
    │  ├─ mapper/**/*.xml          # MyBatis SQL, java 패키지와 1:1 대응
@@ -114,6 +114,7 @@ presence/
 | 시각/주기 | 작업 | 상태 |
 |-----------|------|------|
 | 18:05 | 지난 영업일 `post_photos`(+Storage 파일) / `post_stats` / `feed_skips` / `daily_usage` 삭제, `posts`는 **사용자별 최신 1건만 남기고** 삭제 | ✅ |
+| 18:10 | **답하지 않은 신청 만료** — 대화 신청 `EXPIRED`(V24) · 친구 신청 **행 삭제**(둘 다 14일) | ✅ |
 | 18:20 | ① `chat_messages` 보관 만료 FIFO 삭제(**타입 무관 30일**) → ② **비어 버린 대화방 종료** | ✅ |
 | 10분 | 만료된 `boost_activations`/`user_entitlements` 정리, 구독 갱신·만료 | ✅ |
 | 10분 | 만료된 피드 순서(`FeedSessionStore`) 메모리 정리 | ✅ |
@@ -126,9 +127,17 @@ presence/
 판정은 `COALESCE(MAX(메시지 시각), 방 생성 시각)` 기준이라 **갓 만든 방은 닫히지 않는다**
 (`COUNT(*) = 0`이면 태어나자마자 닫힌다 — [07 §3 함정 #54](07-work-log.md)).
 
+**18:10 잡은 순서에 얽매이지 않는다** — 신청은 메시지·방과 달리 서로 의존하지 않아 따로 걸었다.
+🚨 **만료를 `REJECTED`로 쓰지 말 것.** 거절에는 *1일 재신청 금지*(V18)가 딸려 있어,
+답을 안 한 쪽이 아니라 **신청한 쪽이 벌을 받는다**([07 §3 함정 #59](07-work-log.md)).
+친구 신청만 행을 지우는 것은 `pair_key`가 UNIQUE라 만료 행을 남기면 재신청이 막히기 때문이다(#60).
+
 **개발용 수동 실행**: `app.scheduler.dev-trigger-enabled=true`(local 프로필만)일 때
-`POST /internal/scheduler/{daily-cleanup, purge-messages}`로 18시를 기다리지 않고 확인할 수 있다.
-`purge-messages`는 **실제 잡과 같은 순서로** ①②를 함께 부르고 `{ deleted, closedRooms }`를 돌려준다.
+`POST /internal/scheduler/{daily-cleanup, expire-requests, purge-messages, expire-benefits}`로
+18시를 기다리지 않고 확인할 수 있다.
+`purge-messages`는 **실제 잡과 같은 순서로** ①②를 함께 부르고 `{ deleted, closedRooms }`를,
+`expire-requests`는 `{ chatRequests, friendRequests }`를 돌려준다.
+⚠️ **배치는 개발 DB 전체를 본다** — 내 테스트 계정 것만 세면 결과가 안 맞는다(#61).
 
 ---
 

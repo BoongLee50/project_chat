@@ -24,8 +24,10 @@ import java.util.UUID;
 /**
  * 신고 / 차단. (기획서 화면 16·17, 01 문서 §1.7)
  *
- * <p><b>정책</b>(02 문서 §1.6): 신고·차단이 발생하면 <b>친구 관계를 즉시 끊고 대화방을 종료</b>한다.
- * 상대가 내 프로필을 못 보게 되는 것은 피드 조회 쪽에서 {@code existsBlockOrReport}로 이미 걸러진다.
+ * <p><b>정책</b>(02 문서 §1.6): 신고·차단이 발생하면 <b>대기 중인 대화 신청을 닫고,
+ * 친구 관계를 끊고, 대화방을 종료</b>한다. 서로의 포스트가 상대 목록에 뜨지 않는 것은
+ * 피드 조회 쪽에서 {@code existsBlockOrReport}(양방향)로 걸러진다 —
+ * <b>A가 B를 차단하면 B의 목록에서도 A가 사라진다.</b>
  *
  * <p>신고와 차단은 기록만 다르고 <b>부수효과가 같다</b> — 신고했는데 대화가 계속 이어지면
  * 신고한 의미가 없기 때문이다.
@@ -77,11 +79,21 @@ public class ModerationService {
     // ── 내부 ────────────────────────────────────────────────
 
     /**
-     * 두 사람 사이의 친구 관계와 살아있는 대화방을 끊는다.
+     * 두 사람 사이의 <b>대기 중인 신청 · 친구 관계 · 살아 있는 대화방</b>을 모두 끊는다.
      * 상대 화면이 즉시 따라오도록 소켓으로도 알린다.
+     *
+     * <p>🚨 <b>관계를 끊을 때는 "아직 답하지 않은 것"까지 봐야 한다.</b> 예전엔 친구 관계와
+     * 대화방만 정리해서, <b>차단한 사람의 대화 신청 카드가 [받은 신청]에 그대로 남았다</b> —
+     * 차단해 놓고 그 얼굴을 계속 보게 되니 차단한 의미가 없다(기획 6-2가 이걸 명시했다).
+     *
+     * <p>친구 신청은 따로 처리할 것이 없다 — {@code friendships}는 요청 중이든 성립이든
+     * 한 행이라 아래 삭제 한 번으로 둘 다 사라진다.
      */
     private void severTies(String userId, String targetUserId) {
         String pairKey = pairKey(userId, targetUserId);
+
+        // 대기 중인 대화 신청 — 방향을 가리지 않는다. 내가 보낸 것도 함께 닫힌다.
+        chatMapper.blockPendingRequestsBetween(userId, targetUserId, LocalDateTime.now());
 
         Friendship friendship = friendMapper.selectByPairKey(pairKey);
         if (friendship != null) {

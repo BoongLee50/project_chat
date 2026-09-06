@@ -25,8 +25,9 @@ import java.util.Map;
  * 배치 본체. 스케줄 트리거는 {@link com.moonlighttalk.server.scheduler.ScheduledJobs}에 있고
  * 여기서는 실제 작업만 한다(수동 실행·테스트가 쉬워진다).
  *
- * <p>운영시간은 17:00 개방 ~ 06:00 종료(Plan_2). 단 <b>친구 대화방(type=FRIEND)은 24시간 예외</b>라
- * 종료·정리 대상에서 모두 빠진다. (02 문서 §4)
+ * <p>24시간 운영이다(Plan_3에서 야간 게이트 폐지). 영업일 경계만 KST 18시이고,
+ * <b>친구 방이라고 봐주는 규칙은 없다</b> — 방 수명·메시지 보관·신청 만료 모두 타입과 무관하다
+ * (기획 답변 2026-09-06). (02 문서 §4)
  */
 @Service
 public class SchedulerService {
@@ -44,6 +45,8 @@ public class SchedulerService {
 
     private final int retentionDays;
     private final int retentionBatchSize;
+    private final int chatRequestExpireDays;
+    private final int friendRequestExpireDays;
 
     public SchedulerService(SchedulerMapper schedulerMapper,
                              SocketRegistry socketRegistry,
@@ -54,7 +57,9 @@ public class SchedulerService {
                              CommentMapper commentMapper,
                              DailyQuestionMapper dailyQuestionMapper,
                              @Value("${app.chat.retention-days:30}") int retentionDays,
-                             @Value("${app.chat.retention-batch-size:1000}") int retentionBatchSize) {
+                             @Value("${app.chat.retention-batch-size:1000}") int retentionBatchSize,
+                             @Value("${app.chat.request-expire-days:14}") int chatRequestExpireDays,
+                             @Value("${app.friend.request-expire-days:14}") int friendRequestExpireDays) {
         this.schedulerMapper = schedulerMapper;
         this.socketRegistry = socketRegistry;
         this.fileStorageService = fileStorageService;
@@ -65,6 +70,36 @@ public class SchedulerService {
         this.dailyQuestionMapper = dailyQuestionMapper;
         this.retentionDays = retentionDays;
         this.retentionBatchSize = retentionBatchSize;
+        this.chatRequestExpireDays = chatRequestExpireDays;
+        this.friendRequestExpireDays = friendRequestExpireDays;
+    }
+
+    /**
+     * <b>답하지 않은 신청을 만료시킨다</b> — 대화 신청과 친구 신청 둘 다(기획 6-2).
+     *
+     * <p>규칙: <i>"받은 신청 목록에 대해 14일동안 자신이 아무런 회신을 하지 않을 경우"</i> 목록에서 사라진다.
+     * 기준은 <b>신청이 온 시각</b>이다 — 회신이 없는 것이 조건이라 회신 시각으로는 잴 수 없다.
+     *
+     * <p>🚨 <b>만료는 거절이 아니다.</b> 거절에는 "1일간 재신청 금지"(V18)가 딸려 있어서
+     * REJECTED로 만료시키면 <b>내가 답을 안 했을 뿐인데 상대가 다시 신청도 못 하게 된다.</b>
+     * 그래서 대화 신청은 EXPIRED라는 별도 상태를 쓴다(V24).
+     *
+     * <p>두 도메인의 처리가 다른 이유는 표 구조 때문이다 — 대화 신청은 <b>상태만</b> 바꾸고,
+     * 친구 신청은 <b>행을 지운다</b>({@code pair_key}가 UNIQUE라 남기면 재신청이 막힌다).
+     */
+    @Transactional
+    public ExpiredRequests expireStaleRequests() {
+        LocalDateTime now = LocalDateTime.now();
+        int chat = schedulerMapper.expireChatRequestsBefore(now.minusDays(chatRequestExpireDays));
+        int friend = schedulerMapper.deleteFriendRequestsBefore(now.minusDays(friendRequestExpireDays));
+
+        log.info("[배치] 무응답 신청 만료 — 대화 {}건({}일) · 친구 {}건({}일)",
+                chat, chatRequestExpireDays, friend, friendRequestExpireDays);
+        return new ExpiredRequests(chat, friend);
+    }
+
+    /** 만료 배치 결과(수동 실행 응답에 그대로 실린다). */
+    public record ExpiredRequests(int chatRequests, int friendRequests) {
     }
 
     /**

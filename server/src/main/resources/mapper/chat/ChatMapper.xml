@@ -95,6 +95,23 @@
     </select>
 
 
+    <!--
+      신고·차단이 나면 두 사람 사이의 대기 중인 신청을 **양방향 모두** 닫는다(기획 6-2).
+      BLOCKED는 처음부터 있던 상태값이라 새 마이그레이션이 필요 없다.
+
+      📌 EXPIRED(무응답 만료)와 달리 여기서는 `responded_at`을 남긴다 —
+      "언제 관계가 끊겼는가"가 신고 이력과 함께 읽히는 값이기 때문이다.
+      재신청 금지(V18)는 REJECTED만 보므로 이 값이 그쪽을 건드리지는 않는다
+      (차단한 상대에게는 어차피 `existsBlockOrReport`가 먼저 걸린다).
+    -->
+    <update id="blockPendingRequestsBetween">
+        UPDATE chat_requests
+        SET status = 'BLOCKED', responded_at = #{respondedAt}
+        WHERE status = 'PENDING'
+          AND ((from_user = #{userA} AND to_user = #{userB})
+            OR (from_user = #{userB} AND to_user = #{userA}))
+    </update>
+
     <select id="existsPendingRequest" resultType="boolean">
         SELECT EXISTS (SELECT 1 FROM chat_requests
                        WHERE from_user = #{fromUser} AND to_user = #{toUser} AND status = 'PENDING')

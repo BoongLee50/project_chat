@@ -112,13 +112,19 @@ post_comments                              -- 포스트 댓글(기획서 4-2). �
 ### 1.5 대화 신청 / 대화방 / 메시지
 ```
 chat_requests
-  id          uuid PK
-  from_user   uuid FK
-  to_user     uuid FK
-  message     varchar(100)
-  status      enum(PENDING, ACCEPTED, REJECTED, BLOCKED)
-  luna_cost   int
-  created_at  timestamptz
+  id             uuid PK
+  from_user      uuid FK
+  to_user        uuid FK
+  message        varchar(200)                                    -- V19 (100 → 200, 기획 4-3의 `0/200`)
+  status         enum(PENDING, ACCEPTED, REJECTED, BLOCKED, EXPIRED)   -- EXPIRED는 V24
+  luna_cost      int
+  responded_at   timestamptz null                                -- V18. 거절 후 1일 재신청 금지를 재는 기준
+  priority_until timestamptz null                                -- V22. 프라임 신청이 최상단에 머무는 시각
+  created_at     timestamptz
+  -- 목록 조회는 전부 status='PENDING'이라, 상태만 바꿔도 [받은 신청]에서는 사라진다.
+  -- 🚨 EXPIRED(14일 무응답)와 REJECTED(거절)를 섞지 말 것 — 거절에는 **1일 재신청 금지**가
+  --    딸려 있어서, 만료를 REJECTED로 쓰면 내가 답을 안 했을 뿐인데 상대가 벌을 받는다.
+  -- BLOCKED는 신고·차단이 났을 때 **양방향으로** 닫는 값이다(§1.6).
 
 chat_rooms
   id               uuid PK
@@ -173,8 +179,11 @@ friendships               -- 양방향(상호 동의). requester 요청 → addr
   created_at    timestamptz
   accepted_at   timestamptz null
   UNIQUE(pair_key)
+  message       varchar(25) null                   -- V17. 친구 신청 한마디
   -- V5에서 적용됨. pair_key는 생성 컬럼이 아니라 앱이 채운다(MariaDB err 1901 — 함정 #2).
   -- 거절/취소/친구삭제는 status 값이 아니라 **행 삭제**다(REJECTED 상태가 없음) → 다시 요청 가능.
+  -- 🚨 **14일 무응답 만료도 행 삭제**다(대화 신청만 EXPIRED로 남긴다). `pair_key`가 UNIQUE라
+  --    만료 행을 남기면 그 사람에게 다시 신청할 수 없다.
 
 reports
   id          uuid PK
@@ -190,8 +199,23 @@ blocks
   created_at  timestamptz
   UNIQUE(blocker_id, blocked_id)
 ```
-> 신고·차단 발생 시: 친구 관계 즉시 삭제, 상대의 내 프로필 열람 차단, 대화방 종료.
-> **친구 = 양방향(상호 동의) + 상시 대화방(확정, 2026-07)**: 친구 수락 시 두 사람 간 **영구 대화방**이 생성되어 **야간 게이트(17~06)·30분 삭제 정책과 무관하게 24시간** 대화 가능. 이를 위해 `chat_rooms`에 **`type enum(MATCH, FRIEND)`** 를 두고, `FRIEND` 방은 종료/자동삭제 배치 대상에서 제외. **메시지 보관은 1년**(2026-08-02 확정 — §1.5 보관정책). 최대 친구 수(일반 20 vs 30 기획서 모순)·요청/수락 UI 등 **세부는 친구 기획 보완 문서 대기** — 위 확정 방향만 우선 반영.
+> **신고·차단 발생 시(둘 다 같다)** — 2026-09-06 기획서 6-2 반영:
+> 1. 두 사람 사이의 **대기 중인 대화 신청을 양방향으로 `BLOCKED`** 처리 → [받은 신청]에서 사라진다
+> 2. **친구 관계 삭제**(요청 중이든 성립이든 한 행이라 한 번에 사라진다)
+> 3. **살아 있는 대화방 종료**(`ENDED`) + 양쪽에 `ROOM_STATE(ended)` 소켓 통지
+> 4. **서로의 포스트가 상대 목록에 뜨지 않는다** — 피드 조회가 `blocks`·`reports`를 **양방향**으로 본다.
+>    🚨 **A가 B를 차단하면 B의 목록에서도 A가 사라진다**(한쪽만 막으면 차단이 반쪽이 된다).
+>    후보 산정과 **페이지 채우기 두 곳 모두**에 조건이 있어야 한다 — 순서는 진입 시 한 번 정해지므로,
+>    페이지 쪽에 조건이 없으면 이미 정해진 순서에 남아 스크롤 내내 계속 나온다(실제로 재현됨).
+> 5. [포스트 정보] 화면도 열리지 않는다(`TARGET_BLOCKED_OR_REPORTED`) — 목록에서만 빼면
+>    낡은 목록·이미 떠 있는 화면이 상세로 들어오는 통로가 된다.
+>
+> 신고 사실 자체는 상대에게 알리지 않는다.
+>
+> ⚠️ **아래는 Plan_2 시절 기록이라 지금과 다르다**(이력으로만 둔다):
+> ~~친구 방은 야간 게이트·삭제 정책 예외로 24시간 유지, 메시지 보관 1년, 최대 친구 20/30 모순~~
+> → Plan_3에서 **게이트 폐지**, 2026-09-06 기획 답변으로 **친구 방도 30일로 통일**(예외 없음),
+> 최대 친구 수는 **100명**으로 확정. `chat_rooms.type`은 남아 있지만 **수명을 가르지 않는다.**
 
 ---
 

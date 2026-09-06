@@ -35,6 +35,9 @@ import java.util.List;
  * 막지 않은 것과 같다 — 판정은 {@link GardenService#canViewAllPhotos(String)} 하나를
  * 그대로 쓴다(규칙이 두 벌이 되면 한쪽만 늙는다, 함정 #18).
  *
+ * <p><b>차단·신고한 상대는 열리지 않는다</b>(양방향). 목록에서 빼는 것만으로는 모자라다 —
+ * 낡은 목록이나 이미 떠 있는 화면이 상세로 들어오는 통로가 되기 때문이다.
+ *
  * <p>오늘 포스트가 없는 사람도 이 화면에 들어온다(친구 목록·받은 신청은 포스트와 무관하다).
  * 그때는 <b>프로필 사진 한 장</b>으로 대신한다 — 빈 화면을 보여 주는 것보다 낫고,
  * {@code hasTodayPost}로 화면이 그 차이를 알 수 있게 한다.
@@ -78,6 +81,14 @@ public class PostInfoService {
             throw new ApiException(ErrorCode.USER_NOT_FOUND, HttpStatus.NOT_FOUND,
                     "사용자를 찾을 수 없습니다.");
         }
+        // 🚨 차단·신고한 상대는 이 화면도 열리지 않는다(양방향). 가든에서 빼 놓고 여기가 열리면
+        // 목록에 없는 사람을 상세로는 볼 수 있게 된다 — 낡은 목록·저장된 화면이 그 통로가 된다.
+        // 누가 먼저 차단했는지는 알려 주지 않는다(상대에게 신고 사실을 알리지 않는다는 정책).
+        if (gardenMapper.existsBlockOrReport(userId, targetUserId)) {
+            throw new ApiException(ErrorCode.TARGET_BLOCKED_OR_REPORTED, HttpStatus.CONFLICT,
+                    "지금은 이 사용자를 볼 수 없어요.");
+        }
+
         UserProfile profile = profileMapper.selectByUserId(targetUserId);
         LocalDate sessionDate = sessionTime.currentSessionDate();
 

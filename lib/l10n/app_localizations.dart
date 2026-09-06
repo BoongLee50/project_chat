@@ -3178,7 +3178,7 @@ abstract class L10n {
   /// No description provided for @errorTargetBlockedOrReported.
   ///
   /// In ko, this message translates to:
-  /// **'지금은 이 사용자에게 요청할 수 없어요.'**
+  /// **'지금은 이 사용자를 볼 수 없어요.'**
   String get errorTargetBlockedOrReported;
 
   /// No description provided for @errorNetworkTimeout.

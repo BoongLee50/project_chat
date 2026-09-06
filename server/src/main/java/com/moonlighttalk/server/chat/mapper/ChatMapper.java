@@ -31,6 +31,17 @@ public interface ChatMapper {
     /** 내가 받은 신청(PENDING). */
     List<ChatRequestEntity> selectReceivedRequests(@Param("userId") String userId);
 
+    /**
+     * 두 사람 사이의 <b>대기 중인 신청을 양쪽 다</b> BLOCKED로 닫는다 — 신고·차단이 났을 때.
+     *
+     * <p>기획 6-2: <i>"상대자 중 어느 한쪽이 신고 또는 차단 처리 하였을 경우 목록 삭제"</i>.
+     * 누가 신고했든 <b>두 방향을 함께</b> 닫는 이유는, 차단해 놓고 그 사람의 신청 카드를
+     * 계속 보게 두면 차단한 의미가 없기 때문이다(신고·차단의 부수효과는 같다).
+     */
+    int blockPendingRequestsBetween(@Param("userA") String userA,
+                                     @Param("userB") String userB,
+                                     @Param("respondedAt") LocalDateTime respondedAt);
+
     /** 내가 보낸 신청 전체(대기/종료 표시용). */
     /** 같은 상대에게 이미 대기 중인 신청이 있는지. */
     boolean existsPendingRequest(@Param("fromUser") String fromUser, @Param("toUser") String toUser);

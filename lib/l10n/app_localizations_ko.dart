@@ -1716,7 +1716,7 @@ class L10nKo extends L10n {
   String get errorModerationSelf => '자기 자신은 대상이 될 수 없어요.';
 
   @override
-  String get errorTargetBlockedOrReported => '지금은 이 사용자에게 요청할 수 없어요.';
+  String get errorTargetBlockedOrReported => '지금은 이 사용자를 볼 수 없어요.';
 
   @override
   String get errorNetworkTimeout => '서버 응답이 늦어요. 잠시 후 다시 시도해 주세요.';

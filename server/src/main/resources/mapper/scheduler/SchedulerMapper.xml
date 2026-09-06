@@ -115,4 +115,29 @@
         <foreach collection="ids" item="id" open="(" separator="," close=")">#{id}</foreach>
     </delete>
 
+    <!--
+      ── 무응답 신청 만료 (기획 6-2 "[받은 신청] 목록 삭제 조건") ──
+
+      기준은 **신청이 온 시각**(created_at)이다. "14일동안 자신이 아무런 회신을 하지 않을 경우"라
+      회신 시각으로는 잴 수 없다 — 회신이 없는 것이 조건이기 때문이다.
+
+      🚨 EXPIRED와 REJECTED를 섞지 말 것. 거절에는 **1일 재신청 금지**가 딸려 있어서(V18),
+      REJECTED로 만료시키면 내가 답을 안 했을 뿐인데 상대가 다시 신청도 못 하게 된다.
+    -->
+    <update id="expireChatRequestsBefore">
+        UPDATE chat_requests
+        SET status = 'EXPIRED'
+        WHERE status = 'PENDING' AND created_at &lt; #{before}
+    </update>
+
+    <!--
+      친구 신청만 **행을 지운다.** `friendships.pair_key`가 UNIQUE라 만료 행이 남으면
+      그 사람에게 다시 신청할 수 없다. 거절도 이미 행 삭제로 처리하고 있어 결이 같다.
+      ACCEPTED(성립된 친구)는 건드리지 않는다 — 만료되는 것은 **아직 답하지 않은 신청**뿐이다.
+    -->
+    <delete id="deleteFriendRequestsBefore">
+        DELETE FROM friendships
+        WHERE status = 'PENDING' AND created_at &lt; #{before}
+    </delete>
+
 </mapper>

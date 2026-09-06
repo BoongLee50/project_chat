@@ -29,6 +29,13 @@ public class SchedulerDevController {
         return Map.of("ok", true);
     }
 
+    /** 답하지 않은 신청 만료(대화·친구). 14일을 기다리지 않고 동작을 보려는 것이다. */
+    @PostMapping("/internal/scheduler/expire-requests")
+    public Map<String, Object> expireRequests(@CurrentUserId String userId) {
+        SchedulerService.ExpiredRequests r = schedulerService.expireStaleRequests();
+        return Map.of("chatRequests", r.chatRequests(), "friendRequests", r.friendRequests());
+    }
+
     /** BM 만료 정리(구독·엔티틀먼트·부스트). */
     @PostMapping("/internal/scheduler/expire-benefits")
     public Map<String, Object> expireBenefits(@CurrentUserId String userId) {

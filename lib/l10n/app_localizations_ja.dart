@@ -1709,7 +1709,7 @@ class L10nJa extends L10n {
   String get errorModerationSelf => '自分自身は対象にできません。';
 
   @override
-  String get errorTargetBlockedOrReported => '今はこのユーザーにリクエストできません。';
+  String get errorTargetBlockedOrReported => '今はこのユーザーを表示できません。';
 
   @override
   String get errorNetworkTimeout => 'サーバーの応答が遅れています。しばらくしてからもう一度お試しください。';

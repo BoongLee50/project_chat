@@ -24,6 +24,27 @@ public interface SchedulerMapper {
     /** 방 하나를 ENDED로 닫는다(`active_pair_key`를 비워 같은 상대와 새 방을 허용). */
     int endRoom(@Param("id") String id, @Param("endedAt") LocalDateTime endedAt);
 
+    // ── 무응답 신청 만료 ──
+
+    /**
+     * 답하지 않은 채 기간이 지난 <b>대화 신청</b>을 EXPIRED로 바꾼다(기획 6-2, V24).
+     *
+     * <p>🚨 <b>REJECTED로 바꾸면 안 된다</b> — 거절에는 "1일간 재신청 금지"가 딸려 있어
+     * 내가 답을 안 했을 뿐인데 <b>상대가 벌을 받는다</b>. 만료는 아무 일도 없었던 것에 가깝다.
+     *
+     * <p>행을 지우지 않는 이유: 목록 조회가 전부 {@code status = 'PENDING'}이라
+     * 상태만 바꿔도 사라지고, 누가 언제 신청했는지는 남는다.
+     */
+    int expireChatRequestsBefore(@Param("before") LocalDateTime before);
+
+    /**
+     * 답하지 않은 채 기간이 지난 <b>친구 신청</b>을 지운다(같은 규칙).
+     *
+     * <p>이쪽만 <b>행을 지우는</b> 이유: {@code friendships.pair_key}가 UNIQUE라
+     * 만료 행을 남기면 그 사람에게 <b>다시 신청할 수 없다</b>. 거절도 이미 행 삭제다.
+     */
+    int deleteFriendRequestsBefore(@Param("before") LocalDateTime before);
+
     // ── 지난 영업일 정리 ──
 
     /** 지난 영업일 사진의 스토리지 key(파일을 먼저 지우기 위해 필요). */

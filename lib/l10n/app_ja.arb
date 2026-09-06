@@ -520,7 +520,7 @@
   "errorStoreReceiptInvalid": "決済情報を確認できません。",
   "errorStorePurchaseFailed": "現在、決済を処理できません。",
   "errorModerationSelf": "自分自身は対象にできません。",
-  "errorTargetBlockedOrReported": "今はこのユーザーにリクエストできません。",
+  "errorTargetBlockedOrReported": "今はこのユーザーを表示できません。",
   "errorNetworkTimeout": "サーバーの応答が遅れています。しばらくしてからもう一度お試しください。",
   "errorNetworkUnreachable": "サーバーに接続できません。ネットワークをご確認ください。",
   "errorNetworkUnknown": "通信中に問題が発生しました。",

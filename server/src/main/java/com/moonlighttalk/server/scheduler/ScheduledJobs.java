@@ -55,6 +55,17 @@ public class ScheduledJobs {
     }
 
     /**
+     * <b>답하지 않은 신청 만료</b>(대화·친구) — 기획 6-2 "14일동안 아무런 회신을 하지 않을 경우".
+     *
+     * <p>정리 배치(18:05)와 메시지 보관 배치(18:20) 사이에 둔다. 셋을 한 메서드로 묶지 않은 건
+     * 이 잡만 <b>순서에 얽매이지 않기</b> 때문이다 — 메시지·방과 달리 신청은 서로 의존하지 않는다.
+     */
+    @Scheduled(cron = "${app.scheduler.request-expiry-cron:0 10 18 * * *}", zone = KST)
+    public void expireStaleRequests() {
+        schedulerService.expireStaleRequests();
+    }
+
+    /**
      * BM 만료 정리(구독·엔티틀먼트·부스트). 부스트는 1시간짜리라 하루 한 번으로는 느려
      * 10분마다 돈다. 판정은 expires_at으로 하므로 늦어도 권한이 새지는 않는다.
      */

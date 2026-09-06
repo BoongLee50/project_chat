@@ -1078,7 +1078,7 @@
   "errorStoreReceiptInvalid": "결제 정보를 확인할 수 없어요.",
   "errorStorePurchaseFailed": "지금은 결제를 처리할 수 없어요.",
   "errorModerationSelf": "자기 자신은 대상이 될 수 없어요.",
-  "errorTargetBlockedOrReported": "지금은 이 사용자에게 요청할 수 없어요.",
+  "errorTargetBlockedOrReported": "지금은 이 사용자를 볼 수 없어요.",
   "errorNetworkTimeout": "서버 응답이 늦어요. 잠시 후 다시 시도해 주세요.",
   "errorNetworkUnreachable": "서버에 연결할 수 없어요. 네트워크를 확인해 주세요.",
   "errorNetworkUnknown": "통신 중 문제가 발생했어요.",
