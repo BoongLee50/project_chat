@@ -150,13 +150,19 @@ class L10nKo extends L10n {
   }
 
   @override
-  String get homeMainPhoto => '메인';
+  String get homeMainPhoto => 'TOP';
 
   @override
-  String get homeSetMainPhoto => '메인으로';
+  String get homeSetMainPhoto => 'TOP';
 
   @override
-  String get homeMainPhotoSet => '메인 사진으로 지정했어요.';
+  String get homeMainPhotoSet => 'TOP 사진으로 지정했어요.';
+
+  @override
+  String get homeDeletePhotoConfirm => '이 사진을 삭제할까요?';
+
+  @override
+  String get homeSharePostConfirm => '예쁘게 완성된 포스트를 공유해 볼까요?';
 
   @override
   String get homeBoost => '부스트';

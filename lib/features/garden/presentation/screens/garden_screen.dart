@@ -7,6 +7,7 @@ import '../../../../app/main_shell.dart';
 import '../../../../core/error/error_messages.dart';
 import '../../../../core/util/freshness.dart';
 import '../../../../shared/widgets/authed_image.dart';
+import '../../../../shared/widgets/design_canvas.dart';
 import '../../../../shared/widgets/gradient_ring.dart';
 import '../../data/models/feed_item.dart';
 import '../../../chat/presentation/providers/chat_provider.dart';
@@ -34,7 +35,7 @@ class GardenScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = L10n.of(context);
     final feed = ref.watch(feedProvider);
-    final scale = GardenArt.scaleOf(context);
+    final scale = DesignCanvas.scaleOf(context);
 
     // 피드는 소켓으로 알려줄 방법이 없어, 탭에 다시 들어왔을 때 낡았으면 조용히 다시 읽는다.
     // (스킵했던 사람이 사진·프로필을 갱신하면 다시 뜨는 걸 여기서 반영한다)
@@ -63,20 +64,22 @@ class GardenScreen extends ConsumerWidget {
           ),
           Padding(
             padding: EdgeInsets.fromLTRB(
-              // 하단 5탭과 **좌우 폭을 맞춘다**(시안에서 카드와 내비가 같은 선에 있다).
-              AppDimens.navSidePad,
-              // 시안 타이틀 위치(3.74 단위)에 맞춘다.
-              GardenArt.unit * 3.74 * scale,
-              AppDimens.navSidePad,
+              // 하단 5탭과 **좌우 폭을 맞춘다** — 시안에서 카드·필터·내비가 같은 선(23)에 있다.
+              DesignCanvas.contentLeft * scale,
+              // 시안 타이틀 위치(y=106).
+              DesignCanvas.titleTop * scale,
+              DesignCanvas.contentLeft * scale,
               AppDimens.gapMd,
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // 시안에서 타이틀(1.66)은 카드·필터(0.93~0.95)보다 안쪽에 있다 — 그만큼만 더 준다.
+                // 타이틀은 시안에서 x=47이라 본문선(23)보다 24만큼 안쪽이다.
                 Padding(
                   padding: EdgeInsets.symmetric(
-                    horizontal: GardenArt.unit * (1.66 - 0.93) * scale,
+                    horizontal:
+                        (GardenArt.titleAt.dx - DesignCanvas.contentLeft) *
+                            scale,
                   ),
                   child: const _GardenHeader(),
                 ),
@@ -122,31 +125,36 @@ class _GardenHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = L10n.of(context);
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // 타이틀은 **이미지**다(글자가 구워져 있음). 일본어판은 이미지를 교체한다.
-              const ArtImage(GardenArt.title, width: 278, height: 71),
-              const SizedBox(height: 6),
-              // 부제는 **폰트**다 — ARB가 그리므로 언어를 따라간다.
-              Text(
-                l10n.gardenSubtitle,
-                style: TextStyle(color: AppColors.textPrimary, fontSize: 13),
-              ),
-            ],
-          ),
+        // 타이틀은 **이미지**다(글자가 구워져 있음). 일본어판은 이미지를 교체한다.
+        //
+        // ⚠️ **Plan_4에서 부제가 빠졌다.** Plan_3 참고용에는 "달빛 아래, 우리의 하루를
+        // 나누는 공간"이 있었지만 Plan_4 좌표 시안에는 없다. 실제로 두 줄로 접히면서
+        // Prime 버튼 뒤로 넘어가 깨져 보였다. ARB 키(`gardenSubtitle`)는 남겨 둔다 —
+        // 기획이 다시 넣자고 하면 자리만 되살리면 된다.
+        ArtImage(
+          GardenArt.title,
+          width: GardenArt.titleSize.width,
+          height: GardenArt.titleSize.height,
         ),
-        // Prime · 루나상점 진입(시안 20.38 / 29.58 위치)
+        const Spacer(),
+        // Prime · 루나상점 진입(시안 577,102 / 838,102)
         GestureDetector(
           onTap: () => Navigator.of(context).push(PrimeScreen.route()),
-          child: const ArtImage(GardenArt.btnPrime, width: 248, height: 83),
+          child: ArtImage(
+            GardenArt.btnPrime,
+            width: GardenArt.btnPrimeSize.width,
+            height: GardenArt.btnPrimeSize.height,
+          ),
         ),
-        const SizedBox(width: 6),
+        SizedBox(
+          width:
+              (GardenArt.btnLunaAt.dx -
+                      (GardenArt.btnPrimeAt.dx + GardenArt.btnPrimeSize.width)) *
+                  DesignCanvas.scaleOf(context),
+        ),
         GestureDetector(
           onTap: () => Navigator.of(context).push(LunaStoreScreen.route()),
           // 그림에는 별만 있고 **숫자가 없다.** 시안의 `[★ 80]`처럼 보이려면
@@ -155,7 +163,11 @@ class _GardenHeader extends StatelessWidget {
           child: Stack(
             alignment: Alignment.centerRight,
             children: [
-              const ArtImage(GardenArt.btnLuna, width: 216, height: 83),
+              ArtImage(
+                GardenArt.btnLuna,
+                width: GardenArt.btnLunaSize.width,
+                height: GardenArt.btnLunaSize.height,
+              ),
               const Padding(
                 padding: EdgeInsets.only(right: 14),
                 child: _LunaCount(),
@@ -197,22 +209,44 @@ class _FilterBar extends ConsumerWidget {
     final filter = ref.watch(feedFilterProvider);
     final controller = ref.read(feedFilterProvider.notifier);
 
-    // 필터 칩은 전 상태의 그림이 있다(전체 포함) — 텍스트 폴백이 필요 없다.
-    // 누르면 뜨는 **드롭다운 목록의 글자는 ARB**다(폰트). 칩만 이미지다.
-    //
     // 시안(4-1)의 이 줄은 **네 칸**이다 — 성별·나이·국가 칩 셋 + **[달빛 한마디] 버튼**.
-    // 폐지된 스포트라이트 칩 자리에 같은 크기로 들어가는 **데일리 참여 이벤트 진입점**이다.
-    // 아직 리소스가 없어 코드로 그린다(docs/08 — 시안이 오면 이 자리만 교체).
+    //
+    // ⚠️ **Plan_4에서 칩 구조가 바뀌었다.** 전에는 값마다 그림이 따로였는데
+    // (`filter_female`·`filter_20s`…) 이제 **라벨 한 장씩**만 온다.
+    // 고른 값은 그림의 글자 자리에 **폰트로 덮어 그린다** — 값이 늘어도 그림을 새로 안 받는다.
+    // 드롭다운 목록의 글자도 ARB다. **칩의 아이콘·테두리만 이미지**인 셈이다.
     return LayoutBuilder(
       builder: (context, constraints) {
-        final s = GardenArt.filterRowScale(constraints.maxWidth);
-        final gap = GardenArt.filterGap * s;
+        // 시안에서 이 줄은 x=23에서 시작해 x=1054에서 끝난다 → 폭 1031.
+        // 그 폭에 딱 맞추면 칩 크기와 간격이 시안 그대로 나온다.
+        const designRow = 1031.0;
+        final s = constraints.maxWidth / designRow;
+        // 간격도 시안 좌표에서 나온다(칩 끝 → 다음 칩 시작).
+        final gapGenderAge =
+            (GardenArt.filterAgeAt.dx -
+                    (GardenArt.filterGenderAt.dx + GardenArt.filterGenderSize.width)) *
+                s;
+        final gapAgeCountry =
+            (GardenArt.filterCountryAt.dx -
+                    (GardenArt.filterAgeAt.dx + GardenArt.filterAgeSize.width)) *
+                s;
+        final gapCountryDaily =
+            (GardenArt.btnDailyQuestionAt.dx -
+                    (GardenArt.filterCountryAt.dx + GardenArt.filterCountrySize.width)) *
+                s;
+
         return Row(
           children: [
             _ArtMenu<String>(
-              art: GardenArt.genderChip(filter.gender),
+              art: GardenArt.filterGender,
               size: GardenArt.filterGenderSize,
               scale: s,
+              // 고르지 않았으면 그림에 구워진 `성별`이 그대로 보인다.
+              picked: switch (filter.gender) {
+                'FEMALE' => l10n.genderFemale,
+                'MALE' => l10n.genderMale,
+                _ => null,
+              },
               options: {
                 l10n.commonAll: null,
                 l10n.genderFemale: 'FEMALE',
@@ -221,11 +255,14 @@ class _FilterBar extends ConsumerWidget {
               current: filter.gender,
               onPick: controller.selectGender,
             ),
-            SizedBox(width: gap),
+            SizedBox(width: gapGenderAge),
             _ArtMenu<int>(
-              art: GardenArt.ageChip(filter.ageDecade),
+              art: GardenArt.filterAge,
               size: GardenArt.filterAgeSize,
               scale: s,
+              picked: filter.ageDecade == null
+                  ? null
+                  : l10n.ageDecade(filter.ageDecade!),
               options: {
                 l10n.commonAll: null,
                 l10n.ageDecade(10): 10,
@@ -236,11 +273,16 @@ class _FilterBar extends ConsumerWidget {
               current: filter.ageDecade,
               onPick: controller.selectAge,
             ),
-            SizedBox(width: gap),
+            SizedBox(width: gapAgeCountry),
             _ArtMenu<String>(
-              art: GardenArt.countryChip(filter.country),
+              art: GardenArt.filterCountry,
               size: GardenArt.filterCountrySize,
               scale: s,
+              picked: switch (filter.country) {
+                'KR' => l10n.countryKorea,
+                'JP' => l10n.countryJapan,
+                _ => null,
+              },
               options: {
                 l10n.commonAll: null,
                 l10n.countryKorea: 'KR',
@@ -249,8 +291,17 @@ class _FilterBar extends ConsumerWidget {
               current: filter.country,
               onPick: controller.selectCountry,
             ),
-            SizedBox(width: gap),
-            _DailyQuestionButton(scale: s),
+            SizedBox(width: gapCountryDaily),
+            // 네 번째 칸 — 드롭다운이 아니라 화면을 바꾸는 버튼이다(기획 4-1 "데일리 참여 이벤트").
+            GestureDetector(
+              onTap: () => Navigator.of(context).push(DailyIntroScreen.route()),
+              child: ArtImage(
+                GardenArt.btnDailyQuestion,
+                width: GardenArt.btnDailyQuestionSize.width,
+                height: GardenArt.btnDailyQuestionSize.height,
+                scale: s,
+              ),
+            ),
           ],
         );
       },
@@ -258,62 +309,12 @@ class _FilterBar extends ConsumerWidget {
   }
 }
 
-/// 필터 줄 네 번째 칸 — **달빛 한마디**로 들어가는 버튼(기획 4-1 "데일리 참여 이벤트").
-///
-/// 다른 셋과 달리 드롭다운이 아니라 **누르면 화면이 바뀌는 버튼**이라 채워서 그린다.
-/// 아직 시안 리소스가 없어 코드로 그리고, 크기만 [GardenArt.filterDailyQuestionSize]로 맞춰
-/// 나중에 그림으로 갈아끼울 때 레이아웃이 흔들리지 않게 했다.
-class _DailyQuestionButton extends StatelessWidget {
-  const _DailyQuestionButton({required this.scale});
-
-  final double scale;
-
-  @override
-  Widget build(BuildContext context) {
-    final size = GardenArt.filterDailyQuestionSize * scale;
-    return GestureDetector(
-      onTap: () => Navigator.of(context).push(DailyIntroScreen.route()),
-      child: Container(
-        width: size.width,
-        height: size.height,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: AppColors.moonlight,
-          borderRadius: BorderRadius.circular(size.height / 2),
-        ),
-        child: FittedBox(
-          fit: BoxFit.scaleDown,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(
-                  Icons.nightlight_round,
-                  size: 16,
-                  color: AppColors.night,
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  L10n.of(context).dailyTitle,
-                  maxLines: 1,
-                  style: const TextStyle(
-                    color: AppColors.night,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 /// 시안 칩(이미지)을 누르면 드롭다운이 뜬다.
-/// **칩은 이미지, 목록 글자는 ARB** — 이 앱의 UI 언어 두 종류가 한 위젯에 같이 있다.
+/// **칩은 이미지, 값과 목록 글자는 ARB** — 이 앱의 UI 언어 두 종류가 한 위젯에 같이 있다.
+///
+/// Plan_4의 칩에는 `성별`·`나이`·`국가`가 **구워져 있다.** 값을 고르면 그 글자 자리를 덮고
+/// 고른 값을 그린다 — 칩 안쪽이 불투명 검정이라 같은 색으로 덮으면 이어져 보인다.
+/// 고르지 않았으면 덮지 않으므로 원래 라벨이 그대로 보인다.
 class _ArtMenu<T> extends StatelessWidget {
   const _ArtMenu({
     required this.art,
@@ -322,6 +323,7 @@ class _ArtMenu<T> extends StatelessWidget {
     required this.options,
     required this.current,
     required this.onPick,
+    this.picked,
   });
 
   final String art;
@@ -332,6 +334,9 @@ class _ArtMenu<T> extends StatelessWidget {
   /// 필터 바가 한 줄에 딱 맞도록 계산한 배율.
   final double scale;
 
+  /// 고른 값의 표시 문구. null이면 그림의 라벨을 그대로 둔다.
+  final String? picked;
+
   /// 표시명 → 값(전체는 null)
   final Map<String, T?> options;
   final T? current;
@@ -339,6 +344,9 @@ class _ArtMenu<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final w = size.width * scale;
+    final h = size.height * scale;
+
     return PopupMenuButton<String>(
       color: AppColors.surfaceHigh,
       onSelected: (name) => onPick(options[name]),
@@ -357,11 +365,44 @@ class _ArtMenu<T> extends StatelessWidget {
             ),
           ),
       ],
-      child: ArtImage(
-        art,
-        width: size.width,
-        height: size.height,
-        scale: scale,
+      child: SizedBox(
+        width: w,
+        height: h,
+        child: Stack(
+          children: [
+            ArtImage(
+              art,
+              width: size.width,
+              height: size.height,
+              scale: scale,
+            ),
+            if (picked != null)
+              Positioned(
+                // 아이콘 오른쪽부터 테두리 안쪽까지. 위아래로도 테두리를 피한다.
+                left: GardenArt.filterLabelLeft * scale,
+                right: 10 * scale,
+                top: 10 * scale,
+                bottom: 10 * scale,
+                child: ColoredBox(
+                  color: GardenArt.filterChipFill,
+                  child: Center(
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        picked!,
+                        maxLines: 1,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 30,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -612,10 +653,10 @@ class _FeedPagerState extends ConsumerState<_FeedPager> {
                               // 영화만 시안 그림이 있다. 나머지는 기존 칩 —
                               // 관심사 37종 전체 그림을 받으면 코드→에셋 표로 바꾸면 된다.
                               if (code == 'MOVIE')
-                                const ArtImage(
+                                ArtImage(
                                   GardenArt.interestMovie,
-                                  width: 204,
-                                  height: 88,
+                                  width: GardenArt.interestSize.width,
+                                  height: GardenArt.interestSize.height,
                                 )
                               else
                                 Container(
@@ -664,8 +705,8 @@ class _FeedPagerState extends ConsumerState<_FeedPager> {
                           const SizedBox(width: 20),
                           _ArtCount(
                             asset: GardenArt.iconComment,
-                            width: 68,
-                            height: 71,
+                            width: GardenArt.iconCommentSize.width,
+                            height: GardenArt.iconCommentSize.height,
                             label: '${item.comments}',
                             onTap: () => showPostCommentsSheet(context, item),
                           ),
@@ -688,8 +729,8 @@ class _FeedPagerState extends ConsumerState<_FeedPager> {
             ),
           ),
 
-          // 카드 테두리 — 클립 **바깥**에 얹어야 모서리가 안 깎인다.
-          // 이미지가 아니라 코드로 그린다(이유는 GardenArt.cardBorderWidth 주석).
+          // 카드 외곽선 — 클립 **바깥**에 얹어야 모서리가 안 깎인다.
+          // 그림 대신 코드로 그린다(이유는 GardenArt.cardBorderWidth 주석).
           //
           // 앨범 패스·프라임을 가진 사람의 포스트는 **무지개빛**이다(기획 화면 26·29).
           if (item.decorated)

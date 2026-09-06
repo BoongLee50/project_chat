@@ -367,23 +367,35 @@ abstract class L10n {
   /// **'최대 {count}장 등록 가능'**
   String homeAlbumPassMaxPhotos(int count);
 
-  /// 달빛가든에 노출되는 대표 사진임을 알리는 배지
+  /// 달빛가든에 노출되는 대표 사진임을 알리는 배지. Plan_4에서 [메인] → [TOP]으로 이름이 바뀌었다
   ///
   /// In ko, this message translates to:
-  /// **'메인'**
+  /// **'TOP'**
   String get homeMainPhoto;
 
-  /// 보고 있는 사진을 대표 사진으로 지정하는 버튼
+  /// 보고 있는 사진을 대표 사진으로 지정하는 버튼. 화면에는 그림(btn_top_*)이 나가고 이 문구는 접근성 라벨로 쓴다
   ///
   /// In ko, this message translates to:
-  /// **'메인으로'**
+  /// **'TOP'**
   String get homeSetMainPhoto;
 
   /// No description provided for @homeMainPhotoSet.
   ///
   /// In ko, this message translates to:
-  /// **'메인 사진으로 지정했어요.'**
+  /// **'TOP 사진으로 지정했어요.'**
   String get homeMainPhotoSet;
+
+  /// 삭제 버튼을 누르면 뜨는 확인 팝업(기획서 지정 문구)
+  ///
+  /// In ko, this message translates to:
+  /// **'이 사진을 삭제할까요?'**
+  String get homeDeletePhotoConfirm;
+
+  /// 포스트 공유하기 버튼을 누르면 뜨는 확인 팝업(기획서 지정 문구)
+  ///
+  /// In ko, this message translates to:
+  /// **'예쁘게 완성된 포스트를 공유해 볼까요?'**
+  String get homeSharePostConfirm;
 
   /// No description provided for @homeBoost.
   ///

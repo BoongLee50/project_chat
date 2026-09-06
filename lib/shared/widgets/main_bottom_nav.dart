@@ -1,103 +1,117 @@
 import 'package:flutter/material.dart';
 
-import '../../app/theme/app_colors.dart';
-import '../../app/theme/app_dimens.dart';
-import '../../l10n/app_localizations.dart';
+import 'design_canvas.dart';
 
 /// 메인 5탭 하단 내비게이션 (포스트·달빛가든·대화방·친구·프로필).
+///
+/// **Plan_4에서 그림으로 왔다.** 아이콘·글자가 전부 이미지이고, 탭마다
+/// **색상(선택) / 흰색(비선택)** 두 벌이 있다. 그래서 여기엔 `Icons.*`도 `Text`도 없다 —
+/// 라벨이 ARB가 아니라 **그림 안에** 있다는 뜻이다(이 앱 UI 언어의 두 번째 종류).
+/// 일본어판은 같은 규격의 일본어 글자 이미지를 받아 교체한다.
+///
+/// 좌표는 시안(`달빛가든 화면_좌표값.png`)의 1080 캔버스 픽셀값을 그대로 옮겼다.
 class MainBottomNav extends StatelessWidget {
   const MainBottomNav({super.key, required this.selected, required this.onTap});
 
   final int selected;
   final ValueChanged<int> onTap;
 
-  /// 아이콘은 고정, 라벨은 언어에 따라 달라져 const로 둘 수 없다.
-  static const _icons = <IconData>[
-    Icons.photo_camera_rounded,
-    Icons.nightlight_round,
-    Icons.chat_bubble_outline,
-    Icons.people_outline,
-    Icons.person_outline,
-  ];
+  static const String _dir = 'assets/images/nav';
 
-  static List<String> _labels(L10n l10n) => [
-    l10n.navPost,
-    l10n.navGarden,
-    l10n.navChat,
-    l10n.navFriend,
-    l10n.navProfile,
+  /// 외곽선 규격과 위치(시안 `23, 2295`, 1031×218).
+  static const double frameWidth = 1031;
+  static const double frameHeight = 218;
+
+  /// 탭마다: 에셋 접두어 · 아이콘 크기/위치 · 글자 크기/위치.
+  /// 위치는 **외곽선 좌상단(23, 2295) 기준 상대값**이다.
+  static const List<_NavSpec> _specs = [
+    _NavSpec('post', Size(72, 63), Offset(68, 36), Size(109, 31), Offset(51, 139)),
+    _NavSpec('garden', Size(83, 72), Offset(267, 32), Size(146, 39), Offset(235, 136)),
+    _NavSpec('chat', Size(69, 73), Offset(478, 32), Size(109, 39), Offset(461, 136)),
+    _NavSpec('friend', Size(74, 64), Offset(673, 35), Size(72, 39), Offset(676, 136)),
+    _NavSpec('profile', Size(56, 64), Offset(891, 35), Size(107, 38), Offset(873, 136)),
   ];
 
   @override
   Widget build(BuildContext context) {
-    final labels = _labels(L10n.of(context));
-    return Container(
-      // 좌우 여백은 토큰을 쓴다 — 달빛가든 카드가 이 폭에 맞춰 그려진다.
-      margin: const EdgeInsets.fromLTRB(
-        AppDimens.navSidePad,
-        0,
-        AppDimens.navSidePad,
-        8,
-      ),
-      padding: const EdgeInsets.symmetric(vertical: 10),
-      decoration: BoxDecoration(
-        color: AppColors.night,
-        borderRadius: BorderRadius.circular(AppDimens.radiusLg),
-        border: Border.all(color: AppColors.gold.withValues(alpha: 0.6)),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          for (var i = 0; i < _icons.length; i++)
-            _NavItem(
-              icon: _icons[i],
-              label: labels[i],
-              active: i == selected,
-              onTap: () => onTap(i),
-            ),
-        ],
-      ),
-    );
-  }
-}
+    final s = DesignCanvas.scaleOf(context);
 
-class _NavItem extends StatelessWidget {
-  const _NavItem({
-    required this.icon,
-    required this.label,
-    required this.active,
-    required this.onTap,
-  });
-
-  final IconData icon;
-  final String label;
-  final bool active;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final color = active ? AppColors.gold : AppColors.textSecondary;
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, color: color, size: 26),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              style: TextStyle(
-                color: color,
-                fontSize: 12,
-                fontWeight: active ? FontWeight.w700 : FontWeight.w400,
+    return Padding(
+      padding: EdgeInsets.only(bottom: 8 * s),
+      child: Center(
+        // ⚠️ `heightFactor`가 없으면 Center가 **허용된 최대 높이까지 늘어난다.**
+        // bottomNavigationBar가 화면 전체를 차지해 본문 높이가 0이 되고,
+        // 내비는 그 안에서 세로 가운데로 가 **화면 중앙에 뜬다**. 1이면 자식 높이만 쓴다.
+        heightFactor: 1,
+        child: SizedBox(
+          width: frameWidth * s,
+          height: frameHeight * s,
+          child: Stack(
+            children: [
+              const ArtImage(
+                '$_dir/nav_frame.png',
+                width: frameWidth,
+                height: frameHeight,
               ),
-            ),
-          ],
+              for (var i = 0; i < _specs.length; i++) ..._itemLayers(i, s),
+              // 탭 영역은 그림 위치와 무관하게 **다섯 칸으로 균등 분할**한다.
+              // 아이콘·글자 폭이 탭마다 달라 그대로 쓰면 누르기 어려운 칸이 생긴다.
+              for (var i = 0; i < _specs.length; i++)
+                Positioned(
+                  left: frameWidth * s / _specs.length * i,
+                  top: 0,
+                  width: frameWidth * s / _specs.length,
+                  height: frameHeight * s,
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () => onTap(i),
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );
   }
+
+  List<Widget> _itemLayers(int i, double s) {
+    final spec = _specs[i];
+    final suffix = i == selected ? 'on' : 'off';
+    return [
+      Positioned(
+        left: spec.iconAt.dx * s,
+        top: spec.iconAt.dy * s,
+        child: ArtImage(
+          '$_dir/${spec.name}_icon_$suffix.png',
+          width: spec.iconSize.width,
+          height: spec.iconSize.height,
+        ),
+      ),
+      Positioned(
+        left: spec.textAt.dx * s,
+        top: spec.textAt.dy * s,
+        child: ArtImage(
+          '$_dir/${spec.name}_text_$suffix.png',
+          width: spec.textSize.width,
+          height: spec.textSize.height,
+        ),
+      ),
+    ];
+  }
+}
+
+class _NavSpec {
+  const _NavSpec(
+    this.name,
+    this.iconSize,
+    this.iconAt,
+    this.textSize,
+    this.textAt,
+  );
+
+  final String name;
+  final Size iconSize;
+  final Offset iconAt;
+  final Size textSize;
+  final Offset textAt;
 }

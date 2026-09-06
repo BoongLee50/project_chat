@@ -1,169 +1,111 @@
 import 'package:flutter/material.dart';
 
-/// 달빛가든 리소스(Plan_3) — 기획이 준 PNG를 그대로 쓰기 위한 배치 도구.
+/// 달빛가든 리소스(Plan_4) — 경로와 **시안 원본 규격**만 모아 둔다.
 ///
 /// **이 앱의 UI 언어는 두 종류다.**
 /// 1. **폰트** — ARB(`app_ko.arb`/`app_ja.arb`)가 그리는 글자. 언어가 바뀌면 따라 바뀐다.
 /// 2. **이미지** — 아래 에셋처럼 그림에 글자가 **구워져 있는 것**. 폰트로 대체하지 않는다.
-///    일본어판은 **일본어가 박힌 이미지를 따로** 받아 교체한다(같은 파일명, `ja/` 폴더 등).
+///    일본어판은 **일본어가 박힌 이미지를 따로** 받아 교체한다(같은 규격, `ja/` 폴더 등).
 /// 그래서 여기 있는 한글은 "덜 옮긴 것"이 아니라 **의도된 상태**다.
 ///
-/// 좌표·크기는 기획 시안(`달빛가든 화면 이미지 좌표.png`)의 **1080×2640 캔버스** 기준이다.
-/// 시안의 빨간 숫자는 `X*Y` 쌍이고 **1 단위 ≈ 28.4px**(요소의 좌상단 기준).
-/// 예) 필터 바 `0.95*12.58` → (27px, 357px).
+/// 좌표는 `달빛가든 화면_좌표값.png`의 **1080×2640 캔버스 픽셀값을 그대로** 쓴다.
+/// ⚠️ 같은 폴더의 `달빛가든 화면_참고용.png`는 **Plan_3 시절**이라 `X*Y` 단위(×28.4) 표기다 —
+/// 둘을 섞어 읽지 말 것.
 class GardenArt {
   const GardenArt._();
 
   static const String _dir = 'assets/images/garden';
+  static const String _common = 'assets/images/common';
 
   static const String background = '$_dir/garden_bg.png';
+
   static const String title = '$_dir/title_garden.png';
-  static const String btnPrime = '$_dir/btn_prime.png';
-  static const String btnLuna = '$_dir/btn_luna.png';
-  // 필터 칩 — 값마다 라벨이 구워진 그림이 따로 있다(전체 포함).
-  // 그룹 안에서는 규격이 같아 크기를 한 번만 적으면 된다.
-  static const String filterGenderAll = '$_dir/filter_gender_all.png';
-  static const String filterFemale = '$_dir/filter_female.png';
-  static const String filterMale = '$_dir/filter_male.png';
-  static const String filterAgeAll = '$_dir/filter_age_all.png';
-  static const String filter10s = '$_dir/filter_10s.png';
-  static const String filter20s = '$_dir/filter_20s.png';
-  static const String filter30s = '$_dir/filter_30s.png';
-  static const String filter40s = '$_dir/filter_40s.png';
-  static const String filterCountryAll = '$_dir/filter_country_all.png';
-  static const String filterKorea = '$_dir/filter_korea.png';
-  static const String filterJapan = '$_dir/filter_japan.png';
+  static const Size titleSize = Size(278, 71);
+  static const Offset titleAt = Offset(47, 106);
 
-  /// 필터 칩 원본 규격(1080 캔버스 기준).
-  static const Size filterGenderSize = Size(217, 94);
+  // 상단 우측 두 버튼 — 오늘의 포스트와 같은 자리·같은 그림이라 common에 둔다.
+  static const String btnPrime = '$_common/btn_prime.png';
+  static const Size btnPrimeSize = Size(248, 83);
+  static const Offset btnPrimeAt = Offset(577, 102);
+
+  static const String btnLuna = '$_common/btn_luna.png';
+  static const Size btnLunaSize = Size(216, 83);
+  static const Offset btnLunaAt = Offset(838, 102);
+
+  // ── 필터 줄 — 네 칸이다(성별·나이·국가 + 달빛 한마디) ─────────────
+  //
+  // ⚠️ **Plan_4에서 구조가 바뀌었다.** 전에는 값마다 그림이 따로 있었지만
+  // (`filter_female`·`filter_20s`…), 이제 **라벨 한 장씩**만 온다.
+  // 고른 값은 그림 위에 **폰트로 얹는다** — 그래야 값이 늘어도 그림을 새로 안 받는다.
+  static const String filterGender = '$_dir/filter_gender.png';
+  static const Size filterGenderSize = Size(217, 92);
+  static const Offset filterGenderAt = Offset(23, 356);
+
+  static const String filterAge = '$_dir/filter_age.png';
   static const Size filterAgeSize = Size(227, 94);
-  static const Size filterCountrySize = Size(208, 95);
+  static const Offset filterAgeAt = Offset(257, 355);
 
-  /// 칩 사이 간격(시안 원본 기준). 시안에서 칩 끝과 다음 칩 시작 사이가 13~15px이다.
-  static const double filterGap = 14;
+  static const String filterCountry = '$_dir/filter_country.png';
+  static const Size filterCountrySize = Size(217, 94);
+  static const Offset filterCountryAt = Offset(494, 356);
 
-  /// 달빛 한마디 진입 버튼의 규격(시안 4-1의 **네 번째 칸**).
-  ///
-  /// Plan_3에서 스포트라이트 칩이 폐지된 자리에 **같은 크기로** 달빛 한마디 버튼이 들어간다.
-  /// 드롭다운 칩이 아니라 **채워진 버튼**이고, 누르면 오늘의 질문 화면으로 간다.
-  /// 아직 리소스도 화면도 없어 그리지 않지만, **자리는 이 상수만큼 비워 둔다**(⑤단계에서 채운다).
-  static const Size filterDailyQuestionSize = Size(334, 94);
+  static const String btnDailyQuestion = '$_dir/btn_daily_question.png';
+  static const Size btnDailyQuestionSize = Size(330, 94);
+  static const Offset btnDailyQuestionAt = Offset(724, 356);
 
-  /// 필터 칩 줄의 배율.
-  ///
-  /// 시안은 **네 칸**이 한 줄에 딱 맞는다 — 성별·나이·국가 칩 셋과 **달빛 한마디 버튼**.
-  /// 네 칸 기준으로 배율을 구하므로, 버튼을 아직 안 그려도 **칩 셋의 크기가 시안과 같고
-  /// 오른쪽에 버튼 자리만큼 여백이 남는다.** ⑤단계에서 버튼을 채우면 레이아웃은 그대로다.
-  ///
-  /// (셋 기준으로 계산하면 남는 폭을 셋이 나눠 가져 **칩이 1.5배로 부푼다** — 함정 #37)
-  static double filterRowScale(double availableWidth) {
-    const designTotal = 217 + 227 + 208 + 334 + filterGap * 3; // 네 칸 + 간격 3개
-    return availableWidth / designTotal;
-  }
+  /// 칩의 **글자 영역 시작** — 아이콘을 뺀 오른쪽 부분이다.
+  /// 고른 값을 여기에 덮어 그린다(그림에는 `성별`·`나이`·`국가`가 구워져 있다).
+  static const double filterLabelLeft = 92;
 
-  /// 값 → 그림. 이제 모든 상태에 그림이 있어 텍스트 폴백이 필요 없다.
-  static String genderChip(String? gender) => switch (gender) {
-    'FEMALE' => filterFemale,
-    'MALE' => filterMale,
-    _ => filterGenderAll,
-  };
+  /// 칩 안쪽 색. 그림의 내부가 **불투명 검정**이라 같은 색으로 덮으면 이어져 보인다.
+  /// (반투명이었다면 이 방식을 못 쓴다 — 덮은 자리만 색이 달라진다)
+  static const Color filterChipFill = Color(0xFF000000);
 
-  static String ageChip(int? decade) => switch (decade) {
-    10 => filter10s,
-    20 => filter20s,
-    30 => filter30s,
-    40 => filter40s,
-    _ => filterAgeAll,
-  };
-
-  static String countryChip(String? country) => switch (country) {
-    'KR' => filterKorea,
-    'JP' => filterJapan,
-    _ => filterCountryAll,
-  };
+  // ── 카드 안 ────────────────────────────────────────────
   static const String flagKr = '$_dir/flag_kr.png';
-  static const String badgePick = '$_dir/badge_pick.png';
+  static const Size flagSize = Size(70, 71);
+
+  static const String badgePick = '$_common/badge_pick.png';
+  static const Size badgePickSize = Size(144, 71);
+
   static const String interestMovie = '$_dir/interest_movie.png';
+  static const Size interestSize = Size(204, 89);
+
   static const String iconHeart = '$_dir/icon_heart.png';
+  static const Size iconHeartSize = Size(72, 67);
+
   static const String iconComment = '$_dir/icon_comment.png';
+  static const Size iconCommentSize = Size(71, 71);
+
   static const String btnChatRequest = '$_dir/btn_chat_request.png';
+  static const Size btnChatRequestSize = Size(144, 145);
 
-  /// 시안 캔버스 폭. 에셋의 원본 픽셀이 이 폭을 전제로 그려져 있다.
-  static const double canvasWidth = 1080;
+  /// 카드(사진) 영역의 라운드 — Plan_4 외곽선 시안의 곡률에 맞춘 값이다.
+  static const double cardCornerRadius = 30;
 
-  /// 카드(사진) 영역의 라운드.
-  static const double cardCornerRadius = 24;
-
-  /// 카드 테두리 — **이미지가 아니라 코드로 그린다.**
+  /// 카드 외곽선 — **그림을 받았지만 쓰지 않고 코드로 그린다.**
   ///
-  /// `포스트 사진 외곽선.png`는 단순한 얇은 라운드 사각 외곽선이라 그림일 필요가 없다.
-  /// 오히려 이미지로 쓰면 손해다:
-  /// - 카드 크기·비율이 기기마다 달라 늘이면 **선 굵기와 모서리 곡률이 찌그러진다**
-  /// - 래스터라 확대되면 **뿌옇게 번진다**
-  /// 코드로 그리면 어떤 크기에서도 선 굵기가 일정하고 모서리가 깨끗하다.
+  /// Plan_4에 `포스트 외곽선_일반/앨범패스` 두 장이 왔는데, 열어 보니 둘 다
+  /// **얇은 선 하나**다(일반=흰 선, 앨범패스=무지개 그러데이션 선). 질감이 없다.
   ///
-  /// (글자·질감이 들어간 리소스는 그림을 그대로 쓴다 — 이건 선 하나뿐이라 예외다)
-  static const double cardBorderWidth = 1.4;
-  static const Color cardBorderColor = Color(0xCCFFFFFF);
+  /// 카드 높이는 기기마다 달라 원본 비율(1032×1797)과 어긋나므로, 그림을 늘이면
+  /// **선 굵기와 모서리 곡률이 찌그러진다**(함정 #31 — 실제로 한 번 겪었다).
+  /// 코드로 그리면 어떤 크기에서도 굵기가 일정하고 모서리가 깨끗하다.
+  /// 발광 질감이 있었다면 그림을 썼겠지만, 이건 선이라 코드가 낫다.
+  ///
+  /// 앨범 패스·프라임을 가진 사람의 포스트에는 무지개 쪽이 붙는다(기획 화면 26·29) —
+  /// 산 사람의 포스트가 한눈에 달라 보여야 파는 값이 생긴다.
+  static const double cardBorderWidth = 1.6;
+  static const Color cardBorderColor = Color(0xB3FFFFFF);
 
-  /// **꾸미기 외곽선** — 앨범 패스·프라임을 가진 사람의 포스트에 붙는다
-  /// (기획 화면 26·29 "포스트 사진 꾸미기 외곽선 적용" · "무지개빛 테두리 효과").
-  ///
-  /// 산 사람의 포스트가 **한눈에 달라 보여야** 파는 값이 생기므로 굵기도 함께 키운다.
-  /// 그림이 아니라 코드로 그리는 이유는 위 주석과 같다 — 크기가 기기마다 달라서다.
-  static const double decoratedBorderWidth = 3.0;
+  /// 무지개 외곽선 — 시안(`포스트 외곽선_앨범패스`)의 색 순서를 그대로 옮겼다.
+  /// 좌상단 자홍 → 우상단 주황 → 우하단 적분홍 → 좌하단 파랑 → 다시 자홍.
+  static const double decoratedBorderWidth = 2.6;
   static const List<Color> decoratedBorderColors = [
-    Color(0xFFFF6B9D),
-    Color(0xFFFFD24C),
-    Color(0xFF7BE8A8),
-    Color(0xFF6EC7FF),
-    Color(0xFF8B7CF6),
-    Color(0xFFFF6B9D),
+    Color(0xFFD62BFF),
+    Color(0xFFFF8A2B),
+    Color(0xFFFF2B6B),
+    Color(0xFF2B6BFF),
+    Color(0xFFD62BFF),
   ];
-
-  /// 시안 좌표 1단위의 픽셀 크기(캔버스 기준).
-  static const double unit = 28.4;
-
-  /// 화면 폭에 맞춘 배율. 폭이 좁은 기기에서도 시안 비율이 유지된다.
-  static double scaleOf(BuildContext context) =>
-      MediaQuery.sizeOf(context).width / canvasWidth;
-}
-
-/// 시안 원본 픽셀 크기를 그대로 적어 두고, 화면 폭에 맞춰 줄여 그리는 이미지.
-///
-/// 크기를 하드코딩하지 않고 원본 값을 쓰는 이유 — 나중에 **일본어판 이미지로 교체**할 때
-/// 같은 규격이면 코드를 손대지 않아도 되기 때문이다.
-class ArtImage extends StatelessWidget {
-  const ArtImage(
-    this.asset, {
-    required this.width,
-    required this.height,
-    this.scale,
-    this.opacity = 1.0,
-    super.key,
-  });
-
-  /// 시안 원본 픽셀(1080 캔버스 기준).
-  final double width;
-  final double height;
-  final String asset;
-
-  /// 배율을 직접 줄 때 사용. 없으면 화면 폭 기준([GardenArt.scaleOf]).
-  /// 필터 바처럼 **주어진 폭에 딱 맞춰야** 하는 곳에서 계산한 값을 넘긴다.
-  final double? scale;
-
-  final double opacity;
-
-  @override
-  Widget build(BuildContext context) {
-    final s = scale ?? GardenArt.scaleOf(context);
-    final image = Image.asset(
-      asset,
-      width: width * s,
-      height: height * s,
-      fit: BoxFit.contain,
-      filterQuality: FilterQuality.medium,
-    );
-    return opacity == 1.0 ? image : Opacity(opacity: opacity, child: image);
-  }
 }

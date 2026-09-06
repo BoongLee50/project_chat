@@ -150,13 +150,19 @@ class L10nJa extends L10n {
   }
 
   @override
-  String get homeMainPhoto => 'メイン';
+  String get homeMainPhoto => 'TOP';
 
   @override
-  String get homeSetMainPhoto => 'メインに';
+  String get homeSetMainPhoto => 'TOP';
 
   @override
-  String get homeMainPhotoSet => 'メイン写真に設定しました。';
+  String get homeMainPhotoSet => 'TOP写真に設定しました。';
+
+  @override
+  String get homeDeletePhotoConfirm => 'この写真を削除しますか?';
+
+  @override
+  String get homeSharePostConfirm => 'きれいに仕上がったポストを共有してみましょうか?';
 
   @override
   String get homeBoost => 'ブースト';
