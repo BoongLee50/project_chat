@@ -81,6 +81,8 @@ flutter:
     - assets/images/common/
     - assets/images/nav/
     - assets/images/post/
+    # 글자가 구워진 그림의 **일본어판**. 원문(한국어)은 위 폴더에 같은 파일명으로 둔다.
+    - assets/images/post/ja/
     - assets/images/garden/
 
   # An image asset can refer to one or more resolution-specific "variants", see

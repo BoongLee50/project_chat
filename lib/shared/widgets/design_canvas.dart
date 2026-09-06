@@ -45,6 +45,24 @@ class DesignCanvas {
   /// 시안 픽셀 → 실제 논리픽셀.
   static double px(BuildContext context, double designPx) =>
       designPx * scaleOf(context);
+
+  /// **언어별로 다른 그림**을 고른다. (이 앱 UI 언어의 두 번째 종류)
+  ///
+  /// 글자가 구워진 그림은 ARB로 못 바꾸므로 **언어마다 다른 파일**을 받는다.
+  /// 원문(한국어)은 원래 자리에, 일본어판은 **같은 파일명으로 `ja/` 하위 폴더**에 둔다:
+  ///
+  /// ```
+  /// assets/images/post/empty_bg.png      ← 한국어(기본)
+  /// assets/images/post/ja/empty_bg.png   ← 일본어
+  /// ```
+  ///
+  /// ⚠️ **두 벌이 다 있는 그림에만 쓸 것.** 없는 쪽을 부르면 런타임에 에셋을 못 찾는다.
+  /// 폴더를 새로 만들면 `pubspec.yaml`에도 줄을 넣어야 한다(함정 #30).
+  static String localizedAsset(BuildContext context, String koAsset) {
+    if (Localizations.localeOf(context).languageCode != 'ja') return koAsset;
+    final cut = koAsset.lastIndexOf('/');
+    return '${koAsset.substring(0, cut)}/ja${koAsset.substring(cut)}';
+  }
 }
 
 /// 시안 원본 크기를 적어 두고 화면 폭에 맞춰 줄여 그리는 이미지.

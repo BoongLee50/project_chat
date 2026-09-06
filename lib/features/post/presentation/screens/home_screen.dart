@@ -12,10 +12,9 @@ import '../../../../core/providers.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/confirm_dialog.dart';
 import '../../../../shared/widgets/design_canvas.dart';
-import '../../../../shared/widgets/gradient_ring.dart';
 import '../../../../shared/widgets/photo_source_sheet.dart';
 import '../widgets/post_art.dart';
-import '../../../garden/presentation/widgets/garden_art.dart';
+import '../../../garden/presentation/widgets/card_frame.dart';
 import '../../../auth/presentation/providers/session_provider.dart';
 import '../../../garden/presentation/widgets/comments_sheet.dart';
 import '../../../store/data/models/store_models.dart';
@@ -408,11 +407,22 @@ class _PostPhotoCardState extends ConsumerState<_PostPhotoCard> {
     // 카드 안 요소는 **화면 폭 배율**로 그린다(카드 폭이 곧 화면 폭에 비례하므로).
     final cardScale = DesignCanvas.scaleOf(context);
 
-    return Stack(
+    return LayoutBuilder(
+      builder: (context, cardBox) => Stack(
       fit: StackFit.expand,
+      // 앨범패스 외곽선은 여백만큼 **상자 밖으로** 그린다 — 자르면 다시 안으로 들어간다.
+      clipBehavior: Clip.none,
       children: [
-        ClipRRect(
-      borderRadius: BorderRadius.circular(AppDimens.radiusLg),
+        // 사진은 **선 안쪽으로 밀어 넣어** 어떤 경우에도 밖으로 못 나가게 한다.
+        Padding(
+          padding: EdgeInsets.all(CardFrame.photoInset(context, decorated)),
+          child: ClipRRect(
+      // 외곽선 그림의 **실측 곡률**에서 밀어 넣은 만큼 뺀 값(달빛가든 카드와 같다).
+      borderRadius: CardFrame.clipRadius(
+        context,
+        Size(cardBox.maxWidth, cardBox.maxHeight),
+        decorated,
+      ),
       child: SizedBox.expand(
         child: Stack(
           fit: StackFit.expand,
@@ -557,32 +567,12 @@ class _PostPhotoCardState extends ConsumerState<_PostPhotoCard> {
         ),
       ),
         ),
+        ),
         // 카드 외곽선은 클립 **바깥**에 얹어야 모서리가 안 깎인다.
-        // 그림 대신 코드로 그린다(이유는 GardenArt.cardBorderWidth 주석).
-        //
-        // **달빛가든 카드와 같은 값**을 쓴다: 산 사람이 자기 화면에서 먼저 확인할 수
-        // 있어야 하고, 남에게 보이는 모습과 달라서도 안 된다(기획 화면 26·29).
-        if (decorated)
-          const GradientRing(
-            radius: GardenArt.cardCornerRadius,
-            width: GardenArt.decoratedBorderWidth,
-            colors: GardenArt.decoratedBorderColors,
-          )
-        else
-          IgnorePointer(
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(
-                  GardenArt.cardCornerRadius,
-                ),
-                border: Border.all(
-                  color: GardenArt.cardBorderColor,
-                  width: GardenArt.cardBorderWidth,
-                ),
-              ),
-            ),
-          ),
+        // 달빛가든 카드와 **같은 위젯**을 쓴다(여백 보정도 거기 들어 있다).
+        CardFrame(decorated: decorated),
       ],
+      ),
     );
   }
 }
@@ -735,56 +725,48 @@ class _PassBoostRowState extends ConsumerState<_PassBoostRow> {
     final boost = wallet.activeBoost(StoreKind.postBoost);
     final boostStock = wallet.stockOf(StoreKind.postBoost);
 
-    // 시안에서 이 줄은 x=23에서 시작해 x=1052에서 끝난다 → 폭 1029.
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final designRow =
-            PostArt.btnBoostAt.dx +
-            PostArt.btnBoostSize.width -
-            DesignCanvas.contentLeft;
-        final s = constraints.maxWidth / designRow;
-        final gap =
-            (PostArt.btnBoostAt.dx -
-                    (PostArt.btnAlbumPassAt.dx +
-                        PostArt.btnAlbumPassSize.width)) *
-                s;
+    // ⚠️ **양 끝을 본문 폭에 정확히 맞춘다.**
+    // 예전엔 두 버튼 + 간격의 합을 본문 폭으로 나눠 배율을 되계산했는데,
+    // 개별 그림이 소수점에서 반올림되며 **끝 라인이 1~2px 어긋났다**(카드·주메뉴와 비교하면 보인다).
+    // 버튼은 시안 크기 그대로 그리고 **사이를 Spacer가 벌리게** 하면 좌우 끝이 정확히 맞는다.
+    final s = DesignCanvas.scaleOf(context);
 
-        return Row(
-          children: [
-            _ArtStatusButton(
-              art: PostArt.btnAlbumPass,
-              size: PostArt.btnAlbumPassSize,
-              statusLeft: PostArt.btnAlbumPassStatusLeft,
-              scale: s,
-              // 사용 중이면 남은 일수, 아니면 "구매".
-              status: passDays == null
-                  ? l10n.homeBuy
-                  : l10n.homePassRemainingDays(passDays),
-              accent: passDays != null ? AppColors.moonlight : AppColors.textSecondary,
-              onTap: () => Navigator.of(
-                context,
-              ).push(BoostScreen.route(StoreKind.albumPass)),
-            ),
-            SizedBox(width: gap),
-            _ArtStatusButton(
-              art: PostArt.btnBoost,
-              size: PostArt.btnBoostSize,
-              statusLeft: PostArt.btnBoostStatusLeft,
-              scale: s,
-              // 사용 중이면 남은 분, 보유만 했으면 "가능", 없으면 "구매".
-              status: boost != null
-                  ? l10n.homeBoostRemaining(boost.remaining.inMinutes + 1)
-                  : boostStock > 0
-                  ? l10n.homeBoostReady
-                  : l10n.homeBuy,
-              accent: boost != null ? AppColors.gold : AppColors.textSecondary,
-              onTap: () => Navigator.of(
-                context,
-              ).push(BoostScreen.route(StoreKind.postBoost)),
-            ),
-          ],
-        );
-      },
+    return Row(
+      children: [
+        _ArtStatusButton(
+          art: PostArt.btnAlbumPass,
+          size: PostArt.btnAlbumPassSize,
+          statusLeft: PostArt.btnAlbumPassStatusLeft,
+          scale: s,
+          // 사용 중이면 남은 일수, 아니면 "구매".
+          status: passDays == null
+              ? l10n.homeBuy
+              : l10n.homePassRemainingDays(passDays),
+          accent: passDays != null
+              ? AppColors.moonlight
+              : AppColors.textSecondary,
+          onTap: () => Navigator.of(
+            context,
+          ).push(BoostScreen.route(StoreKind.albumPass)),
+        ),
+        const Spacer(),
+        _ArtStatusButton(
+          art: PostArt.btnBoost,
+          size: PostArt.btnBoostSize,
+          statusLeft: PostArt.btnBoostStatusLeft,
+          scale: s,
+          // 사용 중이면 남은 분, 보유만 했으면 "가능", 없으면 "구매".
+          status: boost != null
+              ? l10n.homeBoostRemaining(boost.remaining.inMinutes + 1)
+              : boostStock > 0
+              ? l10n.homeBoostReady
+              : l10n.homeBuy,
+          accent: boost != null ? AppColors.gold : AppColors.textSecondary,
+          onTap: () => Navigator.of(
+            context,
+          ).push(BoostScreen.route(StoreKind.postBoost)),
+        ),
+      ],
     );
   }
 }
@@ -883,16 +865,15 @@ class _AuthedImage extends StatelessWidget {
 /// **안내 문구가 그림 안에 있다** — 그래서 여기에 글자를 따로 그리지 않는다.
 /// 겹쳐 그리면 같은 말이 두 번 나온다(실제로 한 번 그렇게 나왔다).
 ///
-/// 🚨 **받은 그림은 일본어판뿐이다.** 한국어로 앱을 켜도 이 안내만 일본어로 남는다.
-/// 코드로는 못 고친다 — **한국어판(또는 글자 없는 판)을 받아야 한다.**
-/// `login_bg.jpg`와 같은 종류의 리소스 결함이고 docs/08에 적어 두었다.
+/// 📌 **이 앱에서 언어별 그림을 쓰는 첫 사례다.** 한국어판·일본어판을 같은 규격으로 받아
+/// 기기 언어에 따라 고른다([DesignCanvas.localizedAsset]).
 class _EmptyPhoto extends StatelessWidget {
   const _EmptyPhoto();
 
   @override
   Widget build(BuildContext context) {
     return Image.asset(
-      PostArt.emptyBackground,
+      DesignCanvas.localizedAsset(context, PostArt.emptyBackground),
       fit: BoxFit.cover,
       alignment: Alignment.center,
       filterQuality: FilterQuality.medium,

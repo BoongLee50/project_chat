@@ -95,7 +95,45 @@ class GardenArt {
   /// 카드(사진) 영역의 라운드 — Plan_4 외곽선 시안의 곡률에 맞춘 값이다.
   static const double cardCornerRadius = 30;
 
-  /// 카드 외곽선 — **그림을 받았지만 쓰지 않고 코드로 그린다.**
+  /// 카드 외곽선 **그림**(Plan_4). 지금은 이쪽을 쓴다.
+  ///
+  /// 🚨 **두 그림의 여백이 다르다 — 그대로 채우면 사진과 선이 어긋난다.**
+  /// 실측(알파 채널):
+  /// - `card_frame.png` 1032×1797 — 선이 **이미지 가장자리에 딱 붙어 있다**(여백 0).
+  /// - `card_frame_pass.png` 1053×1817 — 발광이 번져 **선이 사방 6~8px 안쪽**이다.
+  ///
+  /// 둘을 같은 상자에 `BoxFit.fill`로 채우면 패스 쪽만 선이 안으로 들어가고,
+  /// 사진은 상자 경계까지 그려져 **밖으로 삐져나온다.**
+  /// → 패스 그림은 여백만큼 **상자 밖으로 넓혀** 그린다([framePadding]).
+  static const String cardFrame = '$_dir/card_frame.png';
+  static const Size cardFrameSize = Size(1032, 1797);
+
+  static const String cardFramePass = '$_dir/card_frame_pass.png';
+  static const Size cardFramePassSize = Size(1053, 1817);
+
+  /// 그림 안에서 **선이 차지하는 영역**(좌, 상, 우, 하 여백). 실측값이다.
+  static const EdgeInsets framePadding = EdgeInsets.zero;
+  static const EdgeInsets framePassPadding =
+      EdgeInsets.fromLTRB(8, 6, 8, 8);
+
+  /// 선 영역의 크기 — 이 크기가 카드와 일치해야 한다.
+  static Size get frameLineSize => cardFrameSize;
+  static Size get framePassLineSize => Size(
+    cardFramePassSize.width - framePassPadding.horizontal,
+    cardFramePassSize.height - framePassPadding.vertical,
+  );
+
+  /// 외곽선의 **모서리 반경**(실측 ≈24). 사진을 이 값으로 잘라야 선과 맞물린다.
+  /// 예전에 30을 쓰고 있어 사진이 코너에서 더 깎여 있었다.
+  static const double frameCornerRadius = 24;
+
+  /// 선 **두께**(실측, 알파 채널 기준). 사진을 이만큼 안으로 밀어 넣으면
+  /// 계산이 조금 어긋나도 **선 밖으로 나갈 수 없다**.
+  /// 패스 쪽이 두꺼운 건 발광이 함께 잡히기 때문이다.
+  static const double frameLineWidth = 7;
+  static const double framePassLineWidth = 13;
+
+  /// 카드 외곽선을 **코드로 그릴 때** 쓰는 값(지금은 미사용).
   ///
   /// Plan_4에 `포스트 외곽선_일반/앨범패스` 두 장이 왔는데, 열어 보니 둘 다
   /// **얇은 선 하나**다(일반=흰 선, 앨범패스=무지개 그러데이션 선). 질감이 없다.

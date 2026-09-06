@@ -8,7 +8,6 @@ import '../../../../core/error/error_messages.dart';
 import '../../../../core/util/freshness.dart';
 import '../../../../shared/widgets/authed_image.dart';
 import '../../../../shared/widgets/design_canvas.dart';
-import '../../../../shared/widgets/gradient_ring.dart';
 import '../../data/models/feed_item.dart';
 import '../../../chat/presentation/providers/chat_provider.dart';
 import '../../../chat/presentation/widgets/chat_request_dialog.dart';
@@ -20,6 +19,7 @@ import '../../../store/presentation/screens/luna_store_screen.dart';
 import '../../../store/presentation/screens/prime_screen.dart';
 import '../providers/garden_provider.dart';
 import '../widgets/comments_sheet.dart';
+import '../widgets/card_frame.dart';
 import '../widgets/garden_art.dart';
 import '../widgets/post_photo_viewer.dart';
 import '../../../../l10n/app_localizations.dart';
@@ -480,12 +480,25 @@ class _FeedPagerState extends ConsumerState<_FeedPager> {
     return Dismissible(
       key: ValueKey(item.userId),
       onDismissed: (_) => _skip(),
-      child: Stack(
+      child: LayoutBuilder(
+        builder: (context, cardBox) => Stack(
         fit: StackFit.expand,
+        // 앨범패스 외곽선은 여백만큼 **상자 밖으로** 그린다 — 자르면 다시 안으로 들어간다.
+        clipBehavior: Clip.none,
         children: [
-          ClipRRect(
-            // 시안 외곽선의 라운드와 맞춘다. 값이 다르면 프레임 모서리가 잘려 보인다.
-            borderRadius: BorderRadius.circular(GardenArt.cardCornerRadius),
+          // 사진은 **선 안쪽으로 밀어 넣어** 어떤 경우에도 밖으로 못 나가게 한다.
+          Padding(
+            padding: EdgeInsets.all(
+              CardFrame.photoInset(context, item.decorated),
+            ),
+            child: ClipRRect(
+            // 외곽선 그림의 **실측 곡률**에서 밀어 넣은 만큼 뺀 값.
+            // 카드가 세로로 눌린 만큼 자르는 쪽도 같이 눌러야 해 **타원 반경**을 쓴다.
+            borderRadius: CardFrame.clipRadius(
+              context,
+              Size(cardBox.maxWidth, cardBox.maxHeight),
+              item.decorated,
+            ),
             child: Stack(
               fit: StackFit.expand,
               children: [
@@ -728,32 +741,13 @@ class _FeedPagerState extends ConsumerState<_FeedPager> {
               ],
             ),
           ),
+          ),
 
           // 카드 외곽선 — 클립 **바깥**에 얹어야 모서리가 안 깎인다.
-          // 그림 대신 코드로 그린다(이유는 GardenArt.cardBorderWidth 주석).
-          //
           // 앨범 패스·프라임을 가진 사람의 포스트는 **무지개빛**이다(기획 화면 26·29).
-          if (item.decorated)
-            const GradientRing(
-              radius: GardenArt.cardCornerRadius,
-              width: GardenArt.decoratedBorderWidth,
-              colors: GardenArt.decoratedBorderColors,
-            )
-          else
-            IgnorePointer(
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(
-                    GardenArt.cardCornerRadius,
-                  ),
-                  border: Border.all(
-                    color: GardenArt.cardBorderColor,
-                    width: GardenArt.cardBorderWidth,
-                  ),
-                ),
-              ),
-            ),
+          CardFrame(decorated: item.decorated),
         ],
+        ),
       ),
     );
   }
