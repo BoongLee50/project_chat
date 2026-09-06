@@ -5,6 +5,7 @@ import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimens.dart';
 import '../../../../core/error/api_exception.dart';
 import '../../../../core/error/error_messages.dart';
+import '../../../../core/providers.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/authed_image.dart';
 import '../../../chat/data/models/chat_models.dart';
@@ -100,13 +101,35 @@ class _BodyState extends ConsumerState<_Body> {
     Navigator.of(context).pop();
   }
 
-  /// 이미 열려 있는 대화방으로 들어간다.
+  /// 대화방으로 들어간다.
   ///
   /// 목록에서 온 요약이 아니라 **방금 서버가 준 값**으로 방을 연다 —
   /// 화면에 들어올 때 물었으므로 여기가 항상 최신이다.
-  void _openChat() {
-    final roomId = _info.chatRoomId;
-    if (roomId == null) return;
+  ///
+  /// ⚠️ **방이 없을 수 있다.** 30일간 대화가 없으면 방이 닫히기 때문이다.
+  /// 친구라면 서버가 새 방을 만들어 준다(기획 답변: "또 대화가 필요하면 새로운 대화방을").
+  /// 친구가 아니면 대화 신청부터 해야 하므로 여기서 열지 않는다.
+  Future<void> _openChat() async {
+    final existing = _info.chatRoomId;
+    final String roomId;
+
+    if (existing != null) {
+      roomId = existing;
+    } else {
+      // 친구가 아니면 대화 신청부터 해야 한다 — 여기서 열면 신청 절차를 건너뛴다.
+      if (_info.friendRelation != FriendRelation.friend) return;
+      final l10n = L10n.of(context);
+      try {
+        roomId = await ref.read(chatApiProvider).ensureFriendRoom(_info.userId);
+      } on ApiException catch (e) {
+        if (!mounted) return;
+        _toast(errorMessage(l10n, e));
+        return;
+      }
+      if (!mounted) return;
+    }
+
+    if (!mounted) return;
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => ChatScreen(
@@ -560,7 +583,12 @@ class _Actions extends ConsumerWidget {
         ),
       );
     } else {
-      final canChat = info.chatRoomId != null;
+      // 🚨 **친구는 방이 없어도 [대화하기]다.** 방은 30일 무대화면 닫히는데,
+      // 방이 없다고 [대화 신청]을 보여 주면 친구에게 신청을 하게 되고 루나까지 나간다.
+      // 방이 없으면 `_openChat`이 서버에 새로 만들어 달라고 한다.
+      final canChat =
+          info.chatRoomId != null ||
+          info.friendRelation == FriendRelation.friend;
       content = SizedBox(
         width: double.infinity,
         child: FilledButton.icon(

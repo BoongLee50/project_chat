@@ -400,9 +400,14 @@ public class GardenService {
         return targetId;
     }
 
+    /**
+     * ⚠️ 문구에서 <b>"오늘의"를 뺐다</b> — 채팅 대화방 쿼터는 <b>평생 5개</b>라
+     * 날짜가 바뀌어도 돌아오지 않는다(기획 답변 2026-09-06).
+     * 댓글창은 영업일마다 초기화지만, 한 문구가 둘을 다 덮으려면 날짜를 말하면 안 된다.
+     */
     private ApiException quotaExceeded() {
         return new ApiException(ErrorCode.TRANSLATE_QUOTA_EXCEEDED, HttpStatus.CONFLICT,
-                "오늘의 무료 번역을 모두 사용했어요. 자동 번역 패스를 이용해 보세요.");
+                "무료 번역을 모두 사용했어요. 자동 번역 패스를 이용해 보세요.");
     }
 
     private String translated(TranslateRequest request) {

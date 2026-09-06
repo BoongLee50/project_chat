@@ -86,17 +86,40 @@
     </delete>
 
     <!--
-      보관 만료 메시지. 판정 기준은 **방 타입** — 친구를 끊어 ENDED가 된 방도 type은 FRIEND라
-      1년 기준을 그대로 적용받는다. 오래된 순으로 뽑아 FIFO로 지운다(02 §1.5).
+      보관 만료 메시지. **방 타입과 무관하게 같은 기간**이다(기획 답변 2026-09-06).
+      예전엔 친구 방만 1년이었는데 "친구방이라는 개념이 따로 있는 게 아니다"로 정리됐다.
+      오래된 순으로 뽑아 FIFO로 지운다(02 §1.5).
     -->
     <select id="selectExpiredMessageIds" resultType="string">
-        SELECT m.id
-        FROM chat_messages m
-                 JOIN chat_rooms r ON r.id = m.room_id
-        WHERE m.created_at &lt; CASE WHEN r.type = 'FRIEND' THEN #{friendBefore} ELSE #{matchBefore} END
-        ORDER BY m.created_at
+        SELECT id FROM chat_messages
+        WHERE created_at &lt; #{before}
+        ORDER BY created_at
         LIMIT #{limit}
     </select>
+
+    <!--
+      **비어 버린 대화방** — 마지막 메시지(없으면 방 생성)로부터 보관 기간이 지난 살아 있는 방.
+
+      🚨 `COUNT(*) = 0`으로 찾으면 안 된다. 갓 만든 방도 0건이라 **만들자마자 닫힌다.**
+      마지막 활동 시각을 기준으로 삼으면 새 방도 똑같이 유예를 받는다 —
+      기획이 말한 "처음 만들어질 때는 예외"가 규칙 안에 들어간다.
+    -->
+    <select id="selectRoomsIdleSince" resultMap="RoomResultMap">
+        SELECT r.*
+        FROM chat_rooms r
+        WHERE r.status = 'ACTIVE'
+          AND COALESCE(
+                (SELECT MAX(m.created_at) FROM chat_messages m WHERE m.room_id = r.id),
+                r.created_at
+              ) &lt; #{before}
+    </select>
+
+    <!-- 닫을 때 active_pair_key를 비워 같은 상대와 새 방을 만들 수 있게 한다(02 §1.5). -->
+    <update id="endRoom">
+        UPDATE chat_rooms
+        SET status = 'ENDED', ended_at = #{endedAt}, active_pair_key = NULL
+        WHERE id = #{id} AND status = 'ACTIVE'
+    </update>
 
     <delete id="deleteMessagesByIds">
         DELETE FROM chat_messages WHERE id IN

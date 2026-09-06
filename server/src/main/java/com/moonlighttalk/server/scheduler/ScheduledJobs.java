@@ -13,10 +13,10 @@ import org.springframework.stereotype.Component;
  *
  * <p>범위: 지난 영업일 정리 + 메시지 보관 만료 + BM 만료 정리(+ 프레즌스 청소는 별도).
  *
- * <p>⚠️ Plan_3에서 게이트가 폐지되며 <b>17시 개방·06시 매칭방 일괄 종료 잡이 사라졌다.</b>
- * 그래서 지금은 <b>매칭 대화방이 저절로 닫히지 않는다</b> — 신고·차단·나가기로만 닫힌다.
- * 종료 규칙은 기획 확인 대기 중이며, 필요하면 {@code SchedulerService.closeMatchRooms()}가
- * 그대로 남아 있으니 잡만 다시 달면 된다(개발용 수동 실행 엔드포인트도 유지).
+ * <p>Plan_3에서 게이트가 폐지되며 17시 개방·06시 매칭방 일괄 종료 잡이 사라졌고,
+ * 한동안 <b>대화방이 저절로 닫히지 않았다.</b> 2026-09-06 기획 답변으로 규칙이 정해졌다 —
+ * <b>방 안에 채팅 로그가 하나도 남지 않으면 그 방은 사라진다</b>({@link SchedulerService#closeEmptyRooms()}).
+ * 메시지가 30일 뒤 사라지므로 결국 "30일간 무대화면 종료"가 된다.
  */
 @Component
 public class ScheduledJobs {
@@ -42,12 +42,16 @@ public class ScheduledJobs {
     }
 
     /**
-     * 보관 만료 메시지 삭제(FIFO). 매칭 30일 / 친구 1년 — 판정은 방 타입 기준.
+     * 보관 만료 메시지 삭제(FIFO) → 그 결과 <b>비어 버린 대화방 종료</b>.
      * 정리 배치와 겹치지 않게 뒤로 뺐다.
+     *
+     * <p>⚠️ <b>순서가 있다.</b> 메시지를 먼저 지워야 방이 "비었는지" 판정할 수 있다.
+     * 두 개를 따로 걸면 사이에 다른 잡이 끼어들 수 있어 한 메서드로 묶었다.
      */
     @Scheduled(cron = "${app.scheduler.message-retention-cron:0 20 18 * * *}", zone = KST)
     public void purgeExpiredMessages() {
         schedulerService.purgeExpiredMessages();
+        schedulerService.closeEmptyRooms();
     }
 
     /**

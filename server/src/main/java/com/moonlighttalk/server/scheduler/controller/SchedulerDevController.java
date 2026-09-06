@@ -50,9 +50,16 @@ public class SchedulerDevController {
         return Map.of("ok", true);
     }
 
-    /** 보관 만료 메시지 삭제(매칭 30일 / 친구 1년). */
+    /**
+     * 보관 만료 메시지 삭제 → 비어 버린 대화방 종료.
+     *
+     * <p>실제 잡과 <b>같은 순서</b>로 부른다 — 메시지를 먼저 지워야 방이 비었는지 알 수 있다.
+     * 따로 부를 수 있게 두면 순서를 틀린 채 확인하게 된다.
+     */
     @PostMapping("/internal/scheduler/purge-messages")
     public Map<String, Object> purgeMessages(@CurrentUserId String userId) {
-        return Map.of("deleted", schedulerService.purgeExpiredMessages());
+        int deleted = schedulerService.purgeExpiredMessages();
+        int closed = schedulerService.closeEmptyRooms();
+        return Map.of("deleted", deleted, "closedRooms", closed);
     }
 }

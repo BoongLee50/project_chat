@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 /** 01 문서 §1.5(대화 신청) · §1.6(대화방) */
 @RestController
@@ -82,5 +83,17 @@ public class ChatController {
     @PostMapping("/chat/rooms/{roomId}:leave")
     public void leave(@CurrentUserId String userId, @PathVariable String roomId) {
         chatService.leaveRoom(userId, roomId);
+    }
+
+    /**
+     * 친구와의 대화방 확보 — 살아 있으면 그대로, 없으면 만들어서 준다.
+     *
+     * <p>방은 30일간 대화가 없으면 닫히므로, 친구 목록의 `roomId`가 비어 있을 수 있다.
+     * 그때 [대화하기]가 이걸 불러 방을 되살린다.
+     */
+    @PostMapping("/chat/rooms:with/{targetUserId}")
+    public Map<String, String> ensureFriendRoom(@CurrentUserId String userId,
+                                                @PathVariable String targetUserId) {
+        return Map.of("roomId", chatService.ensureFriendRoom(userId, targetUserId));
     }
 }

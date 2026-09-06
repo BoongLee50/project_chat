@@ -1591,7 +1591,7 @@ class L10nJa extends L10n {
   String get errorDailyAnswerImageKeyInvalid => '添付した写真が正しくありません。選び直してください。';
 
   @override
-  String get errorTranslateQuotaExceeded => '本日の無料翻訳をすべて使いました。自動翻訳パスをご利用ください。';
+  String get errorTranslateQuotaExceeded => '無料翻訳をすべて使いました。自動翻訳パスをご利用ください。';
 
   @override
   String get errorTranslateTargetRequired => '翻訳する相手を指定してください。';

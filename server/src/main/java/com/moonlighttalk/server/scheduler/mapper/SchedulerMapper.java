@@ -12,9 +12,25 @@ import java.util.List;
 @Mapper
 public interface SchedulerMapper {
 
-    // ── 06시 종료 처리 ──
+    // ── 대화방 종료 ──
 
-    /** 아직 살아있는 매칭 대화방. 친구(FRIEND) 방은 24시간 유지라 제외한다. */
+    /**
+     * <b>비어 버린 대화방</b> — 마지막 메시지(없으면 방 생성)로부터 보관 기간이 지난 살아 있는 방.
+     *
+     * <p>🚨 "메시지 0건"으로 찾으면 **갓 만든 방까지 잡힌다**(둘 다 0건이라 구분이 안 된다).
+     */
+    List<ChatRoom> selectRoomsIdleSince(@Param("before") LocalDateTime before);
+
+    /** 방 하나를 ENDED로 닫는다(`active_pair_key`를 비워 같은 상대와 새 방을 허용). */
+    int endRoom(@Param("id") String id, @Param("endedAt") LocalDateTime endedAt);
+
+    // ── (옛 게이트 잔재) 매칭 대화방 일괄 종료 ──
+    //
+    // ⚠️ Plan_3에서 야간 게이트가 폐지되며 06시 일괄 종료 잡이 사라졌다.
+    // 지금은 위 `selectRoomsIdleSince`가 종료를 맡는다. 아래 둘은 개발용 수동
+    // 엔드포인트에서만 쓰이며, 새 규칙과 무관하다.
+
+    /** 아직 살아있는 매칭 대화방. */
     List<ChatRoom> selectActiveMatchRooms();
 
     int endAllActiveMatchRooms(@Param("endedAt") LocalDateTime endedAt);
@@ -48,12 +64,12 @@ public interface SchedulerMapper {
     // ── 메시지 보관 만료(FIFO) ──
 
     /**
-     * 보관 기간이 지난 메시지 id를 오래된 순으로 [limit]개까지. 방 타입별로 임계 시각이 다르다.
+     * 보관 기간이 지난 메시지 id를 오래된 순으로 [limit]개까지.
+     * <b>방 타입과 무관하게 같은 기간</b>이다(기획 답변 2026-09-06).
      *
      * <p>다중 테이블 DELETE는 MariaDB에서 LIMIT을 못 쓰므로 id를 먼저 뽑아 나눠 지운다.
      */
-    List<String> selectExpiredMessageIds(@Param("matchBefore") LocalDateTime matchBefore,
-                                          @Param("friendBefore") LocalDateTime friendBefore,
+    List<String> selectExpiredMessageIds(@Param("before") LocalDateTime before,
                                           @Param("limit") int limit);
 
     int deleteMessagesByIds(@Param("ids") List<String> ids);

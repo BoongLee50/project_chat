@@ -59,6 +59,15 @@ class ChatApi {
 
   Future<void> leave(String roomId) => _client.post('/chat/rooms/$roomId:leave');
 
+  /// 친구와의 대화방을 확보한다 — 살아 있으면 그대로, 없으면 서버가 새로 만든다.
+  ///
+  /// 방은 30일간 대화가 없으면 닫히므로 목록의 `roomId`가 비어 있을 수 있다.
+  /// 그때 [대화하기]가 이걸 불러 방을 되살린다.
+  Future<String> ensureFriendRoom(String targetUserId) async {
+    final data = await _client.post('/chat/rooms:with/$targetUserId');
+    return (data as Map)['roomId'] as String;
+  }
+
   /// 음성 파일 업로드 → 스토리지 key 반환.
   ///
   /// 여기서는 파일만 올린다. 메시지는 이 key를 소켓으로 보내야 만들어진다 —

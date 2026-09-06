@@ -24,8 +24,8 @@ public class MessageRetentionPurger {
 
     /** 한 묶음 삭제. 지운 행 수를 돌려주며, 배치 크기보다 적으면 남은 게 없다는 뜻이다. */
     @Transactional
-    public int purgeBatch(LocalDateTime matchBefore, LocalDateTime friendBefore, int batchSize) {
-        List<String> ids = schedulerMapper.selectExpiredMessageIds(matchBefore, friendBefore, batchSize);
+    public int purgeBatch(LocalDateTime before, int batchSize) {
+        List<String> ids = schedulerMapper.selectExpiredMessageIds(before, batchSize);
         if (ids.isEmpty()) {
             return 0;
         }

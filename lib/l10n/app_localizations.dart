@@ -2950,7 +2950,7 @@ abstract class L10n {
   /// No description provided for @errorTranslateQuotaExceeded.
   ///
   /// In ko, this message translates to:
-  /// **'오늘의 무료 번역을 모두 사용했어요. 자동 번역 패스를 이용해 보세요.'**
+  /// **'무료 번역을 모두 사용했어요. 자동 번역 패스를 이용해 보세요.'**
   String get errorTranslateQuotaExceeded;
 
   /// No description provided for @errorTranslateTargetRequired.

@@ -122,11 +122,16 @@
         SELECT * FROM chat_rooms WHERE id = #{id}
     </select>
 
-    <select id="countActiveTranslateRooms" resultType="int">
-        SELECT COUNT(*)
-        FROM translate_rooms t
-                 JOIN chat_rooms r ON r.id = t.room_id
-        WHERE t.user_id = #{userId} AND r.status = 'ACTIVE'
+    <!--
+      무료 번역 대화방 5개 — **평생 5개다**(기획 답변 2026-09-06).
+
+      🚨 방이 사라져도 자리는 돌아오지 않는다. 예전엔 `r.status = 'ACTIVE'`로 세어
+      방이 ENDED가 되면 자리가 풀렸는데, 그러면 방을 비우기만 하면 무한히 쓸 수 있다 —
+      "5개까지"가 사실상 제한이 아니게 된다.
+      그래서 방 상태를 보지 않고 **켜 둔 이력의 수**를 센다(그래서 이 표의 행은 지우지 않는다).
+    -->
+    <select id="countTranslateRooms" resultType="int">
+        SELECT COUNT(*) FROM translate_rooms WHERE user_id = #{userId}
     </select>
 
     <!-- 상대 정보 + 마지막 메시지 + 내가 안 읽은 수 -->

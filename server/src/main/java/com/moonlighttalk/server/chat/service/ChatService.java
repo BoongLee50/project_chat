@@ -285,6 +285,42 @@ public class ChatService {
     // ── 대화방 ─────────────────────────────────────────────
 
     /**
+     * <b>친구와의 대화방을 확보한다</b> — 살아 있으면 그대로, 없으면 새로 만든다.
+     * (기획 답변 2026-09-06: "또 대화가 필요하면 새로운 대화방을 만들어줘")
+     *
+     * <p>🚨 <b>이게 없으면 친구인데 대화를 못 건다.</b> 방은 30일간 대화가 없으면 닫히는데,
+     * 방을 만들어 주는 곳이 **친구 수락 시점 하나뿐**이었다. 한 번 닫히면 친구 목록의
+     * `roomId`가 계속 비어 [대화하기]가 아무 반응도 안 하게 된다.
+     *
+     * <p>친구가 아니면 만들지 않는다 — 모르는 사이의 방은 <b>대화 신청 수락</b>으로만 생긴다.
+     * 여기서 열어 주면 신청 절차와 루나 비용을 건너뛰는 구멍이 된다.
+     */
+    @Transactional
+    public String ensureFriendRoom(String userId, String targetUserId) {
+        String pairKey = FriendRelations.pairKey(userId, targetUserId);
+
+        Friendship friendship = friendMapper.selectByPairKey(pairKey);
+        if (friendship == null || !"ACCEPTED".equals(friendship.getStatus())) {
+            throw new ApiException(ErrorCode.FRIEND_NOT_MINE, HttpStatus.FORBIDDEN,
+                    "친구만 바로 대화를 열 수 있어요.");
+        }
+
+        ChatRoom existing = chatMapper.selectActiveRoomByPairKey(pairKey);
+        if (existing != null) {
+            return existing.getId();
+        }
+
+        ChatRoom room = new ChatRoom();
+        room.setId(UUID.randomUUID().toString());
+        room.setUserA(userId);
+        room.setUserB(targetUserId);
+        room.setStatus("ACTIVE");
+        room.setType("FRIEND");
+        chatMapper.insertRoom(room);
+        return room.getId();
+    }
+
+    /**
      * 대화방 목록. 행마다 <b>접속 표시</b>와 <b>친구 관계 버튼</b>이 붙는다(기획 6-1).
      *
      * <p>관계는 방마다 질의하지 않고 <b>한 번에 읽어 맞춘다</b> — 방이 열 개면 질의도

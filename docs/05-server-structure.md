@@ -107,22 +107,28 @@ presence/
 
 `scheduler/`에 `@Scheduled` 기반 배치 정의, [02 스키마 §4](02-db-schema.md#4-스케줄러배치가-건드리는-데이터)와 대응:
 
-> 시각은 **Plan_2 기준 17:00 개방 / 06:00 종료**(KST). 아래 표의 cron은 `app.scheduler.*`로 설정하며
-> **`app.gate.open-hour`/`close-hour`와 같은 값이어야 한다**(게이트 판정과 배치 시각이 두 곳에 있음).
+> 🚨 **Plan_3에서 게이트가 폐지되며 17시 개방·06시 일괄 종료 잡이 사라졌다.**
+> 시각 기준은 이제 **영업일 경계 KST 18시**(`app.session.rollover-hour`)다. cron은 `app.scheduler.*`로
+> 설정하며 **경계 값과 맞춰야 한다**(경계 판정은 `SessionTimeService`, 배치 시각은 cron이라 두 곳에 있다).
 
 | 시각/주기 | 작업 | 상태 |
 |-----------|------|------|
-| 17:00 | 서비스 개방(게이트 판정은 시간 계산이라 상태 변경 없음 — 기록만) | ✅ |
-| 06:00 | 매칭 대화방 일괄 종료 + `ROOM_STATE(ended)` · `SYSTEM_CLOSE` 브로드캐스트. **친구 방(`type=FRIEND`)은 제외** | ✅ |
-| 06:05 | 지난 영업일 `post_photos`(+Storage 파일) / `post_stats` / `feed_skips` / `daily_usage` 삭제, `posts`는 **사용자별 최신 1건만 남기고** 삭제 | ✅ |
+| 18:05 | 지난 영업일 `post_photos`(+Storage 파일) / `post_stats` / `feed_skips` / `daily_usage` 삭제, `posts`는 **사용자별 최신 1건만 남기고** 삭제 | ✅ |
+| 18:20 | ① `chat_messages` 보관 만료 FIFO 삭제(**타입 무관 30일**) → ② **비어 버린 대화방 종료** | ✅ |
+| 10분 | 만료된 `boost_activations`/`user_entitlements` 정리, 구독 갱신·만료 | ✅ |
+| 10분 | 만료된 피드 순서(`FeedSessionStore`) 메모리 정리 | ✅ |
 | 5분 | presence 인메모리 만료 항목 청소(Redis 비활성 시 필요 — Redis면 TTL이 처리) | ✅ |
-| 06:20 | `chat_messages` 보관 만료 FIFO 삭제 — **방 타입 기준**(MATCH 30일 / FRIEND 1년, 끊은 친구 방도 FRIEND 기준) | ✅ |
-| 상시 | 만료된 `boost_activations`/`user_entitlements` 정리, 구독 갱신·만료 | ⏸ BM 테이블 미생성 |
 
 **왜 posts를 다 지우지 않는가**: 하루 한 마디(`posts.one_liner`)가 이 row에 있고 다음 영업일 첫 진입 때 값을 이어받는다. 전부 지우면 "하루 한 마디는 유지"(기획서 3-1)가 깨지므로 **사용자별 최신 1건은 남긴다**.
 
+**⚠️ 18:20 잡의 ①과 ②는 순서가 있다** — 메시지를 먼저 지워야 방이 "비었는지" 판정할 수 있다.
+따로 걸면 사이에 다른 잡이 끼어들 수 있어 **한 메서드(`purgeExpiredMessages()`)로 묶었다.**
+판정은 `COALESCE(MAX(메시지 시각), 방 생성 시각)` 기준이라 **갓 만든 방은 닫히지 않는다**
+(`COUNT(*) = 0`이면 태어나자마자 닫힌다 — [07 §3 함정 #54](07-work-log.md)).
+
 **개발용 수동 실행**: `app.scheduler.dev-trigger-enabled=true`(local 프로필만)일 때
-`POST /internal/scheduler/{gate-close, daily-cleanup, purge-messages}`로 06시를 기다리지 않고 확인할 수 있다.
+`POST /internal/scheduler/{daily-cleanup, purge-messages}`로 18시를 기다리지 않고 확인할 수 있다.
+`purge-messages`는 **실제 잡과 같은 순서로** ①②를 함께 부르고 `{ deleted, closedRooms }`를 돌려준다.
 
 ---
 

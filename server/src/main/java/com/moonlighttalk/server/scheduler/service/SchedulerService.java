@@ -43,7 +43,6 @@ public class SchedulerService {
     private final DailyQuestionMapper dailyQuestionMapper;
 
     private final int retentionDays;
-    private final int retentionDaysFriend;
     private final int retentionBatchSize;
 
     public SchedulerService(SchedulerMapper schedulerMapper,
@@ -55,7 +54,6 @@ public class SchedulerService {
                              CommentMapper commentMapper,
                              DailyQuestionMapper dailyQuestionMapper,
                              @Value("${app.chat.retention-days:30}") int retentionDays,
-                             @Value("${app.chat.retention-days-friend:365}") int retentionDaysFriend,
                              @Value("${app.chat.retention-batch-size:1000}") int retentionBatchSize) {
         this.schedulerMapper = schedulerMapper;
         this.socketRegistry = socketRegistry;
@@ -66,7 +64,6 @@ public class SchedulerService {
         this.commentMapper = commentMapper;
         this.dailyQuestionMapper = dailyQuestionMapper;
         this.retentionDays = retentionDays;
-        this.retentionDaysFriend = retentionDaysFriend;
         this.retentionBatchSize = retentionBatchSize;
     }
 
@@ -156,27 +153,56 @@ public class SchedulerService {
     }
 
     /**
-     * 보관 기간이 지난 메시지 삭제(FIFO). 기준은 <b>방 타입</b> — 매칭 30일 / 친구 1년.
-     * 친구를 끊어 ENDED가 된 방도 {@code type=FRIEND}라 1년 기준을 그대로 받는다.
+     * 보관 기간이 지난 메시지 삭제(FIFO). <b>방 타입과 무관하게 30일</b>(기획 답변 2026-09-06).
+     *
+     * <p>예전엔 친구 방만 1년이었는데 "친구방이라는 개념이 따로 있는 게 아니다"로 정리됐다.
      *
      * <p>한 트랜잭션에 수백만 행을 담지 않도록 배치 크기만큼 끊어서 지운다
      * (트랜잭션 단위는 {@link MessageRetentionPurger}).
      */
     public int purgeExpiredMessages() {
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime matchBefore = now.minusDays(retentionDays);
-        LocalDateTime friendBefore = now.minusDays(retentionDaysFriend);
+        LocalDateTime before = LocalDateTime.now().minusDays(retentionDays);
 
         int total = 0;
         while (true) {
-            int deleted = messageRetentionPurger.purgeBatch(matchBefore, friendBefore, retentionBatchSize);
+            int deleted = messageRetentionPurger.purgeBatch(before, retentionBatchSize);
             total += deleted;
             if (deleted < retentionBatchSize) {
                 break;
             }
         }
-        log.info("[배치] 보관 만료 메시지 삭제 {}건 (매칭 {}일 이전 · 친구 {}일 이전)",
-                total, retentionDays, retentionDaysFriend);
+        log.info("[배치] 보관 만료 메시지 삭제 {}건 ({}일 이전)", total, retentionDays);
         return total;
+    }
+
+    /**
+     * <b>비어 버린 대화방을 닫는다</b>(기획 답변 2026-09-06).
+     *
+     * <p>규칙: <b>방 안에 채팅 로그가 하나도 남지 않으면 그 방은 사라진다.</b>
+     * 메시지가 30일 뒤 사라지므로, 30일간 아무 대화가 없으면 방이 저절로 비게 된다.
+     *
+     * <p>🚨 <b>"갓 만든 방"과 "로그가 다 사라진 방"은 DB에서 구분되지 않는다</b> — 둘 다 0건이다.
+     * 그래서 <b>마지막 메시지 시각(없으면 방 생성 시각)</b>을 기준으로 삼는다.
+     * 이러면 기획이 말한 "처음 만들어질 때는 예외"가 규칙 안에 자연히 들어간다 —
+     * 새 방도 똑같이 30일을 받고, 그동안 한마디도 없으면 그때 닫힌다.
+     * (0건인 방만 지우게 짜면 방을 만든 직후 배치가 돌 때 바로 닫혀 버린다)
+     *
+     * <p>지우지 않고 <b>ENDED로 닫는다.</b> `active_pair_key`를 비워 같은 상대와 다시
+     * 방을 만들 수 있게 한다 — 친구든 매칭이든 필요하면 새 방이 생긴다.
+     * 행을 남기는 이유는 이력(신고·번역 자리)이 방 id에 걸려 있기 때문이다.
+     */
+    public int closeEmptyRooms() {
+        LocalDateTime now = LocalDateTime.now();
+        List<ChatRoom> rooms = schedulerMapper.selectRoomsIdleSince(now.minusDays(retentionDays));
+
+        for (ChatRoom room : rooms) {
+            schedulerMapper.endRoom(room.getId(), now);
+            Packet packet = Packet.of(Opcodes.ROOM_STATE,
+                    Map.of("roomId", room.getId(), "state", "ended"));
+            socketRegistry.sendTo(room.getUserA(), packet);
+            socketRegistry.sendTo(room.getUserB(), packet);
+        }
+        log.info("[배치] 비어 버린 대화방 종료 {}건 ({}일 무대화)", rooms.size(), retentionDays);
+        return rooms.size();
     }
 }

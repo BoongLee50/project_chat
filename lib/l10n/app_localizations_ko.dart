@@ -1598,7 +1598,7 @@ class L10nKo extends L10n {
 
   @override
   String get errorTranslateQuotaExceeded =>
-      '오늘의 무료 번역을 모두 사용했어요. 자동 번역 패스를 이용해 보세요.';
+      '무료 번역을 모두 사용했어요. 자동 번역 패스를 이용해 보세요.';
 
   @override
   String get errorTranslateTargetRequired => '번역할 상대를 지정해 주세요.';

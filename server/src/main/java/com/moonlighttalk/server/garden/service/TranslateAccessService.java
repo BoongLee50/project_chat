@@ -169,8 +169,8 @@ public class TranslateAccessService {
         return Math.max(0, properties.getFreeCommentOpens() - used);
     }
 
-    /** 열어 둔 방 중 **아직 살아 있는** 것만 센다. 끝난 방은 자리를 돌려준다. */
+    /** 열어 둔 방을 센다. 🚨 **끝난 방도 자리를 돌려주지 않는다**(평생 5개). */
     private int countOpenRooms(String userId) {
-        return chatMapper.countActiveTranslateRooms(userId);
+        return chatMapper.countTranslateRooms(userId);
     }
 }

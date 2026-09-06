@@ -34,9 +34,9 @@ sed -n '/^app:/,$p' server/src/main/resources/application.yml
 | 포스트 | `app.post.replace-limit-free` · `replace-limit-pass` | 하루 교체 몇 번 |
 | 포스트 | `app.post.upload-window-minutes` | 무료 사용자의 등록 가능 창 |
 | 대화 신청 | `app.chat.free-requests-per-day` · `request-luna-cost` | 하루 몇 번 공짜, 그 뒤 루나 얼마 |
-| 채팅 보관 | `app.chat.retention-days` · `retention-days-friend` | 메시지 며칠 보관 (매칭/친구) |
+| 채팅 보관 | `app.chat.retention-days` | 메시지 며칠 보관. 🚨 **이 값이 곧 대화방 수명**(무대화 이 기간이면 `ENDED`) — 방 타입 구분 없음 |
 | 친구 | `app.friend.max-count` · `max-count-premium` | 최대 몇 명 (일반/프라임) |
-| 번역 | `app.translate.free-comments-per-day` · `free-chat-targets-per-day` | 무료 번역 쿼터 |
+| 번역 | `app.translate.free-comment-opens`(영업일마다) · `free-chat-rooms`(🚨 **평생**) | 무료 번역 쿼터 — **세는 단위가 서로 다르다** |
 | 번역 | `app.translate.provider` | 공급자 교체(`none`=패스스루) |
 | 달빛가든 | `app.garden.score-pick` · `score-online` | 피드 스코어 가중치 |
 | 상점 | `app.store.luna-products` | 부스트·패스 **가격·구성 전부** |
@@ -67,8 +67,8 @@ sed -n '/^app:/,$p' server/src/main/resources/application.yml
 | 여는/닫는 시각 | `app.gate.*` → `GateService` | 🟢 |
 | 어떤 기능이 잠기나 | `requireGateOpen()` — chat·garden·post **10곳** | 🟡 |
 | 화면 안내 | `GateClosedView` · `GateBanner` + ARB 게이트 문구 | 🟡 |
-| **"하루"의 경계** | `session_date` — **6개 테이블**(`posts` · `daily_usage` · `feed_skips` · `daily_translate_targets` · `boost_activations` · `post_stats`) | 🔴 |
-| 06시 일괄 종료 | `SchedulerService` + `SYSTEM_CLOSE` 통지 | 🟡 |
+| **"하루"의 경계** | `session_date` — **5개 테이블**(`posts` · `daily_usage` · `feed_skips` · `boost_activations` · `post_stats`). `daily_translate_targets`는 V20에서 사라졌다 | 🔴 |
+| ~~06시 일괄 종료~~ → **30일 무대화 종료** | `SchedulerService.closeEmptyRooms()` + `ROOM_STATE` 통지. 게이트와 함께 사라졌던 자동 종료가 **보관 기간 기준으로 돌아왔다**(2026-09-06) | 🟡 |
 
 > ⚠️ **게이트를 없애는 건 설정 한 줄이지만, 영업일 개념은 그렇지 않다.**
 > 하루 종일 열리면 `session_date`를 무엇으로 끊을지(자정? 06시 유지?) 새로 정해야 한다.
@@ -136,7 +136,7 @@ sed -n '/^app:/,$p' server/src/main/resources/application.yml
 |---|---|---|
 | 무료 쿼터 | `app.translate.free-*` | 🟢 |
 | 공급자 | `app.translate.provider` + `TranslationProvider` 구현체 | 🟢 + 🟡(구현체) |
-| 채팅 "상대 수" 세는 방식 | `daily_translate_targets` (V7) | 🔴 |
+| 채팅 자리를 세는 방식 | `translate_rooms` (V20) — 🚨 **행 수를 그대로 센다.** 방 상태를 보면 방이 닫힐 때마다 자리가 돌아와 평생 5개가 무의미해진다(2026-09-06) | 🔴 |
 
 ### 2-8. 프로필 · 온보딩 · 신고
 

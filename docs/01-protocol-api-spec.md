@@ -133,19 +133,25 @@ API를 직접 부르는 것으로 뚫린다. 응답에 `photoLocked`(잠김 여�
 - 수치는 `app.comment.max-length` · `app.comment.max-depth`.
 - Engage 집계(`post_stats.comments`)는 **답글도 댓글로 센다**.
 
-⚠️ **번역 무료 단위가 기획서와 다르다(⑦단계 확인 대상)** — 지금은 `free-comments-per-day: 2`(번역 **건수**)인데
-기획서 4-2·8-2는 *"댓글창 **5회 호출**까지 무료"* 다. **값(2→5)뿐 아니라 세는 단위가 다르다.**
-
 `/translate`는 번역 API 키 설정 전엔 원문을 그대로 반환하는 패스스루로 동작(`app.translate.provider=none`), 추후 실제 번역 공급자로 전환. [05 서버구조 §9.2](05-server-structure.md#92-번역) 참고.
-무료 번역 쿼터(Plan_2): **댓글 하루 2회 / 채팅 매일 2명**, 초과 시 자동번역패스 유도. **자동번역패스**(TRANSLATE_PASS) 보유 시 무제한. 프로필 보기는 항상 무료. 프라임 구독은 번역 무제한.
+📌 **`provider=none`이면 무료 자리를 아예 쓰지 않는다** — 번역이 안 되는데 횟수만 깎을 수는 없다.
 
-**구현됨(V7).** 요청은 `{ text, targetLang, scope, targetId? }` — `scope`는 `COMMENT|CHAT|PROFILE`이고
-`CHAT`일 때만 `targetId`(상대 userId)가 필요하다(없으면 `TRANSLATE_TARGET_REQUIRED`).
+**구현됨(V7 → 재정의 V20).** 요청은 `{ text, targetLang, scope, targetId? }` — `scope`는 `COMMENT|CHAT|PROFILE`이고
+`CHAT`일 때만 `targetId`(**대화방 id**)가 필요하다(없으면 `TRANSLATE_TARGET_REQUIRED`).
 응답은 `{ text, provider, unlimited, remaining }` — `remaining`은 **소진 전에** 패스를 권하라고 주는 값이다.
 쿼터 초과는 `TRANSLATE_QUOTA_EXCEEDED`(409).
-댓글은 횟수라 `daily_usage.COMMENT_TRANSLATE`를 쓰지만, 채팅의 "2명"은 카운터로 셀 수 없어
-**상대를 행으로 남기는 `daily_translate_targets`(V7)** 를 쓴다 — 한 번 연 상대와는 그날 계속 무료.
-둘 다 06시 배치가 지난 영업일을 정리한다.
+**자동번역패스**(TRANSLATE_PASS) 보유·프라임 구독은 무제한, 프로필 보기는 항상 무료.
+
+🚨 **자리마다 세는 단위가 다르다**(⑦단계에서 기획서와 맞췄다 — 값만 고치면 여전히 틀린다):
+
+| 자리 | 단위 | 초기화 | 설정 |
+|---|---|---|---|
+| 댓글창 | **창을 여는 횟수** (창 하나 안의 댓글은 몇 개든 무료) | **영업일마다** | `free-comment-opens: 5` |
+| 대화방 | **켜 둔 방의 수** | 🚨 **없다 — 평생 5개** | `free-chat-rooms: 5` |
+
+⚠️ **대화방 자리는 방이 닫혀도 돌아오지 않는다**(기획 답변 2026-09-06).
+방에 30일 수명이 생겼으므로(§1.6), 자리를 돌려주면 **방을 비우기만 해도 무한**이 된다.
+그래서 `translate_rooms`(V20)는 방 상태를 보지 않고 **행 수**를 세고, 그 행은 지우지 않는다.
 
 ### 1.9 달빛 한마디 (기획서 8장)
 | Method | Path | 설명 | 화면 |
@@ -191,9 +197,21 @@ API를 직접 부르는 것으로 뚫린다. 응답에 `photoLocked`(잠김 여�
 | POST | `/chat/rooms/:id:accept` | 신청 수락 → 매칭 대화로 이동 | 11 |
 | POST | `/chat/rooms/:id:reject` | 신청 거절 | 11 |
 | POST | `/chat/rooms/:id:leave` | 대화방 나가기(종료) | 15 |
+| POST | `/chat/rooms:with/{targetUserId}` | **친구와의 방을 확보**(있으면 그 방, 없으면 새로) → `{ roomId }` | 22 |
 
 종료/차단/신고된 항목은 목록에서 제거, `대화 종료` 마크 30분 후 삭제.
 > 종료된 방은 재사용되지 않음 — 같은 상대와 다시 매칭되면 새 `roomId`로 새 대화방이 생성됨(02 스키마 §1.5 참고). 클라는 roomId를 상대 userId 기준으로 캐싱하지 말 것.
+
+**🚨 방에는 수명이 있다 — 30일간 대화가 없으면 배치가 `ENDED`로 닫는다**(기획 답변 2026-09-06).
+판정 기준은 **마지막 메시지 시각, 없으면 방 생성 시각**이다(그래서 갓 만든 방은 안 닫힌다).
+**친구 방도 예외가 아니다** — "친구 방"이라는 별도 개념은 없다.
+
+그래서 친구 목록·[포스트 정보]의 `roomId`는 **언제든 `null`이 될 수 있다.**
+[대화하기]는 `roomId`가 없으면 `POST /chat/rooms:with/{targetUserId}`로 방을 만들고 들어간다.
+- **친구가 아니면 `403 FRIEND_NOT_MINE`** — 모르는 사이의 방은 대화 신청·수락으로만 생긴다
+  (이 API로 열어 주면 신청 절차와 루나 비용을 통째로 건너뛴다).
+- 이미 `ACTIVE`인 방이 있으면 그 `roomId`를 그대로 돌려준다(멱등).
+- ⚠️ **무료 번역 자리는 방이 닫혀도 돌아오지 않는다**(평생 5개, §1.4).
 
 ### 1.7 친구 / 신고·차단 / 루나
 | Method | Path | 설명 | 화면 |

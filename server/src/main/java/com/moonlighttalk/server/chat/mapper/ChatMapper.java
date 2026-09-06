@@ -48,12 +48,13 @@ public interface ChatMapper {
     ChatRoom selectRoom(@Param("id") String id);
 
     /**
-     * 번역을 열어 둔 방 중 <b>아직 살아 있는</b> 것의 수(V20).
+     * 번역을 열어 둔 방의 수(V20).
      *
-     * <p>기획의 "대화방 5개까지"는 **동시에** 5개다 — 방이 끝나면 자리가 빈다.
-     * 그래서 `translate_rooms`의 행 수가 아니라 ACTIVE인 방만 센다.
+     * <p>🚨 기획의 "대화방 5개까지"는 <b>평생 5개</b>다(기획 답변 2026-09-06) —
+     * 방이 끝나도 자리가 돌아오지 않는다. 예전엔 ACTIVE인 방만 세어 자리가 풀렸는데,
+     * 그러면 방을 비우기만 하면 무한히 쓸 수 있어 제한이 제한이 아니게 된다.
      */
-    int countActiveTranslateRooms(@Param("userId") String userId);
+    int countTranslateRooms(@Param("userId") String userId);
 
     /** 내 대화방 목록(상대 정보·마지막 메시지·미확인 수 포함). */
     List<ChatRoomSummary> selectMyRooms(@Param("userId") String userId);
