@@ -24,18 +24,7 @@ public interface SchedulerMapper {
     /** 방 하나를 ENDED로 닫는다(`active_pair_key`를 비워 같은 상대와 새 방을 허용). */
     int endRoom(@Param("id") String id, @Param("endedAt") LocalDateTime endedAt);
 
-    // ── (옛 게이트 잔재) 매칭 대화방 일괄 종료 ──
-    //
-    // ⚠️ Plan_3에서 야간 게이트가 폐지되며 06시 일괄 종료 잡이 사라졌다.
-    // 지금은 위 `selectRoomsIdleSince`가 종료를 맡는다. 아래 둘은 개발용 수동
-    // 엔드포인트에서만 쓰이며, 새 규칙과 무관하다.
-
-    /** 아직 살아있는 매칭 대화방. */
-    List<ChatRoom> selectActiveMatchRooms();
-
-    int endAllActiveMatchRooms(@Param("endedAt") LocalDateTime endedAt);
-
-    // ── 06시 지난 영업일 정리 ──
+    // ── 지난 영업일 정리 ──
 
     /** 지난 영업일 사진의 스토리지 key(파일을 먼저 지우기 위해 필요). */
     List<String> selectPhotoKeysBefore(@Param("sessionDate") LocalDate sessionDate);

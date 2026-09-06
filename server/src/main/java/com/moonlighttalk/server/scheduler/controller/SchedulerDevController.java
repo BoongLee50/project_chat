@@ -22,20 +22,6 @@ public class SchedulerDevController {
         this.schedulerService = schedulerService;
     }
 
-    /**
-     * 매칭 대화방 일괄 종료 + SYSTEM_CLOSE 방송.
-     *
-     * <p>Plan_3에서 게이트가 폐지되며 <b>이걸 돌리던 06시 cron이 사라졌다.</b>
-     * 방을 언제 닫을지 규칙이 아직 정해지지 않아 기능 자체는 남겨 두고 수동 실행만 가능하게 뒀다
-     * (기획 확인 대기 — docs/09 §2-1).
-     */
-    @PostMapping("/internal/scheduler/close-match-rooms")
-    public Map<String, Object> closeMatchRooms(@CurrentUserId String userId) {
-        int ended = schedulerService.closeMatchRooms();
-        schedulerService.broadcastSystemClose();
-        return Map.of("endedRooms", ended);
-    }
-
     /** 지난 영업일 정리. */
     @PostMapping("/internal/scheduler/daily-cleanup")
     public Map<String, Object> dailyCleanup(@CurrentUserId String userId) {

@@ -68,37 +68,6 @@ public class SchedulerService {
     }
 
     /**
-     * 06:00 종료 — 매칭 대화방을 모두 닫고 참여자에게 알린다.
-     * 친구 방은 건드리지 않으므로, 친구끼리는 낮에도 대화가 이어진다.
-     */
-    @Transactional
-    public int closeMatchRooms() {
-        List<ChatRoom> rooms = schedulerMapper.selectActiveMatchRooms();
-        if (rooms.isEmpty()) {
-            log.info("[배치] 종료할 매칭 대화방 없음");
-            return 0;
-        }
-
-        int ended = schedulerMapper.endAllActiveMatchRooms(LocalDateTime.now());
-
-        for (ChatRoom room : rooms) {
-            Packet packet = Packet.of(Opcodes.ROOM_STATE, Map.of(
-                    "roomId", room.getId(), "state", "ended"));
-            socketRegistry.sendTo(room.getUserA(), packet);
-            socketRegistry.sendTo(room.getUserB(), packet);
-        }
-        log.info("[배치] 매칭 대화방 종료 {}건", ended);
-        return ended;
-    }
-
-    /** 06:00 종료 안내 — 접속 중인 모두에게 브로드캐스트. 친구 대화는 계속 가능하다. */
-    public void broadcastSystemClose() {
-        socketRegistry.broadcast(Packet.of(Opcodes.SYSTEM_CLOSE, Map.of(
-                "closeAt", LocalDateTime.now().toString(),
-                "friendRoomsOpen", true)));
-    }
-
-    /**
      * 지난 영업일 데이터 정리. 사진은 스토리지 파일을 먼저 지우고 행을 지운다
      * (반대 순서면 행만 사라지고 파일이 고아로 남는다).
      */

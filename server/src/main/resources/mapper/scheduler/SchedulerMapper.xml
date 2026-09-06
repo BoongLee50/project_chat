@@ -13,17 +13,6 @@
         <result property="createdAt" column="created_at"/>
     </resultMap>
 
-    <select id="selectActiveMatchRooms" resultMap="RoomResultMap">
-        SELECT * FROM chat_rooms WHERE status = 'ACTIVE' AND type = 'MATCH'
-    </select>
-
-    <!-- 종료 시 active_pair_key를 비워 같은 페어의 재매칭을 막지 않는다(02 §1.5) -->
-    <update id="endAllActiveMatchRooms">
-        UPDATE chat_rooms
-        SET status = 'ENDED', ended_at = #{endedAt}, active_pair_key = NULL
-        WHERE status = 'ACTIVE' AND type = 'MATCH'
-    </update>
-
     <select id="selectPhotoKeysBefore" resultType="string">
         SELECT ph.storage_key
         FROM post_photos ph

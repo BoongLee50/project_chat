@@ -300,10 +300,11 @@ store_purchases            -- 인앱결제 영수증(V6 추가 — 01 §1.8의 "
 ---
 
 ## 4. 스케줄러(배치)가 건드리는 데이터
-> 운영시간 **17:00 개방 ~ 06:00 종료**(Plan_2). 단 **친구목록·친구 대화방(chat_rooms.type=FRIEND)은 24시간** 예외.
-- **17:00** `system:gate` 오픈 / **06:00** 종료 처리 + `SYSTEM_CLOSE` 브로드캐스트(단, 친구 대화방은 종료 대상 아님)
-- **06:00** 지난 영업일 posts/post_photos + post_stats/feed_skips + daily_usage + Storage + score 키 초기화. **하루 한마디(posts.one_liner)는 유지**(초기화 제외).
-- **06:20** `chat_messages` 보관 만료 FIFO 삭제 — **방 타입 기준**(MATCH 30일 / FRIEND 1년).
+> 🚨 **운영시간 게이트는 폐지됐다**(Plan_3). 24시간 운영이고, 기준은 **영업일 경계 KST 18시**다.
+> 아래 시각은 그 경계 직후에 도는 값이다(`app.scheduler.*-cron`).
+- **18:05** 지난 영업일 posts/post_photos + post_stats/feed_skips + daily_usage + Storage + score 키 초기화. **하루 한마디(posts.one_liner)는 유지**(초기화 제외).
+- **18:20** ① `chat_messages` 보관 만료 FIFO 삭제(**타입 무관 30일**) → ② **비어 버린 방 종료**
+  (`status='ENDED'` + `active_pair_key=NULL` + 양쪽에 `ROOM_STATE(ended)`). 순서가 있다 — §1.5 참고.
 - **5분** presence 만료 항목 청소(Redis 비활성 시. Redis면 TTL이 처리).
 - **10분** 만료된 `subscriptions`(→EXPIRED, `active_user_id` 해제) · `user_entitlements` · `boost_activations` 정리. 부스트가 1시간짜리라 주기를 짧게 뒀다.
 - **미구현** 구독 자동 갱신(스토어 웹훅 서명 검증이 있어야 가능).

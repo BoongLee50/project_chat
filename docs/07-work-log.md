@@ -172,14 +172,20 @@ flutter emulators --launch Pixel_B           # 두 번째 → emulator-5556  (�
 
 **배치를 기다리지 않고 실행**(local 프로필에서만 열림 — `app.scheduler.dev-trigger-enabled`)
 ```
-POST /internal/scheduler/close-match-rooms  # 매칭방 일괄 종료 + SYSTEM_CLOSE (⚠️ 아래 참고)
 POST /internal/scheduler/daily-cleanup      # 지난 영업일 정리
-POST /internal/scheduler/purge-messages     # 메시지 보관 만료 삭제
+POST /internal/scheduler/purge-messages     # 메시지 보관 만료 삭제 → 비어 버린 방 종료
 POST /internal/scheduler/expire-benefits    # 구독·엔티틀먼트·부스트 만료 정리
 ```
-> ⚠️ `close-match-rooms`를 **돌리는 cron이 없다**. 06시 종료 배치가 게이트와 함께 사라졌고
-> Plan_3에 방 종료 규칙이 없어, 기능만 남기고 수동 실행으로 뒀다(기획 확인 대기).
-> 지금은 매칭 방이 **신고·차단·나가기 전까지 계속 열려 있다.**
+> 📌 `purge-messages`는 **①메시지 삭제 → ②방 종료**를 실제 잡과 **같은 순서로** 부르고
+> `{ deleted, closedRooms }`를 돌려준다. 순서가 반대면 지워질 메시지가 아직 남아 방이 안 닫힌다.
+>
+> 🗑️ **`close-match-rooms`는 2026-09-06에 삭제했다.** 06시 게이트 시절의 "매칭방 일괄 종료"라
+> 확정된 규칙(30일 무대화·친구 방도 동일)과 **정반대**로 동작했다 — 나이와 무관하게 다 닫고
+> 친구 방만 남겼다. `SYSTEM_CLOSE` 옵코드도 함께 지웠다(클라가 한 번도 처리한 적 없다).
+> **옛 문서를 보고 이 엔드포인트를 부르지 말 것.** 지금은 404다.
+
+**오래된 개발 데이터가 한 번에 닫힐 수 있다** — 30일 넘게 손대지 않은 방은 18:20 배치나
+`purge-messages` 한 번에 전부 `ENDED`가 된다. 놀라지 말 것(친구 방은 [대화하기]로 다시 만들면 된다).
 
 **결제 없이 상점 테스트**(`app.store.mock-purchase-enabled: true`, local 전용)
 - 영수증 토큰이 **`dev-`로 시작하면 통과**한다(`MockReceiptVerifier`). 앱의 충전/구독 버튼이 이미 이 토큰을 보낸다.

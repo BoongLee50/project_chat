@@ -26,6 +26,5 @@ public final class Opcodes {
     public static final String ROOM_STATE = "ROOM_STATE";
     public static final String PRESENCE_UPDATE = "PRESENCE_UPDATE";
     public static final String UNREAD_COUNT = "UNREAD_COUNT";
-    public static final String SYSTEM_CLOSE = "SYSTEM_CLOSE";
     public static final String ERROR = "ERROR";
 }

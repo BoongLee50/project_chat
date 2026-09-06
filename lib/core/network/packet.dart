@@ -54,6 +54,5 @@ abstract final class Op {
   static const roomState = 'ROOM_STATE';
   static const presenceUpdate = 'PRESENCE_UPDATE';
   static const unreadCount = 'UNREAD_COUNT';
-  static const systemClose = 'SYSTEM_CLOSE';
   static const error = 'ERROR';
 }
