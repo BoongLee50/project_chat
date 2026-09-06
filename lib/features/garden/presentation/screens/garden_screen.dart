@@ -69,7 +69,8 @@ class GardenScreen extends ConsumerWidget {
               // 시안 타이틀 위치(y=106).
               DesignCanvas.titleTopInSafeArea(context),
               DesignCanvas.contentLeft * scale,
-              AppDimens.gapMd,
+              // 카드 아래 여백 — 포스트 화면과 **같은 값**이어야 카드 크기가 같다.
+              DesignCanvas.cardBottomGap * scale,
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -83,7 +84,9 @@ class GardenScreen extends ConsumerWidget {
                   ),
                   child: const _GardenHeader(),
                 ),
-                SizedBox(height: GardenArt.titleToFilters * scale),
+                // 머리글 줄 높이는 **Prime 버튼**이 정한다(타이틀보다 크다) — 간격도 거기 기준.
+                // 포스트 화면과 **같은 상수**를 써야 두 카드의 시작 위치가 맞는다.
+                SizedBox(height: DesignCanvas.headerToRow * scale),
                 const _FilterBar(),
                 SizedBox(height: GardenArt.filtersToCard * scale),
                 Expanded(

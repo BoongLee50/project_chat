@@ -65,16 +65,14 @@ class PostArt {
   static const String btnShare = '$_dir/btn_share.png';
   static const Size btnShareSize = Size(418, 103);
 
-  /// 카드 윗변(시안 `23, 475`의 y). 위에 놓이는 것들의 높이 합이기도 하다 —
-  /// 타이틀(106+66) + 간격(184) + 두 버튼(96) + 간격(23) = 475.
+  /// 카드 윗변(시안 `23, 475`의 y).
+  ///
+  /// ⚠️ 위에 쌓인 높이를 셀 때 **타이틀이 아니라 Prime 버튼**이 머리글 줄 높이를 정한다
+  /// (Row라 가장 큰 요소가 이긴다). 계산은 `DesignCanvas.aboveCard()`가 한다.
   ///
   /// 카드 **높이**는 시안 값(1797)을 쓰지 않는다. 화면 세로가 기기마다 달라
   /// 그대로 쓰면 넘치거나 남는다 — 남은 공간을 카드가 채우게 한다.
   static const double cardTop = 475;
-
-  /// 타이틀 아랫변 → 두 버튼 윗변.
-  static double get titleToButtons =>
-      btnAlbumPassAt.dy - (titleAt.dy + titleSize.height);
 
   /// 두 버튼 아랫변 → 카드 윗변.
   static double get buttonsToCard =>

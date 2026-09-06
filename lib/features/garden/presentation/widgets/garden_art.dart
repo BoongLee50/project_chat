@@ -57,10 +57,6 @@ class GardenArt {
   /// 두 화면의 카드가 같은 자리·같은 폭이라 하단 주메뉴와도 선이 맞는다.
   static const double cardTop = 475;
 
-  /// 타이틀 아랫변 → 필터 줄 윗변.
-  static double get titleToFilters =>
-      filterGenderAt.dy - (titleAt.dy + titleSize.height);
-
   /// 필터 줄 아랫변 → 카드 윗변.
   static double get filtersToCard =>
       cardTop - (filterGenderAt.dy + filterGenderSize.height);

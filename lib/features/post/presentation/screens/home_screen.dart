@@ -150,19 +150,19 @@ class _PostBody extends ConsumerWidget {
     // (달빛가든은 처음부터 시안 값을 써서 이 어긋남이 없었다)
     final s = DesignCanvas.scaleOf(context);
     final topPad = DesignCanvas.titleTopInSafeArea(context);
-    // 카드 아래 여백도 시안 값(카드 바닥 2272 → 주메뉴 2295)을 쓴다.
-    final bottomPad = (2295 - 2272) * s;
+    // 카드 아래 여백 — 달빛가든과 **같은 값**이어야 카드 크기가 같다.
+    final bottomPad = DesignCanvas.cardBottomGap * s;
 
     // ⚠️ 카드 높이는 **실제로 위에 쌓인 것들의 높이**를 빼서 구한다.
     // 시안의 `cardTop`(475)을 그대로 빼면, 위 여백이 상태바만큼 줄어든 만큼(위 주석 참고)
     // 카드가 그만큼 짧아져 **아래에 빈 공간이 남는다.**
-    final aboveCard =
-        topPad +
-        (PostArt.titleSize.height +
-                PostArt.titleToButtons +
-                PostArt.btnAlbumPassSize.height +
-                PostArt.buttonsToCard) *
-            s;
+    //
+    // 계산은 **달빛가든과 같은 함수**로 한다 — 값이 갈라지면 같은 카드인데 크기가 달라진다.
+    final aboveCard = DesignCanvas.aboveCard(
+      context,
+      rowHeight: PostArt.btnAlbumPassSize.height,
+      rowToCard: PostArt.buttonsToCard,
+    );
 
     return LayoutBuilder(
       builder: (context, constraints) => SingleChildScrollView(
@@ -177,7 +177,8 @@ class _PostBody extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const _TopBar(),
-            SizedBox(height: PostArt.titleToButtons * s),
+            // 머리글 줄 높이는 **Prime 버튼**이 정한다(타이틀보다 크다) — 간격도 거기 기준.
+            SizedBox(height: DesignCanvas.headerToRow * s),
             const _PassBoostRow(),
             SizedBox(height: PostArt.buttonsToCard * s),
             SizedBox(

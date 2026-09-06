@@ -27,16 +27,53 @@ class DesignCanvas {
   /// 타이틀 윗변(시안 `47, 106`의 y). **화면 맨 위 기준**이다.
   static const double titleTop = 106;
 
-  /// SafeArea 안에서 쓸 타이틀 위 여백.
+  /// 카드 윗변(시안 `23, 475`) — **포스트와 달빛가든이 같은 값**이다.
+  static const double cardTop = 475;
+
+  /// 머리글 줄의 윗변. **타이틀(106)이 아니라 Prime 버튼(102)이 기준**이다.
   ///
-  /// ⚠️ 시안의 106은 상태바를 고려하지 않은 값인데, 실제로 그 높이가 **상태바와 거의 같다**
-  /// (완성 화면에서 타이틀이 상태바 바로 아래에 붙어 있다). SafeArea 안에서 106을 그대로
+  /// ⚠️ 머리글은 `Row`라 **가장 큰 요소가 줄 높이를 정한다.** 타이틀은 66~71인데
+  /// Prime 버튼이 83이라 실제 줄 높이는 83이고, 시작도 그만큼 위(102)다.
+  /// 타이틀 높이로 계산하면 두 화면의 카드 시작 위치가 어긋난다(실제로 7px 어긋났다).
+  static const double headerTop = 102;
+  static const double headerHeight = 83;
+
+  /// 머리글 아랫변(185) → 다음 줄 윗변(356). **두 화면이 같다** —
+  /// 포스트는 패스·부스트 두 버튼, 가든은 필터 네 칸이 그 자리에 온다.
+  static const double headerToRow = 356 - (headerTop + headerHeight);
+
+  /// 카드 아랫변(시안 2272)과 하단 주메뉴(2295) 사이.
+  ///
+  /// ⚠️ **두 화면이 반드시 같은 값을 써야 한다.** 예전에 포스트만 시안 값을 쓰고
+  /// 달빛가든은 `AppDimens.gapMd`(16 **논리**px)를 써서, 같은 카드인데
+  /// **가든 쪽만 19px 짧았다.** 배율이 걸리는 값과 안 걸리는 값을 섞으면 이렇게 갈라진다.
+  static const double cardBottomGap = 2295 - 2272;
+
+  /// SafeArea 안에서 쓸 머리글 위 여백.
+  ///
+  /// ⚠️ 시안의 값은 상태바를 고려하지 않았는데, 실제로 그 높이가 **상태바와 거의 같다**
+  /// (완성 화면에서 타이틀이 상태바 바로 아래에 붙어 있다). SafeArea 안에서 그대로
   /// 더하면 **상태바 높이만큼 두 번 밀려** 배경 사진과 아래 버튼 사이가 벌어진다.
-  /// 그래서 이미 밀린 만큼을 빼 준다. 상태바가 106보다 큰 기기에서는 0이 된다.
+  /// 그래서 이미 밀린 만큼을 빼 준다. 상태바가 더 큰 기기에서는 0이 된다.
   static double titleTopInSafeArea(BuildContext context) {
     final statusBar = MediaQueryData.fromView(View.of(context)).padding.top;
-    return (titleTop * scaleOf(context) - statusBar).clamp(0.0, double.infinity);
+    return (headerTop * scaleOf(context) - statusBar)
+        .clamp(0.0, double.infinity);
   }
+
+  /// 카드 위에 쌓인 것들의 높이 — **두 화면이 이 함수를 함께 쓴다.**
+  ///
+  /// 값이 갈라지면 같은 카드인데 화면마다 크기가 달라진다(실제로 그렇게 어긋났다).
+  ///
+  /// [rowHeight]  머리글 아래 한 줄의 높이(포스트 96 · 가든 94)
+  /// [rowToCard]  그 줄과 카드 사이(포스트 23 · 가든 25)
+  static double aboveCard(
+    BuildContext context, {
+    required double rowHeight,
+    required double rowToCard,
+  }) =>
+      titleTopInSafeArea(context) +
+      (headerHeight + headerToRow + rowHeight + rowToCard) * scaleOf(context);
 
   /// 화면 폭에 맞춘 배율. 폭이 좁은 기기에서도 시안 비율이 유지된다.
   static double scaleOf(BuildContext context) =>
