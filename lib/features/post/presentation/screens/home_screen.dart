@@ -17,6 +17,7 @@ import '../widgets/post_art.dart';
 import '../../../garden/presentation/widgets/card_frame.dart';
 import '../../../auth/presentation/providers/session_provider.dart';
 import '../../../garden/presentation/widgets/comments_sheet.dart';
+import '../../../garden/presentation/widgets/garden_art.dart';
 import '../../../store/data/models/store_models.dart';
 import '../../../store/presentation/providers/store_provider.dart';
 import '../../../store/presentation/screens/boost_screen.dart';
@@ -200,7 +201,7 @@ class _PostBody extends ConsumerWidget {
 /// 타이틀 · Prime · 루나상점. **셋 다 그림이다**(Plan_4).
 ///
 /// 달빛가든 머리글과 **같은 자리·같은 그림**을 쓴다(시안에서 두 화면의 상단이 동일하다) —
-/// 그래서 Prime·루나 버튼은 `assets/images/common/`에 두고 양쪽이 공유한다.
+/// Prime·루나 버튼은 달빛가든 폴더로 전달됐고 양쪽이 그 자리를 함께 가리킨다.
 class _TopBar extends ConsumerWidget {
   const _TopBar();
 
@@ -478,97 +479,113 @@ class _PostPhotoCardState extends ConsumerState<_PostPhotoCard> {
                 ),
               ),
 
-            // 좌상단 — `[TOP]` `[PICK]`.
-            //
-            // ⚠️ **Plan_4에서 이름·나이·지역이 빠졌다.** 좌표 시안과 완성 화면 둘 다
-            // 이 자리에 [TOP]과 PICK만 둔다. 내 포스트 화면에서 내 이름을 다시 보여줄
-            // 이유가 없다 — 이름이 필요한 건 남을 보는 달빛가든 카드 쪽이다.
-            if (hasPhoto)
-              Positioned(
-                top: 12,
-                left: 14,
-                child: Row(
-                  children: [
-                    _MainPhotoChip(
-                      isMain: _photos[index].id == widget.post.mainPhotoId,
-                      onTap: _setMain,
-                    ),
-                    const SizedBox(width: 10),
-                    // 부스트를 켠 동안만 PICK이 붙는다(기획 3-1).
-                    const _PickBadge(),
-                  ],
-                ),
-              ),
-
-            // 우상단 — 장수 · 삭제.
-            if (hasPhoto)
-              Positioned(
-                top: 12,
-                right: 12,
-                child: Row(
-                  children: [
-                    // 시안은 눈금이 아니라 `1/9` **숫자 표기**다.
-                    Text(
-                      '${index + 1}/${widget.post.maxPhotos}',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    GestureDetector(
-                      onTap: _delete,
-                      child: ArtImage(
-                        PostArt.btnDelete,
-                        width: PostArt.btnDeleteSize.width,
-                        height: PostArt.btnDeleteSize.height,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-            // 촬영 버튼 — 시안에서 **한 줄 위, 가로 가운데**다(1838, 카드 바닥에서 270 위).
-            // 좋아요·공유와 같은 줄에 두면 시안과 달라지고 서로 밀어낸다.
-            //
-            // 그림으로 오지 않아 코드로 그린다(무지개 링 + 흰 카메라).
-            // 장수를 넘기면 흐려지지만 **눌리기는 한다** — 아무 반응이 없으면 고장으로 보인다.
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: PostArt.cameraBottom * cardScale,
-              child: Center(
-                child: _CameraButton(
-                  enabled: widget.post.canAddPhoto,
-                  onTap: _captureOrExplain,
-                ),
-              ),
-            ),
-
-            // 맨 아랫줄 — 좋아요·댓글(좌) / 공유하기(우). 시안에서 둘의 아랫변이 같다.
-            //
-            // 각각 Positioned로 두면 글자가 길어질 때 **서로 겹친다**
-            // (실제로 "공유됨 · 다시 공유하기"가 촬영 버튼을 가렸다).
-            // 한 Row에 넣어 자리를 나눠 갖게 한다.
-            Positioned(
-              left: PostArt.cardSidePad * cardScale,
-              right: PostArt.cardSidePad * cardScale,
-              bottom: PostArt.bottomRowBottom * cardScale,
-              child: Row(
-                children: [
-                  // 댓글을 누르면 [포스트 댓글]이 뜬다(기획 3-1).
-                  _CardCounts(post: widget.post),
-                  const Spacer(),
-                  Flexible(flex: 0, child: _ShareButton(post: widget.post)),
-                ],
-              ),
-            ),
           ],
         ),
       ),
         ),
         ),
+        // ── 카드 위에 얹히는 것들 ──────────────────────────────
+        // 🚨 **사진을 자르는 안쪽 상자가 아니라 카드 상자에 얹는다.**
+        // 안쪽 상자는 사진이 선 밖으로 못 나가게 `photoInset`만큼 줄여 둔 것이라,
+        // 거기에 얹으면 시안 좌표가 그만큼 밀리고 **앨범패스 여부에 따라 밀리는 양도 달라진다.**
+        // 좌상단 — `[TOP]`.
+        //
+        // ⚠️ **이름·나이·지역이 빠졌다.** 좌표 시안과 완성 화면 둘 다 이 자리에
+        // [TOP]과 PICK만 둔다. 내 포스트 화면에서 내 이름을 다시 보여줄 이유가 없다 —
+        // 이름이 필요한 건 남을 보는 달빛가든 카드 쪽이다.
+        //
+        // 🚨 **PICK은 [TOP] 바로 옆이 아니다.** 시안에서 [TOP]이 308에서 끝나는데
+        // PICK은 414에서 시작한다(사이 106). Row로 붙여 두면 시안과 달라진다.
+        if (hasPhoto)
+          Positioned(
+            left: PostArt.topChipAt.dx * cardScale,
+            top: PostArt.topChipAt.dy * cardScale,
+            child: _MainPhotoChip(
+              isMain: _photos[index].id == widget.post.mainPhotoId,
+              onTap: _setMain,
+            ),
+          ),
+        // 부스트를 켠 동안만 PICK이 붙는다(기획 3-1).
+        if (hasPhoto)
+          Positioned(
+            left: PostArt.pickAt.dx * cardScale,
+            top: PostArt.pickAt.dy * cardScale,
+            child: const _PickBadge(),
+          ),
+
+        // 우상단 — 삭제(시안 `903, 631`). **모서리에 붙지 않는다.**
+        if (hasPhoto)
+          Positioned(
+            right: PostArt.deleteRight * cardScale,
+            top: PostArt.deleteTop * cardScale,
+            child: GestureDetector(
+              onTap: _delete,
+              child: ArtImage(
+                PostArt.btnDelete,
+                width: PostArt.btnDeleteSize.width,
+                height: PostArt.btnDeleteSize.height,
+              ),
+            ),
+          ),
+
+        // 몇 장째인지 — 휴지통 **왼쪽**에 둔다.
+        // 시안에는 없지만 사람마다·순간마다 달라지는 **상태**라 폰트가 맡는 자리다(14 §3).
+        if (hasPhoto)
+          Positioned(
+            right:
+                (PostArt.deleteRight + PostArt.btnDeleteSize.width + 12) *
+                    cardScale,
+            top:
+                (PostArt.deleteTop + PostArt.btnDeleteSize.height / 2 - 10) *
+                    cardScale,
+            child: Text(
+              '${index + 1}/${widget.post.maxPhotos}',
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+
+        // 촬영 버튼 — 시안에서 **한 줄 위, 가로 가운데**다(1838, 카드 바닥에서 270 위).
+        // 좋아요·공유와 같은 줄에 두면 시안과 달라지고 서로 밀어낸다.
+        //
+        // 그림으로 오지 않아 코드로 그린다(무지개 링 + 흰 카메라).
+        // 장수를 넘기면 흐려지지만 **눌리기는 한다** — 아무 반응이 없으면 고장으로 보인다.
+        Positioned(
+          left: 0,
+          right: 0,
+          bottom: PostArt.cameraBottom * cardScale,
+          child: Center(
+            child: _CameraButton(
+              enabled: widget.post.canAddPhoto,
+              onTap: _captureOrExplain,
+            ),
+          ),
+        ),
+
+        // 맨 아랫줄 — 좋아요(좌) · 댓글(가운데 왼쪽) · 공유하기(우).
+        //
+        // 🚨 **셋의 자리가 시안에 각각 박혀 있다.** 하트 64 · 말풍선 324 · 공유 577이고
+        // 아랫변은 셋 다 2202~2204다. 예전엔 하트·말풍선을 한 Row로 붙여 두었는데,
+        // 시안은 **둘 사이를 260이나 벌려** 놓았다 — 그 틈이 좋아요 수가 놓이는 자리다.
+        Positioned(
+          left: PostArt.heartLeft * cardScale,
+          bottom: PostArt.bottomIconsBottom * cardScale,
+          child: _LikeCount(post: widget.post),
+        ),
+        Positioned(
+          left: PostArt.commentLeft * cardScale,
+          bottom: PostArt.bottomIconsBottom * cardScale,
+          child: _CommentCount(post: widget.post),
+        ),
+        Positioned(
+          right: PostArt.shareRight * cardScale,
+          bottom: PostArt.shareBottom * cardScale,
+          child: _ShareButton(post: widget.post),
+        ),
+
         // 카드 외곽선은 클립 **바깥**에 얹어야 모서리가 안 깎인다.
         // 달빛가든 카드와 **같은 위젯**을 쓴다(여백 보정도 거기 들어 있다).
         CardFrame(decorated: decorated),
@@ -599,9 +616,34 @@ class _PickBadge extends ConsumerWidget {
   }
 }
 
-/// 카드 좌하단 — 달빛가든에서 받은 좋아요·댓글(기획 3-1, "사진 종류와 상관없음").
-class _CardCounts extends ConsumerWidget {
-  const _CardCounts({required this.post});
+/// 카드 좌하단 — 달빛가든에서 받은 좋아요 수(기획 3-1, "사진 종류와 상관없음").
+class _LikeCount extends StatelessWidget {
+  const _LikeCount({required this.post});
+
+  final MyPost post;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        // ✅ 하트가 **그림으로 왔다**(달빛가든과 같은 그림 — 두 화면에서 달라 보이면 안 된다).
+        ArtImage(
+          GardenArt.iconHeart,
+          width: GardenArt.iconHeartSize.width,
+          height: GardenArt.iconHeartSize.height,
+        ),
+        const SizedBox(width: 8),
+        Text('${post.likes}', style: _countStyle),
+      ],
+    );
+  }
+}
+
+/// 카드 좌하단 — 댓글 수. 누르면 [포스트 댓글]이 열린다(기획 3-1).
+class _CommentCount extends ConsumerWidget {
+  const _CommentCount({required this.post});
 
   final MyPost post;
 
@@ -609,46 +651,40 @@ class _CardCounts extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final profile = ref.watch(sessionProvider).profile;
 
-    return Row(
-      children: [
-        const Icon(Icons.favorite, color: AppColors.danger, size: 20),
-        const SizedBox(width: 6),
-        Text('${post.likes}', style: _countStyle),
-        const SizedBox(width: 16),
-        GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          // [댓글] 버튼 → [포스트 댓글] 화면(기획 3-1). 내 포스트라 대상도 나다.
-          onTap: profile == null
-              ? null
-              : () => showCommentsSheet(
-                  context,
-                  kind: CommentTargetKind.post,
-                  targetId: profile.id,
-                  ownerId: profile.id,
-                  title: L10n.of(context).commentsTitle(profile.nickname ?? ''),
-                ),
-          child: Row(
-            children: [
-              const Icon(
-                Icons.mode_comment_outlined,
-                color: Colors.white,
-                size: 19,
-              ),
-              const SizedBox(width: 6),
-              Text('${post.comments}', style: _countStyle),
-            ],
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      // 내 포스트라 댓글의 대상도 나다.
+      onTap: profile == null
+          ? null
+          : () => showCommentsSheet(
+              context,
+              kind: CommentTargetKind.post,
+              targetId: profile.id,
+              ownerId: profile.id,
+              title: L10n.of(context).commentsTitle(profile.nickname ?? ''),
+            ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          ArtImage(
+            GardenArt.iconComment,
+            width: GardenArt.iconCommentSize.width,
+            height: GardenArt.iconCommentSize.height,
           ),
-        ),
-      ],
+          const SizedBox(width: 8),
+          Text('${post.comments}', style: _countStyle),
+        ],
+      ),
     );
   }
-
-  static const _countStyle = TextStyle(
-    color: Colors.white,
-    fontSize: 15,
-    fontWeight: FontWeight.w700,
-  );
 }
+
+const _countStyle = TextStyle(
+  color: Colors.white,
+  fontSize: 15,
+  fontWeight: FontWeight.w700,
+);
 
 /// 대표 사진 표시 겸 지정 버튼(Plan_3 §3-1 `[메인]`).
 ///

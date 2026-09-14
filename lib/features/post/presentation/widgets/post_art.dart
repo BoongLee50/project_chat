@@ -82,12 +82,47 @@ class PostArt {
   static double get buttonsToCard =>
       cardTop - (btnAlbumPassAt.dy + btnAlbumPassSize.height);
 
-  /// 카드 안 요소들의 **카드 바닥 기준** 위치(시안 원본 픽셀).
-  ///
-  /// 세로를 카드 윗변이 아니라 **아랫변 기준으로** 잡는 이유 — 카드 높이가 기기마다
-  /// 달라지기 때문이다. 윗변 기준으로 두면 화면이 짧을 때 아래로 밀려 잘린다.
-  /// (카드 바닥 = 시안 2272)
+  // ── 카드 안 요소들의 자리 (2026-09-14 시안 실측) ──────────────
+  //
+  // 시안은 **화면 절대좌표**를 적어 주는데, 카드는 기기마다 높이가 달라 그대로 못 쓴다.
+  // 그래서 **카드 좌상단(23, 475)을 뺀 카드 기준 값**으로 바꿔 둔다.
+  // 카드 = (23, 475) ~ (1055, 2272), 즉 1032×1797 (외곽선 그림과 같은 크기).
+  //
+  // 세로는 **위쪽 요소만 윗변 기준**이고, 아래쪽 요소는 **아랫변 기준**이다 —
+  // 카드가 늘거나 줄 때 위는 위에, 아래는 아래에 붙어 있어야 한다.
+
+  static const double _cardLeft = 23;
+  static const double _cardTopAbs = 475;
+  static const double _cardRight = 1055;
   static const double _cardBottom = 2272;
+
+  static Offset _fromCardTopLeft(Offset at) =>
+      Offset(at.dx - _cardLeft, at.dy - _cardTopAbs);
+
+  /// `[TOP]` — 시안 `64, 527`.
+  static Offset get topChipAt => _fromCardTopLeft(const Offset(64, 527));
+
+  /// `PICK` — 시안 `414, 527`. **[TOP] 바로 옆이 아니다**(사이가 106 벌어져 있다).
+  static Offset get pickAt => _fromCardTopLeft(const Offset(414, 527));
+
+  /// 삭제(휴지통) — 시안 `903, 631`. 카드 **오른쪽에서** 재고, 세로는 윗변 기준이다.
+  /// ⚠️ 모서리에 딱 붙지 않는다 — 오른쪽 47 · 위 156 안쪽이다.
+  static double get deleteRight => _cardRight - (903 + btnDeleteSize.width);
+  static double get deleteTop => 631 - _cardTopAbs;
+
+  /// 좋아요 하트 — 시안 `64, 2137`.
+  static double get heartLeft => 64 - _cardLeft;
+
+  /// 댓글 말풍선 — 시안 `324, 2133`. **하트에 붙어 있지 않다**(사이가 260 벌어져 있다).
+  /// 그 틈이 곧 좋아요 수가 놓이는 자리다.
+  static double get commentLeft => 324 - _cardLeft;
+
+  /// 하트·말풍선의 **아랫변**(둘 다 시안에서 2204에 끝난다).
+  static const double bottomIconsBottom = _cardBottom - 2204;
+
+  /// `[포스트 공유하기]` — 시안 `577, 2099`. 오른쪽에서 잰다.
+  static double get shareRight => _cardRight - (577 + btnShareSize.width);
+  static double get shareBottom => _cardBottom - (2099 + btnShareSize.height);
 
   /// 촬영 버튼 윗변(시안 `441, 1838`).
   static const double _cameraTop = 1838;
@@ -97,11 +132,6 @@ class PostArt {
   static double get cameraBottom =>
       _cardBottom - (_cameraTop + btnCameraSize.height);
 
-  /// 좋아요·공유 줄의 아랫변(시안에서 둘 다 ≈2201).
-  static const double bottomRowBottom = _cardBottom - 2201;
-
-  /// 카드 안쪽 좌우 여백 — 하트가 시안 64, 카드 왼쪽이 23이므로 41이다.
-  static const double cardSidePad = 41;
 
   /// 촬영 버튼 — 시안 `441, 1838`.
   ///
