@@ -214,29 +214,30 @@ class _FilterBar extends ConsumerWidget {
 
     // 시안(4-1)의 이 줄은 **네 칸**이다 — 성별·나이·국가 칩 셋 + **[달빛 한마디] 버튼**.
     //
-    // ⚠️ **Plan_4에서 칩 구조가 바뀌었다.** 전에는 값마다 그림이 따로였는데
-    // (`filter_female`·`filter_20s`…) 이제 **라벨 한 장씩**만 온다.
-    // 고른 값은 그림의 글자 자리에 **폰트로 덮어 그린다** — 값이 늘어도 그림을 새로 안 받는다.
-    // 드롭다운 목록의 글자도 ARB다. **칩의 아이콘·테두리만 이미지**인 셈이다.
+    // ✅ 2026-09-14 전달본부터 **값마다 칩 그림**이 온다(`여자`·`20대`·`한국`).
+    // 폰트로 덮어 그리던 방식을 걷어냈다 — 아이콘까지 값에 맞게 바뀌어야 하기 때문이다.
     return LayoutBuilder(
       builder: (context, constraints) {
-        // 시안에서 이 줄은 x=23에서 시작해 x=1054에서 끝난다 → 폭 1031.
-        // 그 폭에 딱 맞추면 칩 크기와 간격이 시안 그대로 나온다.
-        const designRow = 1031.0;
+        // 간격은 시안 좌표에서 나온다(칩 끝 → 다음 칩 시작).
+        const gGenderAge = 17.0; // 240 → 257
+        const gAgeCountry = 10.0; // 484 → 494
+        const gCountryDaily = 13.0; // 711 → 724
+
+        // 🚨 **줄 폭을 상수로 굳히지 말 것.** 예전엔 시안의 1031을 박아 뒀는데,
+        // `달빛 한마디` 그림이 330 → 335로 커진 전달본에서 **줄이 1.9px 넘쳐 잘렸다.**
+        // 실제로 놓을 것들의 합으로 재면 그림 규격이 또 바뀌어도 저절로 맞는다.
+        final designRow = GardenArt.filterGenderSize.width +
+            gGenderAge +
+            GardenArt.filterAgeSize.width +
+            gAgeCountry +
+            GardenArt.filterCountrySize.width +
+            gCountryDaily +
+            GardenArt.btnDailyQuestionSize.width;
+
         final s = constraints.maxWidth / designRow;
-        // 간격도 시안 좌표에서 나온다(칩 끝 → 다음 칩 시작).
-        final gapGenderAge =
-            (GardenArt.filterAgeAt.dx -
-                    (GardenArt.filterGenderAt.dx + GardenArt.filterGenderSize.width)) *
-                s;
-        final gapAgeCountry =
-            (GardenArt.filterCountryAt.dx -
-                    (GardenArt.filterAgeAt.dx + GardenArt.filterAgeSize.width)) *
-                s;
-        final gapCountryDaily =
-            (GardenArt.btnDailyQuestionAt.dx -
-                    (GardenArt.filterCountryAt.dx + GardenArt.filterCountrySize.width)) *
-                s;
+        final gapGenderAge = gGenderAge * s;
+        final gapAgeCountry = gAgeCountry * s;
+        final gapCountryDaily = gCountryDaily * s;
 
         return Row(
           children: [
@@ -245,11 +246,7 @@ class _FilterBar extends ConsumerWidget {
               size: GardenArt.filterGenderSize,
               scale: s,
               // 고르지 않았으면 그림에 구워진 `성별`이 그대로 보인다.
-              picked: switch (filter.gender) {
-                'FEMALE' => l10n.genderFemale,
-                'MALE' => l10n.genderMale,
-                _ => null,
-              },
+              artByValue: GardenArt.filterGenderByValue,
               options: {
                 l10n.commonAll: null,
                 l10n.genderFemale: 'FEMALE',
@@ -263,9 +260,7 @@ class _FilterBar extends ConsumerWidget {
               art: GardenArt.filterAge,
               size: GardenArt.filterAgeSize,
               scale: s,
-              picked: filter.ageDecade == null
-                  ? null
-                  : l10n.ageDecade(filter.ageDecade!),
+              artByValue: GardenArt.filterAgeByValue,
               options: {
                 l10n.commonAll: null,
                 l10n.ageDecade(10): 10,
@@ -281,11 +276,7 @@ class _FilterBar extends ConsumerWidget {
               art: GardenArt.filterCountry,
               size: GardenArt.filterCountrySize,
               scale: s,
-              picked: switch (filter.country) {
-                'KR' => l10n.countryKorea,
-                'JP' => l10n.countryJapan,
-                _ => null,
-              },
+              artByValue: GardenArt.filterCountryByValue,
               options: {
                 l10n.commonAll: null,
                 l10n.countryKorea: 'KR',
@@ -313,11 +304,14 @@ class _FilterBar extends ConsumerWidget {
 }
 
 /// 시안 칩(이미지)을 누르면 드롭다운이 뜬다.
-/// **칩은 이미지, 값과 목록 글자는 ARB** — 이 앱의 UI 언어 두 종류가 한 위젯에 같이 있다.
+/// **칩은 통째로 이미지, 목록 글자는 ARB** — 이 앱의 UI 언어 두 종류가 한 위젯에 같이 있다.
 ///
-/// Plan_4의 칩에는 `성별`·`나이`·`국가`가 **구워져 있다.** 값을 고르면 그 글자 자리를 덮고
-/// 고른 값을 그린다 — 칩 안쪽이 불투명 검정이라 같은 색으로 덮으면 이어져 보인다.
-/// 고르지 않았으면 덮지 않으므로 원래 라벨이 그대로 보인다.
+/// ✅ **2026-09-14 전달본부터 값마다 칩 그림이 온다.** 그전에는 라벨 그림 한 장에
+/// 고른 값을 **폰트로 덮어 그렸는데**, 이제 `여자`·`20대`·`한국`이 각각 한 장이라
+/// **아이콘까지 값에 맞게 바뀐다**(여성 아이콘·태극기). 폰트로는 못 하던 것이다.
+///
+/// 🚨 **그림이 있는 값만 고를 수 있다.** [artByValue]에 없는 값이 오면 라벨 그림으로
+/// 되돌아간다 — 칩이 비어 보이지 않게 하기 위해서다(값을 늘리려면 그림을 먼저 받는다).
 class _ArtMenu<T> extends StatelessWidget {
   const _ArtMenu({
     required this.art,
@@ -326,19 +320,20 @@ class _ArtMenu<T> extends StatelessWidget {
     required this.options,
     required this.current,
     required this.onPick,
-    this.picked,
+    this.artByValue = const {},
   });
 
+  /// 아무것도 고르지 않았을 때의 칩(`성별`·`나이`·`국가`).
   final String art;
+
+  /// 고른 값 → 그 값이 박힌 칩 그림.
+  final Map<T, String> artByValue;
 
   /// 시안 원본 픽셀(1080 캔버스 기준).
   final Size size;
 
   /// 필터 바가 한 줄에 딱 맞도록 계산한 배율.
   final double scale;
-
-  /// 고른 값의 표시 문구. null이면 그림의 라벨을 그대로 둔다.
-  final String? picked;
 
   /// 표시명 → 값(전체는 null)
   final Map<String, T?> options;
@@ -371,40 +366,12 @@ class _ArtMenu<T> extends StatelessWidget {
       child: SizedBox(
         width: w,
         height: h,
-        child: Stack(
-          children: [
-            ArtImage(
-              art,
-              width: size.width,
-              height: size.height,
-              scale: scale,
-            ),
-            if (picked != null)
-              Positioned(
-                // 아이콘 오른쪽부터 테두리 안쪽까지. 위아래로도 테두리를 피한다.
-                left: GardenArt.filterLabelLeft * scale,
-                right: 10 * scale,
-                top: 10 * scale,
-                bottom: 10 * scale,
-                child: ColoredBox(
-                  color: GardenArt.filterChipFill,
-                  child: Center(
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: Text(
-                        picked!,
-                        maxLines: 1,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 30,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-          ],
+        // 고른 값의 칩이 있으면 그것을, 없으면 라벨 칩을 그린다.
+        child: ArtImage(
+          (current == null ? null : artByValue[current as T]) ?? art,
+          width: size.width,
+          height: size.height,
+          scale: scale,
         ),
       ),
     );
@@ -570,14 +537,15 @@ class _FeedPagerState extends ConsumerState<_FeedPager> {
                           ),
                         ),
                       ),
-                      // 국기 — 한국은 시안 그림, 그 외는 이모지(이모지는 기기마다 모양이 다름)
+                      // 국기 — 한·일은 시안 그림(2026-09-14에 일장기도 받았다).
+                      // 그 밖의 나라는 이모지로 둔다(기기마다 모양이 다르지만 그림이 없다).
                       if (item.flag.isNotEmpty) ...[
                         const SizedBox(width: 8),
-                        if (item.country == 'KR')
-                          const ArtImage(
-                            GardenArt.flagKr,
-                            width: 70,
-                            height: 71,
+                        if (GardenArt.flagOf(item.country) case final flag?)
+                          ArtImage(
+                            flag,
+                            width: GardenArt.flagSize.width,
+                            height: GardenArt.flagSize.height,
                           )
                         else
                           Text(item.flag, style: const TextStyle(fontSize: 20)),

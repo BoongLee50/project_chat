@@ -6,7 +6,9 @@ import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimens.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/authed_image.dart';
+import '../../../../shared/widgets/design_canvas.dart';
 import '../../data/models/feed_item.dart';
+import 'garden_art.dart';
 
 /// 상대의 포스트 사진을 넘겨 보는 창(기획 4-1).
 ///
@@ -146,13 +148,19 @@ class _LockPage extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: AppDimens.gapLg),
-            FilledButton(
-              onPressed: () {
+            // ✅ 버튼이 **그림으로 왔다**(시안 `288, 1674`의 `새 사진 등록하기`).
+            // 문구가 그림 안에 있으므로 `gardenPhotoLockedAction`을 겹쳐 그리지 않는다.
+            GestureDetector(
+              onTap: () {
                 // 열쇠는 상품이 아니라 **내 포스트**다 — 상점이 아니라 포스트 탭으로 보낸다.
                 Navigator.pop(context);
                 ref.read(selectedTabProvider.notifier).state = MainTab.post;
               },
-              child: Text(l10n.gardenPhotoLockedAction),
+              child: ArtImage(
+                GardenArt.btnAddPost,
+                width: GardenArt.btnAddPostSize.width,
+                height: GardenArt.btnAddPostSize.height,
+              ),
             ),
           ],
         ),

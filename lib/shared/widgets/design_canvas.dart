@@ -83,22 +83,49 @@ class DesignCanvas {
   static double px(BuildContext context, double designPx) =>
       designPx * scaleOf(context);
 
-  /// 🇯🇵 **일본어판이 실제로 들어와 있는 그림들.**
+  /// 🇯🇵 **일본어판이 실제로 들어와 있는 그림들** — 원문 경로 → 일본어판 규격.
   ///
   /// 여기 적힌 것만 언어에 따라 경로가 바뀐다. 적혀 있지 않으면 **원문(한국어) 그대로** 나간다 —
   /// 일본어판이 없는데 `ja/` 경로를 만들면 **일본어 사용자에게만 그림이 깨지고**,
   /// 한국어로 테스트하는 우리는 영영 모른다(함정 #40과 같은 조용한 죽음).
   /// 한국어가 잠시 보이는 편이 깨진 자리보다 낫다.
   ///
+  /// 🚨 **값(규격)이 `null`이 아닌 것은 일본어판 크기가 원문과 다르다는 뜻이다.**
+  /// 하단 주메뉴 글자가 그렇다 — 「月光ガーデン」이 `달빛가든`보다 훨씬 넓다(146 → 232).
+  /// 원문 규격으로 그리면 **일본어에서만 글자가 눌린다.** 그래서 규격도 함께 적고,
+  /// [ArtImage]가 언어에 맞는 크기로 그린다.
+  /// (`null`이면 두 판의 규격이 같다는 뜻이고, 테스트가 실제로 같은지 확인한다)
+  ///
   /// 📌 **이 목록이 곧 "받은 것"의 기록이다.** 일본어판 파일이 오면
   /// `ja/`에 넣고 여기 한 줄 더하면 끝이다(호출부는 손대지 않는다).
-  /// **아직 못 받은 목록**은 [docs/08 §0-1]에 있다 — 2026-09-14 기준 20장.
+  /// **아직 못 받은 목록**은 `docs/08` §0-1에 있다.
   ///
   /// ⚠️ 새 `ja/` 폴더를 만들었으면 **`pubspec.yaml`에도 줄을 넣을 것**(폴더 선언은 재귀가 아니다).
-  /// `test/localized_assets_test.dart`가 이 둘을 함께 검사한다.
-  static const Set<String> localizedAssets = {
-    'assets/images/post/empty_bg.png',
+  /// `test/localized_assets_test.dart`가 파일·선언·규격을 함께 검사한다.
+  static const Map<String, Size?> localizedAssets = {
+    // 포스트 — 사진을 안 올렸을 때의 안내가 그림에 구워져 있다.
+    'assets/images/scene_post/back_nopost.png': null,
+
+    // 하단 주메뉴 글자 — 일본어는 길이가 제각각이라 규격을 따로 적는다.
+    'assets/images/scene_garden/menu_post_text_color.png': Size(79, 40),
+    'assets/images/scene_garden/menu_post_text_normal.png': Size(79, 40),
+    'assets/images/scene_garden/menu_garden_text_color.png': Size(232, 40),
+    'assets/images/scene_garden/menu_garden_text_normal.png': Size(237, 40),
+    'assets/images/scene_garden/menu_room_text_color.png': Size(155, 36),
+    'assets/images/scene_garden/menu_room_text_normal.png': Size(155, 36),
+    'assets/images/scene_garden/menu_friend_text_color.png': Size(80, 39),
+    'assets/images/scene_garden/menu_friend_text_normal.png': Size(80, 39),
+    'assets/images/scene_garden/menu_profile_text_color.png': Size(234, 38),
+    'assets/images/scene_garden/menu_profile_text_normal.png': Size(234, 38),
   };
+
+  /// [koAsset]을 [languageCode]로 그릴 때의 **규격**. 일본어판 크기가 따로 적혀 있으면 그것을 쓴다.
+  ///
+  /// 🚨 이게 없으면 일본어 글자가 **원문 상자에 눌려 들어간다**(「月光ガーデン」이 `달빛가든` 폭으로).
+  static Size localizedSize(String koAsset, String languageCode, Size koSize) {
+    if (languageCode != 'ja') return koSize;
+    return localizedAssets[koAsset] ?? koSize;
+  }
 
   /// **언어별로 다른 그림**을 고른다. (이 앱 UI 언어의 두 번째 종류)
   ///
@@ -106,8 +133,8 @@ class DesignCanvas {
   /// 원문(한국어)은 원래 자리에, 일본어판은 **같은 파일명으로 `ja/` 하위 폴더**에 둔다:
   ///
   /// ```
-  /// assets/images/post/empty_bg.png      ← 한국어(기본)
-  /// assets/images/post/ja/empty_bg.png   ← 일본어
+  /// assets/images/scene_post/back_nopost.png      ← 한국어(기본)
+  /// assets/images/scene_post/ja/back_nopost.png   ← 일본어
   /// ```
   ///
   /// 📌 **글자가 든 그림은 예외 없이 이걸 거쳐 부르면 된다.** [localizedAssets]에 없으면
@@ -121,10 +148,9 @@ class DesignCanvas {
   /// 두 번 적용해도 같은 결과다 — `ja/` 경로는 [localizedAssets]에 없으므로 그대로 나간다.
   static String localizedAssetFor(String koAsset, String languageCode) {
     if (languageCode != 'ja') return koAsset;
-    if (!localizedAssets.contains(koAsset)) return koAsset;
+    if (!localizedAssets.containsKey(koAsset)) return koAsset;
 
-    final cut = koAsset.lastIndexOf('/');
-    return '${koAsset.substring(0, cut)}/ja${koAsset.substring(cut)}';
+    return japanesePathOf(koAsset);
   }
 
   /// [koAsset]의 일본어판이 놓일 자리. 목록·테스트가 쓴다.
@@ -169,10 +195,13 @@ class ArtImage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final s = scale ?? DesignCanvas.scaleOf(context);
+    final lang = Localizations.localeOf(context).languageCode;
+    // 언어별 그림은 **규격도 언어를 따른다** — 일본어 글자가 원문 상자에 눌리면 안 된다.
+    final size = DesignCanvas.localizedSize(asset, lang, Size(width, height));
     final image = Image.asset(
-      DesignCanvas.localizedAsset(context, asset),
-      width: width * s,
-      height: height * s,
+      DesignCanvas.localizedAssetFor(asset, lang),
+      width: size.width * s,
+      height: size.height * s,
       fit: fit,
       filterQuality: FilterQuality.medium,
     );

@@ -9,14 +9,18 @@ import 'package:flutter/material.dart';
 class PostArt {
   const PostArt._();
 
-  static const String _dir = 'assets/images/post';
-  static const String _common = 'assets/images/common';
+  /// 전달 폴더(`Plan_Chat/UI/Scene_Post`)와 **같은 이름·같은 구조**다.
+  static const String _dir = 'assets/images/scene_post';
+
+  /// 🚨 **포스트 전용이 아니다.** Prime·루나·하트·말풍선처럼 여러 화면이 함께 쓰는 그림은
+  /// 달빛가든 쪽으로 전달됐다 — 받은 자리를 그대로 두고 여기서 가리킨다.
+  static const String _garden = 'assets/images/scene_garden';
 
   /// 화면 배경. 상단 밤 풍경이 그려져 있다.
-  static const String background = '$_dir/post_bg.png';
+  static const String background = '$_dir/back_post.png';
 
   /// 사진을 아직 안 올렸을 때 카드 안을 채우는 그림.
-  static const String emptyBackground = '$_dir/empty_bg.png';
+  static const String emptyBackground = '$_dir/back_nopost.png';
   static const Size emptySize = Size(1022, 1790);
 
   static const String title = '$_dir/title_post.png';
@@ -24,20 +28,20 @@ class PostArt {
   static const Offset titleAt = Offset(47, 106);
 
   // 상단 우측 두 버튼 — 달빛가든과 같은 자리·같은 그림이라 common에 둔다.
-  static const String btnPrime = '$_common/btn_prime.png';
+  static const String btnPrime = '$_garden/button_prime.png';
   static const Size btnPrimeSize = Size(248, 83);
   static const Offset btnPrimeAt = Offset(577, 102);
 
-  static const String btnLuna = '$_common/btn_luna.png';
+  static const String btnLuna = '$_garden/button_luna.png';
   static const Size btnLunaSize = Size(216, 83);
   static const Offset btnLunaAt = Offset(838, 102);
 
   // 카드 위 두 버튼.
-  static const String btnAlbumPass = '$_dir/btn_album_pass.png';
+  static const String btnAlbumPass = '$_dir/button_postalbum.png';
   static const Size btnAlbumPassSize = Size(601, 96);
   static const Offset btnAlbumPassAt = Offset(23, 356);
 
-  static const String btnBoost = '$_dir/btn_boost.png';
+  static const String btnBoost = '$_dir/button_boost.png';
   static const Size btnBoostSize = Size(407, 96);
   static const Offset btnBoostAt = Offset(645, 356);
 
@@ -52,17 +56,17 @@ class PostArt {
   // ⚠️ **세로 위치는 시안 값을 그대로 쓰지 않는다.** 카드가 화면 높이에 따라 늘어나기 때문이다
   // (기기마다 세로 비율이 달라 1080×2640을 그대로 옮기면 아래가 잘리거나 남는다).
   // 가로 위치·크기만 시안을 따르고, 세로는 카드의 위/아래에 붙인다.
-  static const String btnTopOn = '$_dir/btn_top_on.png';
-  static const String btnTopOff = '$_dir/btn_top_off.png';
+  static const String btnTopOn = '$_dir/button_mainpost_color.png';
+  static const String btnTopOff = '$_dir/button_mainpost_normal.png';
   static const Size btnTopSize = Size(244, 84);
 
-  static const String badgePick = '$_common/badge_pick.png';
+  static const String badgePick = '$_dir/icon_pick.png';
   static const Size badgePickSize = Size(144, 71);
 
-  static const String btnDelete = '$_dir/btn_delete.png';
+  static const String btnDelete = '$_dir/button_delete.png';
   static const Size btnDeleteSize = Size(105, 101);
 
-  static const String btnShare = '$_dir/btn_share.png';
+  static const String btnShare = '$_dir/button_postmake.png';
   static const Size btnShareSize = Size(418, 103);
 
   /// 카드 윗변(시안 `23, 475`의 y).
@@ -85,8 +89,13 @@ class PostArt {
   /// (카드 바닥 = 시안 2272)
   static const double _cardBottom = 2272;
 
-  /// 촬영 버튼 아랫변(시안 1838 + 164 = 2002).
-  static const double cameraBottom = _cardBottom - 2002;
+  /// 촬영 버튼 윗변(시안 `441, 1838`).
+  static const double _cameraTop = 1838;
+
+  /// 촬영 버튼 아랫변 — **그림 높이에서 계산한다.**
+  /// 예전엔 코드로 그리던 지름(164)을 더해 굳혀 뒀는데, 그림(188)으로 오면서 값이 어긋났다.
+  static double get cameraBottom =>
+      _cardBottom - (_cameraTop + btnCameraSize.height);
 
   /// 좋아요·공유 줄의 아랫변(시안에서 둘 다 ≈2201).
   static const double bottomRowBottom = _cardBottom - 2201;
@@ -94,13 +103,10 @@ class PostArt {
   /// 카드 안쪽 좌우 여백 — 하트가 시안 64, 카드 왼쪽이 23이므로 41이다.
   static const double cardSidePad = 41;
 
-  /// 촬영 버튼은 그림으로 오지 않았다 — 무지개 링 + 흰 카메라라 코드로 그린다.
-  /// 시안 `441, 1838` 자리이고 지름은 약 164다.
-  static const double cameraSize = 164;
-  static const List<Color> cameraRing = [
-    Color(0xFF7B5CFF),
-    Color(0xFFFF4FA3),
-    Color(0xFFFFB03A),
-    Color(0xFF7B5CFF),
-  ];
+  /// 촬영 버튼 — 시안 `441, 1838`.
+  ///
+  /// ✅ **이제 그림으로 온다**(2026-09-14 전달본). 예전에는 무지개 링을 코드로 그렸는데,
+  /// 실물은 링의 색 배치와 안쪽 검정 원까지 있어 코드로 흉내 내던 것과 다르다.
+  static const String btnCamera = '$_dir/button_camera.png';
+  static const Size btnCameraSize = Size(193, 188);
 }

@@ -78,12 +78,13 @@ flutter:
   # ⚠️ 하위 폴더는 자동으로 안 들어간다 — 폴더를 추가하면 여기에도 줄을 넣을 것(07 함정 #30).
   assets:
     - assets/images/
-    - assets/images/common/
-    - assets/images/nav/
-    - assets/images/post/
+    # 전달 폴더(Plan_Chat/UI/Scene_*) 구조를 그대로 따른다 — 다음 전달본을 그대로 떨어뜨리면 된다.
+    - assets/images/scene_post/
+    - assets/images/scene_garden/
     # 글자가 구워진 그림의 **일본어판**. 원문(한국어)은 위 폴더에 같은 파일명으로 둔다.
-    - assets/images/post/ja/
-    - assets/images/garden/
+    # ⚠️ 폴더 선언은 **재귀가 아니라서** ja/ 도 따로 적어야 한다.
+    - assets/images/scene_post/ja/
+    - assets/images/scene_garden/ja/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

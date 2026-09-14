@@ -20,7 +20,7 @@ void main() {
 
   group('언어별 그림(ja/)', () {
     test('등록된 그림은 한국어판·일본어판이 둘 다 있다', () {
-      for (final ko in DesignCanvas.localizedAssets) {
+      for (final ko in DesignCanvas.localizedAssets.keys) {
         final ja = DesignCanvas.japanesePathOf(ko);
         expect(File(ko).existsSync(), isTrue,
             reason: '한국어 원본이 없다: $ko');
@@ -34,7 +34,7 @@ void main() {
     test('두 폴더가 pubspec.yaml에 선언돼 있다', () {
       // 🚨 Flutter의 에셋 폴더 선언은 **재귀가 아니다.**
       // `assets/images/post/`는 그 폴더의 파일만 포함하고 `post/ja/`는 안 들어간다.
-      for (final ko in DesignCanvas.localizedAssets) {
+      for (final ko in DesignCanvas.localizedAssets.keys) {
         for (final path in [ko, DesignCanvas.japanesePathOf(ko)]) {
           final dir = '${path.substring(0, path.lastIndexOf('/'))}/';
           expect(pubspecAssetDirs, contains(dir),
@@ -44,27 +44,37 @@ void main() {
       }
     });
 
-    test('한국어판과 일본어판의 규격이 같다', () {
-      // `ArtImage`가 **시안 원본 크기를 상수로** 들고 그리기 때문에, 규격이 다르면
-      // 일본어에서만 그림이 늘어나거나 찌그러진다. 기획에 "같은 규격으로"를 요구하는 이유다.
-      for (final ko in DesignCanvas.localizedAssets) {
+    test('적어 둔 일본어판 규격이 실제 파일과 맞는다', () {
+      // `ArtImage`가 **상수로 받은 크기**로 그리므로, 적어 둔 값이 파일과 다르면
+      // 일본어에서만 그림이 눌리거나 늘어난다.
+      //   · 값이 null  → 두 판의 규격이 같아야 한다
+      //   · 값이 있음  → 그 값이 일본어판 파일의 실제 규격이어야 한다
+      DesignCanvas.localizedAssets.forEach((ko, declaredJaSize) {
         final ja = DesignCanvas.japanesePathOf(ko);
         final koSize = _pngSize(File(ko));
         final jaSize = _pngSize(File(ja));
-        if (koSize == null || jaSize == null) {
-          continue; // PNG가 아니면 헤더를 못 읽는다 — 검사에서 뺀다
+        if (koSize == null || jaSize == null) return; // PNG가 아니면 헤더를 못 읽는다
+
+        if (declaredJaSize == null) {
+          expect(jaSize, equals(koSize),
+              reason: '규격이 다르다: $ko $koSize vs $ja $jaSize\n'
+                  '→ 같은 규격으로 다시 받거나, localizedAssets에 일본어판 규격을 적을 것.');
+        } else {
+          expect(
+              (width: declaredJaSize.width.toInt(),
+                  height: declaredJaSize.height.toInt()),
+              equals(jaSize),
+              reason: 'localizedAssets에 적어 둔 규격이 파일과 다르다: $ja\n'
+                  '적은 값 $declaredJaSize / 실제 $jaSize');
         }
-        expect(jaSize, equals(koSize),
-            reason: '규격이 다르다: $ko $koSize vs $ja $jaSize\n'
-                '→ 같은 규격으로 다시 받을 것(캔버스를 키우지 말고 글자를 맞춰 달라고 한다).');
-      }
+      });
     });
 
     test('ja/ 안의 파일은 빠짐없이 등록돼 있다', () {
       // 파일만 넣고 목록에 안 적으면 **아무 일도 일어나지 않는다** —
       // 한국어가 계속 나가므로 "일본어판을 넣었는데 안 바뀐다"로 한참 헤맨다.
       final registered = {
-        for (final ko in DesignCanvas.localizedAssets)
+        for (final ko in DesignCanvas.localizedAssets.keys)
           DesignCanvas.japanesePathOf(ko),
       };
 
@@ -77,8 +87,8 @@ void main() {
   });
 
   group('localizedAssetFor', () {
-    const registered = 'assets/images/post/empty_bg.png';
-    const unregistered = 'assets/images/post/title_post.png';
+    const registered = 'assets/images/scene_post/back_nopost.png';
+    const unregistered = 'assets/images/scene_post/title_post.png';
 
     test('한국어는 언제나 원문 경로', () {
       expect(DesignCanvas.localizedAssetFor(registered, 'ko'), registered);
@@ -87,7 +97,7 @@ void main() {
 
     test('등록된 그림만 일본어 경로로 바뀐다', () {
       expect(DesignCanvas.localizedAssetFor(registered, 'ja'),
-          'assets/images/post/ja/empty_bg.png');
+          'assets/images/scene_post/ja/back_nopost.png');
     });
 
     test('🚨 등록되지 않은 그림은 일본어에서도 원문 그대로', () {

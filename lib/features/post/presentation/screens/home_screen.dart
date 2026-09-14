@@ -894,31 +894,15 @@ class _CameraButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final d = PostArt.cameraSize * DesignCanvas.scaleOf(context);
     return GestureDetector(
       onTap: onTap,
       child: Opacity(
         // 막혀도 **누를 수는 있게** 둔다 — 흐리게만 해서 "지금은 안 된다"를 보인다.
         opacity: enabled ? 1 : 0.45,
-        child: Container(
-          width: d,
-          height: d,
-          padding: EdgeInsets.all(d * 0.07),
-          decoration: const BoxDecoration(
-            shape: BoxShape.circle,
-            gradient: SweepGradient(colors: PostArt.cameraRing),
-          ),
-          child: Container(
-            decoration: const BoxDecoration(
-              shape: BoxShape.circle,
-              color: Color(0xFF12101F),
-            ),
-            child: Icon(
-              Icons.photo_camera_rounded,
-              color: Colors.white,
-              size: d * 0.44,
-            ),
-          ),
+        child: ArtImage(
+          PostArt.btnCamera,
+          width: PostArt.btnCameraSize.width,
+          height: PostArt.btnCameraSize.height,
         ),
       ),
     );
