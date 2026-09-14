@@ -44,6 +44,19 @@
 > ✅ **언어와 무관한 그림 27장은 그대로 쓴다** — 아이콘·프레임·배경, 그리고
 > **`TOP`·`PICK`·`Prime`**(영어라 두 언어 모두에서 통한다).
 
+**받았을 때 할 일은 셋뿐이다**(2026-09-14 정비 — 호출부는 손대지 않는다):
+
+1. `ja/`에 **같은 파일명**으로 넣는다
+2. `DesignCanvas.localizedAssets`에 **원문 경로 한 줄** 추가
+3. 새 폴더였다면 `pubspec.yaml`에 `- .../ja/` 줄 추가 → `flutter clean` 후 재빌드
+
+`ArtImage`가 그리는 자리는 **전부 한꺼번에** 일본어로 바뀐다.
+빠뜨린 것은 `test/localized_assets_test.dart`가 잡는다(파일 없음 · pubspec 누락 ·
+**규격 불일치** · 등록 누락). 자세한 규칙은 [14 §2](14-ui-ground-rules.md).
+
+> ⚠️ **지금 필요한 폴더**: `assets/images/nav/ja/` · `garden/ja/`(신설) ·
+> `post/ja/`(있음) · 로그인 배경까지 하면 `images/ja/`.
+
 ## 0. 현재 상태 (2026-09-06 갱신)
 
 | 항목 | 상태 |

@@ -189,6 +189,14 @@ flutter emulators --launch Pixel_B           # 두 번째 → emulator-5556  (�
 ⚠️ 대신 **영업일 경계가 KST 18시**다. 18시 이전은 `session_date`가 **어제**로 잡히므로,
 "오늘 것"이 안 보인다고 느껴지면 게이트가 아니라 이 경계를 의심할 것(`app.session.rollover-hour`).
 
+🇯🇵 **일본어로 켜서 보는 법**(글자가 든 그림은 이렇게만 확인된다)
+```bash
+adb shell cmd locale set-app-locales com.example.project_chat --locales ja-JP
+```
+일본어판이 없는 그림은 **한국어가 그대로 보이는 게 정상**이다(깨지지 않는다 — 14 §2).
+어느 그림에 일본어판이 있는지는 `DesignCanvas.localizedAssets`가 정본이고,
+`flutter test test/localized_assets_test.dart`가 목록·파일·규격을 함께 검사한다.
+
 📌 **검증 스크립트는 [`tools/`](../tools/README.md)에 있다**(저장소에 들어 있다).
 ```bash
 python tools/verify/verify_moderation.py        # 신청 만료 · 신고/차단 정리 범위

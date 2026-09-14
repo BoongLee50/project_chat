@@ -83,6 +83,23 @@ class DesignCanvas {
   static double px(BuildContext context, double designPx) =>
       designPx * scaleOf(context);
 
+  /// 🇯🇵 **일본어판이 실제로 들어와 있는 그림들.**
+  ///
+  /// 여기 적힌 것만 언어에 따라 경로가 바뀐다. 적혀 있지 않으면 **원문(한국어) 그대로** 나간다 —
+  /// 일본어판이 없는데 `ja/` 경로를 만들면 **일본어 사용자에게만 그림이 깨지고**,
+  /// 한국어로 테스트하는 우리는 영영 모른다(함정 #40과 같은 조용한 죽음).
+  /// 한국어가 잠시 보이는 편이 깨진 자리보다 낫다.
+  ///
+  /// 📌 **이 목록이 곧 "받은 것"의 기록이다.** 일본어판 파일이 오면
+  /// `ja/`에 넣고 여기 한 줄 더하면 끝이다(호출부는 손대지 않는다).
+  /// **아직 못 받은 목록**은 [docs/08 §0-1]에 있다 — 2026-09-14 기준 20장.
+  ///
+  /// ⚠️ 새 `ja/` 폴더를 만들었으면 **`pubspec.yaml`에도 줄을 넣을 것**(폴더 선언은 재귀가 아니다).
+  /// `test/localized_assets_test.dart`가 이 둘을 함께 검사한다.
+  static const Set<String> localizedAssets = {
+    'assets/images/post/empty_bg.png',
+  };
+
   /// **언어별로 다른 그림**을 고른다. (이 앱 UI 언어의 두 번째 종류)
   ///
   /// 글자가 구워진 그림은 ARB로 못 바꾸므로 **언어마다 다른 파일**을 받는다.
@@ -93,10 +110,25 @@ class DesignCanvas {
   /// assets/images/post/ja/empty_bg.png   ← 일본어
   /// ```
   ///
-  /// ⚠️ **두 벌이 다 있는 그림에만 쓸 것.** 없는 쪽을 부르면 런타임에 에셋을 못 찾는다.
-  /// 폴더를 새로 만들면 `pubspec.yaml`에도 줄을 넣어야 한다(함정 #30).
-  static String localizedAsset(BuildContext context, String koAsset) {
-    if (Localizations.localeOf(context).languageCode != 'ja') return koAsset;
+  /// 📌 **글자가 든 그림은 예외 없이 이걸 거쳐 부르면 된다.** [localizedAssets]에 없으면
+  /// 원문을 그대로 돌려주므로, 일본어판이 오기 전에 미리 감싸 두어도 안전하다.
+  /// ([ArtImage]는 이미 자동으로 거친다 — 따로 부를 필요가 없다)
+  static String localizedAsset(BuildContext context, String koAsset) =>
+      localizedAssetFor(koAsset, Localizations.localeOf(context).languageCode);
+
+  /// [localizedAsset]의 알맹이. `BuildContext` 없이 테스트하려고 분리했다.
+  ///
+  /// 두 번 적용해도 같은 결과다 — `ja/` 경로는 [localizedAssets]에 없으므로 그대로 나간다.
+  static String localizedAssetFor(String koAsset, String languageCode) {
+    if (languageCode != 'ja') return koAsset;
+    if (!localizedAssets.contains(koAsset)) return koAsset;
+
+    final cut = koAsset.lastIndexOf('/');
+    return '${koAsset.substring(0, cut)}/ja${koAsset.substring(cut)}';
+  }
+
+  /// [koAsset]의 일본어판이 놓일 자리. 목록·테스트가 쓴다.
+  static String japanesePathOf(String koAsset) {
     final cut = koAsset.lastIndexOf('/');
     return '${koAsset.substring(0, cut)}/ja${koAsset.substring(cut)}';
   }
@@ -106,6 +138,12 @@ class DesignCanvas {
 ///
 /// 크기를 하드코딩하지 않고 **원본 값을 그대로 쓰는** 이유는 나중에
 /// **일본어판 이미지로 교체**할 때 같은 규격이면 코드를 손대지 않아도 되기 때문이다.
+///
+/// 🇯🇵 **언어별 그림을 자동으로 고른다.** 그리기 직전에
+/// [DesignCanvas.localizedAsset]을 거치므로 호출부는 원문 경로만 알면 된다 —
+/// 일본어판이 들어오면 [DesignCanvas.localizedAssets]에 한 줄 더하는 것으로
+/// **이 위젯을 쓰는 모든 자리가 한꺼번에** 일본어로 바뀐다.
+/// (글자 없는 그림은 목록에 없으니 아무 일도 일어나지 않는다)
 class ArtImage extends StatelessWidget {
   const ArtImage(
     this.asset, {
@@ -132,7 +170,7 @@ class ArtImage extends StatelessWidget {
   Widget build(BuildContext context) {
     final s = scale ?? DesignCanvas.scaleOf(context);
     final image = Image.asset(
-      asset,
+      DesignCanvas.localizedAsset(context, asset),
       width: width * s,
       height: height * s,
       fit: fit,

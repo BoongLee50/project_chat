@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimens.dart';
+import '../../../../shared/widgets/design_canvas.dart';
 import '../../data/models/auth_models.dart';
 import '../providers/session_provider.dart';
 
@@ -34,8 +35,13 @@ class LoginScreen extends ConsumerWidget {
         fit: StackFit.expand,
         children: [
           // 배경 사진 (밤의 한·일 정취)
+          //
+          // 🚨 이 그림에는 **글자가 구워져 있다**(현재 한국어 *"밤에만 만나는 대화"* —
+          // 야간 게이트가 폐지돼 내용 자체가 틀렸다. 새 그림 대기 중, 08 참고).
+          // 언어별 교체 통로를 미리 거쳐 둔다 — 일본어판이 오면
+          // `DesignCanvas.localizedAssets`에 한 줄 더하는 것으로 켜진다.
           Image.asset(
-            'assets/images/login_bg.jpg',
+            DesignCanvas.localizedAsset(context, 'assets/images/login_bg.jpg'),
             fit: BoxFit.cover,
             alignment: Alignment.topCenter,
           ),
