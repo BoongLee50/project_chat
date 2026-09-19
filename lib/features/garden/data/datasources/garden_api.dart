@@ -92,4 +92,17 @@ class GardenApi {
     final data = await _client.post('/translate/rooms/$roomId');
     return TranslateAccess.fromJson(Map<String, dynamic>.from(data as Map));
   }
+
+  /// 받은 대화 신청의 한마디를 번역한다 — **항상 무료**
+  /// (기획사항 2026-09-19: "받은 신청에서 번역은 무조건 공짜", 서버 scope `REQUEST`).
+  ///
+  /// 📌 공급자가 꺼져 있으면(`provider: none`) 서버가 **원문을 그대로** 돌려준다.
+  /// 화면은 번역문이 원문과 같으면 [원문보기]를 감춘다 — 같은 말을 두 번 보여 줄 이유가 없다.
+  Future<String> translateRequestMessage(String text, String targetLang) async {
+    final data = await _client.post(
+      '/translate',
+      body: {'text': text, 'targetLang': targetLang, 'scope': 'REQUEST'},
+    );
+    return (data as Map)['text'] as String? ?? text;
+  }
 }

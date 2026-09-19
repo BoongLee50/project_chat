@@ -14,6 +14,8 @@ public record ChatRequestDto(
         String partnerCountry,
         String partnerPhotoUrl,
         LocalDateTime createdAt,
-        boolean partnerOnline
+        boolean partnerOnline,
+        /// 받는 사람이 이 신청을 열어 봤는가(V26). false면 셀에 미확인 표시(`N`)가 붙는다.
+        boolean viewed
 ) {
 }

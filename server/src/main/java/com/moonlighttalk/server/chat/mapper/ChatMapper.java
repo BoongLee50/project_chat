@@ -46,6 +46,9 @@ public interface ChatMapper {
     /** 같은 상대에게 이미 대기 중인 신청이 있는지. */
     boolean existsPendingRequest(@Param("fromUser") String fromUser, @Param("toUser") String toUser);
 
+    /** 받는 사람이 신청을 처음 열어 본 시각을 남긴다(V26). 이미 있으면 그대로 둔다. */
+    int markRequestViewed(@Param("id") String id, @Param("toUser") String toUser);
+
     /**
      * 두 사람 사이의 대기 중인 대화 신청 <b>한 건</b>. [포스트 정보] 화면이 신청 메시지와
      * 수락/거절에 쓸 id를 함께 봐야 해서 존재 여부(boolean)로는 모자란다.

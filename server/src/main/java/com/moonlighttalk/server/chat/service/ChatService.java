@@ -12,6 +12,7 @@ import com.moonlighttalk.server.chat.socket.SocketRegistry;
 import com.moonlighttalk.server.common.exception.ApiException;
 import com.moonlighttalk.server.common.response.ErrorCode;
 import com.moonlighttalk.server.common.storage.FileStorageService;
+import com.moonlighttalk.server.common.text.RequestMessages;
 import com.moonlighttalk.server.friend.entity.Friendship;
 import com.moonlighttalk.server.friend.mapper.FriendMapper;
 import com.moonlighttalk.server.friend.service.FriendRelations;
@@ -81,7 +82,7 @@ public class ChatService {
     /** 프라임의 대화 신청이 상대 목록 최상단에 머무는 시간(기획 9-1 — "1일간"). */
     private final int requestPriorityHours;
 
-    /** 대화 신청 한마디의 최대 글자 수(기획 4-3 시안의 `0/200`). */
+    /** 대화 신청 한마디의 최대 글자 수 — 친구 신청과 **100자로 통일**(기획사항 2026-09-19). */
     private final int requestMessageMaxLength;
 
     /**
@@ -105,7 +106,7 @@ public class ChatService {
                         @Value("${app.chat.voice-max-duration-ms:30000}") int voiceMaxDurationMs,
                         @Value("${app.chat.rejection-cooldown-hours:24}")
                         int rejectionCooldownHours,
-                        @Value("${app.chat.request-message-max-length:150}")
+                        @Value("${app.chat.request-message-max-length:100}")
                         int requestMessageMaxLength,
                         @Value("${app.chat.free-voice-messages:5}") int freeVoiceMessages,
                         @Value("${app.chat.request-priority-hours:24}")
@@ -133,11 +134,12 @@ public class ChatService {
 
     /** 대화 신청 생성 — 무료 2회 소진 후 루나 5 차감. 성공 시 상대에게 소켓 알림. */
     @Transactional
-    public void createRequest(String userId, String targetUserId, String message) {
+    public void createRequest(String userId, String targetUserId, String rawMessage) {
+        // 줄바꿈 불가 · 공백/이모지/특수문자도 한 글자(기획사항 2026-09-19). 친구 신청과 같은 규칙.
+        String message = RequestMessages.normalize(rawMessage);
         // 애노테이션(@Size)으로 막으면 일반 VALIDATION_FAILED가 나가서 화면이
         // "몇 자까지인지"를 말해 줄 수 없다(댓글 50자에서 겪은 일).
-        if (message != null
-                && message.codePointCount(0, message.length()) > requestMessageMaxLength) {
+        if (RequestMessages.length(message) > requestMessageMaxLength) {
             throw new ApiException(ErrorCode.VALIDATION_FAILED, HttpStatus.BAD_REQUEST,
                     "대화 신청 한마디가 너무 길어요.", String.valueOf(requestMessageMaxLength));
         }
@@ -539,7 +541,8 @@ public class ChatService {
                 r.getId(), r.getFromUser(), r.getToUser(), r.getMessage(), r.getStatus(),
                 r.getPartnerNickname(), age(r.getPartnerBirthYear()), r.getPartnerCountry(),
                 photoUrl(r.getPartnerPhotoKey()), r.getCreatedAt(),
-                presenceService.isOnline(r.getFromUser()));
+                presenceService.isOnline(r.getFromUser()),
+                r.getViewedAt() != null);
     }
 
     private ChatMessageDto toMessageDto(ChatMessage m) {

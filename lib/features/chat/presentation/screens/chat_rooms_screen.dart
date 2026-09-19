@@ -2,29 +2,28 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/theme/app_colors.dart';
-import '../../../../app/theme/app_dimens.dart';
-import '../../../../core/error/api_exception.dart';
-import '../../../../core/error/error_messages.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../../shared/widgets/art_top_bar.dart';
 import '../../../../shared/widgets/authed_image.dart';
-import '../../../../shared/widgets/night_header.dart';
-import '../../../friend/presentation/providers/friend_provider.dart';
-import '../../../friend/presentation/widgets/friend_request_dialog.dart';
-import '../../../postinfo/presentation/providers/post_info_provider.dart';
-import '../../../postinfo/data/models/post_info.dart';
-import '../../../postinfo/presentation/screens/post_info_screen.dart';
+import '../../../../shared/widgets/confirm_dialog.dart';
+import '../../../../shared/widgets/design_canvas.dart';
 import '../../data/models/chat_models.dart';
 import '../providers/chat_provider.dart';
+import '../widgets/talk_art.dart';
 import 'chat_screen.dart';
+import 'received_request_screen.dart';
 
-/// 대화방 — 메인 셸의 l10n.chatRoomsTitle 탭 본문. (기획 6-1)
+/// 대화방 — `[대화 목록]` · `[받은 신청]` 두 탭(기획서 260919 6-1·6-2, Scene_Talk 전달본).
 ///
-/// 탭이 **둘**이다: `[💬 대화]`는 진행 중인 방, `[✉ 받은 신청]`은 아직 답하지 않은
-/// 대화 신청. 예전에는 한 목록에 섞여 있었는데, 섞어 두면 "답해야 할 것"과
-/// "이어서 할 것"이 구분되지 않는다.
+/// 🚨 **판단의 우선순위**: 기획사항(2026-09-19) > 기획서 260919 > 이미지.
 ///
-/// **받은 신청은 여기서 수락/거절하지 않는다.** 카드를 누르면 [포스트 정보] 화면이 열리고
-/// 거기서 결정한다 — 사진과 한마디를 보고 판단하라는 것이 시안의 뜻이다.
+/// 두 탭은 **같은 셀**을 쓴다 — *"받은 신청의 화면 구성과 기능은 대화 목록창과 동일"*.
+/// 다른 것은 셀 아래 글(마지막 대화 ↔ 신청 한마디)과 눌렀을 때 가는 곳뿐이다.
+///
+/// 260906판에서 **빠진 것**(기획서에 없으면 사라진 것으로 본다 — docs/12 §6):
+/// - 셀 오른쪽의 `[친구]`·`[친구 신청]`·`[신청 대기]` 버튼
+/// - 프로필 사진을 누르면 [포스트 정보]로 가던 것 → 셀을 누르면 **확인 후 채팅창**
+/// - 🚨 화살표 — *"뒤로가기 말고는 대화방에는 화살표가 없음!"*. 예시 그림의 `>`는 따르지 않는다.
 class ChatRoomsScreen extends ConsumerStatefulWidget {
   const ChatRoomsScreen({super.key});
 
@@ -37,47 +36,76 @@ class _ChatRoomsScreenState extends ConsumerState<ChatRoomsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = L10n.of(context);
+    final s = DesignCanvas.scaleOf(context);
     final rooms = ref.watch(chatRoomsProvider);
     final received = ref.watch(receivedRequestsProvider);
 
     final roomList = rooms.valueOrNull ?? const <ChatRoomSummary>[];
     final requestList = received.valueOrNull ?? const <ChatRequest>[];
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    // 탭 빨간 점의 숫자(기획서: "미확인 메시지가 존재할 경우 그 갯수").
+    // [대화 목록]은 안 읽은 **메시지** 수, [받은 신청]은 아직 **안 열어 본 신청** 수다 —
+    // 받은 신청은 대화 목록과 "기능이 동일"하므로 '미확인'의 뜻을 그대로 옮겼다.
+    final unreadMessages = roomList.fold<int>(0, (sum, r) => sum + r.unreadCount);
+    final unviewedRequests = requestList.where((r) => !r.viewed).length;
+
+    // 셸이 SafeArea로 상태바만큼 밀어 놨지만, 시안 배경은 **화면 맨 위까지** 올라간다.
+    // SafeArea 안에서는 상태바 높이를 알 수 없으므로 화면(View)에서 직접 읽는다(함정 #32).
+    final statusBar = MediaQueryData.fromView(View.of(context)).padding.top;
+
+    return Stack(
+      clipBehavior: Clip.none,
+      fit: StackFit.expand,
       children: [
-        NightHeader(
-          title: l10n.chatRoomsTitle,
-          subtitle: l10n.chatRoomsSubtitle,
-          child: PillTabs(
-            index: _tab,
-            onChanged: (i) => setState(() => _tab = i),
-            tabs: [
-              PillTab(
-                icon: Icons.chat_bubble_outline_rounded,
-                label: l10n.chatTabChats,
-                count: roomList.length,
-              ),
-              PillTab(
-                icon: Icons.mail_outline_rounded,
-                label: l10n.chatTabReceived,
-                count: requestList.length,
-              ),
-            ],
+        Positioned(
+          top: -statusBar,
+          left: 0,
+          right: 0,
+          child: Image.asset(
+            TalkArt.background,
+            fit: BoxFit.fitWidth,
+            alignment: Alignment.topCenter,
           ),
         ),
-        Expanded(
-          child: RefreshIndicator(
-            color: AppColors.moonlight,
-            backgroundColor: AppColors.surface,
-            onRefresh: () async {
-              await ref.read(chatRoomsProvider.notifier).refresh();
-              ref.invalidate(receivedRequestsProvider);
-            },
-            child: _tab == 0
-                ? _RoomList(rooms: rooms)
-                : _RequestGrid(requests: requestList),
+        Padding(
+          padding: EdgeInsets.only(top: DesignCanvas.titleTopInSafeArea(context)),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // 타이틀은 시안에서 x=47, Prime·루나 줄은 오른쪽 끝(1055)까지다.
+              Padding(
+                padding: EdgeInsets.only(
+                  left: 47 * s,
+                  right: DesignCanvas.contentLeft * s,
+                ),
+                child: const ArtTopBar(
+                  title: TalkArt.title,
+                  titleSize: TalkArt.titleSize,
+                ),
+              ),
+              SizedBox(height: DesignCanvas.headerToRow * s),
+              _Tabs(
+                index: _tab,
+                unreadMessages: unreadMessages,
+                unviewedRequests: unviewedRequests,
+                onChanged: (i) => setState(() => _tab = i),
+              ),
+              // 탭 아래(356 + 98) → 첫 셀(499).
+              SizedBox(height: (499 - 356 - TalkArt.tabSize.height) * s),
+              Expanded(
+                child: RefreshIndicator(
+                  color: AppColors.moonlight,
+                  backgroundColor: AppColors.surface,
+                  onRefresh: () async {
+                    await ref.read(chatRoomsProvider.notifier).refresh();
+                    ref.invalidate(receivedRequestsProvider);
+                  },
+                  child: _tab == 0
+                      ? _RoomGrid(rooms: rooms)
+                      : _RequestGrid(requests: received),
+                ),
+              ),
+            ],
           ),
         ),
       ],
@@ -85,8 +113,99 @@ class _ChatRoomsScreenState extends ConsumerState<ChatRoomsScreen> {
   }
 }
 
-class _RoomList extends StatelessWidget {
-  const _RoomList({required this.rooms});
+// ── 탭 ────────────────────────────────────────────────────
+/// `[대화 목록]` `[받은 신청]` — **그림 두 벌**(고른 쪽 노랑 / 아닌 쪽 흰색).
+///
+/// 빨간 점은 **숫자가 있을 때만** 붙고, 숫자는 **99가 최대**다(기획사항 2026-09-19 —
+/// "레드닷은 숫자표기 99가 최대치"). 기획서는 "99개를 넘으면 숫자 표시를 하지 않음"이라
+/// 서로 다른데, 신뢰 순서상 기획사항을 따랐다(넘으면 `99`로 멈춘다).
+class _Tabs extends StatelessWidget {
+  const _Tabs({
+    required this.index,
+    required this.unreadMessages,
+    required this.unviewedRequests,
+    required this.onChanged,
+  });
+
+  final int index;
+  final int unreadMessages;
+  final int unviewedRequests;
+  final ValueChanged<int> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final s = DesignCanvas.scaleOf(context);
+    final gap =
+        TalkArt.tabReceiveLeft - TalkArt.tabListLeft - TalkArt.tabSize.width;
+
+    Widget tab(int i, String on, String off, int count) => GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => onChanged(i),
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          ArtImage(
+            index == i ? on : off,
+            width: TalkArt.tabSize.width,
+            height: TalkArt.tabSize.height,
+          ),
+          if (count > 0)
+            Positioned(
+              left: TalkArt.redDotInTab.dx * s,
+              top: TalkArt.redDotInTab.dy * s,
+              child: _RedDot(count: count),
+            ),
+        ],
+      ),
+    );
+
+    return Row(
+      children: [
+        SizedBox(width: TalkArt.tabListLeft * s),
+        tab(0, TalkArt.tabListOn, TalkArt.tabListOff, unreadMessages),
+        SizedBox(width: gap * s),
+        tab(1, TalkArt.tabReceiveOn, TalkArt.tabReceiveOff, unviewedRequests),
+      ],
+    );
+  }
+}
+
+/// 빨간 점 그림 위에 숫자(폰트 — 값이 변한다). 99가 최대.
+class _RedDot extends StatelessWidget {
+  const _RedDot({required this.count});
+
+  final int count;
+
+  @override
+  Widget build(BuildContext context) {
+    final s = DesignCanvas.scaleOf(context);
+    final text = count > 99 ? '99' : '$count';
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        ArtImage(
+          TalkArt.redDot,
+          width: TalkArt.redDotSize.width,
+          height: TalkArt.redDotSize.height,
+        ),
+        Text(
+          text,
+          style: TextStyle(
+            color: Colors.white,
+            // 두 자리(`99`)도 점 안에 들어가게 — 점 지름(55)의 절반 남짓.
+            fontSize: (text.length > 1 ? 26 : 30) * s,
+            fontWeight: FontWeight.w800,
+            height: 1,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ── 목록 ───────────────────────────────────────────────────
+class _RoomGrid extends StatelessWidget {
+  const _RoomGrid({required this.rooms});
 
   final AsyncValue<List<ChatRoomSummary>> rooms;
 
@@ -94,463 +213,257 @@ class _RoomList extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = L10n.of(context);
     final list = rooms.valueOrNull ?? const <ChatRoomSummary>[];
-
     if (rooms.isLoading && list.isEmpty) return const _Loading();
-    if (list.isEmpty) {
-      return _Empty(
-        icon: Icons.forum_outlined,
-        message: l10n.chatRoomsEmpty,
-      );
-    }
+    if (list.isEmpty) return _Empty(message: l10n.chatRoomsEmpty);
 
-    return ListView.builder(
-      physics: const AlwaysScrollableScrollPhysics(),
-      padding: const EdgeInsets.fromLTRB(
-        AppDimens.gapMd,
-        AppDimens.gapSm,
-        AppDimens.gapMd,
-        AppDimens.gapMd,
-      ),
+    return _CellGrid(
       itemCount: list.length,
-      itemBuilder: (context, i) => _RoomTile(room: list[i]),
+      itemBuilder: (context, i) {
+        final room = list[i];
+        return _TalkCell(
+          photoUrl: room.partnerPhotoUrl,
+          nickname: room.partnerNickname,
+          age: room.partnerAge,
+          country: room.partnerCountry,
+          online: room.partnerOnline,
+          unconfirmed: room.unreadCount > 0,
+          at: room.lastMessageAt,
+          text: room.lastMessage,
+          onTap: () async {
+            // 기획서 260919 6-1: *"대화 목록 선택 시 '대화방으로 이동할까요?' 안내 메세지 출력 후
+            // 사용자 확인을 거쳐 채팅창 이동."*
+            final go = await ConfirmDialog.show(context, l10n.chatRoomsMoveConfirm);
+            if (!go || !context.mounted) return;
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => ChatScreen(room: room)),
+            );
+          },
+        );
+      },
     );
   }
 }
 
-/// 대화 목록 한 줄 — 아바타(+미확인 배지) · 이름 나이 국기 시간 접속 · 메시지 · 친구 버튼.
-class _RoomTile extends StatelessWidget {
-  const _RoomTile({required this.room});
-
-  final ChatRoomSummary room;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = L10n.of(context);
-
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(AppDimens.radiusLg),
-        onTap: () => Navigator.of(context).push(
-          MaterialPageRoute(builder: (_) => ChatScreen(room: room)),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _Avatar(url: room.partnerPhotoUrl, unread: room.unreadCount),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Flexible(
-                          child: Text(
-                            _nameAge(room.partnerNickname, room.partnerAge),
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              color: AppColors.textPrimary,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ),
-                        if (room.flag.isNotEmpty) ...[
-                          const SizedBox(width: 5),
-                          Text(room.flag, style: const TextStyle(fontSize: 14)),
-                        ],
-                        const SizedBox(width: 8),
-                        Text(
-                          _timeAgo(l10n, room.lastMessageAt),
-                          style: const TextStyle(
-                            color: AppColors.textMuted,
-                            fontSize: 12,
-                          ),
-                        ),
-                        if (room.partnerOnline) ...[
-                          const SizedBox(width: 8),
-                          const _OnlineDot(),
-                          const SizedBox(width: 4),
-                          Text(
-                            l10n.statusOnline,
-                            style: const TextStyle(
-                              color: AppColors.line,
-                              fontSize: 11,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                    const SizedBox(height: 5),
-                    Text(
-                      _preview(l10n, room.lastMessageType, room.lastMessage),
-                      // 시안은 원문과 번역을 두 줄로 보여 준다. 번역은 ⑦단계에서
-                      // 붙으므로 지금은 원문이 최대 두 줄까지 흐른다.
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: AppColors.textSecondary,
-                        fontSize: 13,
-                        height: 1.4,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 10),
-              FriendRelationButton(
-                relation: room.friendRelation,
-                targetUserId: room.partnerId,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  static String _preview(L10n l10n, ChatMessageType type, String? text) {
-    // 음성 메시지는 본문이 없다. 빈 문자열을 그대로 두면 "대화를 시작해보세요"로
-    // 보여서 방금 보낸 게 사라진 것처럼 느껴진다.
-    if (type == ChatMessageType.voice) return l10n.chatRoomsVoicePreview;
-    if (text == null || text.isEmpty) return l10n.chatRoomsStart;
-    final chars = text.characters;
-    return chars.length <= 25 ? text : '${chars.take(25)}…';
-  }
-
-  static String _timeAgo(L10n l10n, DateTime? at) {
-    if (at == null) return '';
-    final diff = DateTime.now().difference(at);
-    if (diff.inMinutes < 1) return l10n.timeJustNow;
-    if (diff.inMinutes < 60) return l10n.timeMinutesAgo(diff.inMinutes);
-    if (diff.inHours < 24) return l10n.timeHoursAgo(diff.inHours);
-    return l10n.timeDaysAgo(diff.inDays);
-  }
-}
-
-/// 받은 신청 — **2열 그리드**(기획 6-1). 카드를 누르면 [포스트 정보]로 간다.
-class _RequestGrid extends StatelessWidget {
+class _RequestGrid extends ConsumerWidget {
   const _RequestGrid({required this.requests});
 
-  final List<ChatRequest> requests;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = L10n.of(context);
-    if (requests.isEmpty) {
-      return _Empty(
-        icon: Icons.mail_outline_rounded,
-        message: l10n.chatRequestsEmpty,
-      );
-    }
-
-    return GridView.builder(
-      physics: const AlwaysScrollableScrollPhysics(),
-      padding: const EdgeInsets.fromLTRB(
-        AppDimens.gapMd,
-        AppDimens.gapSm,
-        AppDimens.gapMd,
-        AppDimens.gapMd,
-      ),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: 12,
-        mainAxisSpacing: 12,
-        childAspectRatio: 0.74,
-      ),
-      itemCount: requests.length,
-      itemBuilder: (context, i) => _RequestCard(request: requests[i]),
-    );
-  }
-}
-
-class _RequestCard extends StatelessWidget {
-  const _RequestCard({required this.request});
-
-  final ChatRequest request;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = L10n.of(context);
-    final photo = request.partnerPhotoUrl;
-
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: () => showPostInfo(context, request.fromUserId),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(AppDimens.radiusMd),
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            if (photo == null)
-              const ColoredBox(
-                color: AppColors.surfaceHigh,
-                child: Icon(Icons.person, color: AppColors.textMuted),
-              )
-            else
-              AuthedImage(url: photo),
-
-            // 아래쪽 글자를 살리는 그늘. 탭을 삼키지 않도록 IgnorePointer로 감싼다(함정 #38).
-            const IgnorePointer(
-              child: DecoratedBox(
-                decoration: BoxDecoration(gradient: AppColors.nightScrim),
-              ),
-            ),
-
-            if (request.partnerOnline)
-              Positioned(
-                left: 8,
-                top: 8,
-                child: _Badge(
-                  color: Colors.black.withValues(alpha: 0.5),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const _OnlineDot(),
-                      const SizedBox(width: 4),
-                      Text(
-                        l10n.statusOnline,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 10,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-            // 아직 답하지 않은 신청 표시(시안의 주황 N).
-            Positioned(
-              right: 8,
-              top: 8,
-              child: Container(
-                width: 20,
-                height: 20,
-                alignment: Alignment.center,
-                decoration: const BoxDecoration(
-                  color: AppColors.danger,
-                  shape: BoxShape.circle,
-                ),
-                child: const Text(
-                  'N',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ),
-            ),
-
-            Positioned(
-              left: 10,
-              right: 10,
-              bottom: 10,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Flexible(
-                        child: Text(
-                          _nameAge(request.partnerNickname, request.partnerAge),
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 15,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                      ),
-                      if (request.flag.isNotEmpty) ...[
-                        const SizedBox(width: 4),
-                        Text(
-                          request.flag,
-                          style: const TextStyle(fontSize: 13),
-                        ),
-                      ],
-                    ],
-                  ),
-                  const SizedBox(height: 3),
-                  Row(
-                    children: [
-                      Text(
-                        _RoomTile._timeAgo(l10n, request.createdAt),
-                        style: const TextStyle(
-                          color: AppColors.textSecondary,
-                          fontSize: 11,
-                        ),
-                      ),
-                      const Spacer(),
-                      const Icon(
-                        Icons.chevron_right_rounded,
-                        color: Colors.white,
-                        size: 18,
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// `[친구]` / `[친구 신청]` / `[신청 대기]` — 관계에 따라 글자도 동작도 달라진다.
-///
-/// 이미 친구이거나 답을 기다리는 중이면 **누를 것이 없다.** 그래도 자리를 비우지 않는 건
-/// 지금 어떤 사이인지가 목록에서 바로 보여야 하기 때문이다(기획 6-1 [친구 관계 표시]).
-class FriendRelationButton extends ConsumerWidget {
-  const FriendRelationButton({
-    super.key,
-    required this.relation,
-    required this.targetUserId,
-  });
-
-  final FriendRelation relation;
-  final String targetUserId;
+  final AsyncValue<List<ChatRequest>> requests;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = L10n.of(context);
+    final list = requests.valueOrNull ?? const <ChatRequest>[];
+    if (requests.isLoading && list.isEmpty) return const _Loading();
+    if (list.isEmpty) return _Empty(message: l10n.chatRequestsEmpty);
 
-    final (label, active) = switch (relation) {
-      FriendRelation.friend => (l10n.postInfoFriendLabel, false),
-      FriendRelation.requested => (l10n.postInfoFriendPending, false),
-      FriendRelation.incoming => (l10n.postInfoFriendIncoming, true),
-      FriendRelation.none => (l10n.postInfoFriendAdd, true),
-    };
-
-    // 누르면 곧바로 보내지 않고 **팝업으로 한 번 보여 준다**(기획 5-1 img13).
-    //
-    // 목록에 있는 건 이름과 관계뿐이라, 팝업에 넣을 사진·지역·접속은 여기서 다시 묻는다.
-    // 한 번 더 부르는 값이지만 그 덕에 팝업이 **지금 상태**를 보여 준다 —
-    // 목록이 낡아 이미 수락된 신청에 [친구 수락]이 떠 있었더라도 여기서 드러난다.
-    Future<void> act() async {
-      final info = await ref.read(postInfoProvider(targetUserId).future);
-      if (!context.mounted) return;
-
-      final ApiException? error;
-      final String done;
-      if (relation == FriendRelation.incoming) {
-        final accepted = await showIncomingFriendRequestDialog(
-          context,
-          info: info,
+    return _CellGrid(
+      itemCount: list.length,
+      itemBuilder: (context, i) {
+        final request = list[i];
+        return _TalkCell(
+          photoUrl: request.partnerPhotoUrl,
+          nickname: request.partnerNickname,
+          age: request.partnerAge,
+          country: request.partnerCountry,
+          online: request.partnerOnline,
+          // 받은 신청의 '미확인'은 **아직 안 열어 본 신청**이다(V26).
+          unconfirmed: !request.viewed,
+          at: request.createdAt,
+          // 마지막 대화가 아니라 **신청 한마디**(기획사항 — "대화 신청 문구를 최대 25자까지").
+          text: request.message,
+          onTap: () async {
+            await Navigator.of(context).push(ReceivedRequestScreen.route(request));
+            // 열어 본 순간 서버가 '확인함'으로 바꾼다 — 돌아오면 N이 지워진 목록을 다시 읽는다.
+            ref.invalidate(receivedRequestsProvider);
+          },
         );
-        if (accepted == null || !context.mounted) return;
-        final id = info.friendshipId;
-        if (id == null) return;
-        error = accepted
-            ? await ref.read(friendActionsProvider).accept(id)
-            : await ref.read(friendActionsProvider).reject(id);
-        done = accepted ? l10n.friendsAccepted : l10n.friendsRejected;
-      } else {
-        final message = await showFriendRequestDialog(context, info: info);
-        if (message == null || !context.mounted) return;
-        error = await ref.read(friendActionsProvider).request(
-          targetUserId,
-          message: message.isEmpty ? null : message,
-        );
-        done = l10n.friendsRequestSent;
-      }
-
-      if (!context.mounted) return;
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(
-          SnackBar(
-            content: Text(error == null ? done : errorMessage(l10n, error)),
-          ),
-        );
-    }
-
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: active ? act : null,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-        decoration: BoxDecoration(
-          color: active
-              ? AppColors.moonlight.withValues(alpha: 0.16)
-              : Colors.transparent,
-          borderRadius: BorderRadius.circular(999),
-          border: Border.all(
-            color: active ? AppColors.moonlight : AppColors.border,
-          ),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: active ? AppColors.moonlight : AppColors.textSecondary,
-            fontSize: 12,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-      ),
+      },
     );
   }
-
 }
 
-String _nameAge(String name, int? age) => age == null ? name : '$name $age';
+/// 두 열 격자. 셀은 시안 규격(504×522)을 **그대로 비율로** 쓴다.
+class _CellGrid extends StatelessWidget {
+  const _CellGrid({required this.itemCount, required this.itemBuilder});
 
-// ── 작은 조각들 ────────────────────────────────────────────
-
-/// 아바타 + 미확인 배지. 배지는 **읽지 않은 게 있을 때만** 붙는다.
-class _Avatar extends StatelessWidget {
-  const _Avatar({this.url, this.unread = 0});
-
-  final String? url;
-  final int unread;
+  final int itemCount;
+  final IndexedWidgetBuilder itemBuilder;
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: 62,
-      height: 62,
+    final s = DesignCanvas.scaleOf(context);
+    return GridView.builder(
+      // 목록은 실제로 넘길 것이 있는 자리라 당겨서 새로고침을 남긴다.
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: EdgeInsets.fromLTRB(
+        TalkArt.cellLeft * s,
+        0,
+        TalkArt.cellLeft * s,
+        TalkArt.cellGapY * s,
+      ),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        crossAxisSpacing: TalkArt.cellGapX * s,
+        mainAxisSpacing: TalkArt.cellGapY * s,
+        childAspectRatio: TalkArt.cellSize.width / TalkArt.cellSize.height,
+      ),
+      itemCount: itemCount,
+      itemBuilder: itemBuilder,
+    );
+  }
+}
+
+// ── 셀 ────────────────────────────────────────────────────
+/// 대화 목록 · 받은 신청이 함께 쓰는 셀(`frame_list.png` 504×522).
+///
+/// 겹치는 순서: **상대 프로필 사진** → 외곽선·아래 어둠 그림 → 접속·미확인 표시 → 글.
+/// - 사진은 **프로필 사진**이다(기획사항 — "cell안의 사진은 프로필 사진").
+/// - `ON`은 **접속 중일 때만**(기획서 — "온라인 접속 상태일 경우에만"). 오프라인은 아무것도 없다.
+///   예시 그림의 `온라인`/`오프라인` 글자 표기는 따르지 않았다(이미지는 신뢰 순위가 가장 낮다).
+/// - `N`은 **확인 안 한 것이 있을 때만**.
+/// - 시간은 분·시간·일, **30일이 넘으면 표시하지 않는다.**
+/// - 글은 **25자까지 + `…`**. 넘치는 글자는 두 줄까지 흐른다.
+class _TalkCell extends StatelessWidget {
+  const _TalkCell({
+    required this.photoUrl,
+    required this.nickname,
+    required this.age,
+    required this.country,
+    required this.online,
+    required this.unconfirmed,
+    required this.at,
+    required this.text,
+    required this.onTap,
+  });
+
+  final String? photoUrl;
+  final String nickname;
+  final int? age;
+  final String? country;
+  final bool online;
+  final bool unconfirmed;
+  final DateTime? at;
+  final String? text;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
+    final s = DesignCanvas.scaleOf(context);
+    final flag = TalkArt.flagOf(country);
+    final time = _timeAgo(l10n, at);
+
+    // 사진은 외곽선 **안쪽**까지만 — 선 두께만큼 밀어 넣고 곡률도 그만큼 줄인다(함정 #51·#52).
+    final inset = TalkArt.cellLine * s;
+    final radius = (TalkArt.cellRadius - TalkArt.cellLine) * s;
+
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
       child: Stack(
+        fit: StackFit.expand,
         children: [
-          ClipOval(
-            child: SizedBox(
-              width: 58,
-              height: 58,
-              child: url == null
-                  ? const ColoredBox(
-                      color: AppColors.surfaceHigh,
-                      child: Icon(Icons.person, color: AppColors.textMuted),
-                    )
-                  : AuthedImage(url: url!),
+          Padding(
+            padding: EdgeInsets.all(inset),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(radius),
+              // 사진이 없으면 **빈 칸 그대로** 둔다 — 예시 그림의 빈 셀과 같은 모습이다.
+              // (아이콘을 그려 넣지 않는다: 아이콘도 그림이 정본이다 — 14 §3)
+              child: photoUrl == null
+                  ? const ColoredBox(color: AppColors.night)
+                  : AuthedImage(url: photoUrl!),
             ),
           ),
-          if (unread > 0)
+          // 외곽선 + 아래쪽 어둠. 탭을 삼키지 않게 IgnorePointer(함정 #38).
+          IgnorePointer(
+            child: Image.asset(TalkArt.cellFrame, fit: BoxFit.fill),
+          ),
+          if (online)
             Positioned(
-              right: 0,
-              top: 0,
-              child: Container(
-                width: 20,
-                height: 20,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: AppColors.danger,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: AppColors.night, width: 2),
-                ),
-                child: Text(
-                  unread > 9 ? '9+' : '$unread',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 10,
-                    fontWeight: FontWeight.w800,
+              left: TalkArt.onlineAt.dx * s,
+              top: TalkArt.onlineAt.dy * s,
+              child: ArtImage(
+                TalkArt.online,
+                width: TalkArt.onlineSize.width,
+                height: TalkArt.onlineSize.height,
+              ),
+            ),
+          if (unconfirmed)
+            Positioned(
+              left: TalkArt.newMarkAt.dx * s,
+              top: TalkArt.newMarkAt.dy * s,
+              child: ArtImage(
+                TalkArt.newMark,
+                width: TalkArt.newMarkSize.width,
+                height: TalkArt.newMarkSize.height,
+              ),
+            ),
+          Positioned(
+            left: TalkArt.textLeft * s,
+            right: TalkArt.timeRight * s,
+            top: TalkArt.nameTop * s,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Flexible(
+                  child: Text(
+                    nickname,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 40 * s,
+                      fontWeight: FontWeight.w800,
+                      height: 1.2,
+                    ),
                   ),
+                ),
+                if (age != null) ...[
+                  SizedBox(width: 12 * s),
+                  Text(
+                    '$age',
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.85),
+                      fontSize: 34 * s,
+                      fontWeight: FontWeight.w400,
+                      height: 1.2,
+                    ),
+                  ),
+                ],
+                if (flag != null) ...[
+                  SizedBox(width: 14 * s),
+                  ArtImage(
+                    flag,
+                    width: TalkArt.flagSize.width,
+                    height: TalkArt.flagSize.height,
+                  ),
+                ],
+                const Spacer(),
+                if (time.isNotEmpty)
+                  Text(
+                    time,
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.85),
+                      fontSize: 28 * s,
+                      height: 1.2,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          if (text != null && text!.isNotEmpty)
+            Positioned(
+              left: TalkArt.textLeft * s,
+              right: TalkArt.timeRight * s,
+              top: TalkArt.messageTop * s,
+              child: Text(
+                _clip25(text!),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.92),
+                  fontSize: 30 * s,
+                  height: 1.45,
                 ),
               ),
             ),
@@ -558,40 +471,22 @@ class _Avatar extends StatelessWidget {
       ),
     );
   }
-}
 
-class _Badge extends StatelessWidget {
-  const _Badge({required this.color, required this.child});
-
-  final Color color;
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: child,
-    );
+  /// 25자까지 + `…`(기획서·기획사항 공통). 이모지가 반쪽으로 잘리지 않게 **글자 단위**로 자른다.
+  static String _clip25(String text) {
+    final chars = text.characters;
+    return chars.length <= 25 ? text : '${chars.take(25)}…';
   }
-}
 
-class _OnlineDot extends StatelessWidget {
-  const _OnlineDot();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 8,
-      height: 8,
-      decoration: const BoxDecoration(
-        color: AppColors.line,
-        shape: BoxShape.circle,
-      ),
-    );
+  /// 분·시간·일 단위. **30일이 넘으면 표시하지 않는다**(기획서 260919 6-1).
+  static String _timeAgo(L10n l10n, DateTime? at) {
+    if (at == null) return '';
+    final diff = DateTime.now().difference(at);
+    if (diff.inDays >= 30) return '';
+    if (diff.inMinutes < 1) return l10n.timeJustNow;
+    if (diff.inMinutes < 60) return l10n.timeMinutesAgo(diff.inMinutes);
+    if (diff.inHours < 24) return l10n.timeHoursAgo(diff.inHours);
+    return l10n.timeDaysAgo(diff.inDays);
   }
 }
 
@@ -604,10 +499,12 @@ class _Loading extends StatelessWidget {
   );
 }
 
+/// 빈 목록 — 안내 한 줄(폰트). 시안에 빈 상태가 없어 기존 문구를 그대로 쓴다.
+///
+/// 당겨서 새로고침이 되도록 스크롤 가능한 목록으로 둔다.
 class _Empty extends StatelessWidget {
-  const _Empty({required this.icon, required this.message});
+  const _Empty({required this.message});
 
-  final IconData icon;
   final String message;
 
   @override
@@ -615,9 +512,7 @@ class _Empty extends StatelessWidget {
     return ListView(
       physics: const AlwaysScrollableScrollPhysics(),
       children: [
-        SizedBox(height: MediaQuery.of(context).size.height * 0.15),
-        Icon(icon, color: AppColors.textMuted, size: 48),
-        const SizedBox(height: 12),
+        SizedBox(height: MediaQuery.of(context).size.height * 0.12),
         Text(
           message,
           textAlign: TextAlign.center,

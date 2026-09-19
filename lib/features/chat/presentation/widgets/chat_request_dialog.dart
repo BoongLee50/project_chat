@@ -5,6 +5,7 @@ import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimens.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/authed_image.dart';
+import '../../../../shared/widgets/request_message_input.dart';
 import '../../../postinfo/data/models/post_info.dart';
 import '../../../profile/data/models/profile_catalog.dart';
 import '../../data/models/chat_models.dart';
@@ -312,8 +313,12 @@ class _ChatRequestDialogState extends ConsumerState<_ChatRequestDialog> {
 
               TextField(
                 controller: _controller,
-                // 한도를 아직 못 받았으면 막지 않는다 — 어차피 서버가 잰다.
-                maxLength: quota?.maxLength,
+                // 🚨 `maxLength`를 쓰지 않는다 — 글자 모양 단위라 서버(코드포인트)와 어긋난다.
+                // 100자 · 줄바꿈 불가 · 이모지·공백도 한 글자(기획사항 2026-09-19).
+                inputFormatters: RequestMessageInput.formatters(_max(quota)),
+                // 줄은 화면에서만 접힌다. 엔터는 줄을 바꾸지 않는다(줄바꿈 불가).
+                keyboardType: TextInputType.text,
+                textInputAction: TextInputAction.done,
                 maxLines: 4,
                 minLines: 3,
                 cursorColor: AppColors.moonlight,
@@ -321,18 +326,13 @@ class _ChatRequestDialogState extends ConsumerState<_ChatRequestDialog> {
                   color: AppColors.textPrimary,
                   fontSize: 14,
                 ),
-                buildCounter:
-                    (_, {required currentLength, required isFocused, maxLength}) =>
-                        Text(
-                          maxLength == null
-                              ? '$currentLength'
-                              : '$currentLength/$maxLength',
-                          style: const TextStyle(
-                            color: AppColors.textMuted,
-                            fontSize: 11,
-                          ),
-                        ),
                 decoration: InputDecoration(
+                  counterText:
+                      '${RequestMessageInput.length(_controller.text)}/${_max(quota)}',
+                  counterStyle: const TextStyle(
+                    color: AppColors.textMuted,
+                    fontSize: 11,
+                  ),
                   hintText: l10n.gardenChatRequestHint,
                   hintStyle: const TextStyle(color: AppColors.textMuted),
                   filled: true,
@@ -384,6 +384,10 @@ class _ChatRequestDialogState extends ConsumerState<_ChatRequestDialog> {
   /// `대화 신청 (무료 2회)` / `대화 신청 (★ 5)` / `대화 신청`.
   ///
   /// 무엇이 나갈지를 **누르기 전에** 알려 준다 — 루나가 빠지고 나서 아는 것과는 다르다.
+  /// 한도 — 서버가 준 값(쿼터 응답의 `maxLength`)을 쓰고, 아직 못 받았으면 기본 100.
+  static int _max(ChatRequestQuota? quota) =>
+      quota?.maxLength ?? RequestMessageInput.defaultMax;
+
   static String _buttonLabel(L10n l10n, ChatRequestQuota? quota) {
     if (quota == null || quota.unlimited) return l10n.gardenChatRequestShort;
     if (quota.freeRemaining > 0) {

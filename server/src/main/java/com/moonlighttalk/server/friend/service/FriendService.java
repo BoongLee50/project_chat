@@ -11,6 +11,7 @@ import com.moonlighttalk.server.chat.socket.SocketRegistry;
 import com.moonlighttalk.server.common.exception.ApiException;
 import com.moonlighttalk.server.common.response.ErrorCode;
 import com.moonlighttalk.server.common.storage.FileStorageService;
+import com.moonlighttalk.server.common.text.RequestMessages;
 import com.moonlighttalk.server.friend.dto.AcceptFriendResponse;
 import com.moonlighttalk.server.friend.dto.FriendDto;
 import com.moonlighttalk.server.friend.dto.FriendPostDto;
@@ -66,7 +67,7 @@ public class FriendService {
     private final int maxFriends;
     private final int maxFriendsPremium;
 
-    /** 친구 신청 한마디의 최대 글자 수(기획 5-1). 숫자는 여기 하나뿐이다. */
+    /** 친구 신청 한마디의 최대 글자 수 — 대화 신청과 **100자로 통일**(기획사항 2026-09-19). */
     private final int maxRequestMessage;
 
     public FriendService(FriendMapper friendMapper,
@@ -81,7 +82,7 @@ public class FriendService {
                           FileStorageService fileStorageService,
                           @Value("${app.friend.max-count:100}") int maxFriends,
                           @Value("${app.friend.max-count-premium:100}") int maxFriendsPremium,
-                          @Value("${app.friend.request-message-max-length:25}")
+                          @Value("${app.friend.request-message-max-length:100}")
                           int maxRequestMessage) {
         this.friendMapper = friendMapper;
         this.commentService = commentService;
@@ -103,10 +104,12 @@ public class FriendService {
     /** 친구 요청. 성공하면 상대에게 소켓으로 도착을 알린다. */
     @Transactional
     public String request(String userId, String targetUserId, String message) {
-        String trimmed = message == null ? null : message.trim();
-        if (trimmed != null && trimmed.codePointCount(0, trimmed.length()) > maxRequestMessage) {
+        // 대화 신청과 **같은 규칙**이다(기획사항 2026-09-19 — 100자 통일 · 줄바꿈 불가).
+        String trimmed = RequestMessages.normalize(message);
+        if (RequestMessages.length(trimmed) > maxRequestMessage) {
+            // 대화 신청처럼 **한도 숫자**를 싣는다 — 예전엔 "message"를 실어 화면이 숫자를 몰랐다.
             throw new ApiException(ErrorCode.VALIDATION_FAILED, HttpStatus.BAD_REQUEST,
-                    "친구 신청 한마디가 너무 길어요.", "message");
+                    "친구 신청 한마디가 너무 길어요.", String.valueOf(maxRequestMessage));
         }
         if (userId.equals(targetUserId)) {
             throw new ApiException(ErrorCode.FRIEND_SELF, HttpStatus.BAD_REQUEST,

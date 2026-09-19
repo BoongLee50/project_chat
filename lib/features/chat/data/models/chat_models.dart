@@ -103,7 +103,7 @@ class ChatRequestQuota {
         lunaCost: json['lunaCost'] as int? ?? 0,
         // 서버가 못 주면 입력칸이 아예 막히지 않도록 넉넉히 둔다 —
         // 진짜 한도는 어차피 서버가 잰다.
-        maxLength: json['maxLength'] as int? ?? 150,
+        maxLength: json['maxLength'] as int? ?? 100,
         unlimited: json['unlimited'] as bool? ?? false,
       );
 }
@@ -122,6 +122,7 @@ class ChatRequest {
     this.partnerPhotoUrl,
     this.partnerOnline = false,
     this.createdAt,
+    this.viewed = true,
   });
 
   final String id;
@@ -143,6 +144,12 @@ class ChatRequest {
   /// 신청이 언제 왔는가 — 카드에 "2분 전"으로 보여 준다.
   final DateTime? createdAt;
 
+  /// 내가 이 신청을 열어 봤는가(V26). false면 셀에 미확인 표시(`N`)가 붙는다.
+  ///
+  /// 기본값이 true인 이유: 서버가 값을 안 주면(구버전) N을 **달지 않는 쪽**이 안전하다 —
+  /// 열어 봤는데도 N이 안 사라지는 편이 훨씬 거슬린다.
+  final bool viewed;
+
   String get flag => switch (partnerCountry) {
     'KR' => '🇰🇷',
     'JP' => '🇯🇵',
@@ -163,6 +170,7 @@ class ChatRequest {
     createdAt: json['createdAt'] == null
         ? null
         : parseServerTime(json['createdAt']),
+    viewed: json['viewed'] as bool? ?? true,
   );
 }
 

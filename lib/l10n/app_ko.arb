@@ -259,6 +259,7 @@
   "chatTabReceived": "받은 신청",
   "chatTabChats": "대화",
   "chatRequestsEmpty": "받은 신청이 없어요.",
+  "chatRoomsMoveConfirm": "대화방으로 이동할까요?",
   "chatRoomsEmpty": "아직 대화가 없어요.\n달빛가든에서 마음에 드는 사람에게 말을 걸어보세요.",
   "chatRoomsStart": "대화를 시작해보세요.",
   "chatRoomsOngoing": "대화 중",

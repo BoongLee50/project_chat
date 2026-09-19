@@ -823,6 +823,12 @@ abstract class L10n {
   /// **'받은 신청이 없어요.'**
   String get chatRequestsEmpty;
 
+  /// No description provided for @chatRoomsMoveConfirm.
+  ///
+  /// In ko, this message translates to:
+  /// **'대화방으로 이동할까요?'**
+  String get chatRoomsMoveConfirm;
+
   /// No description provided for @chatRoomsEmpty.
   ///
   /// In ko, this message translates to:

@@ -115,7 +115,8 @@ chat_requests
   id             uuid PK
   from_user      uuid FK
   to_user        uuid FK
-  message        varchar(150)                                    -- V25 (200 → 150, 기획 4-3 **본문**. V19의 `0/200`은 시안이었다)
+  message        varchar(100)                                    -- V26 (200 → 150(V25) → **100**, 친구 신청과 통일 — 기획사항 2026-09-19)
+  viewed_at      timestamptz null                                -- V26. 받는 사람이 처음 열어 본 시각. NULL이면 [받은 신청] 셀에 `N`
   status         enum(PENDING, ACCEPTED, REJECTED, BLOCKED, EXPIRED)   -- EXPIRED는 V24
   luna_cost      int
   responded_at   timestamptz null                                -- V18. 거절 후 1일 재신청 금지를 재는 기준
@@ -179,7 +180,7 @@ friendships               -- 양방향(상호 동의). requester 요청 → addr
   created_at    timestamptz
   accepted_at   timestamptz null
   UNIQUE(pair_key)
-  message       varchar(25) null                   -- V17. 친구 신청 한마디
+  message       varchar(100) null                  -- V17(25자) → V26 **100자**(대화 신청과 통일). 줄바꿈은 서버가 공백으로 바꾼다
   -- V5에서 적용됨. pair_key는 생성 컬럼이 아니라 앱이 채운다(MariaDB err 1901 — 함정 #2).
   -- 거절/취소/친구삭제는 status 값이 아니라 **행 삭제**다(REJECTED 상태가 없음) → 다시 요청 가능.
   -- 🚨 **14일 무응답 만료도 행 삭제**다(대화 신청만 EXPIRED로 남긴다). `pair_key`가 UNIQUE라

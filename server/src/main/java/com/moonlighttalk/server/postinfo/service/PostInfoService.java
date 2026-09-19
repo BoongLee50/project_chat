@@ -94,6 +94,12 @@ public class PostInfoService {
 
         Photos photos = resolvePhotos(userId, targetUserId, profile, sessionDate);
         ChatRequestEntity request = chatMapper.selectPendingRequestBetween(targetUserId, userId);
+        // 상대가 나에게 보낸 신청을 **지금 열어 본 것**이다 — [받은 신청] 셀의 미확인 표시(N)를 끈다(V26).
+        // 기획서 260919 6-2: 받은 신청의 기능은 [대화 목록]과 동일 → "확인하지 않았을 경우"에만 표시.
+        // 달빛가든에서 그 사람의 [포스트 정보]를 연 경우도 같은 신청을 본 것이므로 함께 꺼진다.
+        if (request != null && request.getViewedAt() == null) {
+            chatMapper.markRequestViewed(request.getId(), userId);
+        }
         String pairKey = FriendRelations.pairKey(userId, targetUserId);
         Friendship friendship = friendMapper.selectByPairKey(pairKey);
         ChatRoom room = chatMapper.selectActiveRoomByPairKey(pairKey);

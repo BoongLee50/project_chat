@@ -23,6 +23,11 @@ public class ChatRequestEntity {
      * 구독이 끝났다고 옛 신청들이 한꺼번에 아래로 떨어지면 안 된다.
      */
     private LocalDateTime priorityUntil;
+    /**
+     * 받는 사람이 이 신청을 **처음 열어 본 시각**(V26). null이면 아직 안 열어 봤다 —
+     * [받은 신청] 셀의 미확인 표시(`N`)가 이 값을 본다.
+     */
+    private LocalDateTime viewedAt;
     // 목록 표시용(조인)
     private String partnerNickname;
     private Integer partnerBirthYear;

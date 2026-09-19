@@ -4,14 +4,15 @@ import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimens.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/authed_image.dart';
+import '../../../../shared/widgets/request_message_input.dart';
 import '../../../postinfo/data/models/post_info.dart';
 import '../../../profile/data/models/profile_catalog.dart';
 
 /// 친구 신청과 함께 보내는 한마디(기획 5-1 img13 좌측).
 ///
-/// **길이는 서버가 잰다**(`app.friend.request-message-max-length`, 기본 25).
-/// 여기 [_maxLength]는 입력칸이 어디서 멈출지 알려 주기 위한 것일 뿐이라,
-/// 설정이 바뀌면 서버가 막고 화면은 그 이유를 문구로 받는다(댓글 50자와 같은 방식).
+/// **길이는 서버가 잰다**(`app.friend.request-message-max-length`).
+/// 🚨 대화 신청과 **같은 규칙**이다(기획사항 2026-09-19 — 100자 통일 · 줄바꿈 불가 ·
+/// 공백·이모지·특수문자도 한 글자). 입력 규칙은 [RequestMessageInput] 한 곳에 있다.
 ///
 /// 비워도 보낼 수 있다 — 시안이 `(선택)`이라고 적어 두었다.
 /// 취소하면 null, 보내면 (빈 문자열일 수도 있는) 한마디를 돌려준다.
@@ -36,7 +37,7 @@ Future<bool?> showIncomingFriendRequestDialog(
   );
 }
 
-const int _maxLength = 25;
+const int _maxLength = RequestMessageInput.defaultMax;
 
 class _FriendRequestDialog extends StatefulWidget {
   const _FriendRequestDialog({required this.info});
@@ -83,19 +84,22 @@ class _FriendRequestDialogState extends State<_FriendRequestDialog> {
         const SizedBox(height: AppDimens.gapMd),
         TextField(
           controller: _controller,
-          maxLength: _maxLength,
-          maxLines: 2,
+          // `maxLength`는 글자 모양 단위라 서버(코드포인트)와 어긋난다 — 규칙으로 막는다.
+          inputFormatters: RequestMessageInput.formatters(_maxLength),
+          keyboardType: TextInputType.text,
+          textInputAction: TextInputAction.done,
+          // 25자 → 100자가 되며 두 줄로는 모자라 네 줄까지 접히게 했다(줄바꿈은 여전히 불가).
+          maxLines: 4,
+          minLines: 2,
           cursorColor: AppColors.moonlight,
           style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
-          buildCounter: (_, {required currentLength, required isFocused, maxLength}) =>
-              Text(
-                '$currentLength/$maxLength',
-                style: const TextStyle(
-                  color: AppColors.textMuted,
-                  fontSize: 11,
-                ),
-              ),
           decoration: InputDecoration(
+            counterText:
+                '${RequestMessageInput.length(_controller.text)}/$_maxLength',
+            counterStyle: const TextStyle(
+              color: AppColors.textMuted,
+              fontSize: 11,
+            ),
             hintText: l10n.friendRequestHint,
             hintStyle: const TextStyle(color: AppColors.textMuted),
             filled: true,

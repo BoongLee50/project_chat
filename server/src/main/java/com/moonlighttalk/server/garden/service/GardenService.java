@@ -374,8 +374,10 @@ public class GardenService {
     public TranslateResponse translate(String userId, TranslateRequest request) {
         String provider = translationProvider.name();
 
-        // 프로필 보기는 쿼터 밖이다(기획 4-2).
-        if (request.scope() == TranslateScope.PROFILE) {
+        // 프로필 보기와 받은 신청의 한마디는 쿼터 밖이다
+        // (기획 4-2 · 기획사항 2026-09-19 "받은 신청에서 번역은 무조건 공짜").
+        if (request.scope() == TranslateScope.PROFILE
+                || request.scope() == TranslateScope.REQUEST) {
             return TranslateResponse.unlimited(translated(request), provider);
         }
 

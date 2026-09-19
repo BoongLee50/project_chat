@@ -34,6 +34,7 @@ sed -n '/^app:/,$p' server/src/main/resources/application.yml
 | 포스트 | `app.post.replace-limit-free` · `replace-limit-pass` | 하루 교체 몇 번 |
 | 포스트 | `app.post.upload-window-minutes` | 무료 사용자의 등록 가능 창 |
 | 대화 신청 | `app.chat.free-requests-per-day` · `request-luna-cost` | 하루 몇 번 공짜, 그 뒤 루나 얼마 |
+| 신청 한마디 | `app.chat.request-message-max-length` · `app.friend.request-message-max-length` | 🚨 **두 값은 같아야 한다**(100 통일). ⚠️ 늘릴 땐 DB 컬럼 폭(`VARCHAR(100)`)도 — 🔴 |
 | 채팅 보관 | `app.chat.retention-days` | 메시지 며칠 보관. 🚨 **이 값이 곧 대화방 수명**(무대화 이 기간이면 `ENDED`) — 방 타입 구분 없음 |
 | 친구 | `app.friend.max-count` · `max-count-premium` | 최대 몇 명 (일반/프라임) |
 | 번역 | `app.translate.free-comment-opens`(영업일마다) · `free-chat-rooms`(🚨 **평생**) | 무료 번역 쿼터 — **세는 단위가 서로 다르다** |
@@ -102,7 +103,7 @@ sed -n '/^app:/,$p' server/src/main/resources/application.yml
 |---|---|---|
 | 무료 횟수·루나 비용 | `app.chat.*` | 🟢 |
 | 보관 기간 | `app.chat.retention-days*` → `SchedulerService` | 🟢 |
-| 신청 메시지 길이 | `CreateChatRequestBody`의 `@Size` | 🟡 |
+| 신청 한마디 길이 | `app.chat/friend.request-message-max-length`(서비스 검사) + 클라 `RequestMessageInput.defaultMax` + DB `VARCHAR` | 🟢 설정 + 🟡 클라 기본값 + 🔴 늘리면 컬럼 폭 |
 | **음성 최대 길이** | `app.chat.voice-max-duration-ms` + 클라 `kVoiceMaxDuration` | 🟢 + 🟡 (**두 곳을 함께** 바꿔야 한다) |
 | 음성 **무료 횟수** | **아직 없다.** 넣으면 사용량을 어디에 셀지부터 정해야 한다(계정 누적이라 `daily_usage`로는 안 된다) | 🔴 |
 | **대화 신청 수락/거절 흐름** | `chat_requests` + 소켓 `CHAT_REQ_INCOMING` + 대화방 목록 화면 | 🟡~🔴 (**"수락" 단계를 없애면 테이블이 무의미** — [04 §4-4](04-progress-and-roadmap.md)) |
@@ -160,7 +161,7 @@ sed -n '/^app:/,$p' server/src/main/resources/application.yml
 
 | 대상 | 파일 |
 |---|---|
-| ~~대화 신청 메시지~~ → 🟢 **설정으로 빠져 있다** | `app.chat.request-message-max-length`. `@Size`를 떼고 **서비스가 검사**해 한도를 `field`에 실어 보낸다 — 화면이 "몇 자까지"를 말할 수 있다. ⚠️ 늘릴 땐 **컬럼 폭(`varchar(150)`)도 함께** |
+| ~~대화 신청 메시지~~ → 🟢 **설정으로 빠져 있다** | `app.chat.request-message-max-length`. `@Size`를 떼고 **서비스가 검사**해 한도를 `field`에 실어 보낸다 — 화면이 "몇 자까지"를 말할 수 있다. ⚠️ 늘릴 땐 **컬럼 폭(`varchar(100)`)도 함께**. 친구 신청도 같은 방식이다(V26) |
 | 댓글 25자 · 하루 한 마디 25자 | `CreateCommentRequest` · `OneLinerRequest` |
 | 소개 50자 | `IntroRequest` |
 | 관심사 **3개** · 지역 2곳 | `InterestsRequest` · `RegionsRequest` (+ 클라 `ProfileCatalog`) |

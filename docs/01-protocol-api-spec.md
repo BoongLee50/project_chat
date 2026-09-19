@@ -85,7 +85,7 @@
 | GET | `/posts/:userId/comments` | 포스트 댓글 목록(**트리 순서**) | 9 |
 | POST | `/posts/:userId/comments` | 댓글/답글 작성(≤50자, **3단계**, 이미지 1장) | 9 |
 | POST | `/posts/comments/image:upload-url` | 댓글 첨부 이미지 업로드 URL | 9 |
-| POST | `/translate` | 번역(text, targetLang, **scope**, targetId) 한↔일 | 9 |
+| POST | `/translate` | 번역(text, targetLang, **scope**, targetId) 한↔일. scope `REQUEST`(받은 신청 한마디)는 **항상 무료** | 9 |
 
 필터 기본값 [전체]. 수치는 전부 `app.garden.*` 설정이다(`GardenProperties`).
 
@@ -141,7 +141,7 @@ API를 직접 부르는 것으로 뚫린다. 응답에 `photoLocked`(잠김 여�
 `/translate`는 번역 API 키 설정 전엔 원문을 그대로 반환하는 패스스루로 동작(`app.translate.provider=none`), 추후 실제 번역 공급자로 전환. [05 서버구조 §9.2](05-server-structure.md#92-번역) 참고.
 📌 **`provider=none`이면 무료 자리를 아예 쓰지 않는다** — 번역이 안 되는데 횟수만 깎을 수는 없다.
 
-**구현됨(V7 → 재정의 V20).** 요청은 `{ text, targetLang, scope, targetId? }` — `scope`는 `COMMENT|CHAT|PROFILE`이고
+**구현됨(V7 → 재정의 V20).** 요청은 `{ text, targetLang, scope, targetId? }` — `scope`는 `COMMENT|CHAT|PROFILE|REQUEST`이고(`PROFILE`·`REQUEST`는 쿼터 밖 — 항상 무료)
 `CHAT`일 때만 `targetId`(**대화방 id**)가 필요하다(없으면 `TRANSLATE_TARGET_REQUIRED`).
 응답은 `{ text, provider, unlimited, remaining }` — `remaining`은 **소진 전에** 패스를 권하라고 주는 값이다.
 쿼터 초과는 `TRANSLATE_QUOTA_EXCEEDED`(409).
@@ -189,14 +189,19 @@ API를 직접 부르는 것으로 뚫린다. 응답에 `photoLocked`(잠김 여�
 |--------|------|------|------|
 | POST | `/chat-requests` | 대화 신청(targetUserId, message ≤100자) — **루나 5 차감 트랜잭션** | 10 |
 
-**하루 무료 2회**(daily_usage, [02 §1.7](02-db-schema.md)) 후 건당 루나 5 차감. 프리미엄(프라임 구독)은 무제한·무차감.
+**한마디 100자**(기획사항 2026-09-19 — **친구 신청과 통일**, V26). *"공백, 이모지, 특수문자까지 모두 문구로
+취급. 줄바꾸기는 불가."* → 서버는 **코드포인트**로 세고(앞뒤 공백은 다듬은 뒤), 줄바꿈은 **공백으로 바꿔**
+저장한다(거절하지 않는다). 넘치면 `VALIDATION_FAILED`(400) + `field`에 **한도 숫자**. 친구 신청도 같다.
+
+**하루 무료 10회** 후 건당 루나 5 차감. 프리미엄(프라임 구독)은 무제한·무차감.
 실패: 루나 부족 [MSG NUM1] / 차단·신고 대상 [MSG NUM2].
 성공 시 서버가 상대에게 `CHAT_REQ_INCOMING` 소켓 푸시 + 내 [보낸신청] 목록 생성.
 
 ### 1.6 대화방 (초기 로드=REST, 갱신=소켓)
 | Method | Path | 설명 | 화면 |
 |--------|------|------|------|
-| GET | `/chat/rooms` | 매칭 대화 + 받은 신청 목록 | 11 |
+| GET | `/chat/rooms` | 대화 목록(상대 **프로필 사진**·이름·나이·국가·접속 · 마지막 **글** · 마지막 **메시지 시각** · 안 읽은 수) | 11 |
+| GET | `/chat/rooms/received` | 받은 신청 목록(상대 정보 · 한마디 · 신청 시각 · **`viewed`**) | 11 |
 | GET | `/chat/rooms/sent` | 보낸 신청 목록 | 12 |
 | GET | `/chat/rooms/:id/messages?cursor=` | 대화 히스토리(페이징) | 13 |
 | POST | `/chat/rooms/:id:accept` | 신청 수락 → 매칭 대화로 이동 | 11 |

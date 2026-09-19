@@ -11,6 +11,7 @@
         <result property="lunaCost" column="luna_cost"/>
         <result property="createdAt" column="created_at"/>
         <result property="priorityUntil" column="priority_until"/>
+        <result property="viewedAt" column="viewed_at"/>
         <result property="partnerNickname" column="partner_nickname"/>
         <result property="partnerBirthYear" column="partner_birth_year"/>
         <result property="partnerCountry" column="partner_country"/>
@@ -112,6 +113,16 @@
             OR (from_user = #{userB} AND to_user = #{userA}))
     </update>
 
+    <!--
+      받는 사람이 신청을 **처음** 열어 봤을 때 한 번만 기록한다(V26).
+      이미 찍혀 있으면 건드리지 않는다 — "처음 본 시각"이 뒤로 밀리면 안 된다.
+      받는 사람 본인만 찍을 수 있도록 to_user를 함께 본다.
+    -->
+    <update id="markRequestViewed">
+        UPDATE chat_requests SET viewed_at = NOW()
+        WHERE id = #{id} AND to_user = #{toUser} AND viewed_at IS NULL
+    </update>
+
     <select id="existsPendingRequest" resultType="boolean">
         SELECT EXISTS (SELECT 1 FROM chat_requests
                        WHERE from_user = #{fromUser} AND to_user = #{toUser} AND status = 'PENDING')
@@ -161,8 +172,15 @@
                u.birth_year                               AS partner_birth_year,
                u.country                                  AS partner_country,
                pr.photo_key                               AS partner_photo_key,
+               <!--
+                 미리보기는 **마지막 글 메시지**다 — "이미지 및 음성 대화는 제외"(기획서 260919 6-1).
+                 음성을 마지막으로 보냈어도 그 전의 글을 보여 준다(음성뿐이면 비어 있다).
+                 ⚠️ 반면 **시각(last_message_at)은 종류와 무관하게 마지막 메시지**다 —
+                 "마지막 메시지 입력 시간"이라 음성도 대화가 오간 시각이다. 정렬도 그 시각을 따른다.
+               -->
                (SELECT m.body FROM chat_messages m
-                WHERE m.room_id = r.id ORDER BY m.created_at DESC LIMIT 1)      AS last_message,
+                WHERE m.room_id = r.id AND m.type = 'TEXT'
+                ORDER BY m.created_at DESC LIMIT 1)                               AS last_message,
                (SELECT m.type FROM chat_messages m
                 WHERE m.room_id = r.id ORDER BY m.created_at DESC LIMIT 1)      AS last_message_type,
                (SELECT m.created_at FROM chat_messages m

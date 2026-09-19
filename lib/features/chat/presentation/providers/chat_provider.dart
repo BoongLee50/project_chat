@@ -222,6 +222,22 @@ class ChatActions {
     }
   }
 
+  /// 수락하고 **새 방의 id**까지 돌려준다.
+  ///
+  /// 받은 신청 팝업의 `[대화하기]`는 수락에서 끝나지 않고 *"상대방과의 신규 채팅창 호출"*
+  /// 까지 한다(기획서 260919 6-2). 목록이 새로 읽히기를 기다렸다가 방을 찾는 대신
+  /// 서버가 방금 만든 id를 그대로 쓴다.
+  Future<(String?, ApiException?)> acceptOpening(String requestId) async {
+    try {
+      final roomId = await _ref.read(chatApiProvider).accept(requestId);
+      _ref.invalidate(receivedRequestsProvider);
+      await _ref.read(chatRoomsProvider.notifier).refresh();
+      return (roomId, null);
+    } on ApiException catch (e) {
+      return (null, e);
+    }
+  }
+
   Future<ApiException?> reject(String requestId) async {
     try {
       await _ref.read(chatApiProvider).reject(requestId);
