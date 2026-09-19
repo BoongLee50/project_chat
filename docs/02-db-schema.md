@@ -31,7 +31,7 @@ user_profiles
   intro       varchar(50) null             -- 소개 한마디
   updated_at  timestamptz
 
-user_interests            -- 최대 8 (앱단/트리거 제약)
+user_interests            -- 사용자당 최대 3행 (앱·서버 DTO 검증. DB 제약은 없다)
   user_id  uuid FK
   code     text                            -- 관심사 코드
   PK(user_id, code)

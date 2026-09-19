@@ -29,8 +29,15 @@ class InterestGroup {
 }
 
 abstract final class ProfileCatalog {
-  /// 관심사는 최대 8개(서버 `InterestsRequest`도 8로 검증).
-  static const maxInterests = 8;
+  /// 관심사는 **최대 3개**(기획 7 본문, 확인 2026-09-19). 서버 `InterestsRequest`도 3으로 검증한다.
+  ///
+  /// ⚠️ **고르는 개수가 3일 뿐 종류는 아래 37종 그대로다.**
+  /// 시안 img21의 *"최대 8개"* · `(3/8)` 표기는 낡았지만, 이 시트는 **코드로 그리므로**
+  /// 새 리소스가 필요하지 않다.
+  ///
+  /// 📌 문구에는 숫자를 박지 않았다 — ARB가 `{max}`로 받아 조립하므로
+  /// 이 상수만 바꾸면 "최대 3개까지", `(2/3)`, `저장하기 (2/3)`가 전부 따라온다.
+  static const maxInterests = 3;
 
   /// 활동 지역은 최대 2곳.
   static const maxRegions = 2;

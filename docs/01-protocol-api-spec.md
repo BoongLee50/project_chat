@@ -46,7 +46,7 @@
 | GET | `/me` | 내 프로필 조회 | 20 |
 | POST | `/me/profile-photo:upload-url` | 프로필 사진 업로드 URL 발급 | 21 |
 | PUT | `/me/profile-photo` | 업로드 완료 후 사진 등록(storageKey) — storageKey 생략 시 제거 | 21 |
-| PUT | `/me/interests` | 관심사(최대 8) | 22 |
+| PUT | `/me/interests` | 관심사(**최대 3개** 선택 · 종류는 37종) | 22 |
 | PUT | `/me/intro` | 소개 한마디(최대 50자) | 23 |
 | PUT | `/me/regions` | 지역(최대 2) | 24 |
 | GET | `/users/:id/profile` | 상대 프로필 조회 | 14,19 |

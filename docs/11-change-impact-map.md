@@ -146,7 +146,7 @@ sed -n '/^app:/,$p' server/src/main/resources/application.yml
 | **최소 연령** | `ProfileService.MIN_AGE` 상수 | 🟡 (법적 기준이라 일부러 설정으로 안 뺐다) |
 | 닉네임 형식(길이·문자) | `NicknameValidator` + `@Size` | 🟡 |
 | 관심사·지역 목록 | `ProfileCatalog`(코드+아이콘) + ARB(문구) | 🟡 |
-| 관심사 8개·지역 2곳 상한 | `InterestsRequest` · `RegionsRequest`의 `@Size` + `ProfileCatalog.max*` | 🟡 (**서버·클라 양쪽**을 같이 고쳐야 한다) |
+| 관심사 **3개**·지역 2곳 상한 | `InterestsRequest` · `RegionsRequest`의 `@Size` + `ProfileCatalog.max*` | 🟡 (🚨 **서버·클라 양쪽**을 같이 고쳐야 한다. 문구는 ARB가 `{max}`로 조립하므로 안 건드려도 된다) |
 | 신고 사유 종류 | `ReportReason` enum + ARB | 🟡 |
 
 ---
@@ -158,10 +158,10 @@ sed -n '/^app:/,$p' server/src/main/resources/application.yml
 
 | 대상 | 파일 |
 |---|---|
-| 대화 신청 메시지 100자 | `CreateChatRequestBody` |
+| ~~대화 신청 메시지~~ → 🟢 **설정으로 빠져 있다** | `app.chat.request-message-max-length`. `@Size`를 떼고 **서비스가 검사**해 한도를 `field`에 실어 보낸다 — 화면이 "몇 자까지"를 말할 수 있다. ⚠️ 늘릴 땐 **컬럼 폭(`varchar(150)`)도 함께** |
 | 댓글 25자 · 하루 한 마디 25자 | `CreateCommentRequest` · `OneLinerRequest` |
 | 소개 50자 | `IntroRequest` |
-| 관심사 8개 · 지역 2곳 | `InterestsRequest` · `RegionsRequest` |
+| 관심사 **3개** · 지역 2곳 | `InterestsRequest` · `RegionsRequest` (+ 클라 `ProfileCatalog`) |
 | 신고 사유·상세 500자 | `CreateReportRequest` |
 
 → 이 값들을 바꾸려면 **코드 수정 + 재배포**다. 자주 바뀔 것 같으면
