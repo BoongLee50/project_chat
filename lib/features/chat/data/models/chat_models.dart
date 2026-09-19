@@ -103,7 +103,7 @@ class ChatRequestQuota {
         lunaCost: json['lunaCost'] as int? ?? 0,
         // 서버가 못 주면 입력칸이 아예 막히지 않도록 넉넉히 둔다 —
         // 진짜 한도는 어차피 서버가 잰다.
-        maxLength: json['maxLength'] as int? ?? 200,
+        maxLength: json['maxLength'] as int? ?? 150,
         unlimited: json['unlimited'] as bool? ?? false,
       );
 }

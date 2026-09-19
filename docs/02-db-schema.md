@@ -115,7 +115,7 @@ chat_requests
   id             uuid PK
   from_user      uuid FK
   to_user        uuid FK
-  message        varchar(200)                                    -- V19 (100 → 200, 기획 4-3의 `0/200`)
+  message        varchar(150)                                    -- V25 (200 → 150, 기획 4-3 **본문**. V19의 `0/200`은 시안이었다)
   status         enum(PENDING, ACCEPTED, REJECTED, BLOCKED, EXPIRED)   -- EXPIRED는 V24
   luna_cost      int
   responded_at   timestamptz null                                -- V18. 거절 후 1일 재신청 금지를 재는 기준

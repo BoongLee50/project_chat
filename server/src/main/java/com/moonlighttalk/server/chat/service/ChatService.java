@@ -105,7 +105,7 @@ public class ChatService {
                         @Value("${app.chat.voice-max-duration-ms:30000}") int voiceMaxDurationMs,
                         @Value("${app.chat.rejection-cooldown-hours:24}")
                         int rejectionCooldownHours,
-                        @Value("${app.chat.request-message-max-length:200}")
+                        @Value("${app.chat.request-message-max-length:150}")
                         int requestMessageMaxLength,
                         @Value("${app.chat.free-voice-messages:5}") int freeVoiceMessages,
                         @Value("${app.chat.request-priority-hours:24}")
