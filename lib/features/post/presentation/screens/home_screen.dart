@@ -165,9 +165,19 @@ class _PostBody extends ConsumerWidget {
       rowToCard: PostArt.buttonsToCard,
     );
 
+    // 🚨 **이 화면은 스크롤하지 않는다**(기획 2026-09-19).
+    // 시안이 한 화면에 딱 맞는 고정 구성이라 스크롤할 내용이 없는데,
+    // `AlwaysScrollableScrollPhysics`가 남아 있어서 위아래로 끌면 **화면 전체가 늘어났다**
+    // (안드로이드 12+의 stretch 오버스크롤). 내용이 화면을 정확히 채우므로 움직일 것도 없이
+    // 늘어나기만 한다 — 스크롤이 **있는 것처럼 보이는데 아무 데도 못 가는** 상태였다.
+    //
+    // 📌 `SingleChildScrollView`를 통째로 걷어내지 않고 physics만 막는 이유는,
+    // 화면이 아주 짧은 기기에서 높이가 모자랄 때 **오버플로 줄무늬 대신 잘리게** 하기 위해서다.
+    // (당겨서 새로고침은 이 화면에서 사라진다 — 로딩·오류 화면에는 그대로 남아 있고,
+    //  본문은 낡으면 스스로 다시 읽는다)
     return LayoutBuilder(
       builder: (context, constraints) => SingleChildScrollView(
-        physics: const AlwaysScrollableScrollPhysics(),
+        physics: const NeverScrollableScrollPhysics(),
         padding: EdgeInsets.fromLTRB(
           DesignCanvas.contentLeft * s,
           topPad,

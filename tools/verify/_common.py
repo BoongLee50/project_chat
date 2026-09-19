@@ -78,11 +78,24 @@ def session_date():
 
 
 def publish_post(user_id, post_id):
-    """그 사람을 오늘 가든 후보로 만든다(포스트를 '공유'한 상태)."""
+    """그 사람을 오늘 가든 후보로 만든다(포스트를 '공유'한 상태).
+
+    🚨 **사진 행을 반드시 같이 넣는다.** 가든 후보 조건에 `post_photos`가 한 장 이상
+    있어야 한다는 것이 들어 있다(2026-09-19) — 사진이 없으면 **빈 카드**가 되기 때문이다.
+    예전에는 posts만 넣어서, 이 스크립트가 만든 사람들이 실기기 가든에
+    **이름도 사진도 없는 검은 칸**으로 떠 있었다.
+
+    파일은 만들지 않는다. 스토리지 key만 있으면 후보 조건과 장수 계산에는 충분하고,
+    다운로드 URL은 열어 봐야 404일 뿐 검증에 쓰지 않는다.
+    """
     sql("INSERT INTO posts (id, user_id, session_date, published_at, content_updated_at) "
         "VALUES ('%s','%s','%s', NOW(), NOW()) "
         "ON DUPLICATE KEY UPDATE published_at = NOW(), content_updated_at = NOW()"
         % (post_id, user_id, session_date()))
+    sql("INSERT IGNORE INTO post_photos (id, post_id, user_id, storage_key, order_idx, created_at) "
+        "VALUES ('%s-ph','%s','%s','verify/%s.jpg', 0, NOW())"
+        % (post_id, post_id, user_id, post_id))
+    sql("UPDATE posts SET main_photo_id = '%s-ph' WHERE id = '%s'" % (post_id, post_id))
 
 
 def clear_ties(user_ids):

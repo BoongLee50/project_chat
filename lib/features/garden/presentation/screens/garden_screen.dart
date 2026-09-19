@@ -102,14 +102,16 @@ class GardenScreen extends ConsumerWidget {
                       detail: '$error',
                       onRetry: () => ref.read(feedProvider.notifier).refresh(),
                     ),
+                    // 🚨 **볼 사람이 없으면 배경만 남긴다**(기획 2026-09-19).
+                    // 카드 자리에 아이콘·문구·[다시 시도] 패널을 띄우고 있었는데,
+                    // 기획은 *"목록에 없으면 비어있다는 백그라운드만 보여야 한다"* 다.
+                    //
+                    // ⚠️ 포스트 화면은 빈 상태에 **글자가 구워진 그림**(`back_nopost.png`)이
+                    // 카드 자리를 채운다. 가든에는 그 짝이 **아직 없어서** 지금은 밤 배경만
+                    // 남는다 — 안내가 필요하면 **그림을 받아야 한다**([08 §0](08-assets-checklist.md)).
+                    // 여기에 ARB 문구를 얹지 말 것: 그림이 오면 같은 말이 두 번 나온다.
                     data: (items) => items.isEmpty
-                        ? _Message(
-                            icon: Icons.nightlight_round,
-                            title: l10n.gardenEmptyTitle,
-                            detail: l10n.gardenEmptyDetail,
-                            onRetry: () =>
-                                ref.read(feedProvider.notifier).refresh(),
-                          )
+                        ? const SizedBox.shrink()
                         : _FeedPager(items: items),
                   ),
                 ),
