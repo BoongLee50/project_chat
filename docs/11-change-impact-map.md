@@ -91,6 +91,8 @@ sed -n '/^app:/,$p' server/src/main/resources/application.yml
 | 스코어 **공식 자체** | `GardenService` 정렬 로직 | 🟡 |
 | 필터 종류(성별·나이·국가·스포트라이트) | `GardenMapper` 쿼리 + 클라 필터 칩 **이미지** | 🟡 (이미지 재발주 포함) |
 | 스킵 복귀·갱신 감지 | `feed_skips` · `posts.content_updated_at` (V8) | 🔴 |
+| 🤖 **봇 데이터**(예고, 2026-09-19) — 유저가 없으면 봇 포스트를 내보낸다 | 봇 표식(`users` 칼럼 또는 별도 표) + 영업일마다 봇 포스트를 만드는 **배치** + `GardenService` 후보 조회 직후 섞기 | 🔴 **DB + 배치.** 표식이 없으면 신청·신고·통계·프레즌스를 갈라낼 수 없다 → [09 §4-1](09-next-task-handoff.md)의 정할 것 6가지 |
+| **빈 피드에 아무것도 안 띄우는 것** | `garden_screen.dart` — 기획서에 빈 상태가 없고 *"풀이 소진되면 다시 반복"* 이다 | 🟡 ⚠️ 이 결정은 **봇 데이터를 전제**로 한다. 봇이 무산되면 안내 문구·그림부터 다시 정해야 한다 |
 | 한 페이지 카드 수 | `GardenService.PAGE_SIZE` 상수 | 🟡 ([07 §5](07-work-log.md) 부채와 얽혀 있어 일부러 안 뺐다) |
 | 댓글 길이 | `CreateCommentRequest`의 `@Size` | 🟡 |
 
