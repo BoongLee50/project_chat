@@ -73,4 +73,16 @@ public class FriendController {
     public void remove(@CurrentUserId String userId, @PathVariable String friendshipId) {
         friendService.remove(userId, friendshipId);
     }
+
+    /** 목록 상단 고정(기획 7-1 [친구 관리]). 내 목록에만 적용된다. */
+    @PostMapping("/friends/{friendshipId}:pin")
+    public void pin(@CurrentUserId String userId, @PathVariable String friendshipId) {
+        friendService.pin(userId, friendshipId, true);
+    }
+
+    /** 상단 고정 해제. */
+    @PostMapping("/friends/{friendshipId}:unpin")
+    public void unpin(@CurrentUserId String userId, @PathVariable String friendshipId) {
+        friendService.pin(userId, friendshipId, false);
+    }
 }

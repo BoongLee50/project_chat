@@ -2,23 +2,32 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/theme/app_colors.dart';
-import '../../../../app/theme/app_dimens.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../../shared/widgets/art_top_bar.dart';
 import '../../../../shared/widgets/authed_image.dart';
-import '../../../../shared/widgets/night_header.dart';
-import '../../../postinfo/presentation/screens/post_info_screen.dart';
+import '../../../../shared/widgets/design_canvas.dart';
+import '../../../chat/presentation/widgets/talk_art.dart';
+import '../../../chat/presentation/widgets/talk_cell.dart';
 import '../../../profile/data/models/profile_catalog.dart';
 import '../../data/models/friend_models.dart';
 import '../providers/friend_provider.dart';
+import '../widgets/friend_art.dart';
+import 'friend_post_screen.dart';
+import 'friend_request_screen.dart';
 
-/// 친구 — 메인 셸의 l10n.friendsTitle 탭 본문. (기획 7-1)
+/// 친구 — `[친구 목록]` · `[받은 신청]` 두 탭(기획서 260919 7-1·7-2, `Scene_Friend` 전달본).
 ///
-/// 탭이 **둘**이다: `[👤 친구 목록]`은 3열 그리드, `[✉ 받은 신청]`은 신청 목록.
-/// 어느 쪽이든 **누르면 [포스트 정보]로 간다** — 친구는 대화하러, 신청은 답하러.
+/// **[친구 목록]** — 원형 사진 3열. 순서는 **서버가 정해서** 준다:
+/// 상단 고정 > 신규 등록(수락 후 7일) > 온라인 > 최근 접속. 고정·신규가 여럿이면 최신순.
+/// - 고정이면 핀, 신규면 `N`(같은 자리 — 고정이 먼저다), 원 아래에 국기.
+/// - 이름·나이 / 도시 / 접속(`● ON` 그림, 아니면 "N시간 전 접속" 글자 — 기획서 "마지막 접속 시간").
+/// - 탭 숫자 = **신규 등록 수**(기획서 — "신규 등록 목록이 존재하면 그 갯수", 99가 최대).
+/// - 프로필 사진을 누르면 **[친구 포스트 정보]**.
 ///
-/// **필터 칩이 없다.** 예전에는 성별·나이·국가 칩 셋이 있었는데 시안에 없다.
-/// 친구는 이미 내가 고른 사람들이라 걸러 볼 이유가 약하고, 화면에서 없앤다고
-/// 서버가 못 하게 되는 것도 아니다(질의는 그대로 필터를 받는다).
+/// **[받은 신청]** — 🚨 *"화면 구성과 기능은 [대화 목록]창과 동일"*. 대화방 셀을 **그대로** 쓴다.
+/// 탭 숫자 = 아직 안 열어 본 신청 수. 누르면 **[친구 요청 상세]**.
+///
+/// 260906판에 있던 성별·나이·국가 필터는 없다(시안에 없다). 서버 질의는 필터를 그대로 받는다.
 class FriendsScreen extends ConsumerStatefulWidget {
   const FriendsScreen({super.key});
 
@@ -31,48 +40,79 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = L10n.of(context);
+    final s = DesignCanvas.scaleOf(context);
     final friends = ref.watch(friendsProvider);
     final requests = ref.watch(friendRequestsProvider);
 
     final friendList = friends.valueOrNull ?? const <Friend>[];
     final requestList = requests.valueOrNull ?? const <FriendRequest>[];
-    final onlineCount = friendList.where((f) => f.online).length;
+    final newCount = friendList.where((f) => f.newlyAdded).length;
+    final unviewed = requestList.where((r) => !r.viewed).length;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    // 시안 배경은 **화면 맨 위까지** 올라간다 — 상태바 높이는 화면(View)에서 읽는다(함정 #32).
+    final statusBar = MediaQueryData.fromView(View.of(context)).padding.top;
+
+    return Stack(
+      clipBehavior: Clip.none,
+      fit: StackFit.expand,
       children: [
-        NightHeader(
-          title: l10n.friendsTitle,
-          subtitle: '${l10n.friendsOnlineNowLabel}${l10n.friendsOnlineCount(onlineCount)}',
-          child: PillTabs(
-            index: _tab,
-            onChanged: (i) => setState(() => _tab = i),
-            tabs: [
-              PillTab(
-                icon: Icons.people_outline_rounded,
-                label: l10n.friendsTabList,
-                count: friendList.length,
-              ),
-              PillTab(
-                icon: Icons.mail_outline_rounded,
-                label: l10n.chatTabReceived,
-                count: requestList.length,
-              ),
-            ],
+        Positioned(
+          top: -statusBar,
+          left: 0,
+          right: 0,
+          child: Image.asset(
+            FriendArt.background,
+            fit: BoxFit.fitWidth,
+            alignment: Alignment.topCenter,
           ),
         ),
-        Expanded(
-          child: RefreshIndicator(
-            color: AppColors.moonlight,
-            backgroundColor: AppColors.surface,
-            onRefresh: () async {
-              ref.invalidate(friendRequestsProvider);
-              await ref.read(friendsProvider.notifier).refresh();
-            },
-            child: _tab == 0
-                ? _FriendGrid(friends: friends)
-                : _RequestList(requests: requestList),
+        Padding(
+          padding: EdgeInsets.only(top: DesignCanvas.titleTopInSafeArea(context)),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: EdgeInsets.only(
+                  left: 47 * s,
+                  right: DesignCanvas.contentLeft * s,
+                ),
+                child: const ArtTopBar(
+                  title: FriendArt.title,
+                  titleSize: FriendArt.titleSize,
+                ),
+              ),
+              SizedBox(height: DesignCanvas.headerToRow * s),
+              ArtTabs(
+                index: _tab,
+                onChanged: (i) => setState(() => _tab = i),
+                leftOn: FriendArt.tabFriendsOn,
+                leftOff: FriendArt.tabFriendsOff,
+                rightOn: FriendArt.tabReceiveOn,
+                rightOff: FriendArt.tabReceiveOff,
+                leftCount: newCount,
+                rightCount: unviewed,
+              ),
+              // 받은 신청은 대화방과 같은 자리(탭 아래 → 첫 셀 499). 친구 목록은 격자가
+              // 여백을 품는다 — 첫 줄의 핀이 원 위로 19px 튀어나와 잘리지 않게.
+              if (_tab == 1)
+                SizedBox(height: (499 - 356 - TalkArt.tabSize.height) * s),
+              Expanded(
+                child: RefreshIndicator(
+                  color: AppColors.moonlight,
+                  backgroundColor: AppColors.surface,
+                  onRefresh: () async {
+                    ref.invalidate(friendRequestsProvider);
+                    await ref.read(friendsProvider.notifier).refresh();
+                  },
+                  child: _tab == 0
+                      ? _FriendGrid(friends: friends)
+                      : _RequestGrid(
+                          requests: requests,
+                          onAccepted: () => setState(() => _tab = 0),
+                        ),
+                ),
+              ),
+            ],
           ),
         ),
       ],
@@ -80,7 +120,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
   }
 }
 
-/// 3열 그리드 — 원형 사진(국기 배지) · 이름 나이 · 도시 · 접속 상태.
+// ── [친구 목록] ─────────────────────────────────────────────
 class _FriendGrid extends StatelessWidget {
   const _FriendGrid({required this.friends});
 
@@ -89,373 +129,203 @@ class _FriendGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = L10n.of(context);
+    final s = DesignCanvas.scaleOf(context);
     final list = friends.valueOrNull ?? const <Friend>[];
 
-    if (friends.isLoading && list.isEmpty) {
-      return const Center(
-        child: CircularProgressIndicator(color: AppColors.moonlight),
-      );
-    }
+    if (friends.isLoading && list.isEmpty) return const CellLoading();
     if (friends.hasError && list.isEmpty) {
-      return _Message(
-        icon: Icons.error_outline,
-        title: l10n.friendsLoadFailed,
-        subtitle: '',
-      );
+      return CellEmpty(message: l10n.friendsLoadFailed);
     }
     if (list.isEmpty) {
-      return _Message(
-        icon: Icons.people_outline,
-        title: l10n.friendsEmpty,
-        subtitle: l10n.friendsEmptyHint,
-      );
+      return CellEmpty(message: '${l10n.friendsEmpty}\n${l10n.friendsEmptyHint}');
     }
 
     return GridView.builder(
       physics: const AlwaysScrollableScrollPhysics(),
-      padding: const EdgeInsets.fromLTRB(
-        AppDimens.gapMd,
-        AppDimens.gapSm,
-        AppDimens.gapMd,
-        AppDimens.gapMd,
+      padding: EdgeInsets.fromLTRB(
+        FriendArt.gridLeft * s,
+        FriendArt.tabsToGrid * s,
+        FriendArt.gridLeft * s,
+        40 * s,
       ),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 3,
-        crossAxisSpacing: 12,
-        mainAxisSpacing: 18,
-        mainAxisExtent: 176,
+        crossAxisSpacing: FriendArt.gridGapX * s,
+        mainAxisSpacing: 0,
+        // 한 칸 = 원(315) + 글 세 줄. 줄 간격 570이 곧 칸 높이다.
+        childAspectRatio: FriendArt.circleSize.width / FriendArt.rowPitch,
       ),
       itemCount: list.length,
-      itemBuilder: (context, i) => _FriendCard(friend: list[i]),
+      itemBuilder: (context, i) => _FriendCircle(
+        friend: list[i],
+        onTap: () =>
+            Navigator.of(context).push(FriendPostScreen.route(list[i])),
+      ),
     );
   }
 }
 
-/// 친구 카드 — 누르면 [포스트 정보].
-///
-/// 예전에는 오늘의 포스트 팝업이 떴다. 시안이 이 카드에 붙인 것은 [포스트 정보]이고,
-/// 그 화면에 사진·관심사·소개·대화하기가 모두 있어 팝업이 하던 일을 대신한다.
-class _FriendCard extends StatelessWidget {
-  const _FriendCard({required this.friend});
+/// 원형 칸 하나 — 시안 `친구방_친구목록 좌표값`의 한 칸(315 폭).
+class _FriendCircle extends StatelessWidget {
+  const _FriendCircle({required this.friend, required this.onTap});
 
   final Friend friend;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     final l10n = L10n.of(context);
+    final s = DesignCanvas.scaleOf(context);
+    final d = FriendArt.circleSize.width * s;
+    final inset = FriendArt.circlePhotoInset * s;
+    final flag = FriendArt.flagOf(friend.country);
+    final city = friend.region == null
+        ? null
+        : ProfileCatalog.cityLabel(l10n, friend.region!);
+
+    Widget centered(double top, Widget child) => Positioned(
+      left: 0,
+      right: 0,
+      top: top * s,
+      child: Center(child: child),
+    );
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
-      onTap: () => showPostInfo(context, friend.userId),
-      child: Column(
+      onTap: onTap,
+      child: Stack(
+        clipBehavior: Clip.none,
         children: [
+          // 사진 → 원형 테두리 그림.
           SizedBox(
-            width: 84,
-            height: 88,
+            width: d,
+            height: d,
             child: Stack(
-              clipBehavior: Clip.none,
+              fit: StackFit.expand,
               children: [
-                Container(
-                  width: 84,
-                  height: 84,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: friend.online
-                          ? AppColors.moonlight
-                          : AppColors.border,
-                      width: friend.online ? 2 : 1,
-                    ),
-                  ),
+                Padding(
+                  padding: EdgeInsets.all(inset),
                   child: ClipOval(
+                    // 사진이 없으면 빈 원 그대로(아이콘을 그려 넣지 않는다 — 14 §3).
                     child: friend.photoUrl == null
-                        ? const ColoredBox(
-                            color: AppColors.surfaceHigh,
-                            child: Icon(
-                              Icons.person,
-                              color: AppColors.textMuted,
-                              size: 34,
-                            ),
-                          )
+                        ? const ColoredBox(color: AppColors.night)
                         : AuthedImage(url: friend.photoUrl!),
                   ),
                 ),
-                if (friend.flag.isNotEmpty)
-                  Positioned(
-                    left: 2,
-                    bottom: 0,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 4,
-                        vertical: 1,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.night,
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Text(
-                        friend.flag,
-                        style: const TextStyle(fontSize: 13),
-                      ),
-                    ),
-                  ),
+                IgnorePointer(
+                  child: Image.asset(FriendArt.circleFrame, fit: BoxFit.fill),
+                ),
               ],
             ),
           ),
-          const SizedBox(height: 8),
-          Text(
-            friend.age == null
-                ? friend.nickname
-                : '${friend.nickname} ${friend.age}',
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              color: AppColors.textPrimary,
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
+          // 고정 핀 · 신규 N — **같은 자리**라 하나만 선다. 고정이 먼저다(목록 순서도 고정이 위).
+          if (friend.pinned || friend.newlyAdded)
+            Positioned(
+              left: FriendArt.pinSmallAt.dx * s,
+              top: FriendArt.pinSmallAt.dy * s,
+              child: friend.pinned
+                  ? const ArtImage(
+                      FriendArt.pinSmall,
+                      width: 56,
+                      height: 55,
+                    )
+                  : ArtImage(
+                      TalkArt.newMark,
+                      width: TalkArt.newMarkSize.width,
+                      height: TalkArt.newMarkSize.height,
+                    ),
+            ),
+          if (flag != null)
+            Positioned(
+              left: FriendArt.flagAt.dx * s,
+              top: FriendArt.flagAt.dy * s,
+              child: ArtImage(
+                flag,
+                width: FriendArt.flagSize.width,
+                height: FriendArt.flagSize.height,
+              ),
+            ),
+          centered(
+            FriendArt.nameTop,
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.baseline,
+              textBaseline: TextBaseline.alphabetic,
+              children: [
+                Flexible(
+                  child: Text(
+                    friend.nickname,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 44 * s,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+                if (friend.age != null) ...[
+                  SizedBox(width: 12 * s),
+                  Text(
+                    '${friend.age}',
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.85),
+                      fontSize: 40 * s,
+                    ),
+                  ),
+                ],
+              ],
             ),
           ),
-          const SizedBox(height: 2),
-          // 시안은 이 자리에 **도시**를 둔다(예전에는 소개 한마디였다).
-          Text(
-            friend.region == null
-                ? ''
-                : ProfileCatalog.cityLabel(l10n, friend.region!),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(color: AppColors.gold, fontSize: 12),
-          ),
-          const SizedBox(height: 4),
-          _PresenceLine(friend: friend),
+          if (city != null)
+            centered(
+              FriendArt.cityTop,
+              Text(
+                city,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(color: AppColors.gold, fontSize: 36 * s),
+              ),
+            ),
+          centered(FriendArt.presenceTop, _Presence(friend: friend)),
         ],
       ),
     );
   }
 }
 
-/// `● 온라인` / `● 1시간 전 접속` / `● 접속 기록 없음`.
+/// 접속 표시 — 온라인이면 `● ON` 그림, 아니면 **마지막 접속 시간**(글자 — 값이 변한다, 14 §3).
 ///
-/// 색이 세 가지인 건 장식이 아니다 — 지금 있는 사람, 방금까지 있던 사람,
-/// 오래 안 온 사람을 한눈에 가르려는 것이다(시안 7-1).
-class _PresenceLine extends StatelessWidget {
-  const _PresenceLine({required this.friend});
+/// 기획서 7-1: *"[친구 기본 정보]는 … 마지막 접속 시간 표시"* · *"온라인 접속 상태일 경우 온라인 마크 출력"*.
+class _Presence extends StatelessWidget {
+  const _Presence({required this.friend});
 
   final Friend friend;
 
   @override
   Widget build(BuildContext context) {
-    final l10n = L10n.of(context);
-    final (label, color) = _describe(l10n);
-
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Icon(Icons.circle, size: 7, color: color),
-        const SizedBox(width: 4),
-        Flexible(
-          child: Text(
-            label,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(color: color, fontSize: 11),
-          ),
-        ),
-      ],
-    );
-  }
-
-  (String, Color) _describe(L10n l10n) {
-    if (friend.online) return (l10n.statusOnline, AppColors.line);
-
-    final seen = friend.lastSeenAt;
-    if (seen == null) return (l10n.friendsNeverSeen, AppColors.textMuted);
-
-    final diff = DateTime.now().difference(seen);
-    final ago = switch (diff) {
-      _ when diff.inMinutes < 1 => l10n.timeJustNow,
-      _ when diff.inMinutes < 60 => l10n.timeMinutesAgo(diff.inMinutes),
-      _ when diff.inHours < 24 => l10n.timeHoursAgo(diff.inHours),
-      _ => l10n.timeDaysAgo(diff.inDays),
-    };
-    // 한나절 안쪽이면 아직 "곧 돌아올 사람"으로 본다.
-    final color = diff.inHours < 12 ? AppColors.gold : AppColors.textMuted;
-    return (l10n.friendsLastSeen(ago), color);
-  }
-}
-
-/// 받은 친구 신청 — 목록(그리드가 아니다, 시안 7-1 우측 탭).
-/// 신청과 함께 온 **한마디**가 이름 아래에 온다. 누르면 [포스트 정보]에서 답한다.
-class _RequestList extends StatelessWidget {
-  const _RequestList({required this.requests});
-
-  final List<FriendRequest> requests;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = L10n.of(context);
-    if (requests.isEmpty) {
-      return _Message(
-        icon: Icons.mail_outline_rounded,
-        title: l10n.friendsRequestsEmpty,
-        subtitle: '',
+    final s = DesignCanvas.scaleOf(context);
+    if (friend.online) {
+      return ArtImage(
+        FriendArt.online,
+        width: FriendArt.onlineSize.width,
+        height: FriendArt.onlineSize.height,
       );
     }
-
-    return ListView.builder(
-      physics: const AlwaysScrollableScrollPhysics(),
-      padding: const EdgeInsets.fromLTRB(
-        AppDimens.gapMd,
-        AppDimens.gapSm,
-        AppDimens.gapMd,
-        AppDimens.gapMd,
-      ),
-      itemCount: requests.length,
-      itemBuilder: (context, i) => _RequestTile(request: requests[i]),
-    );
-  }
-}
-
-class _RequestTile extends StatelessWidget {
-  const _RequestTile({required this.request});
-
-  final FriendRequest request;
-
-  @override
-  Widget build(BuildContext context) {
     final l10n = L10n.of(context);
-
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: () => showPostInfo(context, request.requesterId),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 10),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SizedBox(
-              width: 66,
-              height: 66,
-              child: Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(AppDimens.radiusMd),
-                    child: SizedBox(
-                      width: 66,
-                      height: 66,
-                      child: request.partnerPhotoUrl == null
-                          ? const ColoredBox(
-                              color: AppColors.surfaceHigh,
-                              child: Icon(
-                                Icons.person,
-                                color: AppColors.textMuted,
-                              ),
-                            )
-                          : AuthedImage(url: request.partnerPhotoUrl!),
-                    ),
-                  ),
-                  if (request.flag.isNotEmpty)
-                    Positioned(
-                      left: 3,
-                      bottom: 3,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 4,
-                          vertical: 1,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.night.withValues(alpha: 0.8),
-                          borderRadius: BorderRadius.circular(5),
-                        ),
-                        child: Text(
-                          request.flag,
-                          style: const TextStyle(fontSize: 12),
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Flexible(
-                        child: Text(
-                          request.partnerAge == null
-                              ? request.partnerNickname
-                              : '${request.partnerNickname} ${request.partnerAge}',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            color: AppColors.textPrimary,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ),
-                      if (request.partnerOnline) ...[
-                        const SizedBox(width: 8),
-                        const Icon(
-                          Icons.circle,
-                          size: 7,
-                          color: AppColors.line,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          l10n.statusOnline,
-                          style: const TextStyle(
-                            color: AppColors.line,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                  const SizedBox(height: 3),
-                  Text(
-                    _timeAgo(l10n, request.createdAt),
-                    style: const TextStyle(
-                      color: AppColors.textMuted,
-                      fontSize: 11,
-                    ),
-                  ),
-                  const SizedBox(height: 5),
-                  // 한마디가 없으면 아무것도 쓰지 않는다. 예전에는 "친구 요청을 보냈어요"를
-                  // 채워 넣었는데, 그건 **상대가 한 말이 아니었다**.
-                  if (request.message != null && request.message!.isNotEmpty)
-                    Text(
-                      request.message!,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: AppColors.textSecondary,
-                        fontSize: 13,
-                        height: 1.4,
-                      ),
-                    ),
-                ],
-              ),
-            ),
-            const Padding(
-              padding: EdgeInsets.only(top: 4),
-              child: Icon(
-                Icons.chevron_right_rounded,
-                color: AppColors.textMuted,
-              ),
-            ),
-          ],
-        ),
-      ),
+    final seen = friend.lastSeenAt;
+    final label = seen == null
+        ? l10n.friendsNeverSeen
+        : l10n.friendsLastSeen(_ago(l10n, seen));
+    return Text(
+      label,
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+      style: TextStyle(color: AppColors.textMuted, fontSize: 30 * s),
     );
   }
 
-  static String _timeAgo(L10n l10n, DateTime? at) {
-    if (at == null) return '';
+  static String _ago(L10n l10n, DateTime at) {
     final diff = DateTime.now().difference(at);
     if (diff.inMinutes < 1) return l10n.timeJustNow;
     if (diff.inMinutes < 60) return l10n.timeMinutesAgo(diff.inMinutes);
@@ -464,46 +334,46 @@ class _RequestTile extends StatelessWidget {
   }
 }
 
-class _Message extends StatelessWidget {
-  const _Message({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-  });
+// ── [받은 신청] — 대화방 셀 그대로 ────────────────────────────
+class _RequestGrid extends ConsumerWidget {
+  const _RequestGrid({required this.requests, required this.onAccepted});
 
-  final IconData icon;
-  final String title;
-  final String subtitle;
+  final AsyncValue<List<FriendRequest>> requests;
+  final VoidCallback onAccepted;
 
   @override
-  Widget build(BuildContext context) {
-    return ListView(
-      physics: const AlwaysScrollableScrollPhysics(),
-      padding: const EdgeInsets.fromLTRB(AppDimens.pagePad, 60, AppDimens.pagePad, 0),
-      children: [
-        Icon(icon, color: AppColors.textMuted, size: 48),
-        const SizedBox(height: AppDimens.gapMd),
-        Text(
-          title,
-          textAlign: TextAlign.center,
-          style: const TextStyle(
-            color: AppColors.textPrimary,
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        if (subtitle.isNotEmpty) ...[
-          const SizedBox(height: 6),
-          Text(
-            subtitle,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 13,
-            ),
-          ),
-        ],
-      ],
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = L10n.of(context);
+    final list = requests.valueOrNull ?? const <FriendRequest>[];
+    if (requests.isLoading && list.isEmpty) return const CellLoading();
+    if (list.isEmpty) return CellEmpty(message: l10n.friendsRequestsEmpty);
+
+    return CellGrid(
+      itemCount: list.length,
+      itemBuilder: (context, i) {
+        final r = list[i];
+        return TalkCell(
+          photoUrl: r.partnerPhotoUrl,
+          nickname: r.partnerNickname,
+          age: r.partnerAge,
+          country: r.partnerCountry,
+          online: r.partnerOnline,
+          // 받은 신청의 '미확인'은 **아직 안 열어 본 신청**이다(V27 — 대화방 V26과 같은 뜻).
+          unconfirmed: !r.viewed,
+          at: r.createdAt,
+          // 친구 요청 메시지 25자 + `…`(기획서 7-2).
+          text: r.message,
+          onTap: () async {
+            final accepted = await Navigator.of(
+              context,
+            ).push(FriendRequestScreen.route(r));
+            // 열어 본 순간 서버가 '확인함'으로 바꾼다 — 돌아오면 N이 지워진 목록을 다시 읽는다.
+            ref.invalidate(friendRequestsProvider);
+            // 수락했으면 새 친구가 **맨 위(신규 등록)** 에 N과 함께 보이는 [친구 목록]으로 넘긴다.
+            if (accepted == true) onAccepted();
+          },
+        );
+      },
     );
   }
 }

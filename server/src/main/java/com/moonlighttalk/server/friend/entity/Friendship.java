@@ -15,6 +15,13 @@ public class Friendship {
     private LocalDateTime createdAt;
     private LocalDateTime acceptedAt;
 
+    /** 받는 사람이 이 신청을 처음 열어 본 시각(V27). null이면 미확인(`N`). */
+    private LocalDateTime viewedAt;
+
+    /** 각 쪽이 상대를 목록 상단에 고정한 시각(V27). **보는 사람마다 따로**다. */
+    private LocalDateTime requesterPinnedAt;
+    private LocalDateTime addresseePinnedAt;
+
     // 조인으로 채우는 상대 정보(요청 목록 표시용)
     private String partnerNickname;
     private Integer partnerBirthYear;
@@ -28,6 +35,35 @@ public class Friendship {
 
     public boolean hasMember(String userId) {
         return requesterId.equals(userId) || addresseeId.equals(userId);
+    }
+
+    /** [userId]가 이 친구를 상단에 고정한 시각(없으면 null). */
+    public LocalDateTime pinnedAtBy(String userId) {
+        return requesterId.equals(userId) ? requesterPinnedAt : addresseePinnedAt;
+    }
+
+    public LocalDateTime getViewedAt() {
+        return viewedAt;
+    }
+
+    public void setViewedAt(LocalDateTime viewedAt) {
+        this.viewedAt = viewedAt;
+    }
+
+    public LocalDateTime getRequesterPinnedAt() {
+        return requesterPinnedAt;
+    }
+
+    public void setRequesterPinnedAt(LocalDateTime requesterPinnedAt) {
+        this.requesterPinnedAt = requesterPinnedAt;
+    }
+
+    public LocalDateTime getAddresseePinnedAt() {
+        return addresseePinnedAt;
+    }
+
+    public void setAddresseePinnedAt(LocalDateTime addresseePinnedAt) {
+        this.addresseePinnedAt = addresseePinnedAt;
     }
 
     public String getId() {

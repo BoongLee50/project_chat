@@ -374,6 +374,14 @@
     }
   },
   "friendsLoadFailed": "친구 목록을 불러오지 못했어요.",
+  "friendMenuPin": "목록 상단 고정",
+  "@friendMenuPin": {
+    "description": "[친구 관리] 팝업 — 이 친구를 친구 목록 맨 위에 고정한다(기획 7-1)"
+  },
+  "friendMenuUnpin": "상단 고정 해제",
+  "@friendMenuUnpin": {
+    "description": "[친구 관리] 팝업 — 이미 고정한 친구일 때 같은 자리에 뜨는 해제 메뉴"
+  },
   "friendsEmpty": "아직 친구가 없어요.",
   "friendsEmptyHint": "대화를 나눈 상대에게 채팅창 메뉴에서 친구 요청을 보내보세요.",
   "friendsAccepted": "친구가 되었어요. 이제 언제든 대화할 수 있어요.",

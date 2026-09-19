@@ -22,7 +22,7 @@ class FriendApi {
   }
 
 
-  /// [message]는 신청과 함께 보내는 한마디(선택, 25자). 길이는 서버가 잰다.
+  /// [message]는 신청과 함께 보내는 한마디(선택, 100자). 길이는 서버가 잰다.
   Future<void> request(String targetUserId, {String? message}) =>
       _client.post('/friends/requests', body: {
         'targetUserId': targetUserId,
@@ -43,6 +43,10 @@ class FriendApi {
 
   Future<void> remove(String friendshipId) =>
       _client.delete('/friends/$friendshipId');
+
+  /// 목록 상단 고정/해제(V27). 내 목록에만 적용된다.
+  Future<void> setPinned(String friendshipId, {required bool pinned}) =>
+      _client.post('/friends/$friendshipId:${pinned ? 'pin' : 'unpin'}');
 
   /// 친구의 오늘 포스트. 아직 공유하지 않았으면 404가 온다.
   Future<FriendPost> todayPost(String friendshipId) async {

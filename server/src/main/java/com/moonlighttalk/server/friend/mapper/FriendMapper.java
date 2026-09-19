@@ -44,7 +44,17 @@ public interface FriendMapper {
      */
     List<Friendship> selectAllByUser(@Param("userId") String userId);
 
-    /** 내가 보낸 친구 요청(PENDING). */
+    /** 받는 사람이 신청을 처음 열어 본 시각을 남긴다(V27). 이미 있으면 그대로 둔다. */
+    int markRequestViewed(@Param("id") String id, @Param("userId") String userId);
+
+    /**
+     * 목록 상단 고정/해제(V27) — **[userId] 쪽 칼럼만** 바꾼다. {@code at}이 null이면 해제.
+     *
+     * @return 바뀐 행 수(0이면 내 친구가 아니거나 아직 성립 전이다)
+     */
+    int updatePinned(@Param("id") String id, @Param("userId") String userId,
+                     @Param("at") LocalDateTime at);
+
     /** 성립된 친구 수(최대 친구 수 제한 검사용). */
     int countFriends(@Param("userId") String userId);
 

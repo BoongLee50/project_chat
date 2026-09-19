@@ -11,6 +11,9 @@
         <result property="message" column="message"/>
         <result property="createdAt" column="created_at"/>
         <result property="acceptedAt" column="accepted_at"/>
+        <result property="viewedAt" column="viewed_at"/>
+        <result property="requesterPinnedAt" column="requester_pinned_at"/>
+        <result property="addresseePinnedAt" column="addressee_pinned_at"/>
         <result property="partnerNickname" column="partner_nickname"/>
         <result property="partnerBirthYear" column="partner_birth_year"/>
         <result property="partnerCountry" column="partner_country"/>
@@ -30,6 +33,7 @@
         <result property="acceptedAt" column="accepted_at"/>
         <result property="region" column="region"/>
         <result property="lastSeenAt" column="last_seen_at"/>
+        <result property="pinnedAt" column="pinned_at"/>
     </resultMap>
 
     <insert id="insert">
@@ -70,6 +74,9 @@
                p.photo_key,
                u.last_seen_at,
                f.accepted_at,
+               <!-- 고정은 **보는 사람마다 따로**다(V27) — 내가 신청한 쪽이면 requester 칼럼. -->
+               CASE WHEN f.requester_id = #{userId}
+                    THEN f.requester_pinned_at ELSE f.addressee_pinned_at END AS pinned_at,
                (SELECT ur.code FROM user_regions ur
                  WHERE ur.user_id = u.id LIMIT 1) AS region,
                (SELECT r.id FROM chat_rooms r
@@ -86,6 +93,11 @@
         <if test="country != null">AND u.country = #{country}</if>
         <if test="ageMin != null">AND (YEAR(CURDATE()) - u.birth_year) &gt;= #{ageMin}</if>
         <if test="ageMax != null">AND (YEAR(CURDATE()) - u.birth_year) &lt;= #{ageMax}</if>
+        <!--
+          ⚠️ 여기 순서는 **최종 순서가 아니다.** 기획 7-1의 정렬(상단 고정 > 신규 등록 > 온라인 >
+          최근 접속)에는 "지금 온라인인가"가 끼어 있는데, 그건 DB가 아니라 프레즌스가 안다.
+          최종 정렬은 FriendService가 한다.
+        -->
         ORDER BY f.accepted_at DESC
     </select>
 
@@ -130,6 +142,31 @@
           AND p.session_date = #{sessionDate}
           AND p.published_at IS NOT NULL
     </select>
+
+    <!--
+      받는 사람이 친구 신청을 **처음** 열어 봤을 때 한 번만 찍는다(V27).
+      이미 찍혀 있으면 건드리지 않는다 — "처음 본 시각"이 뒤로 밀리면 안 된다.
+      받는 사람 본인만 찍을 수 있도록 addressee_id를 함께 본다.
+    -->
+    <update id="markRequestViewed">
+        UPDATE friendships SET viewed_at = NOW()
+        WHERE id = #{id} AND addressee_id = #{userId}
+          AND status = 'PENDING' AND viewed_at IS NULL
+    </update>
+
+    <!--
+      목록 상단 고정/해제(V27). **내 쪽 칼럼만** 바꾼다 — 상대의 고정에는 손대지 않는다.
+      at이 NULL이면 해제다. 성립된 친구에게만 걸 수 있다.
+    -->
+    <update id="updatePinned">
+        UPDATE friendships
+        SET requester_pinned_at = CASE WHEN requester_id = #{userId}
+                                       THEN #{at} ELSE requester_pinned_at END,
+            addressee_pinned_at = CASE WHEN addressee_id = #{userId}
+                                       THEN #{at} ELSE addressee_pinned_at END
+        WHERE id = #{id} AND status = 'ACCEPTED'
+          AND (requester_id = #{userId} OR addressee_id = #{userId})
+    </update>
 
     <select id="countFriends" resultType="int">
         SELECT COUNT(*) FROM friendships

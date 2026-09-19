@@ -16,6 +16,7 @@ MariaDB 기동 → `cd server && ./gradlew bootRun --args='--spring.profiles.act
 python tools/verify/verify_moderation.py
 python tools/verify/verify_feed_block_page2.py
 python tools/verify/verify_talk_room.py
+python tools/verify/verify_friend.py
 ```
 
 | 파일 | 무엇을 지키는가 |
@@ -23,6 +24,7 @@ python tools/verify/verify_talk_room.py
 | `verify_moderation.py` | 받은 신청 **14일 무응답 만료**(대화·친구) · **만료 ≠ 거절**(만료 뒤 재신청 가능) · 신고·차단이 **양방향으로** 신청을 닫는다 · 차단당한 쪽 가든·[포스트 정보]에서도 사라진다 |
 | `verify_feed_block_page2.py` | 🚨 **순서가 정해진 뒤 차단해도 2페이지에서 사라지는가.** 첫 페이지만 보는 검사로는 절대 못 잡는 회귀다 |
 | `verify_talk_room.py` | 대화방 개편(V26): 신청 한마디 **100자**(대화·친구) · 이모지·공백을 **코드포인트**로 · 줄바꿈 → 공백 · 받은 신청 `viewed`(받는 사람만 찍힘) · 미리보기는 마지막 **글**·시각은 마지막 **메시지** · 받은 신청 번역 **무료** |
+| `verify_friend.py` | 친구 개편(V27): 목록 순서 **고정 > 신규 7일 > (온라인) > 최근 접속** · 7일 경계 · 🚨 **고정은 보는 사람마다 따로** · pin/unpin(남의 관계 403 · 대기 중 409) · **끊었다 다시 친구 → 옛 고정 없음** · 받은 친구 신청 `viewed`(받는 사람만 찍힘) |
 | `_common.py` | 목 로그인 · SQL · 검사 집계 |
 
 **local 프로필에서만 돈다** — 목 로그인(`app.auth.social.mock.enabled`)과 배치 수동 실행
@@ -81,10 +83,14 @@ python tools/spec/diff_docx_text.py "<기획서.docx>" --dump out.txt
 | 파일 | 무엇 |
 |---|---|
 | `demo/demo_talk.sql` | 대화방 UI 확인용. **[LINE] 목 로그인 계정**에게 대화 3칸(안 읽음 `N` · 일본어 글 · 음성 뒤 글 미리보기 · 사진 없는 빈 칸) + 받은 신청 2칸(안 열어 본 일본어 · 열어 본 한국어). 전부 `demo-` 접두어, 다시 돌리면 먼저 비운다 |
+| `demo/demo_friend.sql` | 친구 화면 확인용. 같은 계정에게 친구 5(고정 1 · 신규 `N` 1 · 접속 시각 셋 · 사진 없음 1 · 일본어 소개) + 받은 친구 신청 2(안 열어 봄 · 열어 본 일본어). 전부 `demo-f` 접두어. 수락해 보며 생긴 친구 대화방까지 CLEANUP이 지운다 |
+| `demo/make_seed_photos.py` | 두 데모가 쓰는 사진 3장(`uploads/seed/p1~p3`)을 만든다 — 밤하늘+달 그림. **기기마다 한 번** |
 
 ```bash
+python tools/demo/make_seed_photos.py   # 사진이 없을 때 한 번
 mysql -umoonlighttalk -pmoonlighttalk moonlighttalk --default-character-set=utf8mb4 < tools/demo/demo_talk.sql
+mysql -umoonlighttalk -pmoonlighttalk moonlighttalk --default-character-set=utf8mb4 < tools/demo/demo_friend.sql
 ```
 
 ⚠️ 검증(`verify/`)과 달리 **일부러 남겨 두는 데이터**다. 다 봤으면 파일 맨 위 CLEANUP 블록만 돌려 지울 것.
-사진은 `server/server/uploads/seed/`를 쓰는데 이 폴더는 저장소에 없다(gitignore) — 없으면 사진 칸만 빈다.
+사진은 `server/server/uploads/seed/`를 쓰는데 이 폴더는 저장소에 없다(gitignore) — 없으면 사진 칸만 빈다. `make_seed_photos.py`로 만들 것.

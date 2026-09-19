@@ -100,6 +100,19 @@ class FriendActions {
     }
   }
 
+  /// 목록 상단 고정/해제 — 성공하면 목록을 다시 읽는다(순서가 바뀐다).
+  Future<ApiException?> setPinned(String friendshipId, {required bool pinned}) async {
+    try {
+      await _ref
+          .read(friendApiProvider)
+          .setPinned(friendshipId, pinned: pinned);
+      await _ref.read(friendsProvider.notifier).refresh();
+      return null;
+    } on ApiException catch (e) {
+      return e;
+    }
+  }
+
   Future<ApiException?> _run(
     Future<void> Function() action, {
     bool sent = false,

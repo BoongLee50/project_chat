@@ -102,6 +102,13 @@ public class PostInfoService {
         }
         String pairKey = FriendRelations.pairKey(userId, targetUserId);
         Friendship friendship = friendMapper.selectByPairKey(pairKey);
+        // 친구 신청도 **같은 규칙**이다(V27) — 받은 친구 신청의 [친구 요청 상세]가 이 화면이다.
+        // 기획 7-2: "[받은 신청]의 화면 구성과 기능은 [대화 목록]창과 동일".
+        if (friendship != null && "PENDING".equals(friendship.getStatus())
+                && userId.equals(friendship.getAddresseeId())
+                && friendship.getViewedAt() == null) {
+            friendMapper.markRequestViewed(friendship.getId(), userId);
+        }
         ChatRoom room = chatMapper.selectActiveRoomByPairKey(pairKey);
 
         return new PostInfoDto(

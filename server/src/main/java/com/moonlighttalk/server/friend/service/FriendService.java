@@ -32,6 +32,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -70,6 +71,9 @@ public class FriendService {
     /** 친구 신청 한마디의 최대 글자 수 — 대화 신청과 **100자로 통일**(기획사항 2026-09-19). */
     private final int maxRequestMessage;
 
+    /** "신규 등록"이 유지되는 날 수(기획 7-1 — "수락을 통해 친구관계가 성립된 시점부터 7일간"). */
+    private final int newDays;
+
     public FriendService(FriendMapper friendMapper,
                           ChatMapper chatMapper,
                           UserMapper userMapper,
@@ -83,7 +87,8 @@ public class FriendService {
                           @Value("${app.friend.max-count:100}") int maxFriends,
                           @Value("${app.friend.max-count-premium:100}") int maxFriendsPremium,
                           @Value("${app.friend.request-message-max-length:100}")
-                          int maxRequestMessage) {
+                          int maxRequestMessage,
+                          @Value("${app.friend.new-days:7}") int newDays) {
         this.friendMapper = friendMapper;
         this.commentService = commentService;
         this.chatMapper = chatMapper;
@@ -97,6 +102,7 @@ public class FriendService {
         this.maxFriends = maxFriends;
         this.maxFriendsPremium = maxFriendsPremium;
         this.maxRequestMessage = maxRequestMessage;
+        this.newDays = newDays;
     }
 
     // ── 친구 요청 ───────────────────────────────────────────
@@ -222,11 +228,69 @@ public class FriendService {
 
     // ── 친구 ───────────────────────────────────────────────
 
+    /**
+     * 친구 목록 — 기획 7-1의 순서로 **서버가 정렬해서** 준다.
+     *
+     * <p><b>상단 고정 &gt; 신규 등록 &gt; 온라인 &gt; 최근 접속</b>. "고정·신규가 여럿이면 최신 등록 순"
+     * (고정은 고정한 시각, 신규는 친구가 된 시각이 늦은 것이 위).
+     *
+     * <p>🚨 정렬을 DB가 못 하는 이유: "지금 온라인인가"는 DB가 아니라 프레즌스가 안다.
+     * 클라가 정렬하게 두면 "신규 7일"을 기기 시계로 재게 되어 사람마다 목록이 달라진다 —
+     * 그래서 판정과 정렬을 한곳(여기)에 모았다.
+     */
     public List<FriendDto> myFriends(String userId, String gender, Integer ageMin,
                                       Integer ageMax, String country) {
+        LocalDateTime newSince = LocalDateTime.now().minusDays(newDays);
         return friendMapper.selectFriends(userId, gender, ageMin, ageMax, country).stream()
-                .map(this::toFriendDto)
+                .map(summary -> toFriendDto(summary, newSince))
+                .sorted(FRIEND_ORDER)
                 .toList();
+    }
+
+    /**
+     * 기획 7-1의 정렬. 무리(group)를 먼저 가르고, 무리 안에서 각자의 시각으로 줄 세운다.
+     * 한 사람이 고정이면서 신규일 수도 있다 — 그때는 **고정 무리**에 선다(더 위의 규칙이 이긴다).
+     */
+    private static final Comparator<FriendDto> FRIEND_ORDER = Comparator
+            .comparingInt(FriendService::orderGroup)
+            .thenComparing(FriendService::orderTime,
+                    Comparator.nullsLast(Comparator.reverseOrder()));
+
+    private static int orderGroup(FriendDto f) {
+        if (f.pinned()) return 0;
+        if (f.newlyAdded()) return 1;
+        if (f.online()) return 2;
+        return 3;
+    }
+
+    /** 무리 안에서 쓸 시각 — 늦을수록 위. 고정은 {@code acceptedAt}이 아니라 고정한 시각이 기준이다. */
+    private static LocalDateTime orderTime(FriendDto f) {
+        return switch (orderGroup(f)) {
+            case 0 -> f.pinnedAt();
+            case 1 -> f.acceptedAt();
+            // 온라인끼리는 최근 접속이 곧 "지금"이라 구분이 안 된다 — 친구가 된 순으로 둔다.
+            case 2 -> f.acceptedAt();
+            default -> f.lastSeenAt();
+        };
+    }
+
+    /**
+     * 목록 상단 고정/해제(기획 7-1 [친구 관리] → [목록 상단 고정]).
+     *
+     * <p>고정은 <b>내 쪽만</b> 바뀐다 — 상대의 목록에는 영향이 없다. 성립된 친구에게만 걸 수 있다.
+     */
+    @Transactional
+    public void pin(String userId, String friendshipId, boolean pinned) {
+        Friendship friendship = requireFriendship(friendshipId);
+        if (!friendship.hasMember(userId)) {
+            throw new ApiException(ErrorCode.FRIEND_NOT_MINE, HttpStatus.FORBIDDEN,
+                    "내 친구 관계가 아니에요.");
+        }
+        if (!"ACCEPTED".equals(friendship.getStatus())) {
+            throw new ApiException(ErrorCode.FRIEND_NOT_YET, HttpStatus.CONFLICT,
+                    "아직 친구가 아니에요.");
+        }
+        friendMapper.updatePinned(friendshipId, userId, pinned ? LocalDateTime.now() : null);
     }
 
     public List<FriendRequestDto> receivedRequests(String userId) {
@@ -350,7 +414,7 @@ public class FriendService {
         return FriendRelations.pairKey(a, b);
     }
 
-    private FriendDto toFriendDto(FriendSummary s) {
+    private FriendDto toFriendDto(FriendSummary s, LocalDateTime newSince) {
         return new FriendDto(
                 s.getFriendshipId(),
                 s.getUserId(),
@@ -364,7 +428,10 @@ public class FriendService {
                 presenceService.isOnline(s.getUserId()),
                 s.getRegion(),
                 s.getLastSeenAt(),
-                s.getAcceptedAt());
+                s.getAcceptedAt(),
+                s.getPinnedAt() != null,
+                s.getAcceptedAt() != null && s.getAcceptedAt().isAfter(newSince),
+                s.getPinnedAt());
     }
 
     private FriendRequestDto toRequestDto(Friendship f) {
@@ -372,7 +439,8 @@ public class FriendService {
                 f.getId(), f.getRequesterId(), f.getAddresseeId(), f.getStatus(),
                 f.getPartnerNickname(), age(f.getPartnerBirthYear()), f.getPartnerCountry(),
                 photoUrl(f.getPartnerPhotoKey()), f.getMessage(),
-                presenceService.isOnline(f.getRequesterId()), f.getCreatedAt());
+                presenceService.isOnline(f.getRequesterId()), f.getCreatedAt(),
+                f.getViewedAt() != null);
     }
 
     private Integer age(Integer birthYear) {

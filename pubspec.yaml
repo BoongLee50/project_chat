@@ -84,6 +84,8 @@ flutter:
     # 대화방(Scene_Talk). 전달 폴더 이름의 공백만 밑줄로 바꿨다(`Talk List` → `talk_list`).
     - assets/images/scene_talk/talk_list/
     - assets/images/scene_talk/application_received/
+    - assets/images/scene_friend/friend_list/
+    - assets/images/scene_friend/application_received/
     # 글자가 구워진 그림의 **일본어판**. 원문(한국어)은 위 폴더에 같은 파일명으로 둔다.
     # ⚠️ 폴더 선언은 **재귀가 아니라서** ja/ 도 따로 적어야 한다.
     - assets/images/scene_post/ja/

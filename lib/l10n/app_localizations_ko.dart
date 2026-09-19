@@ -559,6 +559,12 @@ class L10nKo extends L10n {
   String get friendsLoadFailed => '친구 목록을 불러오지 못했어요.';
 
   @override
+  String get friendMenuPin => '목록 상단 고정';
+
+  @override
+  String get friendMenuUnpin => '상단 고정 해제';
+
+  @override
   String get friendsEmpty => '아직 친구가 없어요.';
 
   @override

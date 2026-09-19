@@ -105,4 +105,16 @@ class GardenApi {
     );
     return (data as Map)['text'] as String? ?? text;
   }
+
+  /// 프로필 글(소개)을 번역한다 — **항상 무료**(서버 scope `PROFILE`, [프로필 보기]와 같은 규칙).
+  ///
+  /// [친구 포스트 정보] 팝업의 소개가 쓴다. 같은 글을 [프로필 보기]에서 보면 무료인데
+  /// 팝업에서 보면 쿼터를 깎는다면 말이 안 되므로 같은 자리로 친다.
+  Future<String> translateProfileText(String text, String targetLang) async {
+    final data = await _client.post(
+      '/translate',
+      body: {'text': text, 'targetLang': targetLang, 'scope': 'PROFILE'},
+    );
+    return (data as Map)['text'] as String? ?? text;
+  }
 }

@@ -17,6 +17,8 @@ class Friend {
     this.roomId,
     this.region,
     this.lastSeenAt,
+    this.pinned = false,
+    this.newlyAdded = false,
   });
 
   final String friendshipId;
@@ -40,6 +42,13 @@ class Friend {
   /// null이면 한 번도 접속한 적이 없다(0으로 채우지 않는다).
   final DateTime? lastSeenAt;
 
+  /// **내가** 목록 상단에 고정했는가(V27 — 핀마크). 상대의 목록과는 무관하다.
+  final bool pinned;
+
+  /// 친구가 된 지 7일이 안 됐는가(기획 7-1 "신규 등록", N마크). **서버가 판정한다** —
+  /// 기기 시계로 재면 사람마다 N이 달라진다. 목록 순서도 서버가 정해서 준다.
+  final bool newlyAdded;
+
   String get flag => switch (country) {
     'KR' => '🇰🇷',
     'JP' => '🇯🇵',
@@ -61,6 +70,8 @@ class Friend {
     lastSeenAt: json['lastSeenAt'] == null
         ? null
         : parseServerTime(json['lastSeenAt']),
+    pinned: json['pinned'] as bool? ?? false,
+    newlyAdded: json['newlyAdded'] as bool? ?? false,
   );
 }
 
@@ -78,6 +89,7 @@ class FriendRequest {
     this.message,
     this.partnerOnline = false,
     this.createdAt,
+    this.viewed = true,
   });
 
   final String id;
@@ -92,12 +104,15 @@ class FriendRequest {
   final String? partnerCountry;
   final String? partnerPhotoUrl;
 
-  /// 신청자가 남긴 한마디(25자). null이면 이 기능 이전에 온 요청이다 —
+  /// 신청자가 남긴 한마디(100자). null이면 이 기능 이전에 온 요청이다 —
   /// 그때 화면이 채워 넣던 "친구 요청을 보냈어요"는 **상대가 한 말이 아니었다**.
   final String? message;
 
   final bool partnerOnline;
   final DateTime? createdAt;
+
+  /// 받는 사람이 열어 봤는가(V27). false면 셀에 `N` — 대화방 받은 신청과 같은 뜻이다.
+  final bool viewed;
 
   String get flag => switch (partnerCountry) {
     'KR' => '🇰🇷',
@@ -119,6 +134,7 @@ class FriendRequest {
     createdAt: json['createdAt'] == null
         ? null
         : parseServerTime(json['createdAt']),
+    viewed: json['viewed'] as bool? ?? true,
   );
 }
 

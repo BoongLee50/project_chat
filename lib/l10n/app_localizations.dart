@@ -1081,6 +1081,18 @@ abstract class L10n {
   /// **'친구 목록을 불러오지 못했어요.'**
   String get friendsLoadFailed;
 
+  /// [친구 관리] 팝업 — 이 친구를 친구 목록 맨 위에 고정한다(기획 7-1)
+  ///
+  /// In ko, this message translates to:
+  /// **'목록 상단 고정'**
+  String get friendMenuPin;
+
+  /// [친구 관리] 팝업 — 이미 고정한 친구일 때 같은 자리에 뜨는 해제 메뉴
+  ///
+  /// In ko, this message translates to:
+  /// **'상단 고정 해제'**
+  String get friendMenuUnpin;
+
   /// No description provided for @friendsEmpty.
   ///
   /// In ko, this message translates to:

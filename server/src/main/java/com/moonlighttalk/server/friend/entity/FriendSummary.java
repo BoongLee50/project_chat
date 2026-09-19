@@ -22,6 +22,17 @@ public class FriendSummary {
     /** 마지막 접속(V16). null이면 한 번도 접속한 적이 없다. */
     private LocalDateTime lastSeenAt;
 
+    /** **내가** 이 친구를 상단에 고정한 시각(V27). null이면 고정 안 함. */
+    private LocalDateTime pinnedAt;
+
+    public LocalDateTime getPinnedAt() {
+        return pinnedAt;
+    }
+
+    public void setPinnedAt(LocalDateTime pinnedAt) {
+        this.pinnedAt = pinnedAt;
+    }
+
     public String getFriendshipId() {
         return friendshipId;
     }

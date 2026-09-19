@@ -559,6 +559,12 @@ class L10nJa extends L10n {
   String get friendsLoadFailed => '友だちリストを読み込めませんでした。';
 
   @override
+  String get friendMenuPin => 'リストの上に固定';
+
+  @override
+  String get friendMenuUnpin => '固定を解除';
+
+  @override
   String get friendsEmpty => 'まだ友だちがいません。';
 
   @override

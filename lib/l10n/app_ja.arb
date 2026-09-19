@@ -164,6 +164,8 @@
   "friendsOnlineCount": "{count}人",
   "friendsRequestsReceived": "受け取った友だちリクエスト {count}",
   "friendsLoadFailed": "友だちリストを読み込めませんでした。",
+  "friendMenuPin": "リストの上に固定",
+  "friendMenuUnpin": "固定を解除",
   "friendsEmpty": "まだ友だちがいません。",
   "friendsEmptyHint": "会話した相手に、チャット画面のメニューから友だちリクエストを送ってみましょう。",
   "friendsAccepted": "友だちになりました。これからはいつでも会話できます。",
