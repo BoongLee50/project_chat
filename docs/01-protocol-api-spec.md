@@ -227,8 +227,9 @@ API를 직접 부르는 것으로 뚫린다. 응답에 `photoLocked`(잠김 여�
 ### 1.7 친구 / 신고·차단 / 루나
 | Method | Path | 설명 | 화면 |
 |--------|------|------|------|
-| GET | `/friends?gender=&ageMin=&ageMax=&country=` | 친구 목록(수락 최신순, ACCEPTED). 응답에 `roomId`(상시 대화방)·`online` 포함 | 18 |
-| GET | `/friends/requests` | 받은 친구 요청 목록(PENDING) | 18 |
+| GET | `/friends?gender=&ageMin=&ageMax=&country=` | 친구 목록(ACCEPTED). **순서는 서버가 정한다**(V27, 기획서 260919 7-1): 상단 고정(`pinnedAt` 최신순) > 신규 등록(`acceptedAt` 최신순) > 온라인 > 최근 접속(`lastSeenAt` 최신순, 기록 없음은 끝). 응답에 `roomId`(상시 대화방)·`online`·`lastSeenAt`·`region`·`pinned`·`newlyAdded`(수락 후 `app.friend.new-days`=7일)·`pinnedAt` | 18 |
+| POST | `/friends/:id:pin` · `/friends/:id:unpin` | [친구 관리] 목록 상단 고정/해제(V27). `:id`는 friendshipId. **보는 사람 쪽만** 바뀐다. 당사자가 아니면 403, 대기 중인 신청이면 409 | 7-1 |
+| GET | `/friends/requests` | 받은 친구 요청 목록(PENDING). 응답 `viewed`(V27) — 받는 사람이 `GET /users/:id/post-info`로 그 사람을 열면 true([받은 신청] `N`) | 18 |
 | GET | `/friends/requests/sent` | 보낸 친구 요청 목록(PENDING) | 18 |
 | POST | `/friends/requests` | 친구 **요청**(targetUserId) — 양방향, 상대 수락 필요 | 14,18 |
 | POST | `/friends/requests/:id:accept` | 친구 요청 수락 → **상시 대화방 생성**(응답 `{friendshipId, roomId}`) | 18 |

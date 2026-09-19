@@ -181,6 +181,12 @@ friendships               -- 양방향(상호 동의). requester 요청 → addr
   accepted_at   timestamptz null
   UNIQUE(pair_key)
   message       varchar(100) null                  -- V17(25자) → V26 **100자**(대화 신청과 통일). 줄바꿈은 서버가 공백으로 바꾼다
+  requester_pinned_at timestamptz null             -- V27. 신청한 쪽이 상대를 [친구 목록] 상단에 고정한 시각
+  addressee_pinned_at timestamptz null             -- V27. 받은 쪽이 고정한 시각. 🚨 고정은 **보는 사람마다 따로**라 칼럼이 둘이다
+  viewed_at     timestamptz null                   -- V27. 받는 사람이 신청을 처음 연 시각([받은 신청] `N`). 대화 신청 V26과 같은 뜻
+  -- 고정을 따로 표로 빼지 않은 이유: 친구 해제·차단이 **행 삭제**라 칼럼이면 고정도 함께 사라진다
+  --   (따로 두면 다시 친구가 됐을 때 옛 고정이 되살아날 수 있다 — verify_friend.py §5가 확인).
+  -- 시각을 담는 이유: 고정끼리는 "최신순"(늦게 고정한 것이 위)이다.
   -- V5에서 적용됨. pair_key는 생성 컬럼이 아니라 앱이 채운다(MariaDB err 1901 — 함정 #2).
   -- 거절/취소/친구삭제는 status 값이 아니라 **행 삭제**다(REJECTED 상태가 없음) → 다시 요청 가능.
   -- 🚨 **14일 무응답 만료도 행 삭제**다(대화 신청만 EXPIRED로 남긴다). `pair_key`가 UNIQUE라
