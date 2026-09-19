@@ -407,9 +407,6 @@ class L10nJa extends L10n {
   String get chatRequestsEmpty => '受け取ったリクエストはありません。';
 
   @override
-  String get chatRoomsMoveConfirm => 'チャットルームへ移動しますか？';
-
-  @override
   String get chatRoomsEmpty => 'まだ会話がありません。\n月光ガーデンで気になる人に話しかけてみましょう。';
 
   @override

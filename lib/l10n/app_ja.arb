@@ -121,7 +121,6 @@
   "chatTabReceived": "受け取ったリクエスト",
   "chatTabChats": "トーク",
   "chatRequestsEmpty": "受け取ったリクエストはありません。",
-  "chatRoomsMoveConfirm": "チャットルームへ移動しますか？",
   "chatRoomsEmpty": "まだ会話がありません。\n月光ガーデンで気になる人に話しかけてみましょう。",
   "chatRoomsStart": "会話を始めてみましょう。",
   "chatRoomsOngoing": "会話中",

@@ -5,7 +5,6 @@ import '../../../../app/theme/app_colors.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/art_top_bar.dart';
 import '../../../../shared/widgets/authed_image.dart';
-import '../../../../shared/widgets/confirm_dialog.dart';
 import '../../../../shared/widgets/design_canvas.dart';
 import '../../data/models/chat_models.dart';
 import '../providers/chat_provider.dart';
@@ -22,7 +21,7 @@ import 'received_request_screen.dart';
 ///
 /// 260906판에서 **빠진 것**(기획서에 없으면 사라진 것으로 본다 — docs/12 §6):
 /// - 셀 오른쪽의 `[친구]`·`[친구 신청]`·`[신청 대기]` 버튼
-/// - 프로필 사진을 누르면 [포스트 정보]로 가던 것 → 셀을 누르면 **확인 후 채팅창**
+/// - 프로필 사진을 누르면 [포스트 정보]로 가던 것 → 셀을 누르면 **바로 채팅창**(확인창은 안 하기로 했다)
 /// - 🚨 화살표 — *"뒤로가기 말고는 대화방에는 화살표가 없음!"*. 예시 그림의 `>`는 따르지 않는다.
 class ChatRoomsScreen extends ConsumerStatefulWidget {
   const ChatRoomsScreen({super.key});
@@ -229,15 +228,12 @@ class _RoomGrid extends StatelessWidget {
           unconfirmed: room.unreadCount > 0,
           at: room.lastMessageAt,
           text: room.lastMessage,
-          onTap: () async {
-            // 기획서 260919 6-1: *"대화 목록 선택 시 '대화방으로 이동할까요?' 안내 메세지 출력 후
-            // 사용자 확인을 거쳐 채팅창 이동."*
-            final go = await ConfirmDialog.show(context, l10n.chatRoomsMoveConfirm);
-            if (!go || !context.mounted) return;
-            Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => ChatScreen(room: room)),
-            );
-          },
+          // 🚨 **확인 없이 바로 들어간다**(기획 결정 2026-09-19).
+          // 기획서 260919 6-1에는 *"'대화방으로 이동할까요?' 안내 메세지 출력 후 사용자 확인"* 이
+          // 있지만 **안 하기로 했고, 기획서에서도 추후 지워질 문장**이다. 되살리지 말 것.
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => ChatScreen(room: room)),
+          ),
         );
       },
     );

@@ -407,9 +407,6 @@ class L10nKo extends L10n {
   String get chatRequestsEmpty => '받은 신청이 없어요.';
 
   @override
-  String get chatRoomsMoveConfirm => '대화방으로 이동할까요?';
-
-  @override
   String get chatRoomsEmpty => '아직 대화가 없어요.\n달빛가든에서 마음에 드는 사람에게 말을 걸어보세요.';
 
   @override

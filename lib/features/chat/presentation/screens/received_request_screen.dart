@@ -26,7 +26,7 @@ import 'chat_screen.dart';
 /// - 기본은 **번역문**만 보인다(기획서 — "번역은 자동 번역 지원"). `[원문보기]`를 누르면
 ///   **원문 위 · 구분선 · 번역문 아래(파란 글)** 로 함께 보인다(시안 image16의 모양).
 ///   번역문이 원문과 같으면(같은 언어이거나 공급자가 꺼져 있으면) `[원문보기]`를 감춘다.
-/// - 글이 길면 **패널이 아래로 늘어난다**(기획사항). 화면을 넘치면 화면 전체가 스크롤된다.
+/// - 글이 길면 **패널이 아래로 늘어나고 그만큼 사진이 줄어든다**(기획사항). 🚨 **스크롤은 없다**(기획 결정).
 /// - 🚨 화살표는 **뒤로가기 하나뿐**이다(기획사항 — "뒤로가기말고는 대화방에는 화살표가 없음").
 ///
 /// 여는 것만으로 서버가 이 신청을 '확인함'으로 바꾼다(V26) — 목록의 `N`이 꺼진다.
@@ -156,25 +156,33 @@ class _ReceivedRequestScreenState extends ConsumerState<ReceivedRequestScreen> {
     final hasTranslation =
         translated != null && translated.trim() != r.message.trim();
 
-    return SingleChildScrollView(
-      // 기본 physics — **넘칠 때만** 스크롤된다(포스트 화면에서 겪은 '움직이는데 갈 데가 없는'
-      // 오버스크롤을 피한다, 함정 #79).
+    // 🚨 **이 화면은 스크롤하지 않는다**(기획 결정 2026-09-19 — 끌면 "울렁울렁" 움직였다).
+    //
+    // 시안(1080×2640)을 그대로 쌓으면 2344px라 **세로가 짧은 폰에서 조금 넘치고**, 그래서
+    // 스크롤뷰가 살짝 움직였다. 스크롤을 막기만 하면 아래 버튼이 잘린다 —
+    // 대신 **사진 칸이 남는 높이를 차지**하게 했다. 흰 패널·버튼은 시안 크기 그대로고,
+    // 글이 길어져 패널이 늘어나면 **그만큼 사진이 줄어든다**(기획사항 "문구가 길어지면 아래로 늘어남").
+    // 한마디가 100자로 묶여 있어 패널이 사진을 다 밀어낼 일은 없다.
+    return Padding(
       padding: EdgeInsets.only(
-        top: DesignCanvas.titleTopInSafeArea(context) +
+        top:
+            DesignCanvas.titleTopInSafeArea(context) +
             MediaQueryData.fromView(View.of(context)).padding.top,
-        bottom: 48 * s,
+        bottom: MediaQuery.paddingOf(context).bottom + 32 * s,
       ),
       child: Column(
         children: [
-          _PhotoArea(
-            info: info,
-            fallbackPhoto: r.partnerPhotoUrl,
-            nickname: info?.nickname ?? r.partnerNickname,
-            age: info?.age ?? r.partnerAge,
-            country: info?.country ?? r.partnerCountry,
-            controller: _pages,
-            page: _page,
-            onPageChanged: (i) => setState(() => _page = i),
+          Expanded(
+            child: _PhotoArea(
+              info: info,
+              fallbackPhoto: r.partnerPhotoUrl,
+              nickname: info?.nickname ?? r.partnerNickname,
+              age: info?.age ?? r.partnerAge,
+              country: info?.country ?? r.partnerCountry,
+              controller: _pages,
+              page: _page,
+              onPageChanged: (i) => setState(() => _page = i),
+            ),
           ),
           _MessagePanel(
             original: r.message,
@@ -235,27 +243,43 @@ class _PhotoArea extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    return LayoutBuilder(
+      // 높이는 **남는 만큼**이다(위 `_body` 참고) — 시안 1381px로 고정하지 않는다.
+      builder: (context, constraints) => _build(context, constraints.maxHeight),
+    );
+  }
+
+  Widget _build(BuildContext context, double h) {
     final l10n = L10n.of(context);
     final s = DesignCanvas.scaleOf(context);
     final w = TalkArt.popupTopSize.width * s;
-    final h = TalkArt.popupTopSize.height * s;
 
     // 오늘 포스트가 없으면 서버가 **프로필 사진 한 장**을 준다(PostInfo.photoUrls).
     // [포스트 정보]를 못 읽었으면 목록이 가진 프로필 사진으로 버틴다.
-    final photos = info?.photoUrls ??
+    final photos =
+        info?.photoUrls ??
         (fallbackPhoto == null ? const <String>[] : [fallbackPhoto!]);
     final total = info?.totalPhotos ?? photos.length;
     final showPage = (info?.hasTodayPost ?? false) && total > 0;
 
-    final region = info?.regions.isNotEmpty == true ? info!.regions.first : null;
+    final region = info?.regions.isNotEmpty == true
+        ? info!.regions.first
+        : null;
     final place = region != null
         ? ProfileCatalog.regionLabel(l10n, region)
-        : (country == null ? null : ProfileCatalog.countryLabel(l10n, country!));
+        : (country == null
+              ? null
+              : ProfileCatalog.countryLabel(l10n, country!));
     final flag = TalkArt.flagOf(country);
 
     // 사진은 테두리 **안쪽**부터 — 위 모서리만 둥글다(아래는 흰 패널과 붙는다).
+    //
+    // ⚠️ 칸 높이가 시안(1381)과 달라지면 테두리 그림이 **세로로만** 늘거나 줄어 모서리가
+    // 타원이 된다. 사진 모서리도 **같은 비율의 타원**으로 잘라야 테두리 밖으로 안 삐져나온다(함정 #51·#52).
     final inset = TalkArt.popupLine * 0.7 * s;
-    final radius = Radius.circular((TalkArt.popupRadius - TalkArt.popupLine) * s);
+    final r = (TalkArt.popupRadius - TalkArt.popupLine) * s;
+    final stretch = h / (TalkArt.popupTopSize.height * s);
+    final radius = Radius.elliptical(r, r * stretch);
 
     return SizedBox(
       width: w,
@@ -266,7 +290,10 @@ class _PhotoArea extends StatelessWidget {
           Padding(
             padding: EdgeInsets.fromLTRB(inset, inset, inset, 0),
             child: ClipRRect(
-              borderRadius: BorderRadius.only(topLeft: radius, topRight: radius),
+              borderRadius: BorderRadius.only(
+                topLeft: radius,
+                topRight: radius,
+              ),
               child: photos.isEmpty
                   ? const ColoredBox(color: AppColors.surfaceHigh)
                   : PageView.builder(
@@ -283,9 +310,7 @@ class _PhotoArea extends StatelessWidget {
               decoration: BoxDecoration(gradient: AppColors.nightScrim),
             ),
           ),
-          IgnorePointer(
-            child: Image.asset(TalkArt.popupTop, fit: BoxFit.fill),
-          ),
+          IgnorePointer(child: Image.asset(TalkArt.popupTop, fit: BoxFit.fill)),
           // 뒤로가기 — 이 화면의 **유일한 화살표**다.
           Positioned(
             left: TalkArt.backAt.dx * s,
@@ -372,7 +397,10 @@ class _PhotoArea extends StatelessWidget {
                           place,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: TextStyle(color: Colors.white, fontSize: 38 * s),
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 38 * s,
+                          ),
                         ),
                       ),
                     ],
@@ -429,7 +457,11 @@ class _MessagePanel extends StatelessWidget {
           Text(original, style: textStyle),
           Padding(
             padding: EdgeInsets.symmetric(vertical: 22 * s),
-            child: Divider(height: 1, thickness: 2 * s, color: const Color(0xFFCAD0F5)),
+            child: Divider(
+              height: 1,
+              thickness: 2 * s,
+              color: const Color(0xFFCAD0F5),
+            ),
           ),
           Text(translated!, style: translatedStyle),
         ],
