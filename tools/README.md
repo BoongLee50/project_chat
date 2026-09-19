@@ -40,6 +40,21 @@ python tools/verify/verify_talk_room.py
 - **18시가 지나면 후보가 빈다**(그날 공유한 사람이 아직 없어서다). 스크립트가
   `publish_post()`로 직접 만들어 두므로 시간과 무관하게 돈다.
 
+## spec/ — 전달본 리소스 비교
+
+```bash
+python tools/spec/compare_ui_delivery.py                  # 기본: D:/MyProject/Plan_Chat/UI
+python tools/spec/compare_ui_delivery.py "D:/Plan_Chat/UI" # 다른 기기
+```
+
+🚨 **기획은 같은 이름으로 내용만 살짝 바꿔 보내기도 한다.** "그 해시가 에셋 어딘가에 있나"로는
+못 잡는다 — 이 도구는 **같은 이름끼리** 맞대서 `같음` / `🔴 이름 같고 다름`(규격·바뀐 영역) /
+`🆕 새 그림` / `저장소에만`으로 나눈다. 이름 규칙(`_jap`→`ja/`, `_kor`→원문, 공백→밑줄)은
+09-14 들여오기와 같다. 새 전달본을 받으면 **들이기 전에 먼저** 돌릴 것.
+
+⚠️ 픽셀 비교는 `getbbox(alpha_only=False)`로 한다 — 기본값은 RGBA에서 **알파만** 봐서
+색만 바뀐 그림을 "픽셀 동일"로 잘못 말한다(만들다가 실제로 걸렸다).
+
 ## spec/ — 기획서 비교
 
 ```bash
