@@ -356,7 +356,16 @@ GIF는 *"문제 있을 경우 **해당 기능 삭제**"* 라고 적혀 있었다
    한·일 동시 오픈이 확정이고 일본어가 출시 블로커다(2026-08-08 기획 미팅).
 2. **성능·부채** — [07 §5](07-work-log.md) 참고. 피드 후보 쿼리에 LIMIT이 없다(§5-1).
 3. **운영 준비** — 신고 처리 도구, 배치 모니터링, 오류 알림.
-4. **친구 기획** — 미팅에서 *"아직 논의 전"* 으로 동결돼 있다.
+4. ~~**친구 기획** — 미팅에서 *"아직 논의 전"* 으로 동결~~ → ✅ **기획서 260919 7장으로 확정·반영**(V27, 2026-09-19).
+5. 🧹 **죽은 코드 둘 치우기**(친구 개편이 남긴 것, 약 1,000줄) —
+   - `lib/features/postinfo/presentation/screens/post_info_screen.dart`(723줄, `showPostInfo`·`PostInfoScreen`)
+     — 옛 공용 [포스트 정보] 풀스크린. 대화방은 V26의 `received_request_screen.dart`로, 친구는 V27의
+     `friend_post_screen.dart`·`friend_request_screen.dart`로 옮겨 가 **부르는 곳이 없다**.
+   - `lib/shared/widgets/night_header.dart`(314줄, `NightHeader`·`PillTabs`·`HeaderPills`)
+     — `ArtTopBar`·`ArtTabs`로 대체돼 **부르는 곳이 없다**.
+   - ⚠️ 같은 폴더의 `profile_view_screen.dart`와 `postInfoProvider`는 **살아 있다**(지우지 말 것).
+   - 지울 때 **이 둘만 쓰던 ARB 키**도 함께 추려 지우고 `flutter gen-l10n`을 돌릴 것.
+     13(화면 점검)의 `NightHeader` 언급 두 줄도 함께 고친다.
 
 ### 4-1. 🤖 봇 데이터 — **예고된 기능**(기획 2026-09-19)
 
