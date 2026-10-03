@@ -10,7 +10,11 @@
   원형 3열 목록 · 목록 상단 고정 · [친구 포스트 정보] · [친구 관리] · 받은 신청 · [친구 요청 상세].
   그 전에 포스트·달빛가든 리소스를 같은 이름끼리 재대조 → **변경 0장**(`tools/spec/compare_ui_delivery.py`).
 - **다음 작업**: 새 전달본(채팅창 등)이 오면 그것부터. 그 밖에 남은 것은 **막힌 것 3건**(§2) —
-  C(로그인 배경 그림) · D·E(외부 키) — 과 아래 **친구에서 남긴 질문**.
+  C(로그인 배경 그림) · D·E(외부 키) — 과 아래 **친구에서 남긴 질문**, 그리고 §4-5 **죽은 코드 둘 치우기**(약 1,000줄, 막힌 것 없음).
+
+> ✅ **2026-09-20: 이 PC(D:\project_chat)도 V27 상태로 맞췄다** — 서버 기동으로 **V27 적용**,
+> `analyze` 깨끗, `flutter test` 23/23, `verify_friend` 26/26, `verify_talk_room` 23/23,
+> 전달본 대조 **변경 0장**(07 §4 2026-09-20). **두 기기가 같은 자리에 있다.**
 
 > ✅ **260919 재업로드판(7장 개편)은 전부 반영됐다.** 기획서는 `D:\MyProject\Plan_Chat\기획서\`,
 > 297,681,597바이트 · 그림 32장 판이다. 📌 **기획서는 파일명이 같아도 내용이 바뀐다** —
@@ -448,7 +452,7 @@ git pull origin main
 
 | 잊으면 깨지는 것 | 왜 |
 |---|---|
-| 서버를 한 번 띄워 **V26까지 적용** | 신청 만료 EXPIRED(V24)·대화 신청 150자(V25)·**신청 한마디 100자 통일 + 받은 신청 열람(V26)** |
+| 서버를 한 번 띄워 **V27까지 적용** | 신청 만료 EXPIRED(V24)·대화 신청 150자(V25)·신청 한마디 100자 통일 + 받은 신청 열람(V26)·**친구 고정 칼럼 둘 + 받은 친구 신청 열람(V27)** |
 | ⚠️ 대화방 종료 규칙(30일) | 30일 무대화 방이 배치에서 ENDED가 된다. 오래된 개발 데이터가 한 번에 닫힐 수 있다 |
 | ⚠️ **받은 신청 만료 규칙(14일)** | 14일 넘게 답하지 않은 신청이 `expire-requests` 한 번에 전부 사라진다. **배치는 내 계정만 보지 않는다** |
 | `flutter pub get` → **`flutter gen-l10n`** | ARB 생성물이 저장소에 있다(함정 #28) |
@@ -460,7 +464,10 @@ git pull origin main
   ```bash
   python tools/verify/verify_moderation.py        # 신청 만료 · 신고/차단 정리 범위
   python tools/verify/verify_feed_block_page2.py  # 차단이 캐시된 순서에도 먹는가
+  python tools/verify/verify_talk_room.py         # 대화방 개편(V26) 23건
+  python tools/verify/verify_friend.py            # 친구 개편(V27) 26건
   python tools/spec/diff_docx_text.py "<옛 기획서>" "<새 기획서>"
+  python tools/spec/compare_ui_delivery.py "D:/Plan_Chat/UI"   # 🚨 기본값은 다른 기기 경로다
   ```
   `_common.py`의 `login()`·`publish_post()`·`clear_ties()`로 **새 검증도 몇 줄이면 쓴다.**
   (예전엔 `scratchpad/`에 두고 커밋하지 않아 다른 기기에서는 **문서만 있고 실물이 없었다.**)

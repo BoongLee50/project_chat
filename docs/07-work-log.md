@@ -409,6 +409,37 @@ adb shell cmd locale set-app-locales com.example.project_chat --locales ko-KR
 > 다음에 할 일은 [09 인수인계](09-next-task-handoff.md) §2의 **막힌 것 3건**에서 고른다(A·B가 해소됐다).
 > 다음 "싱크용 문서" 요청은 **그 이후 작업부터** 정리하면 된다.
 
+### 2026-09-20 — 이 PC를 친구 개편(V27) 상태로 동기화 · 검증 49건 통과
+
+다른 기기가 올린 커밋 5개(`22d4bf3`~`9bc5373`)를 받아 **이 PC(D:\project_chat)에서 실제로 도는지**까지 확인했다.
+받기만 하고 서버를 안 띄우면 **스키마는 V26에 멈춘 채 화면만 새 것**이 되어, 친구 고정·받은 신청 `N`이
+이유 없이 안 되는 것처럼 보인다(09 §6 표의 첫 줄이 그 말이다).
+
+| 한 것 | 결과 |
+|---|---|
+| MariaDB 기동 → 서버 `bootRun --spring.profiles.active=local` | **V27 적용**(`Successfully applied 1 migration … now at version v27`) |
+| `flutter pub get` → `flutter gen-l10n` | ARB 생성물 갱신(ja 4장 추가분은 그림이 아니라 목록만 늘었다 — 08 §0-1) |
+| `flutter analyze` / `flutter test` | **No issues found** / **23/23 통과** |
+| `python tools/verify/verify_friend.py` | **26/26 통과** — 고정 순서·보는 사람마다 따로·403/409·끊었다 다시 친구·받은 신청 `viewed` |
+| `python tools/verify/verify_talk_room.py` | **23/23 통과** — V26 규칙이 공용 조각(`talk_cell.dart`·`request_popup.dart`)으로 옮겨진 뒤에도 그대로다 |
+
+📌 **대화방 작업이 친구 작업에 흡수된 모양을 확인했다.** 내가 쓴 두 화면은 다른 기기에서
+`talk_cell.dart`(`TalkCell`·`CellGrid`·`CellLoading`·`CellEmpty`·`ArtTabs`)와
+`request_popup.dart`(`PopupPhotoArea`·`PopupPanel`·`PanelItem`·`PopupDecideRow`·`PopupDecide`)로 쪼개져
+**친구 화면 셋이 같은 벌을 쓴다.** 결정 둘(**확인창 없이 바로 입장** · **받은 신청 팝업 무스크롤**)은
+합쳐진 코드에도 그대로 살아 있다 — 🚨 이 조각을 고치면 **세 팝업이 함께 바뀐다**.
+
+⚠️ **`scene_friend`에 `ja/` 폴더는 아직 없다.** 09가 말한 *"일본어판 4장 추가"* 는 **받았다는 뜻이 아니라
+필요 목록이 21장으로 늘었다**는 뜻이다(08 §0-1). `pubspec.yaml`에도 `scene_friend/ja/` 줄은 없으니,
+그림이 오면 **폴더 선언 한 줄을 먼저 넣고 완전 재빌드**할 것(함정 #30).
+
+⚠️ **`compare_ui_delivery.py`의 기본 경로는 다른 기기 것(`D:/MyProject/Plan_Chat/UI`)이다.**
+이 PC는 `D:/Plan_Chat/UI`를 인자로 넘길 것(안 넘기면 *"전달본 폴더가 없다"* 로 멈춘다 — 조용히 틀리지는 않는다).
+넘겨서 돌린 결과는 **같음 104 · 이름 같고 다름 0 · 새 그림 3 · 저장소에만 0** —
+전달본과 에셋이 바이트까지 일치한다. 🆕 3장은 **일부러 안 들인 것**이라 정상이다:
+`Scene_Friend`의 `button_receive_*`(대화방 것과 md5 동일 → 한 벌만 쓴다) · `icon_next`(쓰지 않기로 한 화살표).
+📌 **이 셋은 앞으로도 계속 🆕로 보인다** — 다음 전달본에서 목록이 이 셋뿐이면 "바뀐 것 없음"이라는 뜻이다.
+
 ### 2026-09-19(9) — 친구 화면 개편: 목록 · 받은 신청 · 두 팝업 · 목록 상단 고정 (**V27**)
 
 **근거**: 같은 이름으로 다시 올라온 `기획서_260919`의 **7-1·7-2**(09 머리 표) + `Plan_Chat\UI\Scene_Friend`.
