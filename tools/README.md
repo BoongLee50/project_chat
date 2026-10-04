@@ -84,11 +84,14 @@ python tools/spec/diff_docx_text.py "<기획서.docx>" --dump out.txt
 |---|---|
 | `demo/demo_talk.sql` | 대화방 UI 확인용. **[LINE] 목 로그인 계정**에게 대화 3칸(안 읽음 `N` · 일본어 글 · 음성 뒤 글 미리보기 · 사진 없는 빈 칸) + 받은 신청 2칸(안 열어 본 일본어 · 열어 본 한국어). 전부 `demo-` 접두어, 다시 돌리면 먼저 비운다 |
 | `demo/demo_friend.sql` | 친구 화면 확인용. 같은 계정에게 친구 5(고정 1 · 신규 `N` 1 · 접속 시각 셋 · 사진 없음 1 · 일본어 소개) + 받은 친구 신청 2(안 열어 봄 · 열어 본 일본어). 전부 `demo-f` 접두어. 수락해 보며 생긴 친구 대화방까지 CLEANUP이 지운다 |
-| `demo/seed_users.py` | **임시 유저 40명**(한남·한여·일남·일여 각 10, 나이 18~44 랜덤) — 전원 얼굴 사진(`photo_key`)·자유 사진(`main_photo_key`)·**오늘 공유한 포스트 1~4장**·소개·관심사·지역. [LINE] 목 계정이 있으면 대화 중 6 · 받은 대화 신청 4 · 친구 8(고정 1 · 신규 2) · 받은 친구 신청 4도 붙인다. 사진도 스스로 만든다(실루엣+밤 풍경, 구석에 `#07 FACE`·`#07 MAIN`·`#07 POST 1/3` 번호). 전부 `temp-` 접두어 · `--clean`으로 지움. 🚨 **포스트는 KST 18:05 배치에 지워진다 — 다음 날 가든이 비면 다시 돌릴 것** |
+| `demo/seed_users.py` | **임시 유저 40명**(한남·한여·일남·일여 각 10, 나이 18~44 랜덤) — 전원 얼굴 사진(`photo_key`)·자유 사진(`main_photo_key`)·**오늘 공유한 포스트 1~4장**·소개·관심사·지역. 사진도 스스로 만든다(실루엣+밤 풍경, 구석에 `#07 FACE`·`#07 MAIN`·`#07 POST 1/3` 번호). 전부 `temp-` 접두어.
+📌 **관계는 붙이지 않는다**(대화·친구는 각 콘텐츠 작업에서 직접 만든다 — 2026-10-04). 붙이려면 `--ties`(대화 6·신청 4·친구 8·친구 신청 4).
+📌 **다시 돌려도 유저를 지우지 않는다** — 있는 사람은 그대로, 오늘 포스트만 채운다(그들과 만든 관계가 안 날아가게). 처음부터는 `--reset`, 지우기는 `--clean`.
+🚨 **포스트는 KST 18:05 배치에 지워진다 — 다음 날 가든이 비면 옵션 없이 다시 돌릴 것** |
 | `demo/make_seed_photos.py` | 두 데모가 쓰는 사진 3장(`uploads/seed/p1~p3`)을 만든다 — 밤하늘+달 그림. **기기마다 한 번** |
 
 ```bash
-python tools/demo/seed_users.py         # 임시 유저 40명(사진까지). 다시 돌리면 비우고 새로 · --clean 지우기
+python tools/demo/seed_users.py         # 임시 유저 40명(사진까지) · 다음 날은 다시 돌려 오늘 포스트만 채움 · --reset / --clean / --ties
 python tools/demo/make_seed_photos.py   # 사진이 없을 때 한 번
 mysql -umoonlighttalk -pmoonlighttalk moonlighttalk --default-character-set=utf8mb4 < tools/demo/demo_talk.sql
 mysql -umoonlighttalk -pmoonlighttalk moonlighttalk --default-character-set=utf8mb4 < tools/demo/demo_friend.sql

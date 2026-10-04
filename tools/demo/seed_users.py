@@ -1,17 +1,21 @@
 """임시 유저 40명 — 가든·대화방·친구 화면이 사람으로 찼을 때 어떻게 보이는지 보려는 데이터.
 
-    python tools/demo/seed_users.py            # 넣기(다시 돌리면 비우고 새로 넣는다)
+    python tools/demo/seed_users.py            # 없으면 만들고, 오늘 포스트를 채운다(관계는 안 건드림)
+    python tools/demo/seed_users.py --reset    # 40명을 지우고 처음부터(그들과의 관계도 함께 사라진다)
     python tools/demo/seed_users.py --clean    # 지우기만
+    python tools/demo/seed_users.py --ties     # (선택) [LINE] 목 계정에 대화 6·신청 4·친구 8·친구 신청 4를 붙인다
 
 한국 남 10 · 한국 여 10 · 일본 남 10 · 일본 여 10. 나이는 18~44 랜덤(시드 고정이라 돌릴 때마다 같다).
 전원에게 **얼굴 사진**(`photo_key` — 목록·셀) · **자유 사진**(`main_photo_key` — [미리 보기] 큰 칸) ·
 **오늘 공유한 포스트 1~4장**(가든 카드)을 넣는다. 자기소개·관심사(0~3)·활동 지역(1곳)도 섞어서.
 
-🚨 **포스트는 오늘 영업일 것이라 KST 18:05 배치에 지워진다.** 다음 날 가든이 비면 이 스크립트를 다시 돌릴 것
-(사진 파일은 있으면 다시 안 만든다 — 몇 초면 끝난다).
+🚨 **포스트는 오늘 영업일 것이라 KST 18:05 배치에 지워진다.** 다음 날 가든이 비면 **옵션 없이** 다시 돌릴 것 —
+유저는 그대로 두고 오늘 포스트만 채운다(사진 파일도 있으면 다시 안 만든다, 몇 초).
+📌 **기본 실행은 유저를 지우지 않는다.** 다른 작업에서 이 40명과 대화·친구 관계를 만들어 두었을 수 있어서다
+(유저를 지우면 그 관계가 전부 함께 사라진다). 처음부터 다시 하려면 `--reset`.
 
-[LINE] 목 로그인 계정(`mock-dev-line`)이 있으면 **대화방·친구 칸도 채운다**:
-대화 중 6 · 받은 대화 신청 4 · 친구 8 · 받은 친구 신청 4. 계정이 없으면 이 부분만 건너뛴다.
+관계는 기본으로 **붙이지 않는다**(2026-10-04 사용자 결정 — 관계는 각 콘텐츠 작업에서 직접 만든다).
+`--ties`를 줄 때만 [LINE] 목 로그인 계정(`mock-dev-line`)에 붙인다.
 
 전부 `temp-` 접두어다(`demo-`·`seed-`·`mock-verify-` 와 겹치지 않는다).
 사진은 `server/server/uploads/seed/temp/` — 저장소에 없는 폴더(gitignore)라 기기마다 이 스크립트가 만든다.
@@ -302,13 +306,17 @@ def ties_sql():
                  % (q("temp-fq%d" % i), q(uid), pair("@me", uid), q(msg), minutes,
                     "NOW() - INTERVAL %d MINUTE" % (minutes // 2) if viewed else "NULL"))
     s.append("SELECT IF(@me IS NULL, 'LINE 목 계정 없음 — 대화방·친구 칸은 건너뜀', CONCAT('관계 연결: ', @me));")
-    return "\n".join(s)
+    # 두 번 돌려도 깨지지 않게 — 이미 있는 관계(같은 id·같은 pair_key)는 건너뛴다
+    return "\n".join(s).replace("INSERT INTO", "INSERT IGNORE INTO")
 
 
-def users_sql(users, sdate):
+def users_sql(users, existing):
+    """없는 사람만 만든다 — 있는 사람의 프로필은 손대지 않는다(다른 작업에서 바꿔 뒀을 수 있다)."""
     s = []
     for u in users:
         uid = u["id"]
+        if uid in existing:
+            continue
         s.append("INSERT INTO users (id, provider, provider_uid, nickname, birth_year, gender, country, created_at, last_seen_at) "
                  "VALUES (%s,'GOOGLE',%s,%s,%d,%s,%s, NOW() - INTERVAL 30 DAY, %s);"
                  % (q(uid), q(uid), q(u["nickname"]), u["birth_year"], q(u["gender"]), q(u["country"]), ago(u["seen"])))
@@ -318,15 +326,29 @@ def users_sql(users, sdate):
             s.append("INSERT INTO user_interests (user_id, code) VALUES (%s,%s);" % (q(uid), q(code)))
         if u["region"]:
             s.append("INSERT INTO user_regions (user_id, code) VALUES (%s,%s);" % (q(uid), q(u["region"])))
-        pid = "%s-p" % uid
+    return "\n".join(s)
+
+
+def posts_sql(users, sdate):
+    """오늘 영업일 포스트. 이미 있으면 그대로 둔다 — 오늘 달린 좋아요·댓글이 지워지지 않게.
+
+    id에 날짜를 넣는 이유: 배치가 안 돌아 어제 포스트가 남아 있어도 **id가 부딪히지 않게**.
+    (지난 날짜 temp 포스트는 여기서 치운다 — 배치가 하는 일을 대신할 뿐이다.)
+    """
+    tag_ = str(sdate).replace("-", "")
+    s = ["DELETE FROM posts WHERE user_id LIKE 'temp-%%' AND session_date <> %s;" % q(sdate)]
+    for u in users:
+        uid, pid = u["id"], "%s-p%s" % (u["id"], tag_)
         # 공유 시각을 사람마다 조금씩 어긋나게 — 가든 순서가 한 줄로 몰리지 않게
-        s.append("INSERT INTO posts (id, user_id, session_date, published_at, content_updated_at) "
+        s.append("INSERT IGNORE INTO posts (id, user_id, session_date, published_at, content_updated_at) "
                  "VALUES (%s,%s,%s, NOW() - INTERVAL %d MINUTE, NOW() - INTERVAL %d MINUTE);"
                  % (q(pid), q(uid), q(sdate), u["n"] * 3, u["n"] * 3))
         for i in range(u["photos"]):
-            s.append("INSERT INTO post_photos (id, post_id, user_id, storage_key, order_idx) VALUES (%s,%s,%s,%s,%d);"
-                     % (q("%s%d" % (pid, i + 1)), q(pid), q(uid), q("%s/%02d_post%d.jpg" % (KEY_DIR, u["n"], i + 1)), i))
-        s.append("UPDATE posts SET main_photo_id = %s WHERE id = %s;" % (q(pid + "1"), q(pid)))
+            s.append("INSERT IGNORE INTO post_photos (id, post_id, user_id, storage_key, order_idx) "
+                     "SELECT %s,%s,%s,%s,%d FROM posts WHERE id = %s;"
+                     % (q("%s-%d" % (pid, i + 1)), q(pid), q(uid),
+                        q("%s/%02d_post%d.jpg" % (KEY_DIR, u["n"], i + 1)), i, q(pid)))
+        s.append("UPDATE posts SET main_photo_id = %s WHERE id = %s AND main_photo_id IS NULL;" % (q(pid + "-1"), q(pid)))
     return "\n".join(s)
 
 
@@ -357,17 +379,24 @@ def make_photos(users):
 
 
 def main():
-    if "--clean" in sys.argv:
+    if "--clean" in sys.argv or "--reset" in sys.argv:
         run_sql(CLEAN)
-        print("temp- 유저와 관계를 모두 지웠다(사진 파일은 남겨 둠: %s)" % OUT)
-        return
+        print("temp- 유저와 그들과의 관계를 모두 지웠다(사진 파일은 남겨 둠: %s)" % OUT)
+        if "--clean" in sys.argv:
+            return
     users = build_users()
     made = make_photos(users)
     sdate = session_date()
-    out = run_sql(CLEAN + users_sql(users, sdate) + "\n" + ties_sql())
+    existing = set(run_sql("SELECT id FROM users WHERE id LIKE 'temp-%'").split())
+    sql = users_sql(users, existing) + "\n" + posts_sql(users, sdate)
+    if "--ties" in sys.argv:
+        sql += "\n" + ties_sql()
+    out = run_sql(sql)
     print("사진 %d장 새로 만듦 → %s" % (made, OUT))
-    print("유저 %d명 · 영업일 %s 포스트 공유(KST 18:05 배치에 지워진다 — 그 뒤엔 다시 돌릴 것)" % (len(users), sdate))
-    print(out)
+    print("유저: 새로 %d명 · 있던 %d명은 그대로" % (len(users) - len(existing & {u['id'] for u in users}), len(existing)))
+    print("영업일 %s 포스트 채움(KST 18:05 배치에 지워진다 — 그 뒤엔 옵션 없이 다시 돌릴 것)" % sdate)
+    if out:
+        print(out)
 
 
 if __name__ == "__main__":
