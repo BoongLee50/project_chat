@@ -312,7 +312,8 @@ class PanelItem {
 /// - 본문 기본은 **번역문**. `[원문보기]`를 누르면 **원문으로 바뀌고**, 다시 누르면 번역문으로 돌아온다
 ///   (기획서 261002 6-2·7-2 "번역문을 신청 메시지 원문으로 전환하여 표시"). 260919판의
 ///   "원문 위 · 구분선 · 번역문 아래"는 버렸다.
-/// - `[원문보기]`가 보이는 조건은 [canViewOriginal]. 주지 않으면 옛 규칙(번역문이 원문과 다를 때만).
+/// - `[원문보기]`를 누를 수 있는지는 [canViewOriginal] — 못 누를 때도 **흐리게 자리는 지킨다**.
+///   주지 않으면 옛 규칙(번역문이 원문과 다를 때만 보이고, 그때는 누를 수 있다).
 /// - 글이 길면 **패널이 아래로 늘어난다**(기획사항 "문구가 길어지면 아래로 늘어남").
 /// - [footer]는 패널 **아래쪽에 붙는** 줄이다(친구 포스트의 하트 + 관심사). 본문이 그 줄을
 ///   덮지 않도록 [footerHeight]만큼 자리를 비운다.
@@ -340,9 +341,13 @@ class PopupPanel extends StatelessWidget {
   final bool showOriginal;
   final VoidCallback onToggleOriginal;
 
-  /// `[원문보기]`를 보일까. 받은 신청은 **상대와 내 나라가 다를 때만**이다
-  /// (기획서 261002 6-2 "동일 국가 사용자일 경우는 [원문보기] 버튼 미노출").
-  /// null이면 [translated]가 있을 때만 보인다(번역문이 원문과 같으면 부르는 쪽이 null을 준다).
+  /// `[원문보기]`를 누를 수 있나. 받은 신청은 **상대와 내 나라가 다를 때만** 누를 수 있다.
+  ///
+  /// - true → 보이고 눌린다(원문 ↔ 번역문)
+  /// - false → **흐리게 보이고 눌러도 반응이 없다**(2026-10-04 사용자 결정). 기획서 261002 6-2는
+  ///   "동일 국가 사용자일 경우는 미노출"이지만 신뢰 순서상 대화 중 결정이 앞선다.
+  ///   📌 나중에 **회색 아이콘**(비활성 그림)이 오면 흐리게 한 것을 그 그림으로 바꾼다.
+  /// - null → 옛 규칙. [translated]가 있을 때만 보이고 눌린다(번역문이 원문과 같으면 부르는 쪽이 null을 준다).
   final bool? canViewOriginal;
 
   final Widget? footer;
@@ -362,7 +367,8 @@ class PopupPanel extends StatelessWidget {
       height: 1.6,
     );
 
-    final showViewOriginal = canViewOriginal ?? translated != null;
+    final showViewOriginal = canViewOriginal != null || translated != null;
+    final viewOriginalEnabled = canViewOriginal ?? true;
     // 원문 ↔ 번역문을 **바꿔 끼운다**(기획서 261002). 번역이 아직 없으면 원문뿐이다.
     final body = Text(
       showOriginal || translated == null ? original : translated!,
@@ -411,11 +417,14 @@ class PopupPanel extends StatelessWidget {
                           asset: TalkArt.viewOriginal,
                           size: TalkArt.viewOriginalSize,
                           left: TalkArt.viewOriginalLeft,
-                          onTap: onToggleOriginal,
+                          onTap: viewOriginalEnabled ? onToggleOriginal : null,
                         ),
-                        // 누른 동안(원문이 보이는 동안)은 살짝 흐리게 — 켜져 있음을 알린다.
-                        // 그림이 한 장뿐이라 상태를 그림으로 바꿀 수 없다.
-                        opacity: showOriginal ? 0.55 : 1,
+                        // 못 누를 때(같은 나라)만 흐리게. 회색 그림이 오면 그 그림으로 바꾼다.
+                        // 📌 전엔 "원문이 보이는 동안" 0.55로 흐렸는데 지웠다 — 못 누르는 흐림과
+                        // 헷갈린다. 눌렀다는 표시는 글이 원문 ↔ 번역문으로 바뀌는 것으로 충분하다.
+                        opacity: viewOriginalEnabled
+                            ? 1
+                            : TalkArt.viewOriginalDisabledOpacity,
                       ),
                     item(trailing),
                   ],

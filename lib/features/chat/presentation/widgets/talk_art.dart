@@ -119,6 +119,10 @@ class TalkArt {
   static const Size viewOriginalSize = Size(209, 73);
   static const double viewOriginalLeft = 211 - 24;
 
+  /// 같은 나라 사람이라 `[원문보기]`를 못 누를 때의 알파(2026-10-04 사용자 결정).
+  /// 회색 그림(비활성)이 오면 이 값 대신 그 그림을 쓴다.
+  static const double viewOriginalDisabledOpacity = 0.35;
+
   static const String profile = '$_recv/button_profile.png';
   static const Size profileSize = Size(256, 78);
   static const double profileLeft = 770 - 24;

@@ -24,7 +24,7 @@ import 'chat_screen.dart';
 ///
 /// - 🚨 **번역은 무조건 공짜**(기획사항 2026-09-19). 서버 scope `REQUEST`로 부른다 — 쿼터를 세지 않는다.
 /// - 기본은 **번역문**(기획서 — "번역은 자동 번역 지원"). `[원문보기]`를 누르면 **원문으로 바뀐다**
-///   (기획서 261002 6-2). `[원문보기]`는 **상대와 내 나라가 다를 때만** 보인다.
+///   (기획서 261002 6-2). `[원문보기]`는 **상대와 내 나라가 다를 때만** 눌린다 — 같으면 흐리게 자리만 지킨다.
 /// - 사진은 상대의 **오늘 포스트 사진**이다 — 탭(오른쪽 반 다음 · 왼쪽 반 이전)·밀기로 넘기고,
 ///   오늘 내 포스트가 없으면 2번째 장부터 [사진 등록 안내]가 뜬다(달빛가든 카드와 같은 규칙).
 /// - `[프로필]` → 상대의 [프로필 보기].
@@ -154,9 +154,10 @@ class _ReceivedRequestScreenState extends ConsumerState<ReceivedRequestScreen> {
 
   Widget _body(BuildContext context, double s, PostInfo? info) {
     final r = widget.request;
-    // `[원문보기]`는 **상대와 내 나라가 다를 때만**(기획서 261002 6-2). 번역문이 원문과 같아도 보인다 —
+    // `[원문보기]`는 **상대와 내 나라가 다를 때만 눌린다.** 같은 나라면 흐리게 보이고 반응이 없다
+    // (2026-10-04 사용자 결정 — 기획서 261002 6-2는 "미노출"). 번역문이 원문과 같아도 눌린다 —
     // 번역 공급자가 붙기 전(개발 중)엔 눌러도 글이 그대로지만, 붙으면 그대로 원문 ↔ 번역문이 된다.
-    // 어느 한쪽 나라를 모르면 옛 규칙(번역문이 원문과 다를 때만)으로 돌아간다.
+    // 어느 한쪽 나라를 모르면 옛 규칙(번역문이 원문과 다를 때만 눌림)으로 돌아간다.
     final myCountry = ref.watch(sessionProvider).profile?.country;
     final partnerCountry = info?.country ?? r.partnerCountry;
     final translated = _translated;
