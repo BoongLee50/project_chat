@@ -88,10 +88,14 @@ python tools/spec/diff_docx_text.py "<기획서.docx>" --dump out.txt
 📌 **관계는 붙이지 않는다**(대화·친구는 각 콘텐츠 작업에서 직접 만든다 — 2026-10-04). 붙이려면 `--ties`(대화 6·신청 4·친구 8·친구 신청 4).
 📌 **다시 돌려도 유저를 지우지 않는다** — 있는 사람은 그대로, 오늘 포스트만 채운다(그들과 만든 관계가 안 날아가게). 처음부터는 `--reset`, 지우기는 `--clean`.
 🚨 **포스트는 KST 18:05 배치에 지워진다 — 다음 날 가든이 비면 옵션 없이 다시 돌릴 것** |
+| `demo/temp_received_requests.sql` | 받은 **대화** 신청 10칸 — 임시 유저 10명 → Nari(LINE)·테스(KAKAO) 둘 모두에게 같은 글. 먼저 `seed_users.py` |
+| `demo/temp_friend_requests.sql` | 받은 **친구** 신청 10칸 — 같은 방식. 다시 돌리면 **대기 중인 것만** 갈아끼운다(폰에서 수락한 친구·고정은 그대로). 먼저 `seed_users.py` |
 | `demo/make_seed_photos.py` | 두 데모가 쓰는 사진 3장(`uploads/seed/p1~p3`)을 만든다 — 밤하늘+달 그림. **기기마다 한 번** |
 
 ```bash
 python tools/demo/seed_users.py         # 임시 유저 40명(사진까지) · 다음 날은 다시 돌려 오늘 포스트만 채움 · --reset / --clean / --ties
+mysql -umoonlighttalk -pmoonlighttalk moonlighttalk --default-character-set=utf8mb4 < tools/demo/temp_received_requests.sql
+mysql -umoonlighttalk -pmoonlighttalk moonlighttalk --default-character-set=utf8mb4 < tools/demo/temp_friend_requests.sql
 python tools/demo/make_seed_photos.py   # 사진이 없을 때 한 번
 mysql -umoonlighttalk -pmoonlighttalk moonlighttalk --default-character-set=utf8mb4 < tools/demo/demo_talk.sql
 mysql -umoonlighttalk -pmoonlighttalk moonlighttalk --default-character-set=utf8mb4 < tools/demo/demo_friend.sql
