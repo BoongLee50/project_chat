@@ -789,9 +789,6 @@ class _PassBoostRowState extends ConsumerState<_PassBoostRow> {
           status: passDays == null
               ? l10n.homeBuy
               : l10n.homePassRemainingDays(passDays),
-          accent: passDays != null
-              ? AppColors.moonlight
-              : AppColors.textSecondary,
           onTap: () => Navigator.of(
             context,
           ).push(BoostScreen.route(StoreKind.albumPass)),
@@ -808,7 +805,6 @@ class _PassBoostRowState extends ConsumerState<_PassBoostRow> {
               : boostStock > 0
               ? l10n.homeBoostReady
               : l10n.homeBuy,
-          accent: boost != null ? AppColors.gold : AppColors.textSecondary,
           onTap: () => Navigator.of(
             context,
           ).push(BoostScreen.route(StoreKind.postBoost)),
@@ -829,7 +825,6 @@ class _ArtStatusButton extends StatelessWidget {
     required this.statusLeft,
     required this.scale,
     required this.status,
-    required this.accent,
     required this.onTap,
   });
 
@@ -840,8 +835,10 @@ class _ArtStatusButton extends StatelessWidget {
   final double statusLeft;
   final double scale;
   final String status;
-  final Color accent;
   final VoidCallback onTap;
+
+  /// 상태값 글자 크기(시안 원본 픽셀). 그림 속 한글 높이 ~37px에 맞춘 값.
+  static const double statusFontSize = 40;
 
   @override
   Widget build(BuildContext context) {
@@ -853,23 +850,31 @@ class _ArtStatusButton extends StatelessWidget {
         child: Stack(
           children: [
             ArtImage(art, width: size.width, height: size.height, scale: scale),
+            // 🚨 상태값은 **그림 글자(`포스트 앨범 |`)와 한 줄로 읽혀야 한다**(기획 2026-10-04).
+            // - 크기: 그림의 한글 높이(시안 ~37px)에 맞춘다. 그림처럼 **화면 폭 배율**을 탄다
+            // - 자리: `|` 뒤 그림 속 낱말 간격만큼 띄워 **왼쪽 정렬**(`statusLeft`). 가운데 정렬이면
+            //   글자 수에 따라 시작점이 춤춘다
+            // - 색: 그림 글자와 같은 흰색. 상태는 색이 아니라 **문구**가 말한다
+            // 같은 모양의 폰트가 앱에 없어 굵기만 맞췄다.
             Positioned(
               left: statusLeft * scale,
               right: 16 * scale,
               top: 0,
-              bottom: 0,
-              child: Center(
+              // 그대로 가운데에 두면 폰트의 위아래 여백 차이로 **그림 글자보다 3px 처진다**(실측).
+              bottom: 6 * scale,
+              child: Align(
+                alignment: Alignment.centerLeft,
                 child: FittedBox(
                   fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
                   child: Text(
                     status,
                     maxLines: 1,
-                    // 크기는 26에서 20% 줄였다(기획 2026-10-04 — 그림 글자보다 커 보였다).
-                    // 그림 글자(각진 굵은 고딕)와 같은 폰트는 아직 앱에 없어 크기만 맞췄다.
                     style: TextStyle(
-                      color: accent,
-                      fontSize: 21,
+                      color: Colors.white,
+                      fontSize: statusFontSize * scale,
                       fontWeight: FontWeight.w800,
+                      height: 1.0,
                     ),
                   ),
                 ),

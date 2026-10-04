@@ -424,6 +424,9 @@ adb shell cmd locale set-app-locales com.example.project_chat --locales ko-KR
    (Noto Sans KR Black·Pretendard 계열로 보임)인데 **앱에 묶인 폰트가 하나도 없어** 크기만 줄였다.
    에뮬 실측: `구매` 글자 높이 64 → 53px(−17~18%, `FittedBox`가 26에서도 거의 안 줄이고 있었다).
    폰트를 넣으려면 `pubspec.yaml`(공용) + `assets/fonts/` + 한·일 글리프 둘 다 필요.
+   → **이어서 그림 글자에 맞췄다**: 크기 `40 × 배율`(시안 px, 화면 폭을 탄다) · **흰색** ·
+   `|` 뒤 **왼쪽 정렬**(`statusLeft` 370/260 = 그림 속 낱말 간격) · 아래 6px 올림.
+   에뮬 실측으로 그림 한글과 **세로 424~461px가 같다**. 활성 색(달빛·금색) 구분은 없앴다 — 상태는 문구가 말한다.
 
 검증: Pixel_10 에뮬, 사진 0장 계정 — 공유 탭 → 문구 확인 · 26/21 두 빌드 화면 비교. `analyze lib/features/post` 깨끗.
 
