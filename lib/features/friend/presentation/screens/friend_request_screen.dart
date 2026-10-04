@@ -6,6 +6,7 @@ import '../../../../core/error/error_messages.dart';
 import '../../../../core/providers.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/design_canvas.dart';
+import '../../../auth/presentation/providers/session_provider.dart';
 import '../../../chat/presentation/widgets/request_popup.dart';
 import '../../../chat/presentation/widgets/talk_art.dart';
 import '../../../postinfo/data/models/post_info.dart';
@@ -15,11 +16,14 @@ import '../../data/models/friend_models.dart';
 import '../providers/friend_provider.dart';
 import '../widgets/friend_art.dart';
 
-/// [친구 요청 상세] — 받은 친구 신청을 누르면 뜬다(기획서 260919 7-2).
+/// [친구 요청 상세] — 받은 친구 신청을 누르면 뜬다(기획서 261002 7-2).
 ///
 /// 대화방 받은 신청 팝업과 **같은 화면**이다(시안 둘을 겹치면 수락 버튼 그림만 다르다).
-/// - 신청 한마디는 **번역문이 기본**, `[원문보기]`로 원문과 함께 본다. 번역은 **무료**(scope `REQUEST`) —
+/// - 신청 한마디는 **번역문이 기본**, `[원문보기]`를 누르면 **원문으로 바뀐다**. 번역은 **무료**(scope `REQUEST`) —
 ///   기획사항 *"받은 신청에서 번역은 무조건 공짜"* 는 대화방 문장이지만, 7-2가 "대화 목록창과 동일"이라 따른다.
+/// - `[원문보기]`는 **상대와 내 나라가 다를 때만 눌린다** — 같으면 흐리게 자리만 지킨다(대화방과 같은 규칙).
+/// - 사진은 상대의 **오늘 포스트 사진**이다 — 탭으로 넘기고, 오늘 내 포스트가 없으면 2번째 장부터
+///   [사진 등록 안내](달빛가든 카드와 같은 규칙, 조각은 `request_popup.dart`).
 /// - `[프로필]` → [프로필 보기] · `[✕ 요청 거절]` → 목록에서 삭제 · `[✓ 요청 수락]` → 친구가 된다.
 ///
 /// 여는 것만으로 서버가 이 신청을 '확인함'으로 바꾼다(V27) — 목록의 `N`이 꺼진다.
@@ -116,9 +120,15 @@ class _FriendRequestScreenState extends ConsumerState<FriendRequestScreen> {
 
   Widget _body(BuildContext context, double s, PostInfo? info) {
     final message = _r.message ?? '';
+    // `[원문보기]`는 **상대와 내 나라가 다를 때만 눌린다.** 같은 나라면 흐리게 보이고 반응이 없다
+    // (2026-10-04 사용자 결정 — 기획서 261002 7-2는 "미노출"). 대화방 받은 신청과 같은 규칙이다.
+    // 어느 한쪽 나라를 모르면 옛 규칙(번역문이 원문과 다를 때만 눌림)으로 돌아간다.
+    final myCountry = ref.watch(sessionProvider).profile?.country;
+    final partnerCountry = info?.country ?? _r.partnerCountry;
     final translated = _translated;
-    final hasTranslation =
-        translated != null && translated.trim() != message.trim();
+    final canViewOriginal = myCountry != null && partnerCountry != null
+        ? myCountry != partnerCountry
+        : translated != null && translated.trim() != message.trim();
 
     // 🚨 스크롤하지 않는다 — 대화방 받은 신청 팝업과 같은 이유다(사진 칸이 남는 높이를 차지한다).
     return Padding(
@@ -155,7 +165,8 @@ class _FriendRequestScreenState extends ConsumerState<FriendRequestScreen> {
               onTap: () => showProfileView(context, _r.requesterId),
             ),
             original: message,
-            translated: hasTranslation ? translated : null,
+            translated: translated,
+            canViewOriginal: canViewOriginal,
             showOriginal: _showOriginal,
             onToggleOriginal: () =>
                 setState(() => _showOriginal = !_showOriginal),

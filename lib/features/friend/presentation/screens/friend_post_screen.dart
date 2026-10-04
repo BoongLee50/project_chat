@@ -8,6 +8,7 @@ import '../../../../core/providers.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/confirm_dialog.dart';
 import '../../../../shared/widgets/design_canvas.dart';
+import '../../../auth/presentation/providers/session_provider.dart';
 import '../../../chat/data/models/chat_models.dart';
 import '../../../chat/presentation/screens/chat_screen.dart';
 import '../../../chat/presentation/widgets/request_popup.dart';
@@ -216,9 +217,14 @@ class _FriendPostScreenState extends ConsumerState<FriendPostScreen> {
     final s = DesignCanvas.scaleOf(context);
     final info = ref.watch(postInfoProvider(_friend.userId)).valueOrNull;
     final intro = _friend.intro ?? '';
+    // `[원문보기]`는 **친구와 내 나라가 다를 때만 눌린다** — 같으면 흐리게 자리만 지킨다
+    // (2026-10-04 사용자 결정, [친구 요청 상세]·대화방 받은 신청과 같은 규칙).
+    final myCountry = ref.watch(sessionProvider).profile?.country;
+    final partnerCountry = info?.country ?? _friend.country;
     final translated = _translated;
-    final hasTranslation =
-        translated != null && translated.trim() != intro.trim();
+    final canViewOriginal = myCountry != null && partnerCountry != null
+        ? myCountry != partnerCountry
+        : translated != null && translated.trim() != intro.trim();
     final interests = info?.interests ?? const <String>[];
 
     return Scaffold(
@@ -271,7 +277,8 @@ class _FriendPostScreenState extends ConsumerState<FriendPostScreen> {
                 onTap: _openManage,
               ),
               original: intro,
-              translated: hasTranslation ? translated : null,
+              translated: translated,
+              canViewOriginal: canViewOriginal,
               showOriginal: _showOriginal,
               onToggleOriginal: () =>
                   setState(() => _showOriginal = !_showOriginal),
