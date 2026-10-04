@@ -438,7 +438,13 @@ adb shell cmd locale set-app-locales com.example.project_chat --locales ko-KR
 테스(`mock-dev-kakao`) 둘 모두에게** 같은 글로 신청(한국어 6 · 일본어 4 · 안 열어 봄 7 · 100자 1 · 5분~10일 전). id `temp-q*`/`temp-k*`.
 14일이 지나면 EXPIRED — 다시 돌리면 새 시각으로 들어간다.
 
-검증: `flutter analyze lib/features/chat lib/features/friend` 깨끗. ⚠️ **실기기 확인은 못 했다** — 작업 끝에 폰 연결이 끊겨 있었다.
+검증: `flutter analyze lib/features/chat lib/features/friend` 깨끗 + **Pixel_10 에뮬(Nari)** — 빨간 점 숫자 ·
+얼굴 사진 셀 · 蓮 팝업 `1/3` → 오른쪽 탭 `2/3` 잠금 안내 → `[새 사진 등록하기]`로 팝업 닫히고 포스트 탭 /
+민준(같은 한국) `[원문보기]` 없음 · 100자 4줄 스크롤 없음 · 왼쪽 탭 `1/3` 복귀 · `[프로필]` → 프로필 보기 /
+ひなた(일본) `[원문보기]` 보임 · 누르면 흐려짐. 열어 본 신청은 탭 숫자 5 → 4로 줄었다. 친구 화면 팝업은 눈으로 안 봤다.
+📌 오후 6시가 지나면 임시 유저의 포스트가 지난 영업일 것이 돼 **팝업이 프로필 사진 한 장**만 보인다 —
+`python tools/demo/seed_users.py`(옵션 없이)로 오늘 포스트를 다시 채울 것.
+(시작할 때 MariaDB·서버가 둘 다 꺼져 있어 띄웠다.)
 
 ### 2026-10-04 [가든] — [포스트 댓글] 시안대로 (기획서 261002 4-2) · 카드에서 바로 사진 넘기기
 
