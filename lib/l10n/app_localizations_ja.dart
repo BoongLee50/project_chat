@@ -357,7 +357,18 @@ class L10nJa extends L10n {
   String get commentsSection => 'コメント';
 
   @override
-  String get commentsHint => 'コメントを残してみましょう（最大50文字）';
+  String get commentsHint => 'あたたかいコメントを残してみましょう 😊';
+
+  @override
+  String commentsCount(int count) {
+    return 'コメント $count';
+  }
+
+  @override
+  String get commentsSend => '登録';
+
+  @override
+  String get commentsMore => 'その他';
 
   @override
   String get commentsEmpty => '最初のコメントを残してみましょう。';

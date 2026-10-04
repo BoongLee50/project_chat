@@ -155,14 +155,15 @@ final feedProvider = AsyncNotifierProvider<FeedController, List<FeedItem>>(
 
 /// 댓글 목록. 키는 `"<대상종류>:<대상id>"` —
 /// 포스트와 달빛 한마디가 **같은 화면**을 쓰므로 id만으로는 구분되지 않는다.
-final commentsProvider = FutureProvider.family<List<Comment>, String>((
-  ref,
-  key,
-) {
-  final i = key.indexOf(':');
-  final kind = key.substring(0, i);
-  final id = key.substring(i + 1);
-  return kind == 'dailyAnswer'
-      ? ref.read(dailyApiProvider).comments(id)
-      : ref.read(gardenApiProvider).comments(id);
-});
+///
+/// ⚠️ **autoDispose다** — 시트를 닫으면 버리고 열 때마다 새로 읽는다. 전에는 첫 목록이 캐시에 남아
+/// **다시 열어도 그 사이 남이 단 댓글이 안 보였다**(2026-10-04 실기 확인).
+final commentsProvider = FutureProvider.autoDispose
+    .family<List<Comment>, String>((ref, key) {
+      final i = key.indexOf(':');
+      final kind = key.substring(0, i);
+      final id = key.substring(i + 1);
+      return kind == 'dailyAnswer'
+          ? ref.read(dailyApiProvider).comments(id)
+          : ref.read(gardenApiProvider).comments(id);
+    });

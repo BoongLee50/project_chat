@@ -21,12 +21,21 @@ import '../../l10n/app_localizations.dart';
 /// 🚨 **여기 있는 숫자는 하나도 이 파일이 정하지 않는다.** 전부 [access]가 들고 온다 —
 /// 무료가 5회인지 3회인지, 패스가 며칠 남았는지는 서버 설정이다.
 class TranslatePassButton extends StatelessWidget {
-  const TranslatePassButton({super.key, required this.access, this.compact = false});
+  const TranslatePassButton({
+    super.key,
+    required this.access,
+    this.compact = false,
+    this.light = false,
+  });
 
   final TranslateAccess? access;
 
   /// 채팅창 상단 바처럼 좁은 자리에서 쓰는 작은 모양.
   final bool compact;
+
+  /// 흰 바탕용(기획 4-2·8-2 시안 — 댓글 시트는 흰색). 흰 알약 + 보라 테두리 + 보라 별 칸.
+  /// 기본(어두운 바탕)은 대화방이 쓴다.
+  final bool light;
 
   @override
   Widget build(BuildContext context) {
@@ -37,6 +46,8 @@ class TranslatePassButton extends StatelessWidget {
     if (state == null) return const SizedBox.shrink();
 
     final (label, active) = _describe(l10n, state);
+
+    if (light) return _buildLight(context, l10n.chatTranslatePass, label, active);
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
@@ -78,6 +89,70 @@ class TranslatePassButton extends StatelessWidget {
                 color: active ? AppColors.gold : AppColors.textSecondary,
                 fontSize: compact ? 11 : 12,
                 fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 흰 바탕 시안(4-2 `[★ 번역 | 구매]`) — 보라 테두리 알약, 왼쪽에 보라 네모 별.
+  /// 쓸 수 없는 상태(준비 중·다 씀)는 테두리와 별 칸을 회색으로 낮춘다.
+  Widget _buildLight(
+    BuildContext context,
+    String name,
+    String label,
+    bool active,
+  ) {
+    const purple = Color(0xFFA018C8);
+    const ink = Color(0xFF212121);
+    final accent = active ? purple : const Color(0xFFBDBDBD);
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => Navigator.of(context)
+          .push(PassScreen.route(StoreKind.translatePass)),
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(6, 5, 12, 5),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(color: accent, width: 1.5),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 20,
+              height: 20,
+              decoration: BoxDecoration(
+                color: accent,
+                borderRadius: BorderRadius.circular(5),
+              ),
+              child: const Icon(
+                Icons.star_rounded,
+                size: 15,
+                color: Colors.white,
+              ),
+            ),
+            const SizedBox(width: 6),
+            Text(
+              name,
+              style: const TextStyle(
+                color: ink,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(width: 6),
+            Container(width: 1, height: 11, color: ink),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: const TextStyle(
+                color: ink,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ],

@@ -135,8 +135,14 @@ API를 직접 부르는 것으로 뚫린다. 응답에 `photoLocked`(잠김 여�
   - **자기 댓글에 자기가 답글을 달 수 없다**(혼잣말이 이어지는 것을 막는다).
   - **제3자는 끼어들 수 없다.** 대신 **1단계 댓글로 새 스레드**를 열면 그때는 글쓴이와 1:1이 된다.
   - 규칙을 한 줄로 줄이면 **"답글은 부모를 쓴 사람의 상대만 단다"** 이고, 이 한 문장이 둘 다 막는다.
-  - 어기면 `COMMENT_REPLY_NOT_ALLOWED`(403). 클라도 같은 규칙으로 **[답글] 버튼을 숨긴다**(헛걸음 방지).
-- **50자**까지. 넘으면 `COMMENT_TOO_LONG`(400) — 숫자는 `field`로 실어 보내 ARB가 문장을 만든다.
+  - 어기면 `COMMENT_REPLY_NOT_ALLOWED`(403). 클라는 **줄을 눌러 답글 대상을 고르고**(4-2·8-2 "댓글 타겟 선택"),
+    못 고르는 줄을 누르면 이 문장(또는 `COMMENT_DEPTH_EXCEEDED`)을 띄운다.
+- **50자**까지 — **코드포인트로 센다**(DB `VARCHAR`와 같은 단위, 2026-10-04부터. 전엔 UTF-16이라 이모지가 2였다).
+  넘으면 `COMMENT_TOO_LONG`(400) — 숫자는 `field`로 실어 보내 ARB가 문장을 만든다.
+- 목록의 각 줄: `id · parentId · depth · authorId · authorNickname · authorCountry · authorPhotoUrl · body · imageUrl · createdAt`.
+  `authorCountry`(국기)·`authorPhotoUrl`(**얼굴 사진** = `user_profiles.photo_key`)은 2026-10-04에 더했다(4-2 시안).
+- 번역은 창을 열 때 자리를 잡고(`POST /translate/comment-sheet`) 줄마다 `/translate`(`scope=COMMENT`).
+  **같은 나라 사람의 댓글은 보내지 않는다.** 번역문은 원문 아래 회색 한 줄.
 - **이미지 1장**. 포스트 사진과 같은 흐름(URL 발급 → 직접 업로드 → `imageKey`로 등록).
   키에 업로더 id가 들어 있어 **남의 키를 붙이면** `COMMENT_IMAGE_KEY_INVALID`(403).
 - 목록은 서버가 **트리 순서로 평탄화**해 준다 — 부모 바로 뒤에 그 답글이 온다.

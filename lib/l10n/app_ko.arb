@@ -236,7 +236,17 @@
     }
   },
   "commentsSection": "댓글",
-  "commentsHint": "댓글을 남겨보세요 (최대 50자)",
+  "commentsHint": "따뜻한 댓글을 남겨보세요 😊",
+  "commentsCount": "댓글 {count}",
+  "@commentsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "commentsSend": "등록",
+  "commentsMore": "더보기",
   "commentsEmpty": "첫 댓글을 남겨보세요.",
   "commentsLoadFailed": "댓글을 불러오지 못했어요.",
   "commentsReply": "답글",

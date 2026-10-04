@@ -20,6 +20,10 @@ public class Comment {
     private String targetId;
     private String authorId;
     private String authorNickname;
+    /** 작성자 국적(KR/JP) — 목록 조회에서만 채운다. */
+    private String authorCountry;
+    /** 작성자 얼굴 사진의 스토리지 키 — 목록 조회에서만 채운다. */
+    private String authorPhotoKey;
     private String body;
     /** 부모 댓글 id. 1단계면 null. */
     private String parentId;

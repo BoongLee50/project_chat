@@ -8,6 +8,8 @@ import java.time.LocalDateTime;
  *
  * @param depth    1=댓글, 2=대댓글, 3=대대댓글
  * @param imageUrl 첨부 이미지(없으면 null). 서버가 응답 시점에 계산한다
+ * @param authorCountry  작성자 국적 — 이름 옆 국기(기획 4-2 시안)
+ * @param authorPhotoUrl 작성자 <b>얼굴 사진</b>(없으면 null) — 줄 왼쪽 동그라미
  */
 public record CommentDto(
         String id,
@@ -15,6 +17,8 @@ public record CommentDto(
         int depth,
         String authorId,
         String authorNickname,
+        String authorCountry,
+        String authorPhotoUrl,
         String body,
         String imageUrl,
         LocalDateTime createdAt

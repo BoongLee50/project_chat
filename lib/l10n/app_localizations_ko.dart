@@ -357,7 +357,18 @@ class L10nKo extends L10n {
   String get commentsSection => '댓글';
 
   @override
-  String get commentsHint => '댓글을 남겨보세요 (최대 50자)';
+  String get commentsHint => '따뜻한 댓글을 남겨보세요 😊';
+
+  @override
+  String commentsCount(int count) {
+    return '댓글 $count';
+  }
+
+  @override
+  String get commentsSend => '등록';
+
+  @override
+  String get commentsMore => '더보기';
 
   @override
   String get commentsEmpty => '첫 댓글을 남겨보세요.';

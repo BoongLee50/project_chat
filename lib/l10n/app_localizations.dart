@@ -730,8 +730,26 @@ abstract class L10n {
   /// No description provided for @commentsHint.
   ///
   /// In ko, this message translates to:
-  /// **'댓글을 남겨보세요 (최대 50자)'**
+  /// **'따뜻한 댓글을 남겨보세요 😊'**
   String get commentsHint;
+
+  /// No description provided for @commentsCount.
+  ///
+  /// In ko, this message translates to:
+  /// **'댓글 {count}'**
+  String commentsCount(int count);
+
+  /// No description provided for @commentsSend.
+  ///
+  /// In ko, this message translates to:
+  /// **'등록'**
+  String get commentsSend;
+
+  /// No description provided for @commentsMore.
+  ///
+  /// In ko, this message translates to:
+  /// **'더보기'**
+  String get commentsMore;
 
   /// No description provided for @commentsEmpty.
   ///

@@ -88,7 +88,8 @@ public class CommentService {
     @Transactional
     public String add(CommentTarget targetType, String targetId, String ownerId,
                        String authorId, String body, String parentId, String imageKey) {
-        if (body != null && body.length() > maxLength) {
+        // 코드포인트로 센다 — DB(`VARCHAR`)와 같은 단위. `length()`는 UTF-16이라 이모지 하나를 2로 센다.
+        if (body != null && body.codePointCount(0, body.length()) > maxLength) {
             throw new ApiException(ErrorCode.COMMENT_TOO_LONG, HttpStatus.BAD_REQUEST,
                     "댓글이 너무 깁니다.", String.valueOf(maxLength));
         }
@@ -117,11 +118,15 @@ public class CommentService {
                 c.getDepth(),
                 c.getAuthorId(),
                 c.getAuthorNickname(),
+                c.getAuthorCountry(),
+                downloadUrl(c.getAuthorPhotoKey()),
                 c.getBody(),
-                c.getImageKey() == null
-                        ? null
-                        : fileStorageService.issueDownloadUrl(c.getImageKey()),
+                downloadUrl(c.getImageKey()),
                 c.getCreatedAt());
+    }
+
+    private String downloadUrl(String key) {
+        return key == null ? null : fileStorageService.issueDownloadUrl(key);
     }
 
     /**

@@ -106,6 +106,18 @@ class GardenApi {
     return (data as Map)['text'] as String? ?? text;
   }
 
+  /// 댓글 한 줄을 번역한다(서버 scope `COMMENT`).
+  ///
+  /// 무료 판정은 **창을 열 때** 이미 끝났다([openCommentSheetTranslate]) — 여기서는 세지 않는다.
+  /// 그 자리가 없으면 서버가 거절하므로, 화면은 자리를 받았을 때만 부른다.
+  Future<String> translateComment(String text, String targetLang) async {
+    final data = await _client.post(
+      '/translate',
+      body: {'text': text, 'targetLang': targetLang, 'scope': 'COMMENT'},
+    );
+    return (data as Map)['text'] as String? ?? text;
+  }
+
   /// 프로필 글(소개)을 번역한다 — **항상 무료**(서버 scope `PROFILE`, [프로필 보기]와 같은 규칙).
   ///
   /// [친구 포스트 정보] 팝업의 소개가 쓴다. 같은 글을 [프로필 보기]에서 보면 무료인데

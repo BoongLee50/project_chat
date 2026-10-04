@@ -5,14 +5,12 @@ import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimens.dart';
 import '../../../../app/main_shell.dart';
 import '../../../../core/error/error_messages.dart';
+import '../../../../core/providers.dart';
 import '../../../../core/util/freshness.dart';
 import '../../../../shared/widgets/authed_image.dart';
 import '../../../../shared/widgets/design_canvas.dart';
 import '../../data/models/feed_item.dart';
-import '../../../chat/presentation/providers/chat_provider.dart';
-import '../../../chat/presentation/widgets/chat_request_dialog.dart';
 import '../../../daily/presentation/screens/daily_intro_screen.dart';
-import '../../../postinfo/presentation/providers/post_info_provider.dart';
 import '../../../profile/data/models/profile_catalog.dart';
 import '../../../store/presentation/providers/store_provider.dart';
 import '../../../store/presentation/screens/luna_store_screen.dart';
@@ -20,8 +18,9 @@ import '../../../store/presentation/screens/prime_screen.dart';
 import '../providers/garden_provider.dart';
 import '../widgets/comments_sheet.dart';
 import '../widgets/card_frame.dart';
+import '../widgets/chat_request_flow.dart';
 import '../widgets/garden_art.dart';
-import '../widgets/post_photo_viewer.dart';
+import '../widgets/photo_lock.dart';
 import '../../../../l10n/app_localizations.dart';
 
 /// 달빛가든 — 포스트 사진 피드. 메인 셸의 l10n.gardenTitle 탭 본문. (기획서 4장)
@@ -403,6 +402,38 @@ class _FeedPager extends ConsumerStatefulWidget {
 class _FeedPagerState extends ConsumerState<_FeedPager> {
   FeedItem get _item => widget.items.first;
 
+  /// 지금 보고 있는 사진(0부터). **사람이 바뀌면 처음 장으로** 돌아간다([_pageOwner]).
+  int _page = 0;
+  String? _pageOwner;
+
+  /// 넘길 수 있는 장수 — **잠긴 장도 센다**(2번째부터 흐린 안내 장이 된다).
+  int _pageCount(FeedItem item) =>
+      item.totalPhotos > item.photoUrls.length
+          ? item.totalPhotos
+          : item.photoUrls.length;
+
+  /// 사진 넘기기(기획 4-1 "우측 영역 탭은 다음 사진, 좌측 탭은 이전 사진").
+  ///
+  /// 📌 2026-10-04부터 **팝업 없이 카드에서 바로** 넘긴다. 끝에서 더 누르면 그 자리에 머문다
+  /// (돌아 처음으로 가면 몇 장째인지 헷갈린다 — `1/8` 표기가 그대로 위치를 알려 준다).
+  void _turnPage(FeedItem item, {required bool forward}) {
+    final next = _page + (forward ? 1 : -1);
+    if (next < 0 || next >= _pageCount(item)) return;
+    setState(() => _page = next);
+  }
+
+  /// 볼 수 있는 사진을 미리 받아 둔다 — 누를 때마다 빈 칸이 번쩍이지 않게.
+  void _precache(FeedItem item) {
+    final headers = ref.read(authHeadersProvider).valueOrNull;
+    if (headers == null || headers.isEmpty) return;
+    for (final url in item.photoUrls.skip(1)) {
+      precacheImage(
+        NetworkImage(AuthedImage.absoluteUrl(url), headers: headers),
+        context,
+      );
+    }
+  }
+
   Future<void> _skip() async {
     // Dismissible이 위젯을 제거한 뒤 async가 이어지므로,
     // await 이전에 notifier를 확보해 둔다(dispose 후 ref 사용 방지).
@@ -420,28 +451,9 @@ class _FeedPagerState extends ConsumerState<_FeedPager> {
     if (error != null && mounted) _toast(errorMessage(L10n.of(context), error));
   }
 
-  /// 대화 신청 팝업(기획 4-3). 무료 횟수·루나·글자 수는 **서버가 알려 준다**.
-  ///
-  /// 팝업이 상대의 사진·지역·접속을 보여 주므로 [포스트 정보]와 같은 응답을 쓴다 —
-  /// 피드 카드에는 프로필 사진이 없다(카드에 뜨는 건 오늘의 포스트 사진이다).
-  Future<void> _requestChat(FeedItem item) async {
-    final l10n = L10n.of(context);
-    final info = await ref.read(postInfoProvider(item.userId).future);
-    if (!mounted) return;
-
-    final message = await showChatRequestDialog(context, info: info);
-    if (message == null || !mounted) return;
-
-    final error = await ref
-        .read(chatActionsProvider)
-        .requestChat(item.userId, message);
-    if (!mounted) return;
-    if (error != null) {
-      _toast(errorMessage(l10n, error));
-      return;
-    }
-    await showChatRequestSentDialog(context);
-  }
+  /// 대화 신청 팝업(기획 4-3) — 댓글의 `⋯` 메뉴와 같은 길이다([runChatRequestFlow]).
+  Future<void> _requestChat(FeedItem item) =>
+      runChatRequestFlow(context, ref, userId: item.userId, onError: _toast);
 
   void _toast(String message) {
     ScaffoldMessenger.of(context)
@@ -453,9 +465,15 @@ class _FeedPagerState extends ConsumerState<_FeedPager> {
   Widget build(BuildContext context) {
     final item = _item;
     final photos = item.photoUrls;
-    // 카드에는 **메인 사진 한 장**만 보여준다. 나머지는 카드를 눌러 뜨는 뷰어에서 넘겨 본다
-    // (기획 4-1 — 카드의 좌우 스와이프는 사람을 넘기는 동작이라 사진 넘기기와 겹칠 수 없다).
-    const index = 0;
+    if (_pageOwner != item.userId) {
+      _pageOwner = item.userId;
+      _page = 0;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _precache(item);
+      });
+    }
+    // 서버가 준 것보다 뒤의 장은 **잠긴 장**이다(무료 + 오늘 내 포스트 없음 → 메인 1장만 온다).
+    final locked = _page >= photos.length;
     final interestArts = [
       for (final code in item.interests) ?GardenArt.interestArt[code],
     ];
@@ -493,12 +511,17 @@ class _FeedPagerState extends ConsumerState<_FeedPager> {
                         // deferToChild이고 Image는 자기 자신을 히트테스트하지 않아, 사진 위를 눌러도
                         // 아무 일이 일어나지 않는다(함정 #38).
                         behavior: HitTestBehavior.opaque,
-                        // **누르고 뗐을 때만** 사진 뷰어를 연다(`onTapUp` = tap-up).
+                        // **누르고 뗐을 때만** 사진을 넘긴다(`onTapUp` = tap-up). 오른쪽 반은 다음, 왼쪽 반은 이전.
                         // 이 카드의 좌우 스와이프는 **사람을 넘기는 동작**이라, 손가락이 닿자마자
-                        // 열면 스와이프하려던 손짓이 창을 열어 버린다. 탭 인식기는 손가락이
+                        // 넘기면 스와이프하려던 손짓이 사진을 넘겨 버린다. 탭 인식기는 손가락이
                         // 조금이라도 밀리면 스스로 물러나므로 두 제스처가 부딪히지 않는다.
-                        onTapUp: (_) => showPostPhotoViewer(context, item),
-                        child: AuthedImage(url: photos[index]),
+                        onTapUp: (d) => _turnPage(
+                          item,
+                          forward: d.localPosition.dx > cardBox.maxWidth / 2,
+                        ),
+                        child: locked
+                            ? PhotoLockBackdrop(mainPhotoUrl: photos.first)
+                            : AuthedImage(url: photos[_page]),
                       ),
 
                     // 가독성 스크림.
@@ -524,6 +547,9 @@ class _FeedPagerState extends ConsumerState<_FeedPager> {
                         ),
                       ),
                     ),
+
+                    // 잠긴 장(2번째부터)이면 안내 + [새 사진 등록하기]. 이름·좋아요 줄은 그대로 위에 남는다.
+                    if (locked && photos.isNotEmpty) const PhotoLockGuide(),
 
                     // 상단: 이름 · 국기 · PICK · 접속중 (+ 아래 줄에 활동 지역)
                     Positioned(
@@ -588,12 +614,11 @@ class _FeedPagerState extends ConsumerState<_FeedPager> {
                                   ],
                                 ),
                               ),
-                              // 시안(4-1)은 눈금이 아니라 **`1/8` 같은 숫자 표기**다.
-                              // 카드는 메인 한 장만 보여주므로 "1 / 전체"가 된다.
+                              // 시안(4-1)은 눈금이 아니라 **`1/8` 같은 숫자 표기**다 — 지금 몇 장째 / 전체.
                               //
                               // **잠겨 있어도 전체 장수는 알린다** — 몇 장이 더 있는지 보여야
                               // 눌러 볼 마음이 생기고, 그게 사진 등록을 유도하는 장치다.
-                              if (item.totalPhotos > 1)
+                              if (_pageCount(item) > 1)
                                 Container(
                                   padding: const EdgeInsets.symmetric(
                                     horizontal: 8,
@@ -604,7 +629,7 @@ class _FeedPagerState extends ConsumerState<_FeedPager> {
                                     borderRadius: BorderRadius.circular(10),
                                   ),
                                   child: Text(
-                                    '1/${item.totalPhotos}',
+                                    '${_page + 1}/${_pageCount(item)}',
                                     style: const TextStyle(
                                       color: Colors.white,
                                       fontSize: 12,

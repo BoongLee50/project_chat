@@ -8,6 +8,8 @@
         <result property="targetId" column="target_id"/>
         <result property="authorId" column="author_id"/>
         <result property="authorNickname" column="author_nickname"/>
+        <result property="authorCountry" column="author_country"/>
+        <result property="authorPhotoKey" column="author_photo_key"/>
         <result property="body" column="body"/>
         <result property="parentId" column="parent_id"/>
         <result property="depth" column="depth"/>
@@ -15,10 +17,16 @@
         <result property="createdAt" column="created_at"/>
     </resultMap>
 
+    <!--
+      목록에는 작성자의 **국기와 얼굴 사진**이 붙는다(기획 4-2 시안).
+      얼굴 사진은 `user_profiles.photo_key`(V28에서 "얼굴 칸"으로 남긴 자리 — 목록·셀이 쓰는 그 사진).
+    -->
     <select id="selectByTarget" resultMap="CommentResultMap">
-        SELECT c.*, u.nickname AS author_nickname
+        SELECT c.*, u.nickname AS author_nickname, u.country AS author_country,
+               pr.photo_key AS author_photo_key
         FROM comments c
                  JOIN users u ON u.id = c.author_id
+                 LEFT JOIN user_profiles pr ON pr.user_id = c.author_id
         WHERE c.target_type = #{targetType} AND c.target_id = #{targetId}
         ORDER BY c.created_at
     </select>

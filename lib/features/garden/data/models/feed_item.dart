@@ -1,5 +1,7 @@
 // 달빛가든 피드 DTO. (docs/01-protocol-api-spec.md §1.4)
 
+import '../../../../core/util/server_time.dart';
+
 class FeedItem {
   const FeedItem({
     required this.userId,
@@ -147,12 +149,24 @@ class Comment {
     this.parentId,
     this.depth = 1,
     this.imageUrl,
+    this.authorCountry,
+    this.authorPhotoUrl,
+    this.createdAt,
   });
 
   final String id;
   final String authorId;
   final String authorNickname;
   final String body;
+
+  /// 작성자 국적(KR/JP) — 이름 옆 국기. 번역할지도 이걸로 가린다(같은 나라면 안 한다).
+  final String? authorCountry;
+
+  /// 작성자 **얼굴 사진**(서버 상대경로). 없으면 자리 동그라미.
+  final String? authorPhotoUrl;
+
+  /// 작성 시각 — `10분 전`.
+  final DateTime? createdAt;
 
   /// 부모 댓글. 1단계면 null.
   final String? parentId;
@@ -171,6 +185,9 @@ class Comment {
     parentId: json['parentId'] as String?,
     depth: json['depth'] as int? ?? 1,
     imageUrl: json['imageUrl'] as String?,
+    authorCountry: json['authorCountry'] as String?,
+    authorPhotoUrl: json['authorPhotoUrl'] as String?,
+    createdAt: parseServerTime(json['createdAt']),
   );
 }
 
