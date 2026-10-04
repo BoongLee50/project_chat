@@ -163,7 +163,9 @@ class _Body extends StatelessWidget {
         _Head(data: data),
         // 얼굴 칸 아랫변(239+211=450) → 메인 사진 윗변(477).
         SizedBox(height: 27 * s),
-        _MainPhoto(url: data.mainPhotoUrl ?? data.facePhotoUrl),
+        // 🚨 자유 사진이 없으면 **빈 칸**이다 — 얼굴 사진으로 채우지 않는다(기획 2026-10-04).
+        // 얼굴은 위 동그라미 자리이고, 큰 칸은 자유 사진만의 자리다.
+        _MainPhoto(url: data.mainPhotoUrl),
         if (intro != null && intro.isNotEmpty) ...[
           // 메인 사진 아랫변(477+1521≈1998) → 소개(2067).
           SizedBox(height: 60 * s),

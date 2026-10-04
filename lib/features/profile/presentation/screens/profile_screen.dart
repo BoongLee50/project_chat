@@ -144,19 +144,26 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       onTap: () => FocusScope.of(context).unfocus(),
       child: ColoredBox(
         color: Colors.white,
-        child: RefreshIndicator(
-          color: AppColors.moonlight,
-          onRefresh: () => ref.read(sessionProvider.notifier).refresh(),
-          child: SingleChildScrollView(
-            controller: _scroll,
-            physics: const AlwaysScrollableScrollPhysics(),
-            padding: EdgeInsets.only(bottom: 140 * s),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _Top(profile: profile, onPreview: _openPreview),
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 65 * s),
+        // 머리(사진 · 작성하기/미리 보기 · 진행도)는 **고정**이고, 진행도와 `프로필 사진` 제목
+        // 사이부터 아래만 스크롤한다(기획 2026-10-04).
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _Top(profile: profile, onPreview: _openPreview),
+            Expanded(
+              child: RefreshIndicator(
+                color: AppColors.moonlight,
+                onRefresh: () => ref.read(sessionProvider.notifier).refresh(),
+                child: SingleChildScrollView(
+                  controller: _scroll,
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  // 위: 머리 아랫변(_Top.height) → `프로필 사진` 제목(917).
+                  padding: EdgeInsets.fromLTRB(
+                    65 * s,
+                    (917 - _Top.height) * s,
+                    65 * s,
+                    140 * s,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -241,9 +248,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     ],
                   ),
                 ),
-              ],
+              ),
             ),
-          ),
+          ],
         ),
       ),
     );
@@ -262,6 +269,9 @@ class _Top extends ConsumerStatefulWidget {
   final MeProfile profile;
   final VoidCallback onPreview;
 
+  /// 고정 머리의 높이(1080 캔버스) — 진행도 아랫변(850)과 `프로필 사진` 제목(917)의 가운데.
+  static const double height = 884;
+
   @override
   ConsumerState<_Top> createState() => _TopState();
 }
@@ -277,8 +287,7 @@ class _TopState extends ConsumerState<_Top> {
     final filled = widget.profile.filledSteps;
 
     return SizedBox(
-      // 진행도 아래 → 첫 제목(917)까지가 머리다.
-      height: 917 * s,
+      height: _Top.height * s,
       child: Stack(
         children: [
           // 밤 사진(1080×771). 일본어판은 틀이 커서(1426×1103) 폭에 맞추고 위에서부터 자른다 —
@@ -580,16 +589,30 @@ class _IntroBox extends StatelessWidget {
     return Container(
       width: 950 * s,
       constraints: BoxConstraints(minHeight: 298 * s),
-      decoration: BoxDecoration(
-        image: DecorationImage(
-          image: const AssetImage('$_dir/aboutme_testbox.png'),
-          // 그림 픽셀 → 화면: 모서리(≈33)가 배율대로 줄어야 시안과 같다.
-          scale: 1 / s,
-          centerSlice: const Rect.fromLTRB(48, 48, 902, 250),
-        ),
-      ),
       child: Stack(
         children: [
+          // 회색 칸은 **입력 칸과 같이 늘어난다** — `centerSlice`로 모서리(≈33)는 지키고 가운데만 늘린다.
+          //
+          // 🚨 `centerSlice`에 `scale`을 같이 주면 안 된다 — Flutter가 조각 경계를 계산할 때
+          // **그림 픽셀과 논리 픽셀을 섞어 빼서** 늘이기가 틀어지고, 칸이 커져도 회색이 처음 크기에
+          // 머물러 글자가 밖으로 넘쳤다(실기 확인, `BoxDecoration.image`도 같았다).
+          // 그래서 **시안 픽셀 크기(950 × 높이/s)로 늘려 그린 뒤 통째로 배율만큼 줄인다**(`FittedBox`).
+          Positioned.fill(
+            child: LayoutBuilder(
+              builder: (_, box) => FittedBox(
+                fit: BoxFit.fill,
+                child: SizedBox(
+                  width: 950,
+                  height: box.maxHeight / s,
+                  child: Image.asset(
+                    '$_dir/aboutme_testbox.png',
+                    fit: BoxFit.fill,
+                    centerSlice: const Rect.fromLTRB(48, 48, 902, 250),
+                  ),
+                ),
+              ),
+            ),
+          ),
           TextField(
             controller: controller,
             focusNode: focusNode,
