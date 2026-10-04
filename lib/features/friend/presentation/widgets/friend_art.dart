@@ -75,9 +75,11 @@ class FriendArt {
   };
 
   /// 이름·나이 / 도시 / 접속 세 줄의 윗선(예시 그림에서 잰 값 — 좌표 표기가 없다).
+  ///
+  /// 줄 사이는 시안(56 · 57)에서 **10%씩 넓혔다**(2026-10-04 사용자 결정). 이름 줄은 제자리.
   static const double nameTop = 884 - 536;
-  static const double cityTop = 940 - 536;
-  static const double presenceTop = 997 - 536;
+  static const double cityTop = nameTop + (940 - 884) * 1.1;
+  static const double presenceTop = cityTop + (997 - 940) * 1.1;
 
   /// `● ON` — 초록 점과 `ON`이 한 장에 구워져 있다(영어라 두 언어 모두 그대로 쓴다 — 14 §1).
   static const String online = '$_list/icon_monline.png';

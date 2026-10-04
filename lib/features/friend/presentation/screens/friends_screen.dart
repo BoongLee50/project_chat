@@ -266,11 +266,12 @@ class _FriendCircle extends StatelessWidget {
                 ),
                 if (friend.age != null) ...[
                   SizedBox(width: 12 * s),
+                  // 나이도 이름과 같은 크기(2026-10-04 사용자 결정 — 전엔 40). 굵기·색으로만 가른다.
                   Text(
                     '${friend.age}',
                     style: TextStyle(
                       color: Colors.white.withValues(alpha: 0.85),
-                      fontSize: 40 * s,
+                      fontSize: 44 * s,
                     ),
                   ),
                 ],
@@ -284,7 +285,8 @@ class _FriendCircle extends StatelessWidget {
                 city,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(color: AppColors.gold, fontSize: 36 * s),
+                // 지역·접속 글자는 1씩 키웠다(2026-10-04 사용자 결정 — 36 → 37, 30 → 31).
+                style: TextStyle(color: AppColors.gold, fontSize: 37 * s),
               ),
             ),
           centered(FriendArt.presenceTop, _Presence(friend: friend)),
@@ -321,7 +323,7 @@ class _Presence extends StatelessWidget {
       label,
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
-      style: TextStyle(color: AppColors.textMuted, fontSize: 30 * s),
+      style: TextStyle(color: AppColors.textMuted, fontSize: 31 * s),
     );
   }
 

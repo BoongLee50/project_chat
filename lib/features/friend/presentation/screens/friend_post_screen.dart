@@ -18,7 +18,6 @@ import '../../../moderation/presentation/widgets/block_dialog.dart';
 import '../../../moderation/presentation/widgets/report_dialog.dart';
 import '../../../postinfo/presentation/providers/post_info_provider.dart';
 import '../../../postinfo/presentation/screens/profile_view_screen.dart';
-import '../../../profile/data/models/profile_catalog.dart';
 import '../../data/models/friend_models.dart';
 import '../providers/friend_provider.dart';
 import '../widgets/friend_art.dart';
@@ -308,8 +307,10 @@ class _FriendPostScreenState extends ConsumerState<FriendPostScreen> {
 /// 흰 패널 아래 — 파란 하트(관심사 표시) + 관심사 칩 최대 셋(관심사는 3개까지 — V25 무렵 확정).
 ///
 /// 🚨 **관심사 칩은 그림이 정본이다**(기획 2026-09-19 — "관심사 버튼·아이콘은 전부 이미지").
-/// 지금 받은 것은 `영화` 한 장뿐이라 나머지는 **자리를 지키는 임시 칩**(같은 규격 204×89)으로 그린다.
-/// 37종 그림이 오면 코드 → 에셋 표로 바꾸면 되고, 달빛가든 카드도 같은 자리를 고친다.
+/// 달빛가든 카드와 **같은 그림·같은 규칙**을 쓴다(`GardenArt.interestArt`) — **그림이 없는 관심사는
+/// 안 나온다**(2026-10-04 사용자 결정, 전엔 글자 임시 칩). 지금 받은 그림은 `영화` 한 장뿐이다.
+/// 그림이 오면 `GardenArt.interestArt`에 한 줄 넣으면 가든 카드와 여기가 함께 나타난다.
+/// 보이는 것끼리 **앞 칸부터 채운다**(빠진 관심사 자리를 비워 두지 않는다).
 class _InterestsRow extends StatelessWidget {
   const _InterestsRow({required this.codes});
 
@@ -318,7 +319,12 @@ class _InterestsRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final s = DesignCanvas.scaleOf(context);
-    final l10n = L10n.of(context);
+    final arts = [
+      for (final code in codes)
+        ?GardenArt.interestArt[code],
+    ];
+    // 보일 칩이 하나도 없으면 하트도 감춘다 — 하트 혼자 서 있으면 빈 줄처럼 보인다.
+    if (arts.isEmpty) return const SizedBox.shrink();
     return Stack(
       children: [
         Positioned(
@@ -332,55 +338,17 @@ class _InterestsRow extends StatelessWidget {
             height: FriendArt.interestsIconSize.height,
           ),
         ),
-        for (var i = 0; i < codes.length && i < FriendArt.chipLefts.length; i++)
+        for (var i = 0; i < arts.length && i < FriendArt.chipLefts.length; i++)
           Positioned(
             left: FriendArt.chipLefts[i] * s,
             top: 0,
-            child: codes[i] == 'MOVIE'
-                ? ArtImage(
-                    GardenArt.interestMovie,
-                    width: GardenArt.interestSize.width,
-                    height: GardenArt.interestSize.height,
-                  )
-                : _PlaceholderChip(
-                    label: ProfileCatalog.interestLabel(l10n, codes[i]),
-                  ),
+            child: ArtImage(
+              arts[i],
+              width: GardenArt.interestSize.width,
+              height: GardenArt.interestSize.height,
+            ),
           ),
       ],
-    );
-  }
-}
-
-/// 그림이 아직 없는 관심사의 **임시 칩** — `영화` 칩 그림과 같은 규격·색(짙은 회색 알약, 흰 글자).
-class _PlaceholderChip extends StatelessWidget {
-  const _PlaceholderChip({required this.label});
-
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    final s = DesignCanvas.scaleOf(context);
-    return Container(
-      width: GardenArt.interestSize.width * s,
-      height: GardenArt.interestSize.height * s,
-      alignment: Alignment.center,
-      padding: EdgeInsets.symmetric(horizontal: 20 * s),
-      decoration: BoxDecoration(
-        color: const Color(0xFF3A3A3C),
-        borderRadius: BorderRadius.circular(GardenArt.interestSize.height * s),
-      ),
-      child: FittedBox(
-        fit: BoxFit.scaleDown,
-        child: Text(
-          label,
-          maxLines: 1,
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 38 * s,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ),
     );
   }
 }
@@ -394,10 +362,13 @@ class _ManageMenu extends StatelessWidget {
   /// 시안 아이콘 색(파랑).
   static const Color _blue = Color(0xFF3A5BF0);
 
+  /// 시안보다 **20% 크게** — 카드·줄 높이·아이콘·글자 모두(2026-10-04 사용자 결정, 누르기 작았다).
+  static const double _grow = 1.2;
+
   @override
   Widget build(BuildContext context) {
     final l10n = L10n.of(context);
-    final s = DesignCanvas.scaleOf(context);
+    final s = DesignCanvas.scaleOf(context) * _grow;
 
     Widget row(_Manage value, IconData icon, String label, {bool last = false}) =>
         InkWell(
