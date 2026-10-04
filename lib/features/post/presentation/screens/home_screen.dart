@@ -864,9 +864,11 @@ class _ArtStatusButton extends StatelessWidget {
                   child: Text(
                     status,
                     maxLines: 1,
+                    // 크기는 26에서 20% 줄였다(기획 2026-10-04 — 그림 글자보다 커 보였다).
+                    // 그림 글자(각진 굵은 고딕)와 같은 폰트는 아직 앱에 없어 크기만 맞췄다.
                     style: TextStyle(
                       color: accent,
-                      fontSize: 26,
+                      fontSize: 21,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
@@ -963,46 +965,45 @@ class _ShareButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = L10n.of(context);
-    final enabled = post.photos.isNotEmpty;
+
+    void toast(String message) {
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(message)));
+    }
 
     // 시안(3-1)에서 이 버튼은 **카드 안 우하단**이고, Plan_4에서 그림으로 왔다.
     // 글자(`포스트 공유하기`)가 그림 안에 있으므로 일본어판은 이미지를 교체한다.
+    //
+    // 🚨 사진이 없어도 **흐리게 하지도, 죽이지도 않는다**(기획 2026-10-04).
+    // 누르면 서버가 막을 때와 같은 문장(`POST_PHOTO_REQUIRED`)으로 이유를 말한다.
     return GestureDetector(
-      onTap: enabled
-          ? () async {
-              // Plan_4에서 확인 팝업이 생겼다.
-              final ok = await ConfirmDialog.show(
-                context,
-                l10n.homeSharePostConfirm,
-              );
-              if (!ok || !context.mounted) return;
+      onTap: () async {
+        if (post.photos.isEmpty) {
+          toast(
+            errorMessage(
+              l10n,
+              ApiException(message: '', code: 'POST_PHOTO_REQUIRED'),
+            ),
+          );
+          return;
+        }
 
-              final error = await ref.read(myPostProvider.notifier).publish();
-              if (!context.mounted) return;
-              ScaffoldMessenger.of(context)
-                ..hideCurrentSnackBar()
-                ..showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      error == null
-                          ? l10n.homeShared
-                          : errorMessage(l10n, error),
-                    ),
-                  ),
-                );
-            }
-          : null,
-      child: Opacity(
-        // 사진이 없으면 공유할 것이 없다. 죽이지 않고 흐리게만 둔다.
-        opacity: enabled ? 1 : 0.45,
-        child: Semantics(
-          label: post.published ? l10n.homeShareAgain : l10n.homeShare,
-          button: true,
-          child: ArtImage(
-            PostArt.btnShare,
-            width: PostArt.btnShareSize.width,
-            height: PostArt.btnShareSize.height,
-          ),
+        // Plan_4에서 확인 팝업이 생겼다.
+        final ok = await ConfirmDialog.show(context, l10n.homeSharePostConfirm);
+        if (!ok || !context.mounted) return;
+
+        final error = await ref.read(myPostProvider.notifier).publish();
+        if (!context.mounted) return;
+        toast(error == null ? l10n.homeShared : errorMessage(l10n, error));
+      },
+      child: Semantics(
+        label: post.published ? l10n.homeShareAgain : l10n.homeShare,
+        button: true,
+        child: ArtImage(
+          PostArt.btnShare,
+          width: PostArt.btnShareSize.width,
+          height: PostArt.btnShareSize.height,
         ),
       ),
     );

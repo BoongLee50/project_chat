@@ -984,7 +984,7 @@
   "errorNicknameDuplicate": "이미 사용 중인 닉네임이에요.",
   "errorNicknameFormat": "닉네임은 특수문자·이모지 없이 10자 이내여야 해요.",
   "errorAgeRestricted": "만 18세 이상만 가입할 수 있어요.",
-  "errorPostPhotoRequired": "새로운 포스트 사진을 등록해 주세요.",
+  "errorPostPhotoRequired": "포스트 사진을 등록해 주세요.",
   "errorPostPhotoNotFound": "사진을 찾을 수 없어요.",
   "errorPostPhotoNotMine": "내 사진만 삭제할 수 있어요.",
   "errorPostPhotoLimit": "사진은 최대 {count}장까지 등록할 수 있어요. 기존 사진을 먼저 삭제해 주세요.",

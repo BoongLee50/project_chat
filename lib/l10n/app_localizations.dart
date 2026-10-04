@@ -2752,7 +2752,7 @@ abstract class L10n {
   /// No description provided for @errorPostPhotoRequired.
   ///
   /// In ko, this message translates to:
-  /// **'새로운 포스트 사진을 등록해 주세요.'**
+  /// **'포스트 사진을 등록해 주세요.'**
   String get errorPostPhotoRequired;
 
   /// No description provided for @errorPostPhotoNotFound.

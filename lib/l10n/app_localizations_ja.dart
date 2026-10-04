@@ -1481,7 +1481,7 @@ class L10nJa extends L10n {
   String get errorAgeRestricted => '18歳以上のみ登録できます。';
 
   @override
-  String get errorPostPhotoRequired => '新しいポスト写真を登録してください。';
+  String get errorPostPhotoRequired => 'ポスト写真を登録してください。';
 
   @override
   String get errorPostPhotoNotFound => '写真が見つかりません。';

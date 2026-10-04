@@ -442,7 +442,7 @@
   "errorNicknameDuplicate": "すでに使われているニックネームです。",
   "errorNicknameFormat": "ニックネームは記号・絵文字なしの10文字以内で入力してください。",
   "errorAgeRestricted": "18歳以上のみ登録できます。",
-  "errorPostPhotoRequired": "新しいポスト写真を登録してください。",
+  "errorPostPhotoRequired": "ポスト写真を登録してください。",
   "errorPostPhotoNotFound": "写真が見つかりません。",
   "errorPostPhotoNotMine": "自分の写真のみ削除できます。",
   "errorPostPhotoLimit": "写真は最大{count}枚まで登録できます。先に既存の写真を削除してください。",

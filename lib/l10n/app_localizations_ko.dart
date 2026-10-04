@@ -1484,7 +1484,7 @@ class L10nKo extends L10n {
   String get errorAgeRestricted => '만 18세 이상만 가입할 수 있어요.';
 
   @override
-  String get errorPostPhotoRequired => '새로운 포스트 사진을 등록해 주세요.';
+  String get errorPostPhotoRequired => '포스트 사진을 등록해 주세요.';
 
   @override
   String get errorPostPhotoNotFound => '사진을 찾을 수 없어요.';
