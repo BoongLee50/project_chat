@@ -6,6 +6,7 @@ import '../../../../core/error/error_messages.dart';
 import '../../../../core/providers.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/design_canvas.dart';
+import '../../../auth/presentation/providers/session_provider.dart';
 import '../../../postinfo/data/models/post_info.dart';
 import '../../../postinfo/presentation/providers/post_info_provider.dart';
 import '../../../postinfo/presentation/screens/profile_view_screen.dart';
@@ -15,16 +16,18 @@ import '../widgets/request_popup.dart';
 import '../widgets/talk_art.dart';
 import 'chat_screen.dart';
 
-/// 받은 신청 팝업 — 기획서 260919 6-2의 **[포스트 정보]**(시안 image16 · `대화방_받은신청_팝업창`).
+/// 받은 신청 팝업 — 기획서 261002 6-2의 **[포스트 정보]**(시안 image16 · `대화방_받은신청_팝업창`).
 ///
 /// 위: 보낸 사람의 **포스트 사진**(좌우로 넘긴다, `1/9`) · 이름·나이 · 국기·지역.
 /// 가운데 흰 패널: 편지 아이콘 · `[원문보기]` · `[프로필]` · **신청 한마디**.
 /// 아래: `[✕ 거절하기]` · `[💬 대화하기]`.
 ///
 /// - 🚨 **번역은 무조건 공짜**(기획사항 2026-09-19). 서버 scope `REQUEST`로 부른다 — 쿼터를 세지 않는다.
-/// - 기본은 **번역문**만 보인다(기획서 — "번역은 자동 번역 지원"). `[원문보기]`를 누르면
-///   **원문 위 · 구분선 · 번역문 아래(파란 글)** 로 함께 보인다(시안 image16의 모양).
-///   번역문이 원문과 같으면(같은 언어이거나 공급자가 꺼져 있으면) `[원문보기]`를 감춘다.
+/// - 기본은 **번역문**(기획서 — "번역은 자동 번역 지원"). `[원문보기]`를 누르면 **원문으로 바뀐다**
+///   (기획서 261002 6-2). `[원문보기]`는 **상대와 내 나라가 다를 때만** 보인다.
+/// - 사진은 상대의 **오늘 포스트 사진**이다 — 탭(오른쪽 반 다음 · 왼쪽 반 이전)·밀기로 넘기고,
+///   오늘 내 포스트가 없으면 2번째 장부터 [사진 등록 안내]가 뜬다(달빛가든 카드와 같은 규칙).
+/// - `[프로필]` → 상대의 [프로필 보기].
 /// - 글이 길면 **패널이 아래로 늘어나고 그만큼 사진이 줄어든다**(기획사항). 🚨 **스크롤은 없다**(기획 결정).
 /// - 🚨 화살표는 **뒤로가기 하나뿐**이다(기획사항 — "뒤로가기말고는 대화방에는 화살표가 없음").
 ///
@@ -151,9 +154,15 @@ class _ReceivedRequestScreenState extends ConsumerState<ReceivedRequestScreen> {
 
   Widget _body(BuildContext context, double s, PostInfo? info) {
     final r = widget.request;
+    // `[원문보기]`는 **상대와 내 나라가 다를 때만**(기획서 261002 6-2). 번역문이 원문과 같아도 보인다 —
+    // 번역 공급자가 붙기 전(개발 중)엔 눌러도 글이 그대로지만, 붙으면 그대로 원문 ↔ 번역문이 된다.
+    // 어느 한쪽 나라를 모르면 옛 규칙(번역문이 원문과 다를 때만)으로 돌아간다.
+    final myCountry = ref.watch(sessionProvider).profile?.country;
+    final partnerCountry = info?.country ?? r.partnerCountry;
     final translated = _translated;
-    final hasTranslation =
-        translated != null && translated.trim() != r.message.trim();
+    final canViewOriginal = myCountry != null && partnerCountry != null
+        ? myCountry != partnerCountry
+        : translated != null && translated.trim() != r.message.trim();
 
     // 🚨 **이 화면은 스크롤하지 않는다**(기획 결정 2026-09-19 — 끌면 "울렁울렁" 움직였다).
     //
@@ -196,7 +205,8 @@ class _ReceivedRequestScreenState extends ConsumerState<ReceivedRequestScreen> {
               onTap: () => showProfileView(context, r.fromUserId),
             ),
             original: r.message,
-            translated: hasTranslation ? translated : null,
+            translated: translated,
+            canViewOriginal: canViewOriginal,
             showOriginal: _showOriginal,
             onToggleOriginal: () =>
                 setState(() => _showOriginal = !_showOriginal),

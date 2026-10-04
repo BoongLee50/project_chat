@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../app/main_shell.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/authed_image.dart';
 import '../../../../shared/widgets/design_canvas.dart';
+import '../../../garden/presentation/widgets/photo_lock.dart';
 import '../../../postinfo/data/models/post_info.dart';
 import '../../../profile/data/models/profile_catalog.dart';
 import 'talk_art.dart';
@@ -75,6 +78,10 @@ class PopupPhotoArea extends StatelessWidget {
         (fallbackPhoto == null ? const <String>[] : [fallbackPhoto!]);
     final total = info?.totalPhotos ?? photos.length;
     final showPage = (info?.hasTodayPost ?? false) && total > 0;
+    // 넘길 수 있는 장수 — **잠긴 장도 센다**(달빛가든 카드와 같은 규칙, 기획 4-1).
+    // 서버는 열람 제한이 걸리면 메인 1장만 주고 `totalPhotos`로 원래 장수를 알린다 —
+    // 받은 것보다 뒤의 장은 흐린 안내 장([사진 등록 안내])이 된다.
+    final pageCount = total > photos.length ? total : photos.length;
 
     final region = info?.regions.isNotEmpty == true
         ? info!.regions.first
@@ -110,11 +117,30 @@ class PopupPhotoArea extends StatelessWidget {
               ),
               child: photos.isEmpty
                   ? const ColoredBox(color: AppColors.surfaceHigh)
-                  : PageView.builder(
-                      controller: controller,
-                      itemCount: photos.length,
-                      onPageChanged: onPageChanged,
-                      itemBuilder: (context, i) => AuthedImage(url: photos[i]),
+                  // 포스트 사진 넘기기 — 달빛가든 카드와 같다(기획 4-1 "우측 영역 탭은 다음 사진,
+                  // 좌측 탭은 이전 사진"). 이 팝업은 좌우로 밀어도 사람이 넘어가지 않으니 밀기도 그대로 둔다.
+                  // 끝에서 더 누르면 그 자리에 머문다(`1/9`가 위치를 알려 준다).
+                  : GestureDetector(
+                      // opaque가 없으면 사진 위 탭이 안 들어온다(함정 #38).
+                      behavior: HitTestBehavior.opaque,
+                      onTapUp: (d) {
+                        final next =
+                            page + (d.localPosition.dx > w / 2 - inset ? 1 : -1);
+                        if (next < 0 || next >= pageCount) return;
+                        controller.animateToPage(
+                          next,
+                          duration: const Duration(milliseconds: 220),
+                          curve: Curves.easeOut,
+                        );
+                      },
+                      child: PageView.builder(
+                        controller: controller,
+                        itemCount: pageCount,
+                        onPageChanged: onPageChanged,
+                        itemBuilder: (context, i) => i < photos.length
+                            ? AuthedImage(url: photos[i])
+                            : PhotoLockBackdrop(mainPhotoUrl: photos.first),
+                      ),
                     ),
             ),
           ),
@@ -127,6 +153,8 @@ class PopupPhotoArea extends StatelessWidget {
             ),
           ),
           IgnorePointer(child: Image.asset(TalkArt.popupTop, fit: BoxFit.fill)),
+          // 잠긴 장(2번째부터, 오늘 내 포스트가 없을 때)이면 안내 + [새 사진 등록하기].
+          if (page >= photos.length && photos.isNotEmpty) const _PopupLockGuide(),
           Positioned(
             left: TalkArt.backAt.dx * s,
             top: TalkArt.backAt.dy * s,
@@ -218,6 +246,22 @@ class PopupPhotoArea extends StatelessWidget {
   }
 }
 
+/// 달빛가든의 [사진 등록 안내]를 그대로 쓴다 — 문구·버튼·가는 곳(포스트 탭)이 같다.
+///
+/// 가든 카드는 탭 화면 안이라 탭만 바꾸면 되지만, 이 팝업은 그 위에 **떠 있는 화면**이다.
+/// 탭이 바뀌면(버튼을 눌렀으면) 떠 있는 화면을 모두 닫아 포스트 탭이 보이게 한다.
+class _PopupLockGuide extends ConsumerWidget {
+  const _PopupLockGuide();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    ref.listen(selectedTabProvider, (prev, next) {
+      if (prev != next) Navigator.of(context).popUntil((r) => r.isFirst);
+    });
+    return const PhotoLockGuide();
+  }
+}
+
 /// 뒤로가기 — 이 팝업들의 **유일한 화살표**다(기획사항 "뒤로가기 말고는 화살표가 없음").
 class PopupBackButton extends StatelessWidget {
   const PopupBackButton({super.key});
@@ -265,8 +309,10 @@ class PanelItem {
 
 /// 가운데 흰 패널 — 첫 줄(왼쪽 아이콘 · `[원문보기]` · 오른쪽 버튼) + 본문 + (선택) 아래 줄.
 ///
-/// - 본문 기본은 **번역문**. `[원문보기]`를 누르면 **원문 위 · 구분선 · 번역문 아래(파란 글)**.
-///   번역문이 원문과 같거나 아직 없으면 [translated]가 null — `[원문보기]`를 감춘다.
+/// - 본문 기본은 **번역문**. `[원문보기]`를 누르면 **원문으로 바뀌고**, 다시 누르면 번역문으로 돌아온다
+///   (기획서 261002 6-2·7-2 "번역문을 신청 메시지 원문으로 전환하여 표시"). 260919판의
+///   "원문 위 · 구분선 · 번역문 아래"는 버렸다.
+/// - `[원문보기]`가 보이는 조건은 [canViewOriginal]. 주지 않으면 옛 규칙(번역문이 원문과 다를 때만).
 /// - 글이 길면 **패널이 아래로 늘어난다**(기획사항 "문구가 길어지면 아래로 늘어남").
 /// - [footer]는 패널 **아래쪽에 붙는** 줄이다(친구 포스트의 하트 + 관심사). 본문이 그 줄을
 ///   덮지 않도록 [footerHeight]만큼 자리를 비운다.
@@ -279,6 +325,7 @@ class PopupPanel extends StatelessWidget {
     required this.translated,
     required this.showOriginal,
     required this.onToggleOriginal,
+    this.canViewOriginal,
     this.footer,
     this.footerHeight = 0,
     this.footerBottom = 0,
@@ -288,10 +335,15 @@ class PopupPanel extends StatelessWidget {
   final PanelItem trailing;
   final String original;
 
-  /// 원문과 **다른** 번역문. 같거나 아직 없으면 null — 그때는 `[원문보기]`를 감춘다.
+  /// 번역문. 아직 없으면 null — 원문을 보여 준다.
   final String? translated;
   final bool showOriginal;
   final VoidCallback onToggleOriginal;
+
+  /// `[원문보기]`를 보일까. 받은 신청은 **상대와 내 나라가 다를 때만**이다
+  /// (기획서 261002 6-2 "동일 국가 사용자일 경우는 [원문보기] 버튼 미노출").
+  /// null이면 [translated]가 있을 때만 보인다(번역문이 원문과 같으면 부르는 쪽이 null을 준다).
+  final bool? canViewOriginal;
 
   final Widget? footer;
 
@@ -305,34 +357,17 @@ class PopupPanel extends StatelessWidget {
     final w = TalkArt.popupTopSize.width * s;
     final textStyle = TextStyle(
       color: const Color(0xFF222222),
-      fontSize: 38 * s,
+      // 시안 38px에서 20% 키웠다(2026-10-04 사용자 결정 — 신청 한마디가 작아 읽기 힘들었다).
+      fontSize: 45.6 * s,
       height: 1.6,
     );
-    final translatedStyle = textStyle.copyWith(color: const Color(0xFF3D4FD6));
 
-    final Widget body;
-    if (translated == null) {
-      body = Text(original, style: textStyle);
-    } else if (!showOriginal) {
-      body = Text(translated!, style: textStyle);
-    } else {
-      // 원문 위 · 구분선 · 번역문 아래(파란 글) — 시안 image16의 모양.
-      body = Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Text(original, style: textStyle),
-          Padding(
-            padding: EdgeInsets.symmetric(vertical: 22 * s),
-            child: Divider(
-              height: 1,
-              thickness: 2 * s,
-              color: const Color(0xFFCAD0F5),
-            ),
-          ),
-          Text(translated!, style: translatedStyle),
-        ],
-      );
-    }
+    final showViewOriginal = canViewOriginal ?? translated != null;
+    // 원문 ↔ 번역문을 **바꿔 끼운다**(기획서 261002). 번역이 아직 없으면 원문뿐이다.
+    final body = Text(
+      showOriginal || translated == null ? original : translated!,
+      style: textStyle,
+    );
 
     Widget item(PanelItem it, {double opacity = 1}) => Positioned(
       left: it.left * s,
@@ -370,7 +405,7 @@ class PopupPanel extends StatelessWidget {
                   clipBehavior: Clip.none,
                   children: [
                     item(leading),
-                    if (translated != null)
+                    if (showViewOriginal)
                       item(
                         PanelItem(
                           asset: TalkArt.viewOriginal,
