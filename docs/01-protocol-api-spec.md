@@ -44,15 +44,21 @@
 | GET | `/profile/nickname:check?value=` | 닉네임 검증(특수문자/10자/중복/금지어) | 3 |
 | POST | `/profile` | 프로필 생성(nickname, birthYear, gender, country) | 3,4,5 |
 | GET | `/me` | 내 프로필 조회 | 20 |
-| POST | `/me/profile-photo:upload-url` | 프로필 사진 업로드 URL 발급 | 21 |
-| PUT | `/me/profile-photo` | 업로드 완료 후 사진 등록(storageKey) — storageKey 생략 시 제거 | 21 |
-| PUT | `/me/interests` | 관심사(**최대 3개** 선택 · 종류는 37종) | 22 |
-| PUT | `/me/intro` | 소개 한마디(최대 50자) | 23 |
-| PUT | `/me/regions` | 지역(최대 2) | 24 |
+| POST | `/me/profile-photo:upload-url` | 프로필 사진 업로드 URL 발급 — **두 칸이 함께 쓴다** | 8-1 |
+| PUT | `/me/profile-photo` | **얼굴 사진** 등록(storageKey) — 생략(null) 시 제거. 목록·셀이 쓰는 사진 | 8-1 |
+| PUT | `/me/profile-main-photo` | **자유 사진** 등록 — 생략(null) 시 제거. [미리 보기]의 큰 메인 사진 (V28) | 8-1 |
+| PUT | `/me/interests` | 관심사(**최대 3개** 선택 · 종류는 37종) | 8-1 |
+| PUT | `/me/intro` | 자기소개(**최대 300자**, 띄어쓰기 포함 · **코드포인트**로 센다 — 이모지도 1자) | 8-1 |
+| PUT | `/me/regions` | 활동 지역(**최대 1곳**, V28에서 2 → 1) | 8-1 |
 | GET | `/users/:id/profile` | 상대 프로필 조회 | 14,19 |
 
 검증 규칙: 닉네임 특수문자·이모지 불가/≤10자/중복·금지어, 가입 만 18세 이상.
 프로필 사진은 포스트 사진(§1.3)과 동일한 흐름 — 업로드 URL 발급 → 클라가 그 URL로 직접 업로드 → `storageKey`로 등록. `GET /me`/`GET /users/:id/profile` 응답에는 다운로드 URL이 이미 포함되어 내려옴(05 서버구조 §8 참고).
+
+**사진은 두 칸이다**(기획서 261002 8-1, V28) — 응답 필드 `photoUrl`(얼굴) · `mainPhotoUrl`(자유).
+[포스트 정보](`GET /users/:id/post-info`)에도 `profilePhotoUrl` · **`profileMainPhotoUrl`** 로 함께 실린다.
+등록할 `storageKey`는 **`profile/<내 id>/`로 시작해야 한다** — 아니면 400 `VALIDATION_FAILED`
+(남의 key를 내 칸에 넣으면 다음 교체 때 남의 파일을 지우게 되므로).
 
 ### 1.3 오늘의 포스트 (사진은 Storage 직접 업로드)
 | Method | Path | 설명 | 화면 |

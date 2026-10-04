@@ -110,6 +110,39 @@
 ⚠️ **라벨이 그림에 들어가면 ARB의 `interest*` 37키가 남는다** — 카드 툴팁·접근성 등
 그림이 못 가는 자리에 여전히 쓰이므로 **지우지 말 것.**
 
+📌 **프로필(`Scene_Profile/Create`)에도 같은 `Interest_movie.png`가 왔다**(바이트까지 같다). 프로필은
+`scene_profile/create/`의 것을 쓰고, 코드 → 그림 표는 `ProfileCatalog.interestArt` 하나다.
+
+## 0-3. 🙂 프로필 (`Scene_Profile`, 2026-10-04 전달본 · 기획서 261002 8-1)
+
+25장 전부 들였다 → `assets/images/scene_profile/create/`(19) · `preview/`(6).
+전달 이름의 `_kr`/`_jp`는 **언어 변형**이라 접미사를 떼고 넣었다(`mark_aboutme_kr` → `mark_aboutme.png`,
+`back_profile_jp` → `ja/back_profile.png`). `icon_mflag_kor/jap`은 **나라**라 이름 그대로다.
+
+✅ **일본어판이 온 것: `back_profile` 한 장** — 다만 **틀이 다르다**(한국어 1080×771 · 일본어 1426×1103).
+폭에 맞춰 위에서부터 그리고, 넘치는 아래는 흰 판에 덮인다. 같은 틀로 다시 받으면 더 정확하다.
+
+**아직 일본어판이 없는 것(글자가 구워진 그림 10장)**:
+
+| 파일 | 박힌 글자 | 규격 |
+|---|---|---|
+| `create/mark_picture.png` | 프로필 사진 | 327×67 |
+| `create/mark_aboutme.png` | 자기소개 | 278×74 |
+| `create/mark_Interests.png` | 관심사 | 240×66 |
+| `create/mark_area.png` | 활동지역 | 264×75 |
+| `create/button_write_color.png` · `_normal` | 작성하기 | 418×103 ×2 |
+| `create/button_preview_color.png` · `_normal` | 미리 보기 | 418×103 ×2 |
+| `preview/title_profile.png` | 프로필 | 232×71 |
+| `create/region_seoul.png` | 서울 | 210×88 |
+
+**지역 칩도 관심사처럼 그림이다** — `서울` 한 장만 왔다. 지역은 **20곳**(한국 11 · 일본 9)이라
+**20 × 2언어 = 40장**. 없는 곳은 `ProfileTagChip`이 같은 규격·같은 색(#454545)의 자리 칩을 그린다.
+
+글자 없는 그림(`button_face`·`button_photo`·`button_addinterests`·`aboutme_testbox`·`back_upper`·
+진행도 두 장·`frame_*`·`button_previewback`)은 두 벌이 필요 없다.
+⚠️ `back_upper.png`는 아이보리(250,248,245)라 흰 본문과 이음매가 보여서 **모양만 쓰고 흰색으로 칠한다**
+— 시안(참고 화면)이 흰색이다. 흰색으로 다시 받으면 칠하는 줄을 지우면 된다.
+
 ## 0. 현재 상태 (2026-09-06 갱신)
 
 > 📁 **에셋 폴더는 전달 폴더를 그대로 따른다**(2026-09-14부터).

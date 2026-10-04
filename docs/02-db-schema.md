@@ -27,8 +27,9 @@ users
 
 user_profiles
   user_id     uuid PK/FK -> users
-  photo_key   text null                    -- 프로필 사진 1장의 스토리지 key(URL 아님 — post_photos와 동일하게 응답 시점에 다운로드 URL 계산)
-  intro       varchar(50) null             -- 소개 한마디
+  photo_key   text null                    -- **얼굴 사진** 스토리지 key(URL 아님 — post_photos와 동일하게 응답 시점에 다운로드 URL 계산). 목록·셀이 쓴다
+  main_photo_key text null                 -- **자유 사진**(V28) — [미리 보기]·[프로필 보기]의 큰 메인 사진
+  intro       varchar(300) null            -- 자기소개(V28: 50 → 300, 코드포인트 단위)
   updated_at  timestamptz
 
 user_interests            -- 사용자당 최대 3행 (앱·서버 DTO 검증. DB 제약은 없다)
@@ -36,7 +37,7 @@ user_interests            -- 사용자당 최대 3행 (앱·서버 DTO 검증. D
   code     text                            -- 관심사 코드
   PK(user_id, code)
 
-user_regions              -- 최대 2
+user_regions              -- 최대 1 (V28: 2 → 1, 넘치던 행은 코드가 작은 쪽만 남기고 지웠다)
   user_id  uuid FK
   code     text                            -- 지역 코드
   PK(user_id, code)
