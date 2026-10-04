@@ -96,16 +96,24 @@ class GardenArt {
 
   /// 국가 코드 → 국기. 모르는 코드면 null(국기를 그리지 않는다).
   static String? flagOf(String? country) => switch (country) {
-        'KR' => flagKr,
-        'JP' => flagJp,
-        _ => null,
-      };
+    'KR' => flagKr,
+    'JP' => flagJp,
+    _ => null,
+  };
 
   static const String badgePick = '$_dir/button_Pick.png';
   static const Size badgePickSize = Size(144, 71);
 
   static const String interestMovie = '$_dir/Interest_movie.png';
   static const Size interestSize = Size(204, 89);
+
+  /// 관심사 코드(서버 `ProfileCatalog`) → 카드 칩 그림.
+  ///
+  /// 🚨 **여기 없는 관심사는 카드에 안 나온다**(기획 수정 2026-10-04 — 그림 없는 건 감춘다).
+  /// 지금은 `영화` 한 장뿐이다. 그림이 오면 `Interest_<이름>.png`로 이 폴더에 넣고 **한 줄 추가**.
+  /// 글자가 구워진 그림이라 일본어판은 같은 이름으로 `ja/`에(docs/14 §2) — 없으면 한국어판이 뜬다.
+  /// 규격은 전부 [interestSize]로 맞춰 그린다(다르게 오면 `contain`으로 칸 안에 들어간다).
+  static const Map<String, String> interestArt = {'MOVIE': interestMovie};
 
   static const String iconHeart = '$_dir/button_heart.png';
   static const Size iconHeartSize = Size(72, 67);
@@ -147,9 +155,9 @@ class GardenArt {
   /// 선 영역의 크기 — 이 크기가 카드와 일치해야 한다.
   static Size get frameLineSize => cardFrameSize;
   static Size get framePassLineSize => Size(
-        cardFramePassSize.width - framePassPadding.horizontal,
-        cardFramePassSize.height - framePassPadding.vertical,
-      );
+    cardFramePassSize.width - framePassPadding.horizontal,
+    cardFramePassSize.height - framePassPadding.vertical,
+  );
 
   /// 외곽선의 **모서리 반경**(실측 ≈24). 사진을 이 값으로 잘라야 선과 맞물린다.
   static const double frameCornerRadius = 24;

@@ -107,13 +107,29 @@ class FeedController extends AsyncNotifier<List<FeedItem>>
       if (current != null) {
         state = AsyncValue.data([
           for (final e in current)
-            if (e.userId == item.userId) _withLikes(e, e.likes + 1) else e,
+            if (e.userId == item.userId)
+              e.copyWith(likes: e.likes + 1, likedByMe: true)
+            else
+              e,
         ]);
       }
       return null;
     } on ApiException catch (e) {
       return e;
     }
+  }
+
+  /// 댓글(답글 포함)을 하나 달았다 — 그 카드의 댓글 수를 올린다.
+  ///
+  /// 서버도 댓글·답글마다 `post_stats.comments`를 1 올리므로(`GardenService.addComment`)
+  /// 다시 읽지 않고 같은 셈을 여기서 한다. 전에는 이게 없어서 **창을 닫아도 숫자가 그대로**였다.
+  void commentAdded(String userId) {
+    final current = state.valueOrNull;
+    if (current == null) return;
+    state = AsyncValue.data([
+      for (final e in current)
+        if (e.userId == userId) e.copyWith(comments: e.comments + 1) else e,
+    ]);
   }
 
   /// 스킵 — 목록에서 즉시 제거하고 서버에도 기록한다.
@@ -131,25 +147,6 @@ class FeedController extends AsyncNotifier<List<FeedItem>>
       return e;
     }
   }
-
-  /// 좋아요를 누른 뒤의 카드 — 수치를 올리고 **눌린 상태로 표시**한다.
-  static FeedItem _withLikes(FeedItem item, int likes) => FeedItem(
-    userId: item.userId,
-    nickname: item.nickname,
-    age: item.age,
-    country: item.country,
-    pick: item.pick,
-    online: item.online,
-    intro: item.intro,
-    photoUrls: item.photoUrls,
-    photoLocked: item.photoLocked,
-    totalPhotos: item.totalPhotos,
-    interests: item.interests,
-    likes: likes,
-    comments: item.comments,
-    likedByMe: true,
-    score: item.score,
-  );
 }
 
 final feedProvider = AsyncNotifierProvider<FeedController, List<FeedItem>>(
@@ -158,13 +155,14 @@ final feedProvider = AsyncNotifierProvider<FeedController, List<FeedItem>>(
 
 /// 댓글 목록. 키는 `"<대상종류>:<대상id>"` —
 /// 포스트와 달빛 한마디가 **같은 화면**을 쓰므로 id만으로는 구분되지 않는다.
-final commentsProvider = FutureProvider.family<List<Comment>, String>(
-  (ref, key) {
-    final i = key.indexOf(':');
-    final kind = key.substring(0, i);
-    final id = key.substring(i + 1);
-    return kind == 'dailyAnswer'
-        ? ref.read(dailyApiProvider).comments(id)
-        : ref.read(gardenApiProvider).comments(id);
-  },
-);
+final commentsProvider = FutureProvider.family<List<Comment>, String>((
+  ref,
+  key,
+) {
+  final i = key.indexOf(':');
+  final kind = key.substring(0, i);
+  final id = key.substring(i + 1);
+  return kind == 'dailyAnswer'
+      ? ref.read(dailyApiProvider).comments(id)
+      : ref.read(gardenApiProvider).comments(id);
+});

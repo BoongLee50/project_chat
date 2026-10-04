@@ -75,6 +75,30 @@ class FeedItem {
     _ => '',
   };
 
+  /// 카드에서 바뀌는 수치만 갈아끼운다(좋아요·댓글을 누른 뒤).
+  ///
+  /// ⚠️ 전에는 생성자를 손으로 다시 불렀는데 `region`·`decorated`를 빠뜨려,
+  /// **좋아요를 누르면 지역 표기와 무지개 외곽선이 사라졌다.** 필드를 늘리면 여기는 손대지 않아도 된다.
+  FeedItem copyWith({int? likes, int? comments, bool? likedByMe}) => FeedItem(
+    userId: userId,
+    nickname: nickname,
+    age: age,
+    country: country,
+    pick: pick,
+    online: online,
+    intro: intro,
+    region: region,
+    decorated: decorated,
+    photoUrls: photoUrls,
+    photoLocked: photoLocked,
+    totalPhotos: totalPhotos,
+    interests: interests,
+    likes: likes ?? this.likes,
+    comments: comments ?? this.comments,
+    likedByMe: likedByMe ?? this.likedByMe,
+    score: score,
+  );
+
   factory FeedItem.fromJson(Map<String, dynamic> json) => FeedItem(
     userId: json['userId'] as String,
     nickname: json['nickname'] as String? ?? '',

@@ -140,7 +140,9 @@ class _CommentsSheetState extends ConsumerState<_CommentsSheet> {
 
   Future<void> _openTranslate() async {
     try {
-      final access = await ref.read(gardenApiProvider).openCommentSheetTranslate();
+      final access = await ref
+          .read(gardenApiProvider)
+          .openCommentSheetTranslate();
       if (!mounted) return;
       setState(() => _translate = access);
 
@@ -154,7 +156,6 @@ class _CommentsSheetState extends ConsumerState<_CommentsSheet> {
       if (mounted) setState(() => _translate = TranslateAccess.unavailable);
     }
   }
-
 
   @override
   void dispose() {
@@ -205,6 +206,11 @@ class _CommentsSheetState extends ConsumerState<_CommentsSheet> {
                 parentId: _replyTo?.id,
                 imageKey: _imageKey,
               );
+          // 가든 카드의 댓글 수(말풍선 옆 숫자)를 올린다 — 창 뒤에 그대로 떠 있는 카드다.
+          // 오늘의 포스트(내 글)에서 열었을 수도 있다 — 피드를 아직 안 읽었으면 깨우지 않는다.
+          if (ref.exists(feedProvider)) {
+            ref.read(feedProvider.notifier).commentAdded(widget.targetId);
+          }
         case CommentTargetKind.dailyAnswer:
           await ref
               .read(dailyApiProvider)
@@ -460,7 +466,6 @@ class _CommentTile extends StatelessWidget {
       ),
     );
   }
-
 }
 
 /// 지금 누구에게 답글을 쓰는지 알려 주는 줄. 없으면 1단계 댓글이 된다.

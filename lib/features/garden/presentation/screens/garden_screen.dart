@@ -80,7 +80,7 @@ class GardenScreen extends ConsumerWidget {
                   padding: EdgeInsets.symmetric(
                     horizontal:
                         (GardenArt.titleAt.dx - DesignCanvas.contentLeft) *
-                            scale,
+                        scale,
                   ),
                   child: const _GardenHeader(),
                 ),
@@ -165,8 +165,8 @@ class _GardenHeader extends StatelessWidget {
         SizedBox(
           width:
               (GardenArt.btnLunaAt.dx -
-                      (GardenArt.btnPrimeAt.dx + GardenArt.btnPrimeSize.width)) *
-                  DesignCanvas.scaleOf(context),
+                  (GardenArt.btnPrimeAt.dx + GardenArt.btnPrimeSize.width)) *
+              DesignCanvas.scaleOf(context),
         ),
         GestureDetector(
           onTap: () => Navigator.of(context).push(LunaStoreScreen.route()),
@@ -236,7 +236,8 @@ class _FilterBar extends ConsumerWidget {
         // 🚨 **줄 폭을 상수로 굳히지 말 것.** 예전엔 시안의 1031을 박아 뒀는데,
         // `달빛 한마디` 그림이 330 → 335로 커진 전달본에서 **줄이 1.9px 넘쳐 잘렸다.**
         // 실제로 놓을 것들의 합으로 재면 그림 규격이 또 바뀌어도 저절로 맞는다.
-        final designRow = GardenArt.filterGenderSize.width +
+        final designRow =
+            GardenArt.filterGenderSize.width +
             gGenderAge +
             GardenArt.filterAgeSize.width +
             gAgeCountry +
@@ -455,279 +456,261 @@ class _FeedPagerState extends ConsumerState<_FeedPager> {
     // 카드에는 **메인 사진 한 장**만 보여준다. 나머지는 카드를 눌러 뜨는 뷰어에서 넘겨 본다
     // (기획 4-1 — 카드의 좌우 스와이프는 사람을 넘기는 동작이라 사진 넘기기와 겹칠 수 없다).
     const index = 0;
-    final showInterests = item.interests.isNotEmpty;
+    final interestArts = [
+      for (final code in item.interests) ?GardenArt.interestArt[code],
+    ];
 
     return Dismissible(
       key: ValueKey(item.userId),
       onDismissed: (_) => _skip(),
       child: LayoutBuilder(
         builder: (context, cardBox) => Stack(
-        fit: StackFit.expand,
-        // 앨범패스 외곽선은 여백만큼 **상자 밖으로** 그린다 — 자르면 다시 안으로 들어간다.
-        clipBehavior: Clip.none,
-        children: [
-          // 사진은 **선 안쪽으로 밀어 넣어** 어떤 경우에도 밖으로 못 나가게 한다.
-          Padding(
-            padding: EdgeInsets.all(
-              CardFrame.photoInset(context, item.decorated),
-            ),
-            child: ClipRRect(
-            // 외곽선 그림의 **실측 곡률**에서 밀어 넣은 만큼 뺀 값.
-            // 카드가 세로로 눌린 만큼 자르는 쪽도 같이 눌러야 해 **타원 반경**을 쓴다.
-            borderRadius: CardFrame.clipRadius(
-              context,
-              Size(cardBox.maxWidth, cardBox.maxHeight),
-              item.decorated,
-            ),
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                if (photos.isEmpty)
-                  const ColoredBox(color: AppColors.surface)
-                else
-                  GestureDetector(
-                    // ⚠️ opaque가 없으면 **탭이 아예 안 들어온다.** GestureDetector의 기본값은
-                    // deferToChild이고 Image는 자기 자신을 히트테스트하지 않아, 사진 위를 눌러도
-                    // 아무 일이 일어나지 않는다(함정 #38).
-                    behavior: HitTestBehavior.opaque,
-                    // **누르고 뗐을 때만** 사진 뷰어를 연다(`onTapUp` = tap-up).
-                    // 이 카드의 좌우 스와이프는 **사람을 넘기는 동작**이라, 손가락이 닿자마자
-                    // 열면 스와이프하려던 손짓이 창을 열어 버린다. 탭 인식기는 손가락이
-                    // 조금이라도 밀리면 스스로 물러나므로 두 제스처가 부딪히지 않는다.
-                    onTapUp: (_) => showPostPhotoViewer(context, item),
-                    child: AuthedImage(url: photos[index]),
-                  ),
+          fit: StackFit.expand,
+          // 앨범패스 외곽선은 여백만큼 **상자 밖으로** 그린다 — 자르면 다시 안으로 들어간다.
+          clipBehavior: Clip.none,
+          children: [
+            // 사진은 **선 안쪽으로 밀어 넣어** 어떤 경우에도 밖으로 못 나가게 한다.
+            Padding(
+              padding: EdgeInsets.all(
+                CardFrame.photoInset(context, item.decorated),
+              ),
+              child: ClipRRect(
+                // 외곽선 그림의 **실측 곡률**에서 밀어 넣은 만큼 뺀 값.
+                // 카드가 세로로 눌린 만큼 자르는 쪽도 같이 눌러야 해 **타원 반경**을 쓴다.
+                borderRadius: CardFrame.clipRadius(
+                  context,
+                  Size(cardBox.maxWidth, cardBox.maxHeight),
+                  item.decorated,
+                ),
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    if (photos.isEmpty)
+                      const ColoredBox(color: AppColors.surface)
+                    else
+                      GestureDetector(
+                        // ⚠️ opaque가 없으면 **탭이 아예 안 들어온다.** GestureDetector의 기본값은
+                        // deferToChild이고 Image는 자기 자신을 히트테스트하지 않아, 사진 위를 눌러도
+                        // 아무 일이 일어나지 않는다(함정 #38).
+                        behavior: HitTestBehavior.opaque,
+                        // **누르고 뗐을 때만** 사진 뷰어를 연다(`onTapUp` = tap-up).
+                        // 이 카드의 좌우 스와이프는 **사람을 넘기는 동작**이라, 손가락이 닿자마자
+                        // 열면 스와이프하려던 손짓이 창을 열어 버린다. 탭 인식기는 손가락이
+                        // 조금이라도 밀리면 스스로 물러나므로 두 제스처가 부딪히지 않는다.
+                        onTapUp: (_) => showPostPhotoViewer(context, item),
+                        child: AuthedImage(url: photos[index]),
+                      ),
 
-                // 가독성 스크림.
-                //
-                // ⚠️ **IgnorePointer가 반드시 있어야 한다.** `DecoratedBox`는 자기 자신을
-                // 히트테스트하고(`RenderDecoratedBox.hitTestSelf` → `BoxDecoration.hitTest`는
-                // 사각형 안이면 true), 이게 카드 전체를 덮고 있어서 **아래 사진의 탭을 전부
-                // 먹어 버린다.** 좌우로 넘겨 보는 기능이 그동안 조용히 죽어 있던 원인이다(함정 #38).
-                const IgnorePointer(
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          Color(0x99000000),
-                          Color(0x00000000),
-                          Color(0x00000000),
-                          Color(0xE6000000),
-                        ],
-                        stops: [0.0, 0.22, 0.5, 1.0],
+                    // 가독성 스크림.
+                    //
+                    // ⚠️ **IgnorePointer가 반드시 있어야 한다.** `DecoratedBox`는 자기 자신을
+                    // 히트테스트하고(`RenderDecoratedBox.hitTestSelf` → `BoxDecoration.hitTest`는
+                    // 사각형 안이면 true), 이게 카드 전체를 덮고 있어서 **아래 사진의 탭을 전부
+                    // 먹어 버린다.** 좌우로 넘겨 보는 기능이 그동안 조용히 죽어 있던 원인이다(함정 #38).
+                    const IgnorePointer(
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Color(0x99000000),
+                              Color(0x00000000),
+                              Color(0x00000000),
+                              Color(0xE6000000),
+                            ],
+                            stops: [0.0, 0.22, 0.5, 1.0],
+                          ),
+                        ),
                       ),
                     ),
-                  ),
-                ),
 
-                // 상단: 이름 · 국기 · PICK · 접속중 (+ 아래 줄에 활동 지역)
-                Positioned(
-                  top: 16,
-                  left: 16,
-                  right: 16,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                    children: [
-                      Flexible(
-                        child: Text(
-                          [
-                            item.nickname,
-                            if (item.age != null) '${item.age}',
-                          ].join(' '),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 22,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                      ),
-                      // 국기 — 한·일은 시안 그림(2026-09-14에 일장기도 받았다).
-                      // 그 밖의 나라는 이모지로 둔다(기기마다 모양이 다르지만 그림이 없다).
-                      if (item.flag.isNotEmpty) ...[
-                        const SizedBox(width: 8),
-                        if (GardenArt.flagOf(item.country) case final flag?)
-                          ArtImage(
-                            flag,
-                            width: GardenArt.flagSize.width,
-                            height: GardenArt.flagSize.height,
-                          )
-                        else
-                          Text(item.flag, style: const TextStyle(fontSize: 20)),
-                      ],
-                      if (item.pick) ...[
-                        const SizedBox(width: 8),
-                        const ArtImage(
-                          GardenArt.badgePick,
-                          width: 144,
-                          height: 71,
-                        ),
-                      ],
-                      if (item.online) ...[
-                        const SizedBox(width: 8),
-                        const _OnlineBadge(),
-                      ],
-                      const Spacer(),
-                      // 시안(4-1)은 눈금이 아니라 **`1/8` 같은 숫자 표기**다.
-                      // 카드는 메인 한 장만 보여주므로 "1 / 전체"가 된다.
-                      //
-                      // **잠겨 있어도 전체 장수는 알린다** — 몇 장이 더 있는지 보여야
-                      // 눌러 볼 마음이 생기고, 그게 사진 등록을 유도하는 장치다.
-                      if (item.totalPhotos > 1)
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 3,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.black.withValues(alpha: 0.45),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Text(
-                            '1/${item.totalPhotos}',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                      // 활동 지역(기획 §2-5) — 있는 사람만. 코드는 서버가, 문구는 여기서.
-                      if (item.region != null)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 4),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
+                    // 상단: 이름 · 국기 · PICK · 접속중 (+ 아래 줄에 활동 지역)
+                    Positioned(
+                      top: 16,
+                      left: 16,
+                      right: 16,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
                             children: [
-                              const Icon(
-                                Icons.place_outlined,
-                                size: 13,
-                                color: Colors.white70,
+                              // ⚠️ 이름 쪽을 **Expanded 한 덩어리**로 묶어야 장수 표기가 오른쪽 끝에 붙는다.
+                              // 전에는 `Flexible(이름) … Spacer() … 1/8`이었는데 Flexible과 Spacer가
+                              // 남는 폭을 **반씩 나눠 가져** 장수가 가운데쯤에 떠 있었다.
+                              Expanded(
+                                child: Row(
+                                  children: [
+                                    Flexible(
+                                      child: Text(
+                                        [
+                                          item.nickname,
+                                          if (item.age != null) '${item.age}',
+                                        ].join(' '),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 22,
+                                          fontWeight: FontWeight.w800,
+                                        ),
+                                      ),
+                                    ),
+                                    // 국기 — 한·일은 시안 그림(2026-09-14에 일장기도 받았다).
+                                    // 그 밖의 나라는 이모지로 둔다(기기마다 모양이 다르지만 그림이 없다).
+                                    if (item.flag.isNotEmpty) ...[
+                                      const SizedBox(width: 8),
+                                      if (GardenArt.flagOf(item.country)
+                                          case final flag?)
+                                        ArtImage(
+                                          flag,
+                                          width: GardenArt.flagSize.width,
+                                          height: GardenArt.flagSize.height,
+                                        )
+                                      else
+                                        Text(
+                                          item.flag,
+                                          style: const TextStyle(fontSize: 20),
+                                        ),
+                                    ],
+                                    if (item.pick) ...[
+                                      const SizedBox(width: 8),
+                                      const ArtImage(
+                                        GardenArt.badgePick,
+                                        width: 144,
+                                        height: 71,
+                                      ),
+                                    ],
+                                    if (item.online) ...[
+                                      const SizedBox(width: 8),
+                                      const _OnlineBadge(),
+                                    ],
+                                  ],
+                                ),
                               ),
-                              const SizedBox(width: 3),
-                              Text(
+                              // 시안(4-1)은 눈금이 아니라 **`1/8` 같은 숫자 표기**다.
+                              // 카드는 메인 한 장만 보여주므로 "1 / 전체"가 된다.
+                              //
+                              // **잠겨 있어도 전체 장수는 알린다** — 몇 장이 더 있는지 보여야
+                              // 눌러 볼 마음이 생기고, 그게 사진 등록을 유도하는 장치다.
+                              if (item.totalPhotos > 1)
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 3,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.black.withValues(alpha: 0.45),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Text(
+                                    '1/${item.totalPhotos}',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                          // 활동 지역(기획 §2-5) — 있는 사람만. 코드는 서버가, 문구는 여기서.
+                          // 핀 아이콘 없이 **흰 글자만**, 이름 아래 한 줄(기획 수정 2026-10-04).
+                          if (item.region != null)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 4),
+                              child: Text(
                                 ProfileCatalog.regionLabel(
                                   L10n.of(context),
                                   item.region!,
                                 ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(
-                                  color: Colors.white70,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+
+                    // 하단: 한마디(또는 관심사) + 좋아요/댓글/메시지
+                    Positioned(
+                      left: 20,
+                      right: 20,
+                      bottom: 20,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // 관심사 — **그림이 있는 것만** 보인다(기획 수정 2026-10-04).
+                          // 그림이 온 건 아직 `영화` 한 장이라 대부분의 카드는 이 줄이 비어 있다.
+                          // 그림이 오면 `GardenArt.interestArt`에 한 줄 넣으면 저절로 나타난다.
+                          //
+                          // 🚫 **자기소개는 카드에 띄우지 않는다**(기획 수정 2026-10-04 — 길어질 수 있게
+                          // 바뀌어서). 전에는 관심사가 없으면 그 자리에 소개를 썼다.
+                          // 소개는 [포스트 정보]에서 본다.
+                          if (interestArts.isNotEmpty) ...[
+                            Wrap(
+                              spacing: 6,
+                              runSpacing: 6,
+                              children: [
+                                for (final art in interestArts)
+                                  ArtImage(
+                                    art,
+                                    width: GardenArt.interestSize.width,
+                                    height: GardenArt.interestSize.height,
+                                  ),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                          ],
+                          Row(
+                            children: [
+                              _ArtCount(
+                                asset: GardenArt.iconHeart,
+                                width: 72,
+                                height: 67,
+                                label: '${item.likes}',
+                                // 하루 한 번 — 이미 눌렀으면 흐려지고 다시 눌러도 늘지 않는다.
+                                done: item.likedByMe,
+                                onTap: _like,
+                              ),
+                              const SizedBox(width: 20),
+                              _ArtCount(
+                                asset: GardenArt.iconComment,
+                                width: GardenArt.iconCommentSize.width,
+                                height: GardenArt.iconCommentSize.height,
+                                label: '${item.comments}',
+                                onTap: () =>
+                                    showPostCommentsSheet(context, item),
+                              ),
+                              const Spacer(),
+                              // 대화 신청 — 100자 메시지를 적어 보낸다(기획서 4-3)
+                              GestureDetector(
+                                onTap: () => _requestChat(item),
+                                child: const ArtImage(
+                                  GardenArt.btnChatRequest,
+                                  width: 144,
+                                  height: 145,
                                 ),
                               ),
                             ],
                           ),
-                        ),
-                    ],
-                  ),
-                ),
-
-                // 하단: 한마디(또는 관심사) + 좋아요/댓글/메시지
-                Positioned(
-                  left: 20,
-                  right: 20,
-                  bottom: 20,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (showInterests)
-                        Wrap(
-                          spacing: 6,
-                          runSpacing: 6,
-                          children: [
-                            for (final code in item.interests)
-                              // 영화만 시안 그림이 있다. 나머지는 기존 칩 —
-                              // 관심사 37종 전체 그림을 받으면 코드→에셋 표로 바꾸면 된다.
-                              if (code == 'MOVIE')
-                                ArtImage(
-                                  GardenArt.interestMovie,
-                                  width: GardenArt.interestSize.width,
-                                  height: GardenArt.interestSize.height,
-                                )
-                              else
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 10,
-                                    vertical: 5,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withValues(alpha: 0.18),
-                                    borderRadius: BorderRadius.circular(14),
-                                  ),
-                                  child: Text(
-                                    ProfileCatalog.interestLabel(
-                                      L10n.of(context),
-                                      code,
-                                    ),
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 13,
-                                    ),
-                                  ),
-                                ),
-                          ],
-                        )
-                      else
-                        Text(
-                          item.intro ?? '',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      const SizedBox(height: 16),
-                      Row(
-                        children: [
-                          _ArtCount(
-                            asset: GardenArt.iconHeart,
-                            width: 72,
-                            height: 67,
-                            label: '${item.likes}',
-                            // 하루 한 번 — 이미 눌렀으면 흐려지고 다시 눌러도 늘지 않는다.
-                            done: item.likedByMe,
-                            onTap: _like,
-                          ),
-                          const SizedBox(width: 20),
-                          _ArtCount(
-                            asset: GardenArt.iconComment,
-                            width: GardenArt.iconCommentSize.width,
-                            height: GardenArt.iconCommentSize.height,
-                            label: '${item.comments}',
-                            onTap: () => showPostCommentsSheet(context, item),
-                          ),
-                          const Spacer(),
-                          // 대화 신청 — 100자 메시지를 적어 보낸다(기획서 4-3)
-                          GestureDetector(
-                            onTap: () => _requestChat(item),
-                            child: const ArtImage(
-                              GardenArt.btnChatRequest,
-                              width: 144,
-                              height: 145,
-                            ),
-                          ),
                         ],
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
-          ),
-          ),
 
-          // 카드 외곽선 — 클립 **바깥**에 얹어야 모서리가 안 깎인다.
-          // 앨범 패스·프라임을 가진 사람의 포스트는 **무지개빛**이다(기획 화면 26·29).
-          CardFrame(decorated: item.decorated),
-        ],
+            // 카드 외곽선 — 클립 **바깥**에 얹어야 모서리가 안 깎인다.
+            // 앨범 패스·프라임을 가진 사람의 포스트는 **무지개빛**이다(기획 화면 26·29).
+            CardFrame(decorated: item.decorated),
+          ],
         ),
       ),
     );
