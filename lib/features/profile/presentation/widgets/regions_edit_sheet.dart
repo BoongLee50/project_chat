@@ -6,13 +6,13 @@ import '../../../../app/theme/app_dimens.dart';
 import '../../../../core/error/error_messages.dart';
 import '../../data/models/profile_catalog.dart';
 import '../providers/profile_edit_provider.dart';
+import 'profile_notice_dialog.dart';
 import '../../../../l10n/app_localizations.dart';
 
 /// 지역 선택. (기획서 화면 24)
 ///
 /// 시안은 국가 하나를 고르고 그 안에서 지역을 고르는 흐름이다.
-/// 다만 저장은 **최대 2곳**이고 한국·일본을 섞어 고를 수도 있어야 해서,
-/// 국가 탭은 목록을 바꾸는 역할만 하고 선택은 누적된다.
+/// 저장은 **최대 1곳**(기획서 261002 8-1)이고, 국가 탭은 목록을 바꾸는 역할만 한다.
 class RegionsEditSheet extends ConsumerStatefulWidget {
   const RegionsEditSheet({super.key, required this.initial, this.homeCountry});
 
@@ -25,17 +25,16 @@ class RegionsEditSheet extends ConsumerStatefulWidget {
     BuildContext context, {
     required List<String> initial,
     String? homeCountry,
-  }) =>
-      showModalBottomSheet<bool>(
-        context: context,
-        isScrollControlled: true,
-        backgroundColor: AppColors.night,
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        builder: (_) =>
-            RegionsEditSheet(initial: initial, homeCountry: homeCountry),
-      );
+  }) => showModalBottomSheet<bool>(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: AppColors.night,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    ),
+    builder: (_) =>
+        RegionsEditSheet(initial: initial, homeCountry: homeCountry),
+  );
 
   @override
   ConsumerState<RegionsEditSheet> createState() => _RegionsEditSheetState();
@@ -55,22 +54,21 @@ class _RegionsEditSheetState extends ConsumerState<RegionsEditSheet> {
     return widget.homeCountry ?? 'KR';
   }
 
+  /// 한도를 넘으면 고르지 않고 **안내 팝업**으로 이유를 말한다(기획서 261002 8-1).
+  ///
+  /// 한도가 1곳이라 "바꿔 끼우기"가 더 편해 보이지만, 기획서가 팝업을 적어 두었다 —
+  /// 고른 것을 한 번 눌러 풀고 다른 곳을 고른다.
   void _toggle(String code) {
+    if (!_selected.contains(code) &&
+        _selected.length >= ProfileCatalog.maxRegions) {
+      showProfileNotice(
+        context,
+        L10n.of(context).regionsEditLimit(ProfileCatalog.maxRegions),
+      );
+      return;
+    }
     setState(() {
-      if (_selected.contains(code)) {
-        _selected.remove(code);
-      } else if (_selected.length < ProfileCatalog.maxRegions) {
-        _selected.add(code);
-      } else {
-        final l10n = L10n.of(context);
-        ScaffoldMessenger.of(context)
-          ..hideCurrentSnackBar()
-          ..showSnackBar(
-            SnackBar(
-              content: Text(l10n.regionsEditLimit(ProfileCatalog.maxRegions)),
-            ),
-          );
-      }
+      if (!_selected.remove(code)) _selected.add(code);
     });
   }
 
@@ -85,7 +83,9 @@ class _RegionsEditSheetState extends ConsumerState<RegionsEditSheet> {
     if (error != null) {
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text(errorMessage(L10n.of(context), error))));
+        ..showSnackBar(
+          SnackBar(content: Text(errorMessage(L10n.of(context), error))),
+        );
       return;
     }
     Navigator.of(context).pop(true);
@@ -121,7 +121,10 @@ class _RegionsEditSheetState extends ConsumerState<RegionsEditSheet> {
           const SizedBox(height: 6),
           Text(
             l10n.regionsEditSubtitle(ProfileCatalog.maxRegions),
-            style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
+            style: const TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: 13,
+            ),
           ),
           const SizedBox(height: AppDimens.gapMd),
           Padding(
@@ -207,7 +210,9 @@ class _RegionsEditSheetState extends ConsumerState<RegionsEditSheet> {
                   child: Text(
                     _selected.isEmpty
                         ? l10n.commonNone
-                        : _selected.map((c) => ProfileCatalog.regionLabel(l10n, c)).join(' · '),
+                        : _selected
+                              .map((c) => ProfileCatalog.regionLabel(l10n, c))
+                              .join(' · '),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(

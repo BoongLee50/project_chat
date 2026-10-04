@@ -86,10 +86,14 @@ flutter:
     - assets/images/scene_talk/application_received/
     - assets/images/scene_friend/friend_list/
     - assets/images/scene_friend/application_received/
+    # 프로필(Scene_Profile) — [작성하기]와 [미리 보기] 두 폴더로 온다.
+    - assets/images/scene_profile/create/
+    - assets/images/scene_profile/preview/
     # 글자가 구워진 그림의 **일본어판**. 원문(한국어)은 위 폴더에 같은 파일명으로 둔다.
     # ⚠️ 폴더 선언은 **재귀가 아니라서** ja/ 도 따로 적어야 한다.
     - assets/images/scene_post/ja/
     - assets/images/scene_garden/ja/
+    - assets/images/scene_profile/create/ja/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

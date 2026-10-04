@@ -126,6 +126,8 @@ public class PostInfoService {
                 photos.fromPost(),
                 profile == null || profile.getPhotoKey() == null
                         ? null : fileStorageService.issueDownloadUrl(profile.getPhotoKey()),
+                profile == null || profile.getMainPhotoKey() == null
+                        ? null : fileStorageService.issueDownloadUrl(profile.getMainPhotoKey()),
                 profile == null ? null : profile.getIntro(),
                 profileMapper.selectInterests(targetUserId),
                 profileMapper.selectRegions(targetUserId),

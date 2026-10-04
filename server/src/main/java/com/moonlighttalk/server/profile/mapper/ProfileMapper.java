@@ -15,6 +15,9 @@ public interface ProfileMapper {
 
     void updatePhotoKey(@Param("userId") String userId, @Param("photoKey") String photoKey);
 
+    /** 자유 사진(메인) 칸. 얼굴 사진({@link #updatePhotoKey})과 따로 바뀐다(V28). */
+    void updateMainPhotoKey(@Param("userId") String userId, @Param("photoKey") String photoKey);
+
     void updateIntro(@Param("userId") String userId, @Param("intro") String intro);
 
     List<String> selectInterests(@Param("userId") String userId);

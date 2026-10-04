@@ -1303,12 +1303,6 @@ abstract class L10n {
   /// **'프로필'**
   String get profileTitle;
 
-  /// No description provided for @profilePhotoPrompt.
-  ///
-  /// In ko, this message translates to:
-  /// **'프로필 사진을 등록해 주세요'**
-  String get profilePhotoPrompt;
-
   /// No description provided for @photoSheetProfileTitle.
   ///
   /// In ko, this message translates to:
@@ -1357,101 +1351,11 @@ abstract class L10n {
   /// **'앨범 패스가 있어야 이용할 수 있어요'**
   String get photoSourceGalleryPassOnly;
 
-  /// No description provided for @profileLunaBalance.
-  ///
-  /// In ko, this message translates to:
-  /// **'보유 루나'**
-  String get profileLunaBalance;
-
-  /// No description provided for @profileLunaStore.
-  ///
-  /// In ko, this message translates to:
-  /// **'루나상점'**
-  String get profileLunaStore;
-
-  /// No description provided for @profilePrimeTitle.
-  ///
-  /// In ko, this message translates to:
-  /// **'프라임으로 더 특별하게 ✨'**
-  String get profilePrimeTitle;
-
-  /// No description provided for @profilePrimeBenefits.
-  ///
-  /// In ko, this message translates to:
-  /// **'포스트 9장·부스트·무제한 대화·자동 번역'**
-  String get profilePrimeBenefits;
-
-  /// No description provided for @profileSeeDetail.
-  ///
-  /// In ko, this message translates to:
-  /// **'자세히 보기'**
-  String get profileSeeDetail;
-
-  /// No description provided for @profilePrimeBenefitAlbumDesc.
-  ///
-  /// In ko, this message translates to:
-  /// **'포스트 사진을 더 많이 등록하고\n상대방 포스트도 제한 없이 볼 수 있어요.'**
-  String get profilePrimeBenefitAlbumDesc;
-
-  /// No description provided for @profilePrimeBenefitBoostDesc.
-  ///
-  /// In ko, this message translates to:
-  /// **'포스트가 우선 노출되고\nPICK 추천과 테두리 효과가 붙어요.'**
-  String get profilePrimeBenefitBoostDesc;
-
-  /// No description provided for @profilePrimeBenefitChatDesc.
-  ///
-  /// In ko, this message translates to:
-  /// **'횟수 제한 없이 자유롭게!\n상대방에게 상단 노출돼요.'**
-  String get profilePrimeBenefitChatDesc;
-
   /// No description provided for @profilePrimeBenefitTranslate.
   ///
   /// In ko, this message translates to:
   /// **'자동 번역 무제한'**
   String get profilePrimeBenefitTranslate;
-
-  /// No description provided for @profilePrimeBenefitTranslateDesc.
-  ///
-  /// In ko, this message translates to:
-  /// **'대화와 댓글을 무제한으로 번역해\n언어 걱정 없이 소통할 수 있어요.'**
-  String get profilePrimeBenefitTranslateDesc;
-
-  /// No description provided for @profileBoostPost.
-  ///
-  /// In ko, this message translates to:
-  /// **'포스트 부스트'**
-  String get profileBoostPost;
-
-  /// No description provided for @profileBoostMatch.
-  ///
-  /// In ko, this message translates to:
-  /// **'매칭 부스트'**
-  String get profileBoostMatch;
-
-  /// No description provided for @profileBoostCount.
-  ///
-  /// In ko, this message translates to:
-  /// **'{count}매'**
-  String profileBoostCount(int count);
-
-  /// No description provided for @profileFreeUpload.
-  ///
-  /// In ko, this message translates to:
-  /// **'무료 업로드'**
-  String get profileFreeUpload;
-
-  /// No description provided for @profileNoAds.
-  ///
-  /// In ko, this message translates to:
-  /// **'광고 제거'**
-  String get profileNoAds;
-
-  /// No description provided for @profileVisitors.
-  ///
-  /// In ko, this message translates to:
-  /// **'방문자 확인'**
-  String get profileVisitors;
 
   /// No description provided for @profileIntro.
   ///
@@ -1459,35 +1363,11 @@ abstract class L10n {
   /// **'소개 한마디'**
   String get profileIntro;
 
-  /// No description provided for @profileIntroEmpty.
-  ///
-  /// In ko, this message translates to:
-  /// **'나를 소개하는 한마디를 남겨보세요. (최대 50자)'**
-  String get profileIntroEmpty;
-
   /// No description provided for @profileInterests.
   ///
   /// In ko, this message translates to:
   /// **'관심사'**
   String get profileInterests;
-
-  /// No description provided for @profileInterestsEmpty.
-  ///
-  /// In ko, this message translates to:
-  /// **'관심사를 등록하면 더 잘 맞는 사람을 만날 수 있어요.'**
-  String get profileInterestsEmpty;
-
-  /// No description provided for @profileRegions.
-  ///
-  /// In ko, this message translates to:
-  /// **'활동 지역'**
-  String get profileRegions;
-
-  /// No description provided for @profileRegionsEmpty.
-  ///
-  /// In ko, this message translates to:
-  /// **'활동 지역은 최대 2곳까지 선택할 수 있어요.'**
-  String get profileRegionsEmpty;
 
   /// No description provided for @profileLogout.
   ///
@@ -1495,23 +1375,41 @@ abstract class L10n {
   /// **'로그아웃'**
   String get profileLogout;
 
-  /// No description provided for @introEditTitle.
+  /// No description provided for @profileCreatePhotoDesc.
   ///
   /// In ko, this message translates to:
-  /// **'소개 한마디'**
-  String get introEditTitle;
+  /// **'얼굴 사진과 나를 표현할 사진 한 장씩을 담아 주세요.'**
+  String get profileCreatePhotoDesc;
 
-  /// No description provided for @introEditHint.
+  /// No description provided for @profileCreateIntroDesc.
   ///
   /// In ko, this message translates to:
-  /// **'자신의 취미, 성격, 또는\n하고 싶은 말을 자유롭게 적어보세요.'**
-  String get introEditHint;
+  /// **'당신에 대해 간단히 소개해 주세요.'**
+  String get profileCreateIntroDesc;
 
-  /// No description provided for @introEditCounter.
+  /// No description provided for @profileCreateIntroHint.
   ///
   /// In ko, this message translates to:
-  /// **'최대 50자까지 가능합니다.'**
-  String get introEditCounter;
+  /// **'취미나 관심사, 좋아하는 것 등을 알려 주세요.'**
+  String get profileCreateIntroHint;
+
+  /// No description provided for @profileCreateInterestsDesc.
+  ///
+  /// In ko, this message translates to:
+  /// **'내가 좋아하는 것들을 최대 {max}개까지 선택해 주세요.'**
+  String profileCreateInterestsDesc(int max);
+
+  /// No description provided for @profileCreateRegionDesc.
+  ///
+  /// In ko, this message translates to:
+  /// **'내가 주로 활동하고 있는 지역을 선택해 주세요.'**
+  String get profileCreateRegionDesc;
+
+  /// No description provided for @profileIntroLimit.
+  ///
+  /// In ko, this message translates to:
+  /// **'자기소개 작성은 최대 {max}자까지만 입력할 수 있어요.'**
+  String profileIntroLimit(int max);
 
   /// No description provided for @interestsEditTitle.
   ///
@@ -1552,7 +1450,7 @@ abstract class L10n {
   /// No description provided for @interestsEditLimit.
   ///
   /// In ko, this message translates to:
-  /// **'관심사는 최대 {max}개까지 선택할 수 있어요.'**
+  /// **'관심사 등록은 {max}개까지만 선택할 수 있습니다.'**
   String interestsEditLimit(int max);
 
   /// No description provided for @regionsEditTitle.
@@ -1588,7 +1486,7 @@ abstract class L10n {
   /// No description provided for @regionsEditLimit.
   ///
   /// In ko, this message translates to:
-  /// **'활동 지역은 최대 {max}곳까지 선택할 수 있어요.'**
+  /// **'지역 선택은 {max}군데만 선택할 수 있습니다.'**
   String regionsEditLimit(int max);
 
   /// No description provided for @commonNone.

@@ -23,7 +23,8 @@ import java.util.List;
  * @param chatRoomId       지금 살아 있는 대화방. 있으면 하단이 [대화하기]가 된다
  * @param hasTodayPost     상대가 오늘 포스트를 올렸는가. 없으면 사진 대신 프로필 사진을 보여 준다
  * @param profilePhotoUrl  ⋮ 메뉴의 [프로필 보기]가 쓰는 사진. 포스트 사진과 <b>다른 것</b>이라
- *                         열람 제한과 무관하다 — 프로필은 원래 누구나 본다
+ *                         열람 제한과 무관하다 — 프로필은 원래 누구나 본다. <b>얼굴 사진</b>(8-1 첫째 칸)
+ * @param profileMainPhotoUrl [프로필 보기]의 큰 메인 사진 = <b>자유 사진</b>(기획서 261002 8-1 둘째 칸, V28)
  */
 public record PostInfoDto(
         String userId,
@@ -38,6 +39,7 @@ public record PostInfoDto(
         int totalPhotos,
         boolean hasTodayPost,
         String profilePhotoUrl,
+        String profileMainPhotoUrl,
         String intro,
         List<String> interests,
         List<String> regions,

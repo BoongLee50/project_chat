@@ -1,38 +1,133 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../../../app/main_shell.dart';
 import '../../../../app/theme/app_colors.dart';
-import '../../../../app/theme/app_dimens.dart';
 import '../../../../core/error/api_exception.dart';
 import '../../../../core/error/error_messages.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/authed_image.dart';
+import '../../../../shared/widgets/design_canvas.dart';
 import '../../../../shared/widgets/photo_source_sheet.dart';
 import '../../../auth/presentation/providers/session_provider.dart';
-import '../../../store/data/models/store_models.dart';
-import '../../../store/presentation/providers/store_provider.dart';
-import '../../../store/presentation/screens/boost_screen.dart';
-import '../../../store/presentation/screens/luna_store_screen.dart';
-import '../../../store/presentation/screens/prime_screen.dart';
+import '../../data/datasources/profile_api.dart';
 import '../../data/models/me_profile.dart';
 import '../../data/models/profile_catalog.dart';
 import '../providers/profile_edit_provider.dart';
 import '../widgets/interests_edit_sheet.dart';
-import '../widgets/intro_edit_dialog.dart';
+import '../widgets/profile_notice_dialog.dart';
+import '../widgets/profile_tag_chip.dart';
 import '../widgets/regions_edit_sheet.dart';
-import '../../../../l10n/app_localizations.dart';
+import 'profile_preview_screen.dart';
 
-/// 프로필 — 메인 셸의 l10n.profileTitle 탭 본문. (기획서 7장)
+/// 프로필 — 메인 셸의 다섯째 탭. **[작성하기]** 화면이다(기획서 261002 8-1, `Scene_Profile/Create`).
 ///
-/// `GET /me` 응답(세션이 보유)을 그대로 표시한다. 사진·관심사·소개·지역 편집은
-/// 모두 여기서 바로 하고, 저장 후 세션을 다시 읽어 화면이 즉시 따라온다.
-class ProfileScreen extends ConsumerWidget {
+/// - 어떤 경로로 들어오든 **기본 상태는 작성하기**다. [미리 보기]는 위에 덮는 창이라
+///   닫으면 늘 여기로 돌아온다(기획 2026-10-04).
+/// - 네 단계(프로필 사진 · 자기소개 · 관심사 · 활동 지역)를 하나 끝낼 때마다 진행도가
+///   25%씩 찬다. 모두 **언제든 다시 고칠 수 있다.**
+/// - 아래가 길어 **스크롤한다**(기획 2026-10-04 — 고정 화면 무스크롤 원칙의 예외).
+/// - `프로필 사진`·`자기소개` 같은 제목은 **그림**(`mark_*`), 회색 설명은 **글자**(RGB 178,178,183).
+///
+/// 좌표는 시안 `프로필_프로필 작성 화면 좌표.png`(1080 캔버스)를 그대로 옮겼다.
+class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = L10n.of(context);
+  ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends ConsumerState<ProfileScreen> {
+  late final TextEditingController _intro = TextEditingController(
+    text: ref.read(sessionProvider).profile?.intro ?? '',
+  );
+  final FocusNode _introFocus = FocusNode();
+  final ScrollController _scroll = ScrollController();
+
+  /// 한도 팝업이 이미 떠 있으면 또 띄우지 않는다(자판을 연타하면 쌓인다).
+  bool _noticeOpen = false;
+
+  /// 입력이 멈추고 잠시 뒤 저장한다.
+  ///
+  /// ⚠️ 안드로이드 뒤로 키는 **자판만 내리고 포커스는 그대로 둔다** — 포커스가 풀릴 때만
+  /// 저장하면 뒤로 키로 마친 사람의 소개가 저장되지 않는다(실기 확인).
+  Timer? _introDebounce;
+
+  @override
+  void initState() {
+    super.initState();
+    // 다른 곳을 누르면 바로 저장한다 — 글자마다 서버를 부르지는 않는다.
+    _introFocus.addListener(() {
+      if (!_introFocus.hasFocus) _saveIntro();
+    });
+    _intro.addListener(() {
+      _introDebounce?.cancel();
+      if (!_introFocus.hasFocus) return;
+      _introDebounce = Timer(const Duration(milliseconds: 1200), _saveIntro);
+    });
+  }
+
+  @override
+  void dispose() {
+    _introDebounce?.cancel();
+    _intro.dispose();
+    _introFocus.dispose();
+    _scroll.dispose();
+    super.dispose();
+  }
+
+  /// 자기소개 저장 — 바뀐 게 없으면 부르지 않는다.
+  Future<void> _saveIntro() async {
+    _introDebounce?.cancel();
+    final text = _intro.text.trim();
+    final saved = ref.read(sessionProvider).profile?.intro ?? '';
+    if (text == saved) return;
+
+    final error = await ref.read(profileEditActionsProvider).updateIntro(text);
+    if (error != null && mounted) _showError(error);
+  }
+
+  void _showError(ApiException error) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(content: Text(errorMessage(L10n.of(context), error))),
+      );
+  }
+
+  Future<void> _notice(String message) async {
+    if (_noticeOpen) return;
+    _noticeOpen = true;
+    await showProfileNotice(context, message);
+    _noticeOpen = false;
+  }
+
+  /// [미리 보기] — 쓰던 소개를 먼저 저장해야 미리 보기에 그대로 나온다.
+  Future<void> _openPreview() async {
+    FocusScope.of(context).unfocus();
+    await _saveIntro();
+    if (!mounted) return;
+    await Navigator.of(context).push(ProfilePreviewScreen.route());
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final profile = ref.watch(sessionProvider).profile;
+
+    // 서버 값이 바뀌었는데(새로고침 등) 지금 쓰고 있지 않으면 칸을 따라가게 한다.
+    ref.listen(sessionProvider.select((s) => s.profile?.intro), (_, next) {
+      if (!_introFocus.hasFocus && _intro.text != (next ?? '')) {
+        _intro.text = next ?? '';
+      }
+    });
+    // 다른 탭으로 옮기면 자판을 내린다 — 내리는 순간 소개가 저장된다.
+    ref.listen<int>(selectedTabProvider, (_, next) {
+      if (next != MainTab.profile) _introFocus.unfocus();
+    });
 
     if (profile == null) {
       return const Center(
@@ -40,161 +135,339 @@ class ProfileScreen extends ConsumerWidget {
       );
     }
 
-    return RefreshIndicator(
-      color: AppColors.moonlight,
-      backgroundColor: AppColors.surface,
-      onRefresh: () => ref.read(sessionProvider.notifier).refresh(),
-      child: SingleChildScrollView(
-        physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.fromLTRB(
-          AppDimens.pagePad,
-          AppDimens.gapMd,
-          AppDimens.pagePad,
-          AppDimens.gapLg,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const _Header(),
-            const SizedBox(height: AppDimens.gapMd),
-            _PhotoCard(photoUrl: profile.photoUrl),
-            const SizedBox(height: AppDimens.gapMd),
-            _NameRow(profile: profile),
-            const SizedBox(height: AppDimens.gapLg),
-            _SectionCard(
-              icon: Icons.favorite_border,
-              title: l10n.profileInterests,
-              onEdit: () =>
-                  InterestsEditSheet.show(context, profile.interests),
-              child: profile.interests.isEmpty
-                  ? _EmptyHint(l10n.profileInterestsEmpty)
-                  : Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: [
-                        for (final code in profile.interests)
-                          _Chip(label: ProfileCatalog.interestLabel(l10n, code)),
-                      ],
-                    ),
-            ),
-            const SizedBox(height: AppDimens.gapMd),
-            _SectionCard(
-              icon: Icons.format_quote,
-              title: l10n.profileIntro,
-              onEdit: () =>
-                  IntroEditDialog.show(context, initial: profile.intro),
-              child: (profile.intro == null || profile.intro!.isEmpty)
-                  ? _EmptyHint(l10n.profileIntroEmpty)
-                  : Text(
-                      profile.intro!,
-                      style: const TextStyle(
-                        color: AppColors.textPrimary,
-                        fontSize: 15,
-                        height: 1.5,
+    final s = DesignCanvas.scaleOf(context);
+    final l10n = L10n.of(context);
+
+    return GestureDetector(
+      // 빈 곳을 누르면 자판을 내린다(= 소개 저장).
+      behavior: HitTestBehavior.translucent,
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: ColoredBox(
+        color: Colors.white,
+        child: RefreshIndicator(
+          color: AppColors.moonlight,
+          onRefresh: () => ref.read(sessionProvider.notifier).refresh(),
+          child: SingleChildScrollView(
+            controller: _scroll,
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: EdgeInsets.only(bottom: 140 * s),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _Top(profile: profile, onPreview: _openPreview),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 65 * s),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // ── 프로필 사진(917) ────────────────────────────
+                      const _Mark('mark_picture.png', 327, 67),
+                      SizedBox(height: 30 * s),
+                      _Desc(l10n.profileCreatePhotoDesc),
+                      SizedBox(height: 31 * s),
+                      Row(
+                        children: [
+                          _PhotoSlot(
+                            slot: ProfilePhotoSlot.face,
+                            url: profile.photoUrl,
+                            emptyAsset: 'button_face.png',
+                          ),
+                          const Spacer(),
+                          _PhotoSlot(
+                            slot: ProfilePhotoSlot.main,
+                            url: profile.mainPhotoUrl,
+                            emptyAsset: 'button_photo.png',
+                          ),
+                        ],
                       ),
-                    ),
+
+                      // ── 자기소개(1574) ──────────────────────────────
+                      SizedBox(height: 68 * s),
+                      const _Mark('mark_aboutme.png', 278, 74),
+                      SizedBox(height: 28 * s),
+                      _Desc(l10n.profileCreateIntroDesc),
+                      SizedBox(height: 32 * s),
+                      _IntroBox(
+                        controller: _intro,
+                        focusNode: _introFocus,
+                        onLimit: () => _notice(
+                          l10n.profileIntroLimit(ProfileCatalog.maxIntro),
+                        ),
+                      ),
+
+                      // ── 관심사(2136) ────────────────────────────────
+                      SizedBox(height: 70 * s),
+                      const _Mark('mark_Interests.png', 240, 66),
+                      SizedBox(height: 30 * s),
+                      _Desc(
+                        l10n.profileCreateInterestsDesc(
+                          ProfileCatalog.maxInterests,
+                        ),
+                      ),
+                      SizedBox(height: 25 * s),
+                      _TagRow(
+                        chips: [
+                          for (final code in profile.interests)
+                            ProfileTagChip.interest(code),
+                        ],
+                        onEdit: () {
+                          // 포커스를 먼저 푼다 — 안 그러면 시트가 닫힐 때 포커스가
+                          // 소개 칸으로 돌아와 자판이 다시 올라온다.
+                          FocusScope.of(context).unfocus();
+                          InterestsEditSheet.show(context, profile.interests);
+                        },
+                      ),
+
+                      // ── 활동 지역 ───────────────────────────────────
+                      SizedBox(height: 72 * s),
+                      const _Mark('mark_area.png', 264, 75),
+                      SizedBox(height: 30 * s),
+                      _Desc(l10n.profileCreateRegionDesc),
+                      SizedBox(height: 25 * s),
+                      _TagRow(
+                        chips: [
+                          for (final code in profile.regions)
+                            ProfileTagChip.region(code),
+                        ],
+                        onEdit: () {
+                          FocusScope.of(context).unfocus();
+                          RegionsEditSheet.show(
+                            context,
+                            initial: profile.regions,
+                            homeCountry: profile.country,
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: AppDimens.gapMd),
-            _SectionCard(
-              icon: Icons.location_on_outlined,
-              title: l10n.profileRegions,
-              onEdit: () => RegionsEditSheet.show(
-                context,
-                initial: profile.regions,
-                homeCountry: profile.country,
-              ),
-              child: profile.regions.isEmpty
-                  ? _EmptyHint(l10n.profileRegionsEmpty)
-                  : Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: [
-                        for (final code in profile.regions)
-                          _Chip(label: ProfileCatalog.regionLabel(l10n, code)),
-                      ],
-                    ),
-            ),
-            const SizedBox(height: AppDimens.gapLg),
-            // 시안(7장 img18)은 활동 지역 **바로 아래**에 프라임 배너를 둔다.
-            // 루나·부스트 카드는 시안에 없지만 이미지가 그 아래에서 잘려 있어
-            // 없앤 것으로 볼 수 없다 — 순서만 시안에 맞추고 뒤로 미뤘다.
-            if (!profile.premium) ...[
-              const _PremiumBanner(),
-              const SizedBox(height: AppDimens.gapMd),
-            ],
-            const _StoreEntry(),
-          ],
+          ),
         ),
       ),
     );
   }
 }
 
-class _Header extends ConsumerWidget {
-  const _Header();
+const _dir = 'assets/images/scene_profile/create';
+
+/// 회색 설명 글자 — 기획 지정 RGB(178,178,183). (시안 그림은 조금 더 진하지만 지정값을 따른다)
+const _gray = Color(0xFFB2B2B7);
+
+/// 머리 — 밤 사진 · 흰 판(`back_upper`) · [작성하기]/[미리 보기] · 진행도.
+class _Top extends ConsumerStatefulWidget {
+  const _Top({required this.profile, required this.onPreview});
+
+  final MeProfile profile;
+  final VoidCallback onPreview;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_Top> createState() => _TopState();
+}
+
+class _TopState extends ConsumerState<_Top> {
+  /// [미리 보기]를 누르고 있는 동안만 노란 그림(`_color`)으로 바꾼다.
+  bool _previewDown = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final s = DesignCanvas.scaleOf(context);
     final l10n = L10n.of(context);
-    return Row(
-      children: [
-        Text(
-          l10n.profileTitle,
-          style: TextStyle(
-            color: AppColors.textPrimary,
-            fontSize: 24,
-            fontWeight: FontWeight.w800,
+    final filled = widget.profile.filledSteps;
+
+    return SizedBox(
+      // 진행도 아래 → 첫 제목(917)까지가 머리다.
+      height: 917 * s,
+      child: Stack(
+        children: [
+          // 밤 사진(1080×771). 일본어판은 틀이 커서(1426×1103) 폭에 맞추고 위에서부터 자른다 —
+          // 넘치는 아래쪽은 어차피 흰 판에 덮인다.
+          Positioned(
+            left: 0,
+            right: 0,
+            top: 0,
+            height: 772 * s,
+            child: Image.asset(
+              DesignCanvas.localizedAsset(context, '$_dir/back_profile.png'),
+              fit: BoxFit.cover,
+              alignment: Alignment.topCenter,
+              filterQuality: FilterQuality.medium,
+            ),
           ),
-        ),
-        const SizedBox(width: 8),
-        const _Dot(),
-        const Spacer(),
-        PopupMenuButton<String>(
-          icon: const Icon(Icons.more_horiz, color: AppColors.textPrimary),
-          color: AppColors.surfaceHigh,
-          onSelected: (value) {
-            if (value == 'signOut') {
-              ref.read(sessionProvider.notifier).signOut();
-            }
-          },
-          itemBuilder: (context) => [
-            PopupMenuItem(
-              value: 'signOut',
-              child: Text(
-                l10n.profileLogout,
-                style: TextStyle(color: AppColors.textPrimary, fontSize: 15),
+          Positioned(
+            left: 0,
+            right: 0,
+            top: 629 * s,
+            height: 144 * s,
+            // 흰 판의 둥근 윗변. 그림 자체는 아이보리(250,248,245)라 아래 흰 본문과 이음매가
+            // 보인다 — 시안(참고 화면)은 판과 본문이 같은 흰색이라 **모양만 쓰고 흰색으로 칠한다.**
+            child: ColorFiltered(
+              colorFilter: const ColorFilter.mode(
+                Colors.white,
+                BlendMode.srcIn,
+              ),
+              child: Image.asset(
+                '$_dir/back_upper.png',
+                fit: BoxFit.fill,
+                filterQuality: FilterQuality.medium,
               ),
             ),
-          ],
-        ),
-      ],
+          ),
+          Positioned(
+            left: 0,
+            right: 0,
+            top: 772 * s,
+            bottom: 0,
+            child: const ColoredBox(color: Colors.white),
+          ),
+
+          // [작성하기]는 이 화면이 곧 작성하기라 늘 켜진 그림이다.
+          const DesignPositioned(
+            left: 65,
+            top: 679,
+            child: ArtImage(
+              '$_dir/button_write_color.png',
+              width: 418,
+              height: 103,
+            ),
+          ),
+          DesignPositioned(
+            left: 594,
+            top: 679,
+            child: GestureDetector(
+              onTapDown: (_) => setState(() => _previewDown = true),
+              onTapCancel: () => setState(() => _previewDown = false),
+              onTapUp: (_) => setState(() => _previewDown = false),
+              onTap: widget.onPreview,
+              child: ArtImage(
+                _previewDown
+                    ? '$_dir/button_preview_color.png'
+                    : '$_dir/button_preview_normal.png',
+                width: 418,
+                height: 103,
+              ),
+            ),
+          ),
+
+          // 진행도 네 칸(65 · 279 · 493 · 707, 832) + 백분율.
+          for (var i = 0; i < 4; i++)
+            DesignPositioned(
+              left: 65 + 214.0 * i,
+              top: 832,
+              child: ArtImage(
+                i < filled
+                    ? '$_dir/mark_progress_color.png'
+                    : '$_dir/mark_progress_normal.png',
+                width: 207,
+                height: 18,
+              ),
+            ),
+          Positioned(
+            right: 65 * s,
+            top: 812 * s,
+            child: Text(
+              '${filled * 25}%',
+              style: TextStyle(
+                color: _gray,
+                fontSize: 42 * s,
+                fontWeight: FontWeight.w700,
+                height: 1.2,
+              ),
+            ),
+          ),
+
+          // 🚧 로그아웃 — 새 시안에는 자리가 없다. 다른 곳으로 옮길 때까지 머리 오른쪽 위에 둔다.
+          Positioned(
+            right: 20 * s,
+            top: 20 * s,
+            child: PopupMenuButton<String>(
+              icon: const Icon(Icons.more_horiz, color: Colors.white),
+              color: AppColors.surfaceHigh,
+              onSelected: (value) {
+                if (value == 'signOut') {
+                  ref.read(sessionProvider.notifier).signOut();
+                }
+              },
+              itemBuilder: (context) => [
+                PopupMenuItem(
+                  value: 'signOut',
+                  child: Text(
+                    l10n.profileLogout,
+                    style: const TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: 15,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
 
-/// 프로필 사진. 아직 등록 전이면 등록 안내 플레이스홀더를 보여준다.
-///
-/// 사진 버튼을 누르면 선택 시트(앨범·촬영·제거)가 뜬다. 프로필 사진은 포스트와 달리
-/// **운영시간 게이트도 등록 창 제한도 없고 앨범도 패스 없이 쓸 수 있다**
-/// (서버 `ProfileService`에 게이트 검사가 없다) — 친구·상점과 같이 24시간 열린 영역이다.
-class _PhotoCard extends ConsumerStatefulWidget {
-  const _PhotoCard({this.photoUrl});
+/// 단계 제목 그림(`mark_*`) — 아이콘과 글자가 한 장이다.
+class _Mark extends StatelessWidget {
+  const _Mark(this.file, this.width, this.height);
 
-  final String? photoUrl;
+  final String file;
+  final double width;
+  final double height;
 
   @override
-  ConsumerState<_PhotoCard> createState() => _PhotoCardState();
+  Widget build(BuildContext context) =>
+      ArtImage('$_dir/$file', width: width, height: height);
 }
 
-class _PhotoCardState extends ConsumerState<_PhotoCard> {
+/// 회색 설명 한 줄.
+class _Desc extends StatelessWidget {
+  const _Desc(this.text);
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    final s = DesignCanvas.scaleOf(context);
+    return Text(
+      text,
+      style: TextStyle(
+        color: _gray,
+        fontSize: 40 * s,
+        fontWeight: FontWeight.w600,
+        height: 1.3,
+      ),
+    );
+  }
+}
+
+/// 사진 칸(418×401) — 비었으면 점선 그림(`button_face`·`button_photo`), 차 있으면 그 사진.
+///
+/// 누르면 [프로필 사진 변경](앨범·카메라·제거). 프로필 사진은 포스트와 달리
+/// **운영시간 게이트도 앨범 패스도 없다**(서버 `ProfileService`에 검사가 없다).
+class _PhotoSlot extends ConsumerStatefulWidget {
+  const _PhotoSlot({
+    required this.slot,
+    required this.url,
+    required this.emptyAsset,
+  });
+
+  final ProfilePhotoSlot slot;
+  final String? url;
+  final String emptyAsset;
+
+  @override
+  ConsumerState<_PhotoSlot> createState() => _PhotoSlotState();
+}
+
+class _PhotoSlotState extends ConsumerState<_PhotoSlot> {
   bool _busy = false;
 
-  /// 사진 버튼 → 선택 시트 → 고른 대로 실행.
-  ///
-  /// 제거는 **사진이 있을 때만** 열어 준다. 없는데 눌리면 할 일이 없어서다.
   Future<void> _pick() async {
     if (_busy) return;
-    final hasPhoto = widget.photoUrl != null;
+    FocusScope.of(context).unfocus();
     final l10n = L10n.of(context);
 
     final choice = await PhotoSourceSheet.show(
@@ -202,14 +475,17 @@ class _PhotoCardState extends ConsumerState<_PhotoCard> {
       title: l10n.photoSheetProfileTitle,
       subtitle: l10n.photoSheetProfileSubtitle,
       showRemove: true,
-      removeEnabled: hasPhoto,
+      // 제거는 사진이 있을 때만 — 없는데 눌리면 할 일이 없다.
+      removeEnabled: widget.url != null,
     );
     if (choice == null || !mounted) return;
 
-    if (choice == PhotoSource.remove) return _remove();
+    final actions = ref.read(profileEditActionsProvider);
+    if (choice == PhotoSource.remove) {
+      return _run(() => actions.deletePhoto(widget.slot));
+    }
 
-    final picker = ImagePicker();
-    final file = await picker.pickImage(
+    final file = await ImagePicker().pickImage(
       source: choice == PhotoSource.camera
           ? ImageSource.camera
           : ImageSource.gallery,
@@ -219,13 +495,10 @@ class _PhotoCardState extends ConsumerState<_PhotoCard> {
 
     final bytes = await file.readAsBytes();
     if (!mounted) return;
-    await _run(() => ref.read(profileEditActionsProvider).updatePhoto(bytes));
+    await _run(() => actions.updatePhoto(bytes, slot: widget.slot));
   }
 
-  Future<void> _remove() =>
-      _run(() => ref.read(profileEditActionsProvider).deletePhoto());
-
-  /// 통신 동안 버튼을 스피너로 바꾸고, 실패하면 이유를 알려준다.
+  /// 통신하는 동안 칸 위에 스피너를 얹고, 실패하면 이유를 알려 준다.
   Future<void> _run(Future<ApiException?> Function() action) async {
     setState(() => _busy = true);
     final error = await action();
@@ -242,52 +515,40 @@ class _PhotoCardState extends ConsumerState<_PhotoCard> {
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(AppDimens.radiusLg),
-      child: AspectRatio(
-        aspectRatio: 1.05,
+    final s = DesignCanvas.scaleOf(context);
+    final empty = ArtImage(
+      '$_dir/${widget.emptyAsset}',
+      width: 418,
+      height: 401,
+    );
+
+    return GestureDetector(
+      onTap: _pick,
+      child: SizedBox(
+        width: 418 * s,
+        height: 401 * s,
         child: Stack(
           fit: StackFit.expand,
           children: [
-            if (widget.photoUrl != null)
-              // 맨 `Image.network`를 쓰면 안 된다 — 서버가 주는 `/files?key=...`는
-              // **상대경로**이고 JWT도 요구하는데, Image.network는 dio 인터셉터를
-              // 타지 않아 항상 실패하고 조용히 플레이스홀더로 되돌아간다.
-              AuthedImage(
-                url: widget.photoUrl!,
-                fallback: const _PhotoPlaceholder(),
-              )
+            if (widget.url == null)
+              empty
             else
-              const _PhotoPlaceholder(),
-            Positioned(
-              right: 14,
-              bottom: 14,
-              child: GestureDetector(
-                onTap: _pick,
-                child: Container(
-                  width: 46,
-                  height: 46,
-                  decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.45),
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white70),
+              // 점선 칸의 모서리(≈40)에 맞춰 둥글게 자른다.
+              ClipRRect(
+                borderRadius: BorderRadius.circular(40 * s),
+                // 맨 `Image.network`는 안 된다 — `/files?key=`는 상대경로 + JWT라 AuthedImage로.
+                child: AuthedImage(url: widget.url!, fallback: empty),
+              ),
+            if (_busy)
+              ClipRRect(
+                borderRadius: BorderRadius.circular(40 * s),
+                child: const ColoredBox(
+                  color: Colors.black38,
+                  child: Center(
+                    child: CircularProgressIndicator(color: Colors.white),
                   ),
-                  child: _busy
-                      ? const Padding(
-                          padding: EdgeInsets.all(13),
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
-                        )
-                      : const Icon(
-                          Icons.photo_camera_outlined,
-                          color: Colors.white,
-                          size: 22,
-                        ),
                 ),
               ),
-            ),
           ],
         ),
       ),
@@ -295,615 +556,166 @@ class _PhotoCardState extends ConsumerState<_PhotoCard> {
   }
 }
 
-class _PhotoPlaceholder extends StatelessWidget {
-  const _PhotoPlaceholder();
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = L10n.of(context);
-    return Container(
-      color: AppColors.surface,
-      alignment: Alignment.center,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.person_outline, color: AppColors.textMuted, size: 56),
-          SizedBox(height: 12),
-          Text(
-            l10n.profilePhotoPrompt,
-            style: TextStyle(color: AppColors.textMuted, fontSize: 14),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _NameRow extends StatelessWidget {
-  const _NameRow({required this.profile});
-
-  final MeProfile profile;
-
-  @override
-  Widget build(BuildContext context) {
-    // 서버는 출생년도만 주므로 연 단위로 계산한다.
-    final age = profile.birthYear == null
-        ? null
-        : DateTime.now().year - profile.birthYear!;
-    final flag = switch (profile.country) {
-      'KR' => '🇰🇷',
-      'JP' => '🇯🇵',
-      _ => '',
-    };
-
-    return Row(
-      children: [
-        Flexible(
-          child: Text(
-            [profile.nickname ?? '', if (age != null) '$age'].join(' ').trim(),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              color: AppColors.textPrimary,
-              fontSize: 24,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-        ),
-        if (flag.isNotEmpty) ...[
-          const SizedBox(width: 8),
-          Text(flag, style: const TextStyle(fontSize: 20)),
-        ],
-        const Spacer(),
-        if (profile.premium) ...[
-          const _PrimeBadge(),
-          const SizedBox(width: 8),
-        ],
-        // 시안(img18)의 오른쪽 `🟢 접속 중`.
-        //
-        // 내 프로필이므로 **항상 접속 중**이다 — 이 화면을 보고 있다는 것이 곧 접속이다.
-        // 프레즌스에 물을 이유가 없고(내 하트비트를 내가 확인하는 꼴), 물어 봐야
-        // 소켓이 잠깐 끊긴 순간에 "오프라인"이 떠서 오히려 이상해진다.
-        const _OnlineLabel(),
-      ],
-    );
-  }
-}
-
-class _OnlineLabel extends StatelessWidget {
-  const _OnlineLabel();
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = L10n.of(context);
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 8,
-          height: 8,
-          decoration: const BoxDecoration(
-            color: AppColors.line,
-            shape: BoxShape.circle,
-          ),
-        ),
-        const SizedBox(width: 5),
-        Text(
-          l10n.commonOnline,
-          style: const TextStyle(
-            color: AppColors.line,
-            fontSize: 13,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _PrimeBadge extends StatelessWidget {
-  const _PrimeBadge();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: AppColors.gold.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.gold),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: const [
-          Icon(Icons.workspace_premium, color: AppColors.gold, size: 16),
-          SizedBox(width: 4),
-          Text(
-            'PRIME',
-            style: TextStyle(
-              color: AppColors.gold,
-              fontSize: 12,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _EmptyHint extends StatelessWidget {
-  const _EmptyHint(this.text);
-
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      text,
-      style: const TextStyle(
-        color: AppColors.textMuted,
-        fontSize: 14,
-        height: 1.4,
-      ),
-    );
-  }
-}
-
-class _SectionCard extends StatelessWidget {
-  const _SectionCard({
-    required this.icon,
-    required this.title,
-    required this.child,
-    this.onEdit,
+/// 자기소개 입력 칸 — `aboutme_testbox`(950×298) 위에 바로 쓴다.
+///
+/// - 최대 300자(띄어쓰기 포함). 넘치면 **안내 팝업**(8-1)
+/// - 오른쪽 아래에 **남은 자수**
+/// - 글이 길어지면 칸이 **아래로 늘어난다**(8-1) — 그림은 `centerSlice`로 모서리를 지킨 채 늘린다
+class _IntroBox extends StatelessWidget {
+  const _IntroBox({
+    required this.controller,
+    required this.focusNode,
+    required this.onLimit,
   });
 
-  final IconData icon;
-  final String title;
-  final Widget child;
-
-  /// 편집 버튼(+). 없으면 버튼을 숨긴다.
-  final VoidCallback? onEdit;
+  final TextEditingController controller;
+  final FocusNode focusNode;
+  final VoidCallback onLimit;
 
   @override
   Widget build(BuildContext context) {
+    final s = DesignCanvas.scaleOf(context);
+    final l10n = L10n.of(context);
+
     return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(18),
+      width: 950 * s,
+      constraints: BoxConstraints(minHeight: 298 * s),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppDimens.radiusLg),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(icon, color: AppColors.moonlight, size: 20),
-              const SizedBox(width: 8),
-              Text(
-                title,
-                style: const TextStyle(
-                  color: AppColors.textPrimary,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const Spacer(),
-              if (onEdit != null)
-                InkWell(
-                  customBorder: const CircleBorder(),
-                  onTap: onEdit,
-                  child: Container(
-                    width: 30,
-                    height: 30,
-                    decoration: BoxDecoration(
-                      color: AppColors.moonlight.withValues(alpha: 0.15),
-                      shape: BoxShape.circle,
-                    ),
-                    // 시안(img18)은 연필이 아니라 **`+`** 다 — 관심사·지역은
-                    // 고치는 것보다 **더하는** 동작이 앞선다.
-                    child: const Icon(
-                      Icons.add_rounded,
-                      color: AppColors.moonlight,
-                      size: 20,
-                    ),
-                  ),
-                ),
-            ],
-          ),
-          const SizedBox(height: AppDimens.gapMd),
-          child,
-        ],
-      ),
-    );
-  }
-}
-
-/// 관심사·지역 태그. 서버는 코드를 주므로 카탈로그로 표시명을 찾아 그린다
-/// (카탈로그에 없는 코드는 코드 그대로 — 구버전 데이터 대비).
-class _Chip extends StatelessWidget {
-  const _Chip({required this.label});
-
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
-      decoration: BoxDecoration(
-        color: AppColors.moonlight.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Text(
-        label,
-        style: const TextStyle(
-          color: AppColors.textPrimary,
-          fontSize: 14,
-          fontWeight: FontWeight.w600,
+        image: DecorationImage(
+          image: const AssetImage('$_dir/aboutme_testbox.png'),
+          // 그림 픽셀 → 화면: 모서리(≈33)가 배율대로 줄어야 시안과 같다.
+          scale: 1 / s,
+          centerSlice: const Rect.fromLTRB(48, 48, 902, 250),
         ),
       ),
-    );
-  }
-}
-
-/// 루나 잔액 + 상점/부스트 진입. 프로필에서 BM 화면들로 들어가는 문이다.
-class _StoreEntry extends ConsumerWidget {
-  const _StoreEntry();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = L10n.of(context);
-    final wallet = ref.watch(walletProvider).valueOrNull ?? Wallet.empty;
-
-    return Column(
-      children: [
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-          decoration: BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.circular(AppDimens.radiusLg),
-            border: Border.all(color: AppColors.border),
+      child: Stack(
+        children: [
+          TextField(
+            controller: controller,
+            focusNode: focusNode,
+            minLines: 1,
+            maxLines: null,
+            keyboardType: TextInputType.multiline,
+            inputFormatters: [_MaxLength(ProfileCatalog.maxIntro, onLimit)],
+            cursorColor: AppColors.moonlightDeep,
+            style: TextStyle(
+              color: const Color(0xFF333333),
+              fontSize: 40 * s,
+              height: 1.4,
+            ),
+            decoration: InputDecoration(
+              isCollapsed: true,
+              border: InputBorder.none,
+              hintText: l10n.profileCreateIntroHint,
+              hintStyle: TextStyle(
+                color: _gray,
+                fontSize: 40 * s,
+                fontWeight: FontWeight.w600,
+                height: 1.4,
+              ),
+              // 시안: 글자 85,1795 · 칸 65,1768 → 안쪽 20·27. 아래는 남은 자수 자리.
+              contentPadding: EdgeInsets.fromLTRB(
+                22 * s,
+                24 * s,
+                30 * s,
+                96 * s,
+              ),
+            ),
           ),
-          child: Row(
-            children: [
-              const Icon(Icons.star_rounded, color: AppColors.gold, size: 24),
-              const SizedBox(width: 8),
-              Text(
-                l10n.profileLunaBalance,
+          Positioned(
+            right: 30 * s,
+            bottom: 22 * s,
+            child: ValueListenableBuilder<TextEditingValue>(
+              valueListenable: controller,
+              builder: (_, value, _) => Text(
+                '${ProfileCatalog.maxIntro - value.text.runes.length}',
                 style: TextStyle(
-                  color: AppColors.textSecondary,
-                  fontSize: 14,
+                  color: _gray,
+                  fontSize: 42 * s,
                   fontWeight: FontWeight.w600,
                 ),
               ),
-              const SizedBox(width: 10),
-              Text(
-                '${wallet.luna}',
-                style: const TextStyle(
-                  color: AppColors.moonlight,
-                  fontSize: 20,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-              const Spacer(),
-              FilledButton(
-                style: FilledButton.styleFrom(
-                  backgroundColor: AppColors.moonlight,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                ),
-                onPressed: () =>
-                    Navigator.of(context).push(LunaStoreScreen.route()),
-                child: Text(l10n.profileLunaStore),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: AppDimens.gapSm),
-        Row(
-          children: [
-            Expanded(
-              child: _StoreShortcut(
-                icon: Icons.bolt,
-                label: l10n.profileBoostPost,
-                badge: wallet.stockOf(StoreKind.postBoost),
-                onTap: () => Navigator.of(context)
-                    .push(BoostScreen.route(StoreKind.postBoost)),
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-}
-
-class _StoreShortcut extends StatelessWidget {
-  const _StoreShortcut({
-    required this.icon,
-    required this.label,
-    required this.badge,
-    required this.onTap,
-  });
-
-  final IconData icon;
-  final String label;
-  final int badge;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = L10n.of(context);
-    return InkWell(
-      borderRadius: BorderRadius.circular(AppDimens.radiusMd),
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(AppDimens.radiusMd),
-          border: Border.all(color: AppColors.border),
-        ),
-        child: Row(
-          children: [
-            Icon(icon, color: AppColors.moonlight, size: 20),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  color: AppColors.textPrimary,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-            Text(
-              l10n.profileBoostCount(badge),
-              style: const TextStyle(
-                color: AppColors.textSecondary,
-                fontSize: 12,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// 프라임 가입 유도 배너(기획 7장 img18).
-///
-/// 시안은 **혜택 네 칸**을 정확히 이렇게 세운다 —
-/// 앨범 패스 / 포스트 부스트 / 대화 신청 무제한 / 자동 번역 무제한.
-/// 예전에는 매칭 부스트·무료 업로드·방문자 확인·광고 제거였는데,
-/// **매칭 부스트는 Plan_3에서 사라졌고** 나머지 셋은 기획서 어디에도 없다.
-///
-/// 🚨 **숫자는 문구에 굳히지 않는다.** `30일`·`10매`는 서버 설정(`app.store.*`)이라
-/// 카탈로그가 준 값으로 조립한다. 시안의 *"사진 최대 9장"* 은 카탈로그에 없는 값이라
-/// 숫자 없이 적었다 — 서버가 알려 주게 되면 그때 넣으면 된다(docs/13 §5).
-class _PremiumBanner extends ConsumerWidget {
-  const _PremiumBanner();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = L10n.of(context);
-    // 가장 짧은 플랜을 기준으로 보여 준다 — 배너는 "얼마나 오래"가 아니라
-    // "무엇을 받는가"를 말하는 자리다.
-    final plans = ref.watch(catalogProvider).valueOrNull?.primePlans ?? const [];
-    final plan = plans.isEmpty
-        ? null
-        : plans.reduce((a, b) => a.durationDays <= b.durationDays ? a : b);
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(AppDimens.radiusLg),
-        gradient: const LinearGradient(
-          colors: [Color(0xFF241E4E), Color(0xFF1A1730)],
-        ),
-        border: Border.all(color: AppColors.moonlight.withValues(alpha: 0.4)),
-      ),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 44,
-                height: 44,
-                decoration: const BoxDecoration(
-                  color: AppColors.moonlightDeep,
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.workspace_premium,
-                  color: AppColors.gold,
-                  size: 24,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      l10n.primeTitle,
-                      style: const TextStyle(
-                        color: AppColors.textPrimary,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      l10n.primeSubtitle,
-                      style: const TextStyle(
-                        color: AppColors.textSecondary,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 8),
-              // 시안의 `자세히 보기 >` — 폭을 다 먹는 버튼이 아니라 제목 줄 오른쪽의 작은 칩이다.
-              _SeeDetailChip(
-                onTap: () => Navigator.of(context).push(PrimeScreen.route()),
-              ),
-            ],
-          ),
-          const SizedBox(height: AppDimens.gapMd),
-          const Divider(color: AppColors.border, height: 1),
-          const SizedBox(height: AppDimens.gapMd),
-          IntrinsicHeight(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _Feature(
-                  icon: Icons.photo_camera_outlined,
-                  title: plan == null
-                      ? l10n.storeKindAlbumPass
-                      : l10n.primeAlbumBenefit(plan.durationDays),
-                  body: l10n.profilePrimeBenefitAlbumDesc,
-                ),
-                _Feature(
-                  icon: Icons.bolt,
-                  title: _boostTitle(l10n, plan),
-                  body: l10n.profilePrimeBenefitBoostDesc,
-                ),
-                _Feature(
-                  icon: Icons.chat_bubble_outline,
-                  title: l10n.primeUnlimitedChat,
-                  body: l10n.profilePrimeBenefitChatDesc,
-                ),
-                _Feature(
-                  icon: Icons.language,
-                  title: l10n.profilePrimeBenefitTranslate,
-                  body: l10n.profilePrimeBenefitTranslateDesc,
-                ),
-              ],
             ),
           ),
         ],
       ),
     );
   }
-
-  /// "포스트 부스트 1시간, 10매". 카탈로그가 아직 없으면 매수 없이 이름만.
-  static String _boostTitle(L10n l10n, PrimePlan? plan) {
-    final count = plan?.boosts[StoreKind.postBoost];
-    final name = StoreKind.label(l10n, StoreKind.postBoost);
-    return count == null ? name : l10n.primeBoostBenefit(name, count);
-  }
 }
 
-class _SeeDetailChip extends StatelessWidget {
-  const _SeeDetailChip({required this.onTap});
+/// 글자 수 상한 — 넘는 입력은 **잘라 넣고 알린다**(붙여 넣은 긴 글이 통째로 사라지지 않게).
+///
+/// 서버(`ProfileService.updateIntro`)·DB와 같은 **코드포인트**로 센다 — 이모지도 한 글자다.
+/// 자를 때는 글자 모양 단위로 잘라 결합 이모지가 반쪽으로 남지 않게 한다
+/// (신청 한마디의 `RequestMessageInput`과 같은 방식, 줄바꿈은 허용).
+class _MaxLength extends TextInputFormatter {
+  _MaxLength(this.max, this.onExceeded);
 
-  final VoidCallback onTap;
+  final int max;
+  final VoidCallback onExceeded;
 
   @override
-  Widget build(BuildContext context) {
-    final l10n = L10n.of(context);
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.fromLTRB(12, 8, 8, 8),
-        decoration: BoxDecoration(
-          color: AppColors.moonlightDeep,
-          borderRadius: BorderRadius.circular(999),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              l10n.profileSeeDetail,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 13,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            const Icon(
-              Icons.chevron_right_rounded,
-              color: Colors.white,
-              size: 18,
-            ),
-          ],
-        ),
-      ),
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    if (newValue.text.runes.length <= max) return newValue;
+    // 조합 중인 한글은 건드리지 않는다 — 조합이 끝나면 다시 들어온다.
+    if (newValue.composing.isValid) return newValue;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) => onExceeded());
+    if (oldValue.text.runes.length >= max) return oldValue;
+
+    final buffer = StringBuffer();
+    var used = 0;
+    for (final ch in newValue.text.characters) {
+      final n = ch.runes.length;
+      if (used + n > max) break;
+      buffer.write(ch);
+      used += n;
+    }
+    final text = buffer.toString();
+    return TextEditingValue(
+      text: text,
+      selection: TextSelection.collapsed(offset: text.length),
     );
   }
 }
 
-/// 혜택 한 칸 — 아이콘 · 굵은 제목 · 설명 두세 줄(시안 img18).
-class _Feature extends StatelessWidget {
-  const _Feature({
-    required this.icon,
-    required this.title,
-    required this.body,
-  });
+/// 칩들 + 오른쪽 끝 [+](`button_addinterests`, 181×95). 칩을 눌러도 같은 선택 창이 뜬다.
+class _TagRow extends StatelessWidget {
+  const _TagRow({required this.chips, required this.onEdit});
 
-  final IconData icon;
-  final String title;
-  final String body;
+  final List<Widget> chips;
+  final VoidCallback onEdit;
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 2),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Icon(icon, color: AppColors.moonlight, size: 26),
-            const SizedBox(height: 8),
-            // 한 칸이 좁아 한국어가 낱말 가운데서 끊긴다("무제 / 한").
-            // 글자를 줄이는 것보다 **칸에 맞춰 줄이는** 편이 안전하다.
-            Text(
-              title,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: AppColors.textPrimary,
-                fontSize: 10,
-                height: 1.3,
-                fontWeight: FontWeight.w800,
-              ),
+    final s = DesignCanvas.scaleOf(context);
+    return Row(
+      children: [
+        Expanded(
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: chips.isEmpty ? null : onEdit,
+            child: Wrap(
+              // 시안: 65 → 279 → … (칩 204 + 10)
+              spacing: 10 * s,
+              runSpacing: 16 * s,
+              children: chips,
             ),
-            const SizedBox(height: 5),
-            Text(
-              body,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: AppColors.textSecondary,
-                fontSize: 9.5,
-                height: 1.35,
-              ),
-            ),
-          ],
+          ),
         ),
-      ),
-    );
-  }
-}
-
-class _Dot extends StatelessWidget {
-  const _Dot();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 8,
-      height: 8,
-      decoration: const BoxDecoration(
-        color: AppColors.moonlight,
-        shape: BoxShape.circle,
-      ),
+        SizedBox(width: 16 * s),
+        GestureDetector(
+          onTap: onEdit,
+          child: const ArtImage(
+            '$_dir/button_addinterests.png',
+            width: 181,
+            height: 95,
+          ),
+        ),
+      ],
     );
   }
 }

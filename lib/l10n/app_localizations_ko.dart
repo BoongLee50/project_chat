@@ -678,9 +678,6 @@ class L10nKo extends L10n {
   String get profileTitle => '프로필';
 
   @override
-  String get profilePhotoPrompt => '프로필 사진을 등록해 주세요';
-
-  @override
   String get photoSheetProfileTitle => '프로필 사진 변경';
 
   @override
@@ -706,87 +703,38 @@ class L10nKo extends L10n {
   String get photoSourceGalleryPassOnly => '앨범 패스가 있어야 이용할 수 있어요';
 
   @override
-  String get profileLunaBalance => '보유 루나';
-
-  @override
-  String get profileLunaStore => '루나상점';
-
-  @override
-  String get profilePrimeTitle => '프라임으로 더 특별하게 ✨';
-
-  @override
-  String get profilePrimeBenefits => '포스트 9장·부스트·무제한 대화·자동 번역';
-
-  @override
-  String get profileSeeDetail => '자세히 보기';
-
-  @override
-  String get profilePrimeBenefitAlbumDesc =>
-      '포스트 사진을 더 많이 등록하고\n상대방 포스트도 제한 없이 볼 수 있어요.';
-
-  @override
-  String get profilePrimeBenefitBoostDesc =>
-      '포스트가 우선 노출되고\nPICK 추천과 테두리 효과가 붙어요.';
-
-  @override
-  String get profilePrimeBenefitChatDesc => '횟수 제한 없이 자유롭게!\n상대방에게 상단 노출돼요.';
-
-  @override
   String get profilePrimeBenefitTranslate => '자동 번역 무제한';
-
-  @override
-  String get profilePrimeBenefitTranslateDesc =>
-      '대화와 댓글을 무제한으로 번역해\n언어 걱정 없이 소통할 수 있어요.';
-
-  @override
-  String get profileBoostPost => '포스트 부스트';
-
-  @override
-  String get profileBoostMatch => '매칭 부스트';
-
-  @override
-  String profileBoostCount(int count) {
-    return '$count매';
-  }
-
-  @override
-  String get profileFreeUpload => '무료 업로드';
-
-  @override
-  String get profileNoAds => '광고 제거';
-
-  @override
-  String get profileVisitors => '방문자 확인';
 
   @override
   String get profileIntro => '소개 한마디';
 
   @override
-  String get profileIntroEmpty => '나를 소개하는 한마디를 남겨보세요. (최대 50자)';
-
-  @override
   String get profileInterests => '관심사';
-
-  @override
-  String get profileInterestsEmpty => '관심사를 등록하면 더 잘 맞는 사람을 만날 수 있어요.';
-
-  @override
-  String get profileRegions => '활동 지역';
-
-  @override
-  String get profileRegionsEmpty => '활동 지역은 최대 2곳까지 선택할 수 있어요.';
 
   @override
   String get profileLogout => '로그아웃';
 
   @override
-  String get introEditTitle => '소개 한마디';
+  String get profileCreatePhotoDesc => '얼굴 사진과 나를 표현할 사진 한 장씩을 담아 주세요.';
 
   @override
-  String get introEditHint => '자신의 취미, 성격, 또는\n하고 싶은 말을 자유롭게 적어보세요.';
+  String get profileCreateIntroDesc => '당신에 대해 간단히 소개해 주세요.';
 
   @override
-  String get introEditCounter => '최대 50자까지 가능합니다.';
+  String get profileCreateIntroHint => '취미나 관심사, 좋아하는 것 등을 알려 주세요.';
+
+  @override
+  String profileCreateInterestsDesc(int max) {
+    return '내가 좋아하는 것들을 최대 $max개까지 선택해 주세요.';
+  }
+
+  @override
+  String get profileCreateRegionDesc => '내가 주로 활동하고 있는 지역을 선택해 주세요.';
+
+  @override
+  String profileIntroLimit(int max) {
+    return '자기소개 작성은 최대 $max자까지만 입력할 수 있어요.';
+  }
 
   @override
   String get interestsEditTitle => '관심사 등록';
@@ -812,7 +760,7 @@ class L10nKo extends L10n {
 
   @override
   String interestsEditLimit(int max) {
-    return '관심사는 최대 $max개까지 선택할 수 있어요.';
+    return '관심사 등록은 $max개까지만 선택할 수 있습니다.';
   }
 
   @override
@@ -834,7 +782,7 @@ class L10nKo extends L10n {
 
   @override
   String regionsEditLimit(int max) {
-    return '활동 지역은 최대 $max곳까지 선택할 수 있어요.';
+    return '지역 선택은 $max군데만 선택할 수 있습니다.';
   }
 
   @override

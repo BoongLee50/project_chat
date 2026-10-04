@@ -5,6 +5,7 @@
     <resultMap id="UserProfileResultMap" type="com.moonlighttalk.server.profile.entity.UserProfile">
         <id property="userId" column="user_id"/>
         <result property="photoKey" column="photo_key"/>
+        <result property="mainPhotoKey" column="main_photo_key"/>
         <result property="intro" column="intro"/>
         <result property="updatedAt" column="updated_at"/>
     </resultMap>
@@ -19,6 +20,11 @@
 
     <update id="updatePhotoKey">
         UPDATE user_profiles SET photo_key = #{photoKey}, updated_at = NOW() WHERE user_id = #{userId}
+    </update>
+
+    <!-- 자유 사진(메인) — 얼굴 사진과 같은 행의 다른 칸(V28). -->
+    <update id="updateMainPhotoKey">
+        UPDATE user_profiles SET main_photo_key = #{photoKey}, updated_at = NOW() WHERE user_id = #{userId}
     </update>
 
     <update id="updateIntro">

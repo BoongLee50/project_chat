@@ -5,24 +5,20 @@ import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimens.dart';
 import '../../../../core/error/error_messages.dart';
 import '../../../../l10n/app_localizations.dart';
-import '../../../../shared/widgets/authed_image.dart';
 import '../../../chat/presentation/providers/chat_provider.dart';
 import '../../../chat/presentation/widgets/chat_request_dialog.dart';
 import '../../../friend/presentation/providers/friend_provider.dart';
 import '../../../friend/presentation/widgets/friend_request_dialog.dart';
-import '../../../profile/data/models/profile_catalog.dart';
+import '../../../profile/presentation/widgets/profile_preview_view.dart';
 import '../../data/models/post_info.dart';
 import '../providers/post_info_provider.dart';
-import '../widgets/info_cards.dart';
 
-/// [프로필 보기] — 상대의 **프로필**을 보는 풀스크린(기획 5장 img12 좌측).
+/// [프로필 보기] — 상대의 **프로필 창**. 대화방·친구·가든의 [프로필] 버튼이 연다.
 ///
-/// [포스트 정보]와 닮았지만 보는 것이 다르다.
+/// 🚨 **내 [미리 보기]와 같은 창이다**(기획 2026-10-04 — "다른 유저가 나의 프로필을 눌렀을 때도
+/// 출력되는 창"). 그래서 그림은 프로필 쪽 [ProfilePreviewView] 하나를 함께 쓰고,
+/// 여기는 **남의 것일 때만 붙는 하단 버튼**([대화 신청]/[친구 신청])만 더한다.
 /// - 사진: **프로필 사진**(포스트 사진이 아니다) → 열람 제한과 무관하다
-/// - 카드: 관심사 · 소개 한마디 · **활동 지역**(포스트 정보에는 없다)
-/// - 하단: 아직 대화 전이면 `[대화 신청]`, 대화 중이면 `[친구 신청]`
-///
-/// 채팅창 ⋯ 메뉴와 [포스트 정보] ⋯ 메뉴가 같은 화면을 연다.
 Future<void> showProfileView(BuildContext context, String targetUserId) {
   return Navigator.of(context).push(
     MaterialPageRoute(
@@ -43,27 +39,32 @@ class ProfileViewScreen extends ConsumerWidget {
     final info = ref.watch(postInfoProvider(targetUserId));
 
     return Scaffold(
-      backgroundColor: AppColors.night,
-      appBar: AppBar(
-        backgroundColor: AppColors.night,
-        elevation: 0,
-        leading: IconButton(
-          onPressed: () => Navigator.of(context).pop(),
-          tooltip: l10n.commonBack,
-          icon: const Icon(
-            Icons.arrow_back_ios_new_rounded,
-            color: AppColors.textPrimary,
-          ),
-        ),
-      ),
+      backgroundColor: Colors.white,
       body: info.when(
         loading: () => const Center(
           child: CircularProgressIndicator(color: AppColors.moonlight),
         ),
-        error: (_, _) => Center(
-          child: Text(
-            l10n.postInfoLoadFailed,
-            style: const TextStyle(color: AppColors.textMuted, fontSize: 14),
+        error: (_, _) => SafeArea(
+          child: Stack(
+            children: [
+              IconButton(
+                onPressed: () => Navigator.of(context).pop(),
+                tooltip: l10n.commonBack,
+                icon: const Icon(
+                  Icons.arrow_back_ios_new_rounded,
+                  color: ProfilePreviewView.ink,
+                ),
+              ),
+              Center(
+                child: Text(
+                  l10n.postInfoLoadFailed,
+                  style: const TextStyle(
+                    color: AppColors.textMuted,
+                    fontSize: 14,
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
         data: (data) => _Body(info: data),
@@ -105,7 +106,7 @@ class _BodyState extends ConsumerState<_Body> {
     await showChatRequestSentDialog(context);
   }
 
-  /// 친구 신청 — 한마디(25자)를 함께 보낸다(V17). 비워도 보낼 수 있다.
+  /// 친구 신청 — 한마디(100자)를 함께 보낸다. 비워도 보낼 수 있다.
   Future<void> _requestFriend() async {
     final l10n = L10n.of(context);
     final message = await showFriendRequestDialog(context, info: _info);
@@ -115,149 +116,27 @@ class _BodyState extends ConsumerState<_Body> {
         .read(friendActionsProvider)
         .request(_info.userId, message: message.isEmpty ? null : message);
     if (!mounted) return;
-    _toast(
-      error == null ? l10n.friendsRequestSent : errorMessage(l10n, error),
-    );
+    _toast(error == null ? l10n.friendsRequestSent : errorMessage(l10n, error));
   }
 
   @override
   Widget build(BuildContext context) {
-    final l10n = L10n.of(context);
-    final photo = _info.profilePhotoUrl;
-
-    return Column(
-      children: [
-        Expanded(
-          child: ListView(
-            padding: const EdgeInsets.fromLTRB(
-              AppDimens.gapMd,
-              0,
-              AppDimens.gapMd,
-              AppDimens.gapMd,
-            ),
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(AppDimens.radiusLg),
-                child: AspectRatio(
-                  aspectRatio: 0.92,
-                  child: photo == null
-                      ? const ColoredBox(
-                          color: AppColors.surfaceHigh,
-                          child: Icon(
-                            Icons.person,
-                            color: AppColors.textMuted,
-                            size: 56,
-                          ),
-                        )
-                      : AuthedImage(url: photo),
-                ),
-              ),
-              const SizedBox(height: AppDimens.gapMd),
-              _NameRow(info: _info),
-              const SizedBox(height: AppDimens.gapMd),
-
-              if (_info.interests.isNotEmpty)
-                InfoCard(
-                  icon: Icons.favorite_border_rounded,
-                  title: l10n.profileInterests,
-                  child: Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      for (final code in _info.interests)
-                        InfoChip(
-                          label: ProfileCatalog.interestLabel(l10n, code),
-                        ),
-                    ],
-                  ),
-                ),
-
-              if (_info.intro != null && _info.intro!.isNotEmpty)
-                InfoCard(
-                  icon: Icons.format_quote_rounded,
-                  title: l10n.profileIntro,
-                  child: Text(
-                    _info.intro!,
-                    style: const TextStyle(
-                      color: AppColors.textSecondary,
-                      fontSize: 14,
-                      height: 1.5,
-                    ),
-                  ),
-                ),
-
-              // 활동 지역은 **[프로필 보기]에만** 있다(시안 img12). 포스트 정보는
-              // 오늘 올린 것을 보는 자리라 사는 곳을 묻지 않는다.
-              if (_info.regions.isNotEmpty)
-                InfoCard(
-                  icon: Icons.place_outlined,
-                  title: l10n.profileRegions,
-                  child: Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      for (final code in _info.regions)
-                        InfoChip(
-                          label: ProfileCatalog.regionLabel(l10n, code),
-                        ),
-                    ],
-                  ),
-                ),
-            ],
-          ),
-        ),
-        _Action(
-          info: _info,
-          onRequestChat: _requestChat,
-          onRequestFriend: _requestFriend,
-        ),
-      ],
-    );
-  }
-}
-
-class _NameRow extends StatelessWidget {
-  const _NameRow({required this.info});
-
-  final PostInfo info;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = L10n.of(context);
-    return Row(
-      children: [
-        Flexible(
-          child: Text(
-            info.age == null ? info.nickname : '${info.nickname} ${info.age}',
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              color: AppColors.textPrimary,
-              fontSize: 22,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-        ),
-        if (info.country != null) ...[
-          const SizedBox(width: 8),
-          Text(
-            ProfileCatalog.countryFlag(info.country!),
-            style: const TextStyle(fontSize: 17),
-          ),
-        ],
-        if (info.online) ...[
-          const SizedBox(width: 10),
-          const OnlineDot(size: 8),
-          const SizedBox(width: 4),
-          Text(
-            l10n.commonOnline,
-            style: const TextStyle(
-              color: AppColors.line,
-              fontSize: 12,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        ],
-      ],
+    return ProfilePreviewView(
+      data: ProfilePreviewData(
+        nickname: _info.nickname,
+        age: _info.age,
+        country: _info.country,
+        facePhotoUrl: _info.profilePhotoUrl,
+        mainPhotoUrl: _info.profileMainPhotoUrl,
+        intro: _info.intro,
+        interests: _info.interests,
+        regions: _info.regions,
+      ),
+      bottom: _Action(
+        info: _info,
+        onRequestChat: _requestChat,
+        onRequestFriend: _requestFriend,
+      ),
     );
   }
 }
@@ -283,7 +162,8 @@ class _Action extends StatelessWidget {
     final l10n = L10n.of(context);
 
     // 이미 친구이거나 답을 기다리는 중이면 누를 것이 없다.
-    final settled = info.friendRelation == FriendRelation.friend ||
+    final settled =
+        info.friendRelation == FriendRelation.friend ||
         info.friendRelation == FriendRelation.requested;
     final chatting = info.chatRoomId != null;
 
@@ -308,15 +188,11 @@ class _Action extends StatelessWidget {
                   : Icons.chat_bubble_outline_rounded,
               size: 18,
             ),
-            label: Text(
-              switch (info.friendRelation) {
-                FriendRelation.friend => l10n.postInfoFriendLabel,
-                FriendRelation.requested => l10n.postInfoFriendPending,
-                _ => chatting
-                    ? l10n.postInfoFriendAdd
-                    : l10n.postInfoRequestChat,
-              },
-            ),
+            label: Text(switch (info.friendRelation) {
+              FriendRelation.friend => l10n.postInfoFriendLabel,
+              FriendRelation.requested => l10n.postInfoFriendPending,
+              _ => chatting ? l10n.postInfoFriendAdd : l10n.postInfoRequestChat,
+            }),
             style: FilledButton.styleFrom(
               backgroundColor: AppColors.moonlightDeep,
               disabledBackgroundColor: AppColors.surfaceHigh,

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/error/api_exception.dart';
 import '../../../../core/providers.dart';
 import '../../../auth/presentation/providers/session_provider.dart';
+import '../../data/datasources/profile_api.dart';
 
 /// 프로필 편집(사진·관심사·소개·지역) — 성공하면 null, 실패하면 보여줄 메시지.
 ///
@@ -13,11 +14,18 @@ class ProfileEditActions {
 
   final Ref _ref;
 
-  Future<ApiException?> updatePhoto(List<int> bytes) =>
-      _run(() => _ref.read(profileApiProvider).uploadProfilePhoto(bytes: bytes));
+  Future<ApiException?> updatePhoto(
+    List<int> bytes, {
+    ProfilePhotoSlot slot = ProfilePhotoSlot.face,
+  }) => _run(
+    () => _ref
+        .read(profileApiProvider)
+        .uploadProfilePhoto(bytes: bytes, slot: slot),
+  );
 
-  Future<ApiException?> deletePhoto() =>
-      _run(() => _ref.read(profileApiProvider).deleteProfilePhoto());
+  Future<ApiException?> deletePhoto([
+    ProfilePhotoSlot slot = ProfilePhotoSlot.face,
+  ]) => _run(() => _ref.read(profileApiProvider).deleteProfilePhoto(slot));
 
   Future<ApiException?> updateInterests(List<String> codes) =>
       _run(() => _ref.read(profileApiProvider).updateInterests(codes));
@@ -39,5 +47,6 @@ class ProfileEditActions {
   }
 }
 
-final profileEditActionsProvider =
-    Provider<ProfileEditActions>(ProfileEditActions.new);
+final profileEditActionsProvider = Provider<ProfileEditActions>(
+  ProfileEditActions.new,
+);

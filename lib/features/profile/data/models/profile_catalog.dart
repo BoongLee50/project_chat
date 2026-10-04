@@ -49,8 +49,27 @@ abstract final class ProfileCatalog {
   /// (개수는 **값이 변하는 것**이라 그림이 아니라 폰트가 맡는 자리다 — 14 §3)
   static const maxInterests = 3;
 
-  /// 활동 지역은 최대 2곳.
-  static const maxRegions = 2;
+  /// 활동 지역은 **최대 1곳**(기획서 261002 8-1 — 2곳에서 줄었다). 서버 `RegionsRequest`도 1로 검증한다.
+  static const maxRegions = 1;
+
+  /// 자기소개는 **최대 300자, 띄어쓰기 포함**(기획서 261002 8-1 — 옛 "소개 한마디" 50자).
+  /// 서버 `IntroRequest`와 같은 숫자다.
+  ///
+  /// 서버·DB와 같은 **코드포인트**로 센다 — 공백·이모지도 한 글자다.
+  static const maxIntro = 300;
+
+  static const _artDir = 'assets/images/scene_profile/create';
+
+  /// 관심사 칩 **그림**(아이콘과 이름이 한 장에 구워져 있다, 204×89).
+  /// 지금은 `영화` 한 장뿐이다 — 없는 코드는 [ProfileTagChip]이 같은 모양의 자리 칩을 그린다(08 §0-2).
+  static const interestArt = <String, String>{
+    'MOVIE': '$_artDir/Interest_movie.png',
+  };
+
+  /// 활동 지역 칩 **그림**(이름이 구워져 있다, 210×88). 지금은 `서울` 한 장뿐이다.
+  static const regionArt = <String, String>{
+    'KR_SEOUL': '$_artDir/region_seoul.png',
+  };
 
   static const interestGroups = <InterestGroup>[
     InterestGroup('HOBBY', Icons.palette_outlined, [

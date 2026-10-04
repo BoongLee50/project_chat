@@ -16,6 +16,7 @@ class PostInfo {
     this.totalPhotos = 0,
     this.hasTodayPost = false,
     this.profilePhotoUrl,
+    this.profileMainPhotoUrl,
     this.intro,
     this.interests = const [],
     this.regions = const [],
@@ -44,7 +45,11 @@ class PostInfo {
 
   /// 오늘 포스트가 있는가. 없으면 [photoUrls]는 프로필 사진 한 장이다.
   final bool hasTodayPost;
+  /// 프로필 **얼굴 사진**(기획서 261002 8-1 첫째 칸).
   final String? profilePhotoUrl;
+
+  /// 프로필 **자유 사진** — [프로필 보기]의 큰 메인 사진(8-1 둘째 칸, V28).
+  final String? profileMainPhotoUrl;
 
   final String? intro;
   final List<String> interests;
@@ -87,6 +92,7 @@ class PostInfo {
     totalPhotos: json['totalPhotos'] as int? ?? 0,
     hasTodayPost: json['hasTodayPost'] as bool? ?? false,
     profilePhotoUrl: json['profilePhotoUrl'] as String?,
+    profileMainPhotoUrl: json['profileMainPhotoUrl'] as String?,
     intro: json['intro'] as String?,
     interests: (json['interests'] as List?)?.cast<String>() ?? const [],
     regions: (json['regions'] as List?)?.cast<String>() ?? const [],

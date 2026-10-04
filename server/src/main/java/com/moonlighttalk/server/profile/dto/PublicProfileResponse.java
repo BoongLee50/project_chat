@@ -10,6 +10,7 @@ public record PublicProfileResponse(
         String country,
         boolean premium,
         String photoUrl,
+        String mainPhotoUrl,
         String intro,
         List<String> interests,
         List<String> regions

@@ -449,7 +449,6 @@
   },
   "postInfoRegions": "활동 지역",
   "profileTitle": "프로필",
-  "profilePhotoPrompt": "프로필 사진을 등록해 주세요",
   "photoSheetProfileTitle": "프로필 사진 변경",
   "photoSheetProfileSubtitle": "멋진 사진으로 프로필을 업데이트하고\n더 많은 매치를 만나보세요!",
   "photoSheetPostTitle": "포스트 사진 등록",
@@ -458,39 +457,30 @@
   "photoSourceCamera": "카메라 촬영",
   "photoSourceRemove": "프로필 사진 제거",
   "photoSourceGalleryPassOnly": "앨범 패스가 있어야 이용할 수 있어요",
-  "profileLunaBalance": "보유 루나",
-  "profileLunaStore": "루나상점",
-  "profilePrimeTitle": "프라임으로 더 특별하게 ✨",
-  "profilePrimeBenefits": "포스트 9장·부스트·무제한 대화·자동 번역",
-  "profileSeeDetail": "자세히 보기",
-  "profilePrimeBenefitAlbumDesc": "포스트 사진을 더 많이 등록하고\n상대방 포스트도 제한 없이 볼 수 있어요.",
-  "profilePrimeBenefitBoostDesc": "포스트가 우선 노출되고\nPICK 추천과 테두리 효과가 붙어요.",
-  "profilePrimeBenefitChatDesc": "횟수 제한 없이 자유롭게!\n상대방에게 상단 노출돼요.",
   "profilePrimeBenefitTranslate": "자동 번역 무제한",
-  "profilePrimeBenefitTranslateDesc": "대화와 댓글을 무제한으로 번역해\n언어 걱정 없이 소통할 수 있어요.",
-  "profileBoostPost": "포스트 부스트",
-  "profileBoostMatch": "매칭 부스트",
-  "profileBoostCount": "{count}매",
-  "@profileBoostCount": {
+  "profileIntro": "소개 한마디",
+  "profileInterests": "관심사",
+  "profileLogout": "로그아웃",
+  "profileCreatePhotoDesc": "얼굴 사진과 나를 표현할 사진 한 장씩을 담아 주세요.",
+  "profileCreateIntroDesc": "당신에 대해 간단히 소개해 주세요.",
+  "profileCreateIntroHint": "취미나 관심사, 좋아하는 것 등을 알려 주세요.",
+  "profileCreateInterestsDesc": "내가 좋아하는 것들을 최대 {max}개까지 선택해 주세요.",
+  "@profileCreateInterestsDesc": {
     "placeholders": {
-      "count": {
+      "max": {
         "type": "int"
       }
     }
   },
-  "profileFreeUpload": "무료 업로드",
-  "profileNoAds": "광고 제거",
-  "profileVisitors": "방문자 확인",
-  "profileIntro": "소개 한마디",
-  "profileIntroEmpty": "나를 소개하는 한마디를 남겨보세요. (최대 50자)",
-  "profileInterests": "관심사",
-  "profileInterestsEmpty": "관심사를 등록하면 더 잘 맞는 사람을 만날 수 있어요.",
-  "profileRegions": "활동 지역",
-  "profileRegionsEmpty": "활동 지역은 최대 2곳까지 선택할 수 있어요.",
-  "profileLogout": "로그아웃",
-  "introEditTitle": "소개 한마디",
-  "introEditHint": "자신의 취미, 성격, 또는\n하고 싶은 말을 자유롭게 적어보세요.",
-  "introEditCounter": "최대 50자까지 가능합니다.",
+  "profileCreateRegionDesc": "내가 주로 활동하고 있는 지역을 선택해 주세요.",
+  "profileIntroLimit": "자기소개 작성은 최대 {max}자까지만 입력할 수 있어요.",
+  "@profileIntroLimit": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
   "interestsEditTitle": "관심사 등록",
   "interestsEditSubtitle": "요즘 어떤 것에 꽂혀 계시나요? 취향을 공유해 보세요!",
   "interestsEditSelected": "선택된 관심사 ({count}/{max})",
@@ -517,7 +507,7 @@
       }
     }
   },
-  "interestsEditLimit": "관심사는 최대 {max}개까지 선택할 수 있어요.",
+  "interestsEditLimit": "관심사 등록은 {max}개까지만 선택할 수 있습니다.",
   "@interestsEditLimit": {
     "placeholders": {
       "max": {
@@ -537,7 +527,7 @@
   "regionsEditOfCountry": "의 주요 지역",
   "regionsEditSelected": "선택한 지역",
   "regionsEditApply": "적용하기",
-  "regionsEditLimit": "활동 지역은 최대 {max}곳까지 선택할 수 있어요.",
+  "regionsEditLimit": "지역 선택은 {max}군데만 선택할 수 있습니다.",
   "@regionsEditLimit": {
     "placeholders": {
       "max": {

@@ -678,9 +678,6 @@ class L10nJa extends L10n {
   String get profileTitle => 'プロフィール';
 
   @override
-  String get profilePhotoPrompt => 'プロフィール写真を登録してください';
-
-  @override
   String get photoSheetProfileTitle => 'プロフィール写真の変更';
 
   @override
@@ -706,85 +703,38 @@ class L10nJa extends L10n {
   String get photoSourceGalleryPassOnly => 'アルバムパスが必要です';
 
   @override
-  String get profileLunaBalance => '保有ルナ';
-
-  @override
-  String get profileLunaStore => 'ルナストア';
-
-  @override
-  String get profilePrimeTitle => 'プライムでもっと特別に ✨';
-
-  @override
-  String get profilePrimeBenefits => 'ポスト9枚・ブースト・無制限チャット・自動翻訳';
-
-  @override
-  String get profileSeeDetail => '詳しく見る';
-
-  @override
-  String get profilePrimeBenefitAlbumDesc => 'ポスト写真をもっと登録でき\n相手のポストも制限なく見られます。';
-
-  @override
-  String get profilePrimeBenefitBoostDesc => 'ポストが優先表示され\nPICKおすすめと枠の効果がつきます。';
-
-  @override
-  String get profilePrimeBenefitChatDesc => '回数制限なく自由に！\n相手の画面で上位に表示されます。';
-
-  @override
   String get profilePrimeBenefitTranslate => '自動翻訳無制限';
-
-  @override
-  String get profilePrimeBenefitTranslateDesc =>
-      'トークとコメントを無制限に翻訳して\n言葉の壁なくやり取りできます。';
-
-  @override
-  String get profileBoostPost => 'ポストブースト';
-
-  @override
-  String get profileBoostMatch => 'マッチブースト';
-
-  @override
-  String profileBoostCount(int count) {
-    return '$count枚';
-  }
-
-  @override
-  String get profileFreeUpload => '無料アップロード';
-
-  @override
-  String get profileNoAds => '広告非表示';
-
-  @override
-  String get profileVisitors => '訪問者を見る';
 
   @override
   String get profileIntro => 'ひとこと紹介';
 
   @override
-  String get profileIntroEmpty => '自分を紹介するひとことを書いてみましょう。（最大50文字）';
-
-  @override
   String get profileInterests => '興味・関心';
-
-  @override
-  String get profileInterestsEmpty => '興味・関心を登録すると、より合う人に出会えます。';
-
-  @override
-  String get profileRegions => '活動地域';
-
-  @override
-  String get profileRegionsEmpty => '活動地域は最大2か所まで選択できます。';
 
   @override
   String get profileLogout => 'ログアウト';
 
   @override
-  String get introEditTitle => 'ひとこと紹介';
+  String get profileCreatePhotoDesc => '顔写真と、あなたらしい写真を1枚ずつ載せてください。';
 
   @override
-  String get introEditHint => '趣味や性格、伝えたいことを\n自由に書いてみましょう。';
+  String get profileCreateIntroDesc => 'あなたについて簡単に紹介してください。';
 
   @override
-  String get introEditCounter => '最大50文字まで入力できます。';
+  String get profileCreateIntroHint => '趣味や興味、好きなことなどを教えてください。';
+
+  @override
+  String profileCreateInterestsDesc(int max) {
+    return '好きなことを最大$max個まで選んでください。';
+  }
+
+  @override
+  String get profileCreateRegionDesc => '主に活動している地域を選んでください。';
+
+  @override
+  String profileIntroLimit(int max) {
+    return '自己紹介は最大$max文字までしか入力できません。';
+  }
 
   @override
   String get interestsEditTitle => '興味・関心の登録';
@@ -810,7 +760,7 @@ class L10nJa extends L10n {
 
   @override
   String interestsEditLimit(int max) {
-    return '興味・関心は最大$max個まで選択できます。';
+    return '興味・関心の登録は$max個までしか選択できません。';
   }
 
   @override
@@ -832,7 +782,7 @@ class L10nJa extends L10n {
 
   @override
   String regionsEditLimit(int max) {
-    return '活動地域は最大$maxか所まで選択できます。';
+    return '地域は$maxか所までしか選択できません。';
   }
 
   @override

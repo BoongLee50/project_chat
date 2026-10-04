@@ -6,6 +6,7 @@ import '../../../../app/theme/app_dimens.dart';
 import '../../../../core/error/error_messages.dart';
 import '../../data/models/profile_catalog.dart';
 import '../providers/profile_edit_provider.dart';
+import 'profile_notice_dialog.dart';
 import '../../../../l10n/app_localizations.dart';
 
 /// 관심사 등록. (기획서 화면 22)
@@ -40,22 +41,18 @@ class _InterestsEditSheetState extends ConsumerState<InterestsEditSheet> {
   };
   bool _busy = false;
 
+  /// 한도를 넘으면 고르지 않고 **안내 팝업**으로 이유를 말한다(기획서 261002 8-1).
   void _toggle(String code) {
+    if (!_selected.contains(code) &&
+        _selected.length >= ProfileCatalog.maxInterests) {
+      showProfileNotice(
+        context,
+        L10n.of(context).interestsEditLimit(ProfileCatalog.maxInterests),
+      );
+      return;
+    }
     setState(() {
-      if (_selected.contains(code)) {
-        _selected.remove(code);
-      } else if (_selected.length < ProfileCatalog.maxInterests) {
-        _selected.add(code);
-      } else {
-        final l10n = L10n.of(context);
-        ScaffoldMessenger.of(context)
-          ..hideCurrentSnackBar()
-          ..showSnackBar(
-            SnackBar(
-              content: Text(l10n.interestsEditLimit(ProfileCatalog.maxInterests)),
-            ),
-          );
-      }
+      if (!_selected.remove(code)) _selected.add(code);
     });
   }
 
@@ -70,7 +67,9 @@ class _InterestsEditSheetState extends ConsumerState<InterestsEditSheet> {
     if (error != null) {
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text(errorMessage(L10n.of(context), error))));
+        ..showSnackBar(
+          SnackBar(content: Text(errorMessage(L10n.of(context), error))),
+        );
       return;
     }
     Navigator.of(context).pop(true);
@@ -165,7 +164,10 @@ class _InterestsEditSheetState extends ConsumerState<InterestsEditSheet> {
                         ),
                       )
                     : Text(
-                        l10n.interestsEditSave(_selected.length, ProfileCatalog.maxInterests),
+                        l10n.interestsEditSave(
+                          _selected.length,
+                          ProfileCatalog.maxInterests,
+                        ),
                         style: const TextStyle(
                           fontSize: 17,
                           fontWeight: FontWeight.w800,
@@ -208,7 +210,10 @@ class _SelectedBar extends StatelessWidget {
           Row(
             children: [
               Text(
-                l10n.interestsEditSelected(selected.length, ProfileCatalog.maxInterests),
+                l10n.interestsEditSelected(
+                  selected.length,
+                  ProfileCatalog.maxInterests,
+                ),
                 style: const TextStyle(
                   color: AppColors.textPrimary,
                   fontSize: 14,
@@ -301,8 +306,9 @@ class _Group extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = L10n.of(context);
-    final pickedInGroup =
-        group.items.where((item) => selected.contains(item.code)).length;
+    final pickedInGroup = group.items
+        .where((item) => selected.contains(item.code))
+        .length;
 
     return Container(
       margin: const EdgeInsets.only(bottom: AppDimens.gapMd),
@@ -333,8 +339,10 @@ class _Group extends StatelessWidget {
                   if (pickedInGroup > 0) ...[
                     const SizedBox(width: 8),
                     Container(
-                      padding:
-                          const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
                         color: AppColors.moonlight.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(10),
@@ -428,8 +436,11 @@ class _InterestChip extends StatelessWidget {
             ),
             if (selected) ...[
               const SizedBox(width: 6),
-              const Icon(Icons.check_circle,
-                  size: 15, color: AppColors.moonlight),
+              const Icon(
+                Icons.check_circle,
+                size: 15,
+                color: AppColors.moonlight,
+              ),
             ],
           ],
         ),

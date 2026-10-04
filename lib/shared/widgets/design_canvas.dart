@@ -117,6 +117,10 @@ class DesignCanvas {
     'assets/images/scene_garden/menu_friend_text_normal.png': Size(80, 39),
     'assets/images/scene_garden/menu_profile_text_color.png': Size(234, 38),
     'assets/images/scene_garden/menu_profile_text_normal.png': Size(234, 38),
+
+    // 프로필 [작성하기] 머리 사진 — 「プロフィール」 문구가 구워져 있다.
+    // 일본어판은 **틀이 다르다**(1080×771 vs 1426×1103) — 폭에 맞춰 위에서부터 그린다.
+    'assets/images/scene_profile/create/back_profile.png': Size(1426, 1103),
   };
 
   /// [koAsset]을 [languageCode]로 그릴 때의 **규격**. 일본어판 크기가 따로 적혀 있으면 그것을 쓴다.

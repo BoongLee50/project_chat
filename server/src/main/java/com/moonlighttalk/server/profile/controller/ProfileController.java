@@ -44,6 +44,15 @@ public class ProfileController {
         profileService.registerProfilePhoto(userId, request.storageKey());
     }
 
+    /**
+     * 자유 사진(메인) 등록·제거 — 얼굴 사진과 같은 모양(V28). 업로드 URL은
+     * {@code /me/profile-photo:upload-url}을 함께 쓴다(둘 다 같은 {@code profile/} 경로다).
+     */
+    @PutMapping("/me/profile-main-photo")
+    public void registerProfileMainPhoto(@CurrentUserId String userId, @RequestBody RegisterProfilePhotoRequest request) {
+        profileService.registerProfileMainPhoto(userId, request.storageKey());
+    }
+
     @PutMapping("/me/interests")
     public void updateInterests(@CurrentUserId String userId, @Valid @RequestBody InterestsRequest request) {
         profileService.updateInterests(userId, request.codes());

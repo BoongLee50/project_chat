@@ -10,7 +10,7 @@
 
 전달본 → 저장소 이름 규칙(docs/08 §0, docs/14 §2):
   - 폴더:  Scene_Post → scene_post,  "Talk List" → talk_list  (소문자 · 공백은 밑줄)
-  - 파일:  `*_jap.png` → 같은 폴더의 `ja/*.png`(UI 언어 변형) ·  `*_kor.png` → 접미사를 뗀 원문
+  - 파일:  `*_jap.png`·`*_jp.png` → 같은 폴더의 `ja/*.png`(UI 언어 변형) ·  `*_kor.png`·`*_kr.png` → 접미사를 뗀 원문
            · 파일명의 공백은 밑줄(`frame_post_album Pass.png` → `frame_post_album_pass.png`)
   - ⚠️ `icon_flag_kor/jap`·`filtering_nation_kor/jap`·`icon_sflag_*`·`icon_mflag_*`은
     **언어가 아니라 나라**라서 이름 그대로 둔다(둘 다 항상 필요하다).
@@ -56,10 +56,13 @@ def target_rel(rel_dir, name):
     """전달 파일(상대 폴더, 이름) → 저장소 상대 경로."""
     folder = '/'.join(dir_name(p) for p in rel_dir.split('/') if p)
     is_country = name.startswith(COUNTRY_PREFIXES)
-    if not is_country and name.endswith('_jap.png'):
-        return folder + '/ja/' + file_name(name[:-len('_jap.png')] + '.png')
-    if not is_country and name.endswith('_kor.png'):
-        return folder + '/' + file_name(name[:-len('_kor.png')] + '.png')
+    # 프로필(Scene_Profile)부터는 접미사가 `_jp`·`_kr`로도 온다 — 뜻은 같다.
+    for suffix in ('_jap.png', '_jp.png'):
+        if not is_country and name.endswith(suffix):
+            return folder + '/ja/' + file_name(name[:-len(suffix)] + '.png')
+    for suffix in ('_kor.png', '_kr.png'):
+        if not is_country and name.endswith(suffix):
+            return folder + '/' + file_name(name[:-len(suffix)] + '.png')
     return folder + '/' + file_name(name)
 
 
