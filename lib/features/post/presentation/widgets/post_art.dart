@@ -48,8 +48,13 @@ class PostArt {
   /// 두 버튼의 그림에는 `포스트 앨범 |` · `부스트 |` 까지만 있다.
   /// **막대 오른쪽은 비어 있고** 거기에 상태(남은 일수·남은 분·구매)를 얹는다 —
   /// 사람마다 다른 값이라 그림에 구울 수 없다.
-  static const double btnAlbumPassStatusLeft = 370;
-  static const double btnBoostStatusLeft = 260;
+  ///
+  /// 상태값은 **막대(`|`) 오른쪽 끝 ~ 테두리 안쪽** 사이의 **가운데**에 놓는다(기획 2026-10-04).
+  /// 그림 실측: 앨범 막대 343~347·테두리 안쪽 597 / 부스트 막대 239~243·테두리 안쪽 404.
+  static const double btnAlbumPassStatusLeft = 348;
+  static const double btnAlbumPassStatusRight = 4; // 601 - 597
+  static const double btnBoostStatusLeft = 244;
+  static const double btnBoostStatusRight = 3; // 407 - 404
 
   // 카드 안에 얹히는 것들.
   //

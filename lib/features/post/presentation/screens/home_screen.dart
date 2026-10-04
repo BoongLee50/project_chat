@@ -784,6 +784,7 @@ class _PassBoostRowState extends ConsumerState<_PassBoostRow> {
           art: PostArt.btnAlbumPass,
           size: PostArt.btnAlbumPassSize,
           statusLeft: PostArt.btnAlbumPassStatusLeft,
+          statusRight: PostArt.btnAlbumPassStatusRight,
           scale: s,
           // 사용 중이면 남은 일수, 아니면 "구매".
           status: passDays == null
@@ -798,6 +799,7 @@ class _PassBoostRowState extends ConsumerState<_PassBoostRow> {
           art: PostArt.btnBoost,
           size: PostArt.btnBoostSize,
           statusLeft: PostArt.btnBoostStatusLeft,
+          statusRight: PostArt.btnBoostStatusRight,
           scale: s,
           // 사용 중이면 남은 분, 보유만 했으면 "가능", 없으면 "구매".
           status: boost != null
@@ -823,6 +825,7 @@ class _ArtStatusButton extends StatelessWidget {
     required this.art,
     required this.size,
     required this.statusLeft,
+    required this.statusRight,
     required this.scale,
     required this.status,
     required this.onTap,
@@ -831,8 +834,9 @@ class _ArtStatusButton extends StatelessWidget {
   final String art;
   final Size size;
 
-  /// 그림에서 상태값이 들어갈 자리의 왼쪽(시안 원본 픽셀).
+  /// 그림에서 상태값이 들어갈 칸의 왼쪽(막대 끝)·오른쪽(테두리 안쪽에서 그림 끝까지) — 시안 원본 픽셀.
   final double statusLeft;
+  final double statusRight;
   final double scale;
   final String status;
   final VoidCallback onTap;
@@ -852,21 +856,18 @@ class _ArtStatusButton extends StatelessWidget {
             ArtImage(art, width: size.width, height: size.height, scale: scale),
             // 🚨 상태값은 **그림 글자(`포스트 앨범 |`)와 한 줄로 읽혀야 한다**(기획 2026-10-04).
             // - 크기: 그림의 한글 높이(시안 ~37px)에 맞춘다. 그림처럼 **화면 폭 배율**을 탄다
-            // - 자리: `|` 뒤 그림 속 낱말 간격만큼 띄워 **왼쪽 정렬**(`statusLeft`). 가운데 정렬이면
-            //   글자 수에 따라 시작점이 춤춘다
+            // - 자리: **막대(`|`) 끝 ~ 테두리 안쪽의 가운데**. 왼쪽 정렬은 막대에 쏠려 보였다
             // - 색: 그림 글자와 같은 흰색. 상태는 색이 아니라 **문구**가 말한다
             // 같은 모양의 폰트가 앱에 없어 굵기만 맞췄다.
             Positioned(
               left: statusLeft * scale,
-              right: 16 * scale,
+              right: statusRight * scale,
               top: 0,
               // 그대로 가운데에 두면 폰트의 위아래 여백 차이로 **그림 글자보다 3px 처진다**(실측).
               bottom: 6 * scale,
-              child: Align(
-                alignment: Alignment.centerLeft,
+              child: Center(
                 child: FittedBox(
                   fit: BoxFit.scaleDown,
-                  alignment: Alignment.centerLeft,
                   child: Text(
                     status,
                     maxLines: 1,
