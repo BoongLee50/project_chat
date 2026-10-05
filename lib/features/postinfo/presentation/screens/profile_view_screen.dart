@@ -142,40 +142,81 @@ class _BodyState extends ConsumerState<_Body> {
         interests: _info.interests,
         regions: _info.regions,
       ),
-      bottom: _Action(
-        info: _info,
-        onRequestChat: _requestChat,
-        onRequestFriend: _requestFriend,
-      ),
+      // 하단 버튼은 **관계가 정한다**(2026-10-05 사용자 결정) — 버튼이 없으면 자리도 없다.
+      bottom: switch (profileViewActionOf(
+        _info,
+        myUserId: ref.watch(sessionProvider).profile?.id,
+      )) {
+        ProfileViewAction.none => null,
+        final action => _Action(
+          action: action,
+          onRequestChat: _requestChat,
+          onRequestFriend: _requestFriend,
+        ),
+      },
     );
   }
 }
 
-/// 하단 버튼 — [포스트 정보]와 같은 원칙: **지금 상태가 정한다**.
+/// [프로필 보기] 하단에 무엇을 둘까 — 남의 프로필에서만 쓴다(내 [미리 보기]에는 하단이 없다).
+enum ProfileViewAction {
+  /// 버튼 없음.
+  none,
+
+  /// [대화 신청]
+  requestChat,
+
+  /// [친구 신청]
+  requestFriend,
+
+  /// [친구 신청]을 이미 보냈다 — 같은 자리에 `신청 대기`를 흐리게(막힌 버튼은 이유를 말한다).
+  friendPending,
+}
+
+/// 하단 버튼 규칙(2026-10-05 사용자 결정). **위에서부터 먼저 맞는 것**이 이긴다.
 ///
-/// 시안(img12)은 `[대화 신청]`과 `[친구 신청]`을 화살표로 이어 두 가지가 번갈아
-/// 들어감을 보인다. 무엇이 들어갈지는 부르는 화면이 아니라 관계가 정한다 —
-/// 아직 말을 안 텄으면 대화부터, 이미 대화 중이면 친구.
+/// | 상대와 나 | 하단 |
+/// |---|---|
+/// | 나 자신(가든 댓글 작성자가 나일 때 등) | 없음 |
+/// | 이미 **친구** | 없음 |
+/// | 상대가 나에게 **대화 신청**을 보냈다(대화방 [받은 신청] 목록에 있다) | 없음 — 답은 받은 신청에서 한다 |
+/// | **대화 중**인데 친구가 아니다 | [친구 신청] (내가 이미 보냈으면 `신청 대기`) |
+/// | 아무 관계도 아니다 | [대화 신청] |
+///
+/// 📌 대화 중에 **상대가 먼저 친구 신청**을 보낸 경우는 표에 없어 [친구 신청]을 그대로 둔다 —
+/// 누르면 서버가 `FRIEND_REQUEST_PENDING`으로 이유를 말한다. 내가 보낸 대화 신청이 아직
+/// 답을 기다리는 경우도 [대화 신청]이 남고, 누르면 서버가 이유를 말한다.
+ProfileViewAction profileViewActionOf(PostInfo info, {String? myUserId}) {
+  final self = myUserId != null && info.userId == myUserId;
+  if (self ||
+      info.friendRelation == FriendRelation.friend ||
+      info.chatRequestId != null) {
+    return ProfileViewAction.none;
+  }
+  if (info.chatRoomId != null) {
+    return info.friendRelation == FriendRelation.requested
+        ? ProfileViewAction.friendPending
+        : ProfileViewAction.requestFriend;
+  }
+  return ProfileViewAction.requestChat;
+}
+
+/// 하단 버튼 한 칸 — 무엇을 둘지는 [profileViewActionOf]가 정한다.
 class _Action extends StatelessWidget {
   const _Action({
-    required this.info,
+    required this.action,
     required this.onRequestChat,
     required this.onRequestFriend,
   });
 
-  final PostInfo info;
+  final ProfileViewAction action;
   final VoidCallback onRequestChat;
   final VoidCallback onRequestFriend;
 
   @override
   Widget build(BuildContext context) {
     final l10n = L10n.of(context);
-
-    // 이미 친구이거나 답을 기다리는 중이면 누를 것이 없다.
-    final settled =
-        info.friendRelation == FriendRelation.friend ||
-        info.friendRelation == FriendRelation.requested;
-    final chatting = info.chatRoomId != null;
+    final chat = action == ProfileViewAction.requestChat;
 
     return SafeArea(
       top: false,
@@ -189,19 +230,21 @@ class _Action extends StatelessWidget {
         child: SizedBox(
           width: double.infinity,
           child: FilledButton.icon(
-            onPressed: settled
-                ? null
-                : (chatting ? onRequestFriend : onRequestChat),
+            onPressed: switch (action) {
+              ProfileViewAction.requestChat => onRequestChat,
+              ProfileViewAction.requestFriend => onRequestFriend,
+              _ => null,
+            },
             icon: Icon(
-              chatting
-                  ? Icons.person_add_alt_1_outlined
-                  : Icons.chat_bubble_outline_rounded,
+              chat
+                  ? Icons.chat_bubble_outline_rounded
+                  : Icons.person_add_alt_1_outlined,
               size: 18,
             ),
-            label: Text(switch (info.friendRelation) {
-              FriendRelation.friend => l10n.postInfoFriendLabel,
-              FriendRelation.requested => l10n.postInfoFriendPending,
-              _ => chatting ? l10n.postInfoFriendAdd : l10n.postInfoRequestChat,
+            label: Text(switch (action) {
+              ProfileViewAction.friendPending => l10n.postInfoFriendPending,
+              ProfileViewAction.requestFriend => l10n.postInfoFriendAdd,
+              _ => l10n.postInfoRequestChat,
             }),
             style: FilledButton.styleFrom(
               backgroundColor: AppColors.moonlightDeep,
