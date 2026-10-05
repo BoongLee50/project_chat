@@ -78,6 +78,8 @@
 
 ## 5. 모든 콘텐츠에 걸린 결정 (되돌리지 말 것)
 
+- 🚨 **앱은 세로 고정**(2026-10-05) — 폰을 눕혀도 돌지 않는다. `main.dart`(`setPreferredOrientations`) +
+  `AndroidManifest.xml`(`screenOrientation="portrait"`) + iOS `Info.plist` 세 곳이 함께 막는다. 가로 레이아웃은 만들지 않는다
 - 고정 화면은 **스크롤하지 않는다** — 넘치면 늘어나는 칸 하나가 흡수(`Expanded`). 끌어서 울렁이면 안 된다
 - **막힌 버튼은 죽이지 말고 이유를 말한다** — 서버 `ErrorCode` 이름을 그대로 문구 키로
 - 클라 갱신은 "**낡았으면 다시 읽기**"(1분). 소켓 화면은 예외

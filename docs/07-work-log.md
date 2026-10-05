@@ -625,6 +625,24 @@ adb shell cmd locale set-app-locales com.example.project_chat --locales ko-KR
 - 표에 없는 경우(대화 중에 **상대가 먼저** 친구 신청 / 내가 보낸 대화 신청이 대기 중)는 버튼을 그대로 두고, 누르면 서버가 이유를 말한다(`FRIEND_REQUEST_PENDING` 등).
 - 에뮬: 친구 湊 → 없음 · 받은 신청의 도윤 → 없음. `flutter test` 29/29.
 
+### 2026-10-05 [그 외] — 앱 세로 고정
+
+폰을 가로로 들면 앱이 가로로 돌아갔다 — 화면 전부가 **1080×2640 세로 캔버스 좌표**로 그려져 가로에선 깨진다.
+사용자 결정: **폰이 가로여도 앱은 무조건 세로.**
+
+| 어디 | 무엇 | 왜 거기도 |
+|---|---|---|
+| `lib/main.dart` | `SystemChrome.setPreferredOrientations([portraitUp])`를 `runApp` 전에 `await` | iOS·그 밖의 플랫폼 |
+| `android/app/src/main/AndroidManifest.xml` | `android:screenOrientation="portrait"` | **엔진이 뜨기 전**(스플래시)부터 막는다 — Dart 쪽만 두면 켜지는 순간 잠깐 돈다 |
+| `ios/Runner/Info.plist` | iPhone 방향 목록을 세로 하나로 | iOS는 여기 목록이 우선한다 |
+
+- 뒤집힌 세로(`portraitDown`)도 막았다 — 거꾸로 들면 그대로 거꾸로 보인다(일반 폰 앱과 같다).
+- ⚠️ iPad 목록(`~ipad`)은 손대지 않았다 — 지금은 폰 전용이다. 태블릿을 지원하게 되면 다시 볼 것.
+- ⚠️ **안드로이드 16 이상의 큰 화면**(가로·세로 짧은 변이 600dp 이상 — 폴드를 펼친 화면·태블릿)은 OS가 방향 고정을 무시할 수 있다.
+  플립(펼쳐도 폰 크기)에서는 해당 없다.
+- 확인: `flutter analyze` 깨끗 · `flutter test` 29/29 · 빌드한 APK의 합쳐진 매니페스트에 `screenOrientation="portrait"` 들어감.
+  실기기 회전은 사용자가 폰에서 확인.
+
 ### 2026-10-04 [그 외] — 임시 유저 40명 · 개발 DB를 41명으로 정리 · 폰 두 대
 
 **사람으로 찬 화면을 보려고** 임시 유저 40명을 넣었다(`tools/demo/seed_users.py`, 한남·한여·일남·일여 각 10).
