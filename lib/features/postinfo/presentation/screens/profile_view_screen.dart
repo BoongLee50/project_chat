@@ -5,6 +5,7 @@ import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimens.dart';
 import '../../../../core/error/error_messages.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../auth/presentation/providers/session_provider.dart';
 import '../../../chat/presentation/providers/chat_provider.dart';
 import '../../../chat/presentation/widgets/chat_request_dialog.dart';
 import '../../../friend/presentation/providers/friend_provider.dart';
@@ -121,7 +122,16 @@ class _BodyState extends ConsumerState<_Body> {
 
   @override
   Widget build(BuildContext context) {
+    // `[원문보기]`는 **상대와 내 나라가 다를 때만 눌린다** — 같으면 흐리게 자리만(2026-10-05).
+    // 어느 한쪽 나라를 모르면 누를 수 있게 둔다(못 누르는 이유를 댈 수 없다).
+    final myCountry = ref.watch(sessionProvider).profile?.country;
+    final partnerCountry = _info.country;
+    final viewOriginalEnabled = myCountry == null || partnerCountry == null
+        ? true
+        : myCountry != partnerCountry;
+
     return ProfilePreviewView(
+      viewOriginalEnabled: viewOriginalEnabled,
       data: ProfilePreviewData(
         nickname: _info.nickname,
         age: _info.age,

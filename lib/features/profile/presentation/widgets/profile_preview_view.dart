@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/authed_image.dart';
 import '../../../../shared/widgets/design_canvas.dart';
+import '../../../chat/presentation/widgets/talk_art.dart';
 import '../../data/models/profile_catalog.dart';
 import 'profile_tag_chip.dart';
 
@@ -52,11 +53,17 @@ class ProfilePreviewView extends StatefulWidget {
     required this.data,
     this.onBack,
     this.bottom,
+    this.viewOriginalEnabled,
   });
 
   final ProfilePreviewData data;
   final VoidCallback? onBack;
   final Widget? bottom;
+
+  /// `[원문보기]` — **남의 프로필일 때만** 준다(`null`이면 버튼이 없다 = 내 미리 보기).
+  /// `true`면 상대와 내 나라가 달라 누를 수 있고, `false`면 같은 나라라 흐리게 자리만 지킨다
+  /// (대화방·친구의 `[원문보기]`와 같은 규칙, 2026-10-05 사용자 결정).
+  final bool? viewOriginalEnabled;
 
   static const _dir = 'assets/images/scene_profile/preview';
 
@@ -136,7 +143,10 @@ class _ProfilePreviewViewState extends State<ProfilePreviewView> {
             Expanded(
               child: SingleChildScrollView(
                 padding: EdgeInsets.fromLTRB(33 * s, 15 * s, 33 * s, 120 * s),
-                child: _Body(data: data),
+                child: _Body(
+                  data: data,
+                  viewOriginalEnabled: widget.viewOriginalEnabled,
+                ),
               ),
             ),
             ?widget.bottom,
@@ -148,9 +158,10 @@ class _ProfilePreviewViewState extends State<ProfilePreviewView> {
 }
 
 class _Body extends StatelessWidget {
-  const _Body({required this.data});
+  const _Body({required this.data, this.viewOriginalEnabled});
 
   final ProfilePreviewData data;
+  final bool? viewOriginalEnabled;
 
   @override
   Widget build(BuildContext context) {
@@ -166,9 +177,18 @@ class _Body extends StatelessWidget {
         // 🚨 자유 사진이 없으면 **빈 칸**이다 — 얼굴 사진으로 채우지 않는다(기획 2026-10-04).
         // 얼굴은 위 동그라미 자리이고, 큰 칸은 자유 사진만의 자리다.
         _MainPhoto(url: data.mainPhotoUrl),
+        if (viewOriginalEnabled != null) ...[
+          // 소개 바로 위 오른쪽 — 번역되는 글(자기소개)에 붙는 버튼이다. 시안에는 자리가 없어
+          // 대화방·친구 팝업처럼 글 위 줄에 둔다.
+          SizedBox(height: 30 * s),
+          Align(
+            alignment: Alignment.centerRight,
+            child: _ViewOriginalButton(enabled: viewOriginalEnabled!),
+          ),
+        ],
         if (intro != null && intro.isNotEmpty) ...[
           // 메인 사진 아랫변(477+1521≈1998) → 소개(2067).
-          SizedBox(height: 60 * s),
+          SizedBox(height: (viewOriginalEnabled == null ? 60 : 24) * s),
           Text(
             intro,
             style: TextStyle(
@@ -190,6 +210,33 @@ class _Body extends StatelessWidget {
           ),
         ],
       ],
+    );
+  }
+}
+
+/// `[원문보기]` — 그림은 대화방 것을 같이 쓴다(`button_view_trans.png`, 209×73).
+///
+/// 🚧 **지금은 자리만 있다** — 번역 기능이 아직 없어 눌러도 하는 일이 없다(2026-10-05 사용자 결정).
+/// 번역이 붙으면 자기소개를 원문 ↔ 번역문으로 바꾸는 일을 여기서 한다.
+/// 같은 나라면 흐리게(`viewOriginalDisabledOpacity`) — 회색 그림이 오면 그 그림으로 바꾼다.
+class _ViewOriginalButton extends StatelessWidget {
+  const _ViewOriginalButton({required this.enabled});
+
+  final bool enabled;
+
+  @override
+  Widget build(BuildContext context) {
+    final art = ArtImage(
+      TalkArt.viewOriginal,
+      width: TalkArt.viewOriginalSize.width,
+      height: TalkArt.viewOriginalSize.height,
+      opacity: enabled ? 1 : TalkArt.viewOriginalDisabledOpacity,
+    );
+    if (!enabled) return art;
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () {}, // 🚧 번역 기능이 붙으면 여기서 원문 ↔ 번역문.
+      child: art,
     );
   }
 }
