@@ -609,6 +609,7 @@ adb shell cmd locale set-app-locales com.example.project_chat --locales ko-KR
 (나라가 다르면 눌림, 같으면 흐리게 `TalkArt.viewOriginalDisabledOpacity` · 반응 없음). 자리는 메인 사진 아래, 자기소개 바로 위 오른쪽.
 🚧 번역 기능이 없어 **눌러도 하는 일이 없다**(사용자 결정 — 자리만). 회색(비활성) 그림이 오면 흐림 대신 그 그림으로.
 내 [미리 보기]에는 없다(`viewOriginalEnabled: null`). 에뮬에서 湊(JP) = 선명 · 예준(KR) = 흐림 확인.
+같은 날: 큰 사진의 **외곽선(`frame_profile.png`)을 뺐다**(사용자 결정) — 둥근 모서리 사진만. 미리 보기·남의 프로필 보기 모두.
 
 ### 2026-10-04 [그 외] — 임시 유저 40명 · 개발 DB를 41명으로 정리 · 폰 두 대
 

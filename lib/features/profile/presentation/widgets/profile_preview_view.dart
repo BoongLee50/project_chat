@@ -342,7 +342,10 @@ class _Head extends StatelessWidget {
   }
 }
 
-/// 큰 메인 사진 — 2:3 칸(1014×1521)을 둥글게 자르고 `frame_profile`(흰 테두리)을 얹는다.
+/// 큰 메인 사진 — 2:3 칸(1014×1521)을 둥글게 자른 **사진만**.
+///
+/// 📌 `frame_profile.png`(흰 테두리 선)는 **얹지 않는다**(2026-10-05 사용자 결정 — 외곽선 빼기).
+/// 모서리 반지름만 그 그림에서 잰 값(≈44)을 쓴다.
 class _MainPhoto extends StatelessWidget {
   const _MainPhoto({this.url});
 
@@ -351,25 +354,14 @@ class _MainPhoto extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final s = DesignCanvas.scaleOf(context);
-    // frame_profile.png(1024×1536)의 모서리 반지름 실측 ≈ 44.
-    final radius = BorderRadius.circular(44 * s);
 
     return AspectRatio(
       aspectRatio: 1024 / 1536,
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          ClipRRect(
-            borderRadius: radius,
-            child: url == null
-                ? const _EmptyPhoto()
-                : AuthedImage(url: url!, fallback: const _EmptyPhoto()),
-          ),
-          Image.asset(
-            '${ProfilePreviewView._dir}/frame_profile.png',
-            fit: BoxFit.fill,
-          ),
-        ],
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(44 * s),
+        child: url == null
+            ? const _EmptyPhoto()
+            : AuthedImage(url: url!, fallback: const _EmptyPhoto()),
       ),
     );
   }

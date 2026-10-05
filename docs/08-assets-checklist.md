@@ -142,6 +142,8 @@
 
 글자 없는 그림(`button_face`·`button_photo`·`button_addinterests`·`aboutme_testbox`·`back_upper`·
 진행도 두 장·`frame_*`·`button_previewback`)은 두 벌이 필요 없다.
+🚫 **`preview/frame_profile.png`(큰 사진의 흰 테두리 선)는 들여만 두고 쓰지 않는다** — 사용자 결정(2026-10-05, 외곽선 빼기).
+모서리 반지름(≈44)만 이 그림에서 잰 값을 쓴다.
 ⚠️ `back_upper.png`는 아이보리(250,248,245)라 흰 본문과 이음매가 보여서 **모양만 쓰고 흰색으로 칠한다**
 — 시안(참고 화면)이 흰색이다. 흰색으로 다시 받으면 칠하는 줄을 지우면 된다.
 
