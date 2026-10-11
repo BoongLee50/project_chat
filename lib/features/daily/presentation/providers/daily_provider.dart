@@ -4,16 +4,20 @@ import '../../../../core/error/api_exception.dart';
 import '../../../../core/providers.dart';
 import '../../data/models/daily_models.dart';
 
-/// 오늘의 질문(타이틀 화면). 18시에 바뀌므로 화면에 들어올 때마다 다시 읽는다.
-final dailyTodayProvider = FutureProvider<DailyToday>(
+/// 오늘의 질문(타이틀 화면). 18시에 바뀌므로 **화면에 들어올 때마다 다시 읽는다** —
+/// 그래서 `autoDispose`다. 남겨 두면 18시가 지난 뒤에도 "이미 답했다"는 옛 값으로 타이틀을 건너뛰고
+/// 목록을 열어 서버가 403을 준다(2026-10-11: 답했으면 타이틀을 건너뛰게 되면서 생긴 조건).
+final dailyTodayProvider = FutureProvider.autoDispose<DailyToday>(
   (ref) => ref.read(dailyApiProvider).today(),
 );
 
-/// 목록 정렬. 바뀌면 목록이 자동으로 다시 읽힌다.
-final dailySortProvider = StateProvider<DailySort>((ref) => DailySort.latest);
+/// 목록 정렬. 바뀌면 목록이 자동으로 다시 읽힌다. 다시 들어오면 기본 [최신]으로(기획 9-2).
+final dailySortProvider = StateProvider.autoDispose<DailySort>(
+  (ref) => DailySort.latest,
+);
 
-/// 달빛 한마디 목록.
-class DailyListController extends AsyncNotifier<List<DailyAnswer>> {
+/// [답글 목록]. 들어올 때마다 새로 읽는다(`autoDispose` — 위 [dailyTodayProvider]와 같은 이유).
+class DailyListController extends AutoDisposeAsyncNotifier<List<DailyAnswer>> {
   @override
   Future<List<DailyAnswer>> build() {
     final sort = ref.watch(dailySortProvider);
@@ -38,7 +42,7 @@ class DailyListController extends AsyncNotifier<List<DailyAnswer>> {
 }
 
 final dailyListProvider =
-    AsyncNotifierProvider<DailyListController, List<DailyAnswer>>(
+    AsyncNotifierProvider.autoDispose<DailyListController, List<DailyAnswer>>(
       DailyListController.new,
     );
 

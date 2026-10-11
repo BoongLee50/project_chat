@@ -17,8 +17,11 @@ import 'daily_list_screen.dart';
 /// 달빛가든 필터 줄의 네 번째 칸(`button_Moonlight`)에서 들어온다.
 ///
 /// 흐름(261011에서 바뀌었다 — 260919/261002는 [참여하기] → 목록이었다):
+/// - 🚪 **오늘 이미 등록했으면 타이틀을 건너뛰고 [답글 목록]을 바로 그린다** — 다음 질문(KST 18시)이
+///   열리기 전까지 타이틀은 다시 안 나온다(2026-10-11 사용자 결정). 가든 입구는 그대로 이 화면을 연다.
+///   그래서 오늘 상태는 들어올 때마다 **새로 읽는다**(`dailyTodayProvider`가 `autoDispose`).
 /// - [참여하기] → **[내 한마디 등록] 시트가 아래에서 올라온다**(2026-10-11 사용자 결정).
-///   등록해야 [답글 목록]이 열린다(기획 9-1). 이미 등록했으면 바로 목록으로 간다.
+///   등록해야 [답글 목록]이 열린다(기획 9-1).
 /// - 시트의 `✕` → **애니메이션 없이 뚝 사라지고**, 쓰던 글·사진도 지워진다(같은 결정).
 ///   다시 열면 빈 시트다 — 시트는 닫힐 때 트리에서 빠져 상태가 남지 않는다.
 /// - [등록하기] → [답글 목록]으로 바꿔 끼운다. 목록의 [나가기]는 가든으로 간다.
@@ -51,6 +54,7 @@ class _DailyIntroScreenState extends ConsumerState<DailyIntroScreen>
     duration: const Duration(milliseconds: 320),
   );
   bool _writing = false;
+  bool _refreshed = false;
 
   @override
   void initState() {
@@ -69,6 +73,20 @@ class _DailyIntroScreenState extends ConsumerState<DailyIntroScreen>
     });
   }
 
+  /// 들어올 때마다 오늘 상태·목록을 **첫 그림 전에** 새로 읽는다.
+  ///
+  /// 🚨 `autoDispose`만으로는 안 됐다(실기 확인) — Riverpod은 버릴 provider를 **다음 프레임에** 치우는데,
+  /// 가든이 가만히 있으면 그 프레임이 곧 이 화면이 열리는 프레임이라 **옛 값("이미 답함")이 살아남았다.**
+  /// `initState`에서는 `ref`를 못 써서(Riverpod이 상위 위젯을 찾는다) 첫 `didChangeDependencies`에서 한다.
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_refreshed) return;
+    _refreshed = true;
+    ref.invalidate(dailyTodayProvider);
+    ref.invalidate(dailyListProvider);
+  }
+
   @override
   void dispose() {
     _ticker?.cancel();
@@ -83,11 +101,7 @@ class _DailyIntroScreenState extends ConsumerState<DailyIntroScreen>
     return '${h.toString().padLeft(2, '0')} : ${m.toString().padLeft(2, '0')}';
   }
 
-  void _join(bool answered) {
-    if (answered) {
-      Navigator.of(context).pushReplacement(DailyListScreen.route());
-      return;
-    }
+  void _join() {
     setState(() => _writing = true);
     _sheet.forward(from: 0);
   }
@@ -115,6 +129,20 @@ class _DailyIntroScreenState extends ConsumerState<DailyIntroScreen>
     });
 
     final data = today.valueOrNull;
+
+    // 새로 읽는 동안은 그림 없이 기다린다 — 이미 답한 사람에게 타이틀이 번쩍 보였다 사라지면 안 된다.
+    if (today.isLoading) {
+      return const Scaffold(
+        backgroundColor: AppColors.night,
+        body: Center(
+          child: CircularProgressIndicator(color: AppColors.moonlight),
+        ),
+      );
+    }
+    // 오늘 이미 답했다 → 타이틀 없이 바로 목록. [나가기]는 이 라우트를 닫아 가든으로 간다.
+    if (data != null && data.answered && !_writing) {
+      return const DailyListScreen();
+    }
     final remaining = _remaining ?? data?.remainingSeconds;
 
     return PopScope(
@@ -223,7 +251,7 @@ class _DailyIntroScreenState extends ConsumerState<DailyIntroScreen>
                     button: true,
                     label: l10n.dailyJoin,
                     child: GestureDetector(
-                      onTap: data == null ? null : () => _join(data.answered),
+                      onTap: data == null ? null : _join,
                       child: ArtImage(
                         WordArt.join,
                         width: WordArt.joinSize.width,

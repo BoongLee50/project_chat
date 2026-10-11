@@ -8,6 +8,7 @@ import '../../../../core/providers.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/authed_image.dart';
 import '../../../../shared/widgets/design_canvas.dart';
+import '../../../../shared/widgets/image_viewer.dart';
 import '../../../auth/presentation/providers/session_provider.dart';
 import '../../../chat/presentation/widgets/talk_art.dart';
 import '../../../chat/presentation/widgets/talk_cell.dart'
@@ -467,24 +468,30 @@ class _AnswerCellState extends ConsumerState<_AnswerCell> {
                         ),
                         if (a.imageUrl != null) ...[
                           SizedBox(height: 16 * s),
-                          // 사진도 셀의 일부 — 누르면 상세로 간다(원본 팝업은 상세에서).
-                          SizedBox(
-                            width: WordArt.photoSize.width * s,
-                            height: WordArt.photoSize.height * s,
-                            child: Stack(
-                              fit: StackFit.expand,
-                              children: [
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(18 * s),
-                                  child: AuthedImage(url: a.imageUrl!),
-                                ),
-                                ArtImage(
-                                  WordArt.photoFrame,
-                                  width: WordArt.photoSize.width,
-                                  height: WordArt.photoSize.height,
-                                  fit: BoxFit.fill,
-                                ),
-                              ],
+                          // 사진을 누르면 **원본만 화면 가운데 팝업**(배경을 누르면 닫힘, 2026-10-11 사용자 지시).
+                          // 사진 밖 셀을 누르면 그대로 상세로 간다.
+                          GestureDetector(
+                            behavior: HitTestBehavior.opaque, // 함정 #38
+                            onTap: () =>
+                                showOriginalImage(context, a.imageUrl!),
+                            child: SizedBox(
+                              width: WordArt.photoSize.width * s,
+                              height: WordArt.photoSize.height * s,
+                              child: Stack(
+                                fit: StackFit.expand,
+                                children: [
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(18 * s),
+                                    child: AuthedImage(url: a.imageUrl!),
+                                  ),
+                                  ArtImage(
+                                    WordArt.photoFrame,
+                                    width: WordArt.photoSize.width,
+                                    height: WordArt.photoSize.height,
+                                    fit: BoxFit.fill,
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ],

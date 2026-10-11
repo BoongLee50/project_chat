@@ -405,6 +405,7 @@ adb shell cmd locale set-app-locales com.example.project_chat --locales ko-KR
 | 90 | 🚨 **`centerSlice`(9분할 늘이기)에 `scale`을 같이 주면 안 늘어난다** | 자기소개 회색 칸(`aboutme_testbox`)을 `DecorationImage`/`Image.asset`에 `centerSlice` + `scale: 1/s`로 깔았더니, 글이 길어져 칸이 커져도 **회색이 처음 크기에 머물러 글자가 밖으로 넘쳤다**(실기 확인). Flutter가 조각 경계를 구할 때 그림 픽셀과 논리 픽셀을 섞어 빼기 때문이다. 📌 `scale` 없이 **시안 픽셀 크기(950 × 높이/s)로 늘려 그린 뒤 `FittedBox`로 통째로 줄인다**(`profile_screen.dart` `_IntroBox`) |
 | 91 | **`resizeToAvoidBottomInset: false` 화면의 스낵바는 키보드 뒤에 숨는다** | 달빛 한마디 등록 시트는 배경 그림이 밀려 찌그러지지 않게 Scaffold가 키보드를 무시하게 했는데, 그러자 **"200자까지 입력할 수 있어요" 안내가 키보드 아래에 떠서 안 보였다**(실기 확인 — 글자가 왜 안 들어가는지 모른다). 📌 그런 화면의 안내는 `SnackBarBehavior.floating` + `margin.bottom = viewInsets.bottom + 16`으로 **키보드 위에** 띄울 것(`daily_write_sheet.dart` `_toast`) |
 | 92 | **`Row`에 `Flexible`과 `Spacer`를 같이 두면 남는 폭을 반씩 나눈다** | 목록 셀 이름 줄을 `Flexible(이름) … Spacer() [원문보기] >`로 짰더니 **`>`가 셀마다 다른 자리**에 섰다 — 둘 다 flex 1이라 남는 폭을 나눠 가진다. 📌 왼쪽 묶음을 `Expanded(Row(...))`로 감싸고 `Spacer`를 빼면 오른쪽 버튼이 늘 끝에 붙는다(`daily_list_screen.dart`) |
+| 93 | 🚨 **`autoDispose`인데도 화면을 다시 열면 옛 값이 나온다** | 달빛 한마디의 "오늘 이미 답했나"를 `FutureProvider.autoDispose`로 두고 화면을 닫았다 다시 열었더니, 서버에선 답이 지워졌는데 **옛 값("답함")으로 타이틀을 건너뛰었다**(실기 확인 — 앱을 껐다 켜야 맞았다). Riverpod은 버릴 provider를 **다음 프레임에** 치우는데, 뒤 화면(가든)이 가만히 있으면 그 다음 프레임이 곧 **새 화면이 같은 provider를 다시 구독하는 프레임**이라 버려지지 않는다. 📌 들어올 때 반드시 새로 읽어야 하는 값은 **첫 `didChangeDependencies`에서 `ref.invalidate`** 할 것(`initState`에서는 `ref`를 못 쓴다 — `dependOnInheritedWidgetOfExactType … before initState() completed`로 빨간 화면). `daily_intro_screen.dart` |
 
 ---
 
@@ -470,6 +471,17 @@ adb shell cmd locale set-app-locales com.example.project_chat --locales ko-KR
 - 등록 전에 올린 사진을 `✕`로 버리면 저장소에 남는다(화면엔 안 나온다)
 - 📌 **다른 세션 몫**: 261011에서 **3-1 포스트 등록**에 4줄이 늘었다 — *유료 → 무료 전환 시 기존 사진은 지우지 않고,
   메인 + 다음 슬롯 1장만 공개, 나머지는 잠금 표시, 재구독 시 다시 이용*. `/post` 세션에 알릴 것
+
+**이어서 — 사용자 지시 셋**(같은 날)
+
+| # | 지시 | 결과 |
+|---|---|---|
+| 1 | 타이틀 질문 글이 편지보다 덜 기울었다 — **오른쪽을 조금 더 올릴 것** | ✅ `WordArt.questionAngle` -10° → **-12°**(-0.17 → -0.21 rad) |
+| 2 | **한 번 참여하면** 다음 질문(18시)까지 **타이틀을 띄우지 않고 바로 목록** | ✅ 가든 입구는 그대로 `DailyIntroScreen`을 열고, 오늘 답했으면 **타이틀 대신 목록을 그린다**(읽는 동안은 그림 없이 로딩 — 타이틀이 번쩍이지 않게). 들어올 때마다 새로 읽는다(함정 #93). provider 셋을 `autoDispose`로 — 정렬도 들어올 때 [최신]으로 돌아간다 |
+| ❓ | vwordA의 검은 네모는 사진인가 → 사진이면 누를 때 **가운데 팝업으로 원본**, 배경을 누르면 닫힘 | 사진 칸이 맞다 — 검증하며 DB에 **파일 없는 가짜 키**를 넣어서 검게 보였다. ✅ 셀 사진을 누르면 공용 `showOriginalImage`(원본 비율, 배경·✕로 닫힘), 사진 밖을 누르면 그대로 상세. 진짜 사진으로 확인 |
+
+- `● ON` = 접속 중, 아니면 `N분 전` — **사용자 확인으로 확정**.
+- 실기 확인: 미참여 → 타이틀 → 등록 → 목록 → [나가기] → 다시 들어가면 목록 바로 → DB에서 내 답을 지우고 다시 들어가면 타이틀(18시 넘김과 같은 상황).
 
 ### 2026-10-04 [친구] — 친구 셀 글자·간격 · [친구 관리] 20% · 관심사 줄을 가든 그림으로 · 신규 `N`은 7일 규칙
 
