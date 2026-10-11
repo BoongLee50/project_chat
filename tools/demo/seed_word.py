@@ -2,11 +2,17 @@
 
     python tools/demo/seed_word.py           # 오늘 것을 지우고 다시 채운다(몇 초)
     python tools/demo/seed_word.py --clean   # 지우기만
+    python tools/demo/seed_word.py --me      # + [LINE] 목 계정(`mock-dev-line`)이 대댓글을 시험할 댓글들
 
 - 14명(한국 7 · 일본 7)이 답한다. 글은 각자 나라 말 · 사진은 절반쯤(그 사람의 포스트 사진을 다시 쓴다) ·
   하나는 200자 가까운 긴 글(셀이 틀 높이보다 커지는 모양 확인용)
 - 서로 **좋아요**(자기 글엔 안 누른다 — 2026-10-11 규칙)와 **댓글**(A → B → A 한 스레드 포함)을 붙인다
 - 시각은 지금으로부터 몇 분 ~ 몇 시간 전으로 흩어 `N분 전`·`N시간 전`이 섞여 보이게
+- `--me`: [LINE] 목 계정(내 계정)으로 **대댓글을 직접 달아 보게** 판을 깐다(2026-10-11 사용자 요청)
+  · **내 한마디에 남이 단 1단계 댓글 5개**(사진 1개 포함) → 내가 **2단계 답글**을 단다
+  · 그중 하나는 이미 끝난 대화(남 → 나 → 남, 3단계)라 더는 못 다는 것도 볼 수 있다
+  · **남의 한마디 2개에 내 1단계 댓글 + 글쓴이 답글** → 내가 **3단계**를 단다
+  · 내 한마디가 없으면 하나 만든다(`temp-word-me`). 내가 직접 쓴 한마디는 지우지 않는다
 
 🚨 **오늘 영업일 것이라 KST 18:05 배치에 지워진다** — 다음 날 목록이 비면 다시 돌릴 것.
 먼저 `python tools/demo/seed_users.py`로 40명이 있어야 한다(얼굴·포스트 사진 파일도 그 스크립트가 만든다).
@@ -67,7 +73,11 @@ def session_date():
 
 
 CLEAN = """
-DELETE FROM comments WHERE target_type = 'DAILY_ANSWER' AND target_id LIKE 'temp-word-%';
+-- 더미 댓글에 사람이 앱에서 단 답글(3단계까지)도 함께 — 부모가 사라져 떠도는 줄이 남지 않게.
+DELETE FROM comments WHERE target_type = 'DAILY_ANSWER' AND parent_id IN
+    (SELECT id FROM (SELECT id FROM comments WHERE parent_id LIKE 'temp-word-%') x);
+DELETE FROM comments WHERE target_type = 'DAILY_ANSWER' AND parent_id LIKE 'temp-word-%';
+DELETE FROM comments WHERE target_type = 'DAILY_ANSWER' AND (target_id LIKE 'temp-word-%' OR id LIKE 'temp-word-%');
 DELETE FROM daily_answers WHERE id LIKE 'temp-word-%';
 """
 
@@ -152,10 +162,63 @@ WHERE u.id LIKE 'temp-%' AND u.status = 'ACTIVE' ORDER BY u.id;""")
                          % (q(cid + "rr"), q(aid), q(author[0]), q("🙌"), q(cid + "r"), max(0, ago - 2)))
     run_sql("\n".join(s))
 
+    if "--me" in sys.argv:
+        seed_me(qid, sdate, users, answers)
+
     n = run_sql("SELECT COUNT(*) FROM daily_answers WHERE id LIKE 'temp-word-%';")
     c = run_sql("SELECT COUNT(*) FROM comments WHERE target_id LIKE 'temp-word-%';")
     l = run_sql("SELECT COUNT(*) FROM daily_answer_likes WHERE answer_id LIKE 'temp-word-%';")
     print("영업일 %s : 답 %s · 좋아요 %s · 댓글 %s" % (sdate, n, l, c))
+
+
+def comment_sql(cid, target, author, body, parent, depth, ago_min, image=None):
+    return ("INSERT INTO comments (id, target_type, target_id, author_id, body, parent_id, depth, image_key, created_at) "
+            "VALUES (%s,'DAILY_ANSWER',%s,%s,%s,%s,%d,%s, NOW(3) - INTERVAL %d MINUTE);"
+            % (q(cid), q(target), q(author), q(body), q(parent), depth, q(image), ago_min))
+
+
+def seed_me(qid, sdate, users, answers):
+    """[LINE] 목 계정이 2단계·3단계 답글을 직접 달아 볼 수 있는 판."""
+    me = run_sql("SELECT id FROM users WHERE provider='LINE' AND provider_uid='mock-dev-line';")
+    if not me:
+        print("[LINE] 목 계정이 없다 — 앱에서 [LINE]으로 한 번 로그인할 것. --me 건너뜀")
+        return
+    mine = run_sql("SELECT id FROM daily_answers WHERE question_id = %s AND user_id = %s;" % (q(qid), q(me)))
+    if not mine:
+        mine = "temp-word-me"
+        run_sql("INSERT INTO daily_answers (id, question_id, user_id, session_date, body, created_at) "
+                "VALUES (%s,%s,%s,%s,%s, NOW(3) - INTERVAL 90 MINUTE);"
+                % (q(mine), q(qid), q(me), q(sdate), q("오늘은 퇴근길 한강 야경이 제일 예뻤어요 🌙")))
+
+    others = [u for u in users if u[0] != me]
+    kr = [u for u in others if u[1] == "KR"]
+    jp = [u for u in others if u[1] == "JP"]
+    s = []
+    # ① 내 한마디에 남이 단 1단계 댓글 — 내가 2단계를 단다.
+    firsts = [
+        (kr[0], "저도 오늘 한강 갔었어요! 바람 좋더라고요", None),
+        (jp[0], "夜景いいですね！どのあたりですか？", None),
+        (kr[1], "사진도 보여주세요 📸", None),
+        (jp[1], "私もこんな景色見てみたいです✨", "seed/temp/%s_post1.jpg" % jp[1][2].split('/')[-1].split('_')[0]),
+        (kr[2], "퇴근길 야경 최고죠 👍", None),
+    ]
+    for k, (u, body, image) in enumerate(firsts):
+        s.append(comment_sql("temp-word-me-c%d" % k, mine, u[0], body, None, 1, 40 - k * 6, image))
+    # 이미 끝난 대화 하나(남 → 나 → 남) — 3단계라 더는 답글을 못 단다.
+    s.append(comment_sql("temp-word-me-done", mine, jp[2][0], "今日もお疲れさまでした🌙", None, 1, 70))
+    s.append(comment_sql("temp-word-me-done-r", mine, me, "감사해요! 좋은 밤 보내세요", "temp-word-me-done", 2, 65))
+    s.append(comment_sql("temp-word-me-done-rr", mine, jp[2][0], "おやすみなさい😊", "temp-word-me-done-r", 3, 60))
+
+    # ② 남의 한마디에 내 1단계 + 글쓴이 2단계 — 내가 3단계를 단다.
+    picked = [a for a in answers if a[1] != me][:2]
+    for k, (aid, owner, country, minutes) in enumerate(picked):
+        cid = "temp-word-me-on%d" % k
+        reply = "고마워요! 오늘 하루 어땠어요?" if country == "KR" else "ありがとう！今日はどんな一日でした？"
+        s.append(comment_sql(cid, aid, me, "글 너무 좋아요 :)", None, 1, 30 + k))
+        s.append(comment_sql(cid + "r", aid, owner, reply, cid, 2, 20 + k))
+    run_sql("\n".join(s))
+    print("내 계정(%s): 내 한마디 %s 에 1단계 댓글 %d개(+끝난 대화 1) · 남의 한마디 %d개에 3단계 차례"
+          % (me[:8], mine[:12], len(firsts), len(picked)))
 
 
 if __name__ == "__main__":

@@ -24,7 +24,7 @@ disable-model-invocation: true
 | 클라 | `lib/features/daily/` — 타이틀 `daily_intro_screen.dart`(등록 시트를 이 안에서 올린다) · 등록 `widgets/daily_write_sheet.dart` · 목록 `daily_list_screen.dart` · 상세 `daily_detail_screen.dart`(전체 화면, 댓글이 본문 아래) · `daily_provider.dart` · `daily_api.dart` |
 | 서버 | `server/.../dailyquestion/` · `db/migration` **V14**(표 넷 + `comments.target_type='DAILY_ANSWER'`) · **V29**(답변글 200자) · 정리 배치 `daily-cleanup-cron`(18:05) |
 | 검증 | `python tools/verify/verify_word.py`(23개 — 등록 전 403 · 200자 코드포인트 · 셀 재료 · 내 글 좋아요·댓글 금지) |
-| 더미 | `python tools/demo/seed_word.py` — 임시 유저 14명의 답·좋아요·댓글(먼저 `seed_users.py`). 18:05에 지워지니 날마다 다시 |
+| 더미 | `python tools/demo/seed_word.py` — 임시 유저 14명의 답·좋아요·댓글(먼저 `seed_users.py`). 18:05에 지워지니 날마다 다시. **`--me`** 를 붙이면 [LINE] 목 계정(내 계정)이 **2·3단계 답글을 직접 달아 볼 댓글**까지 |
 | 문서 | `01` §1.9 · `02` §1.4-B · `08` §0-4 · `13` 달빛 한마디 줄 |
 
 🚨 **가든과 같이 쓰는 것** — 고치면 가든도 바뀐다(보고에 적을 것):
