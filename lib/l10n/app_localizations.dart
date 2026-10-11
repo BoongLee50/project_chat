@@ -721,6 +721,18 @@ abstract class L10n {
   /// **'원문보기'**
   String get dailyViewOriginal;
 
+  /// No description provided for @dailyPhotoSheetTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'한마디 사진 등록'**
+  String get dailyPhotoSheetTitle;
+
+  /// No description provided for @dailyPhotoSheetSubtitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'오늘의 질문에 어울리는 사진 한 장을 남겨보세요.'**
+  String get dailyPhotoSheetSubtitle;
+
   /// No description provided for @commentsTitle.
   ///
   /// In ko, this message translates to:

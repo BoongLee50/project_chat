@@ -11,6 +11,7 @@ import '../../../../core/error/error_messages.dart';
 import '../../../../core/providers.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/design_canvas.dart';
+import '../../../../shared/widgets/photo_source_sheet.dart';
 import '../../../../shared/widgets/request_message_input.dart';
 import 'word_art.dart';
 
@@ -22,7 +23,7 @@ import 'word_art.dart';
 /// - 답변글 **200자**(띄어쓰기 포함). 시안의 `0 / 300`은 오류다(2026-10-11 기획자 확인).
 ///   🚨 **코드포인트로 센다** — 서버(`codePointCount`)·DB(`VARCHAR`)와 같은 단위(함정 #82).
 ///   Flutter `maxLength`는 글자 모양 단위라 이모지가 섞이면 앱은 받고 서버는 거절했다.
-/// - 사진 **1장, 선택**. 고르는 즉시 올리고 키만 들고 있다(포스트 사진과 같은 흐름).
+/// - 사진 **1장, 선택** — **촬영 / 앨범**에서 고른다(포스트·프로필과 같은 시트). 고르는 즉시 올리고 키만 들고 있다.
 ///   ⚠️ 올린 뒤 `✕`로 닫으면 저장소에 사진이 남는다 — 키가 어디에도 안 붙어 화면에는 안 나온다.
 /// - 그림 한 장(`back_word`)에 초승달·「오늘의 질문」·🔒 잠금 안내·`📷 사진 추가`가 구워져 있다.
 class DailyWriteSheet extends ConsumerStatefulWidget {
@@ -103,10 +104,23 @@ class _DailyWriteSheetState extends ConsumerState<DailyWriteSheet> {
       );
   }
 
+  /// 사진 칸·`📷 사진 추가`를 누르면 **촬영 / 앨범**을 고른다 — 포스트·프로필과 같은 시트(`PhotoSourceSheet`).
   Future<void> _pickImage() async {
     if (_busy || _uploading) return;
+    // 자판을 먼저 내린다 — 안 내리면 시트를 닫은 뒤 포커스가 글칸으로 돌아와 자판이 다시 올라온다(함정 #88).
+    FocusScope.of(context).unfocus();
+    final l10n = L10n.of(context);
+    final choice = await PhotoSourceSheet.show(
+      context,
+      title: l10n.dailyPhotoSheetTitle,
+      subtitle: l10n.dailyPhotoSheetSubtitle,
+    );
+    if (choice == null || !mounted) return;
+
     final file = await ImagePicker().pickImage(
-      source: ImageSource.gallery,
+      source: choice == PhotoSource.camera
+          ? ImageSource.camera
+          : ImageSource.gallery,
       imageQuality: 85,
     );
     if (file == null || !mounted) return;

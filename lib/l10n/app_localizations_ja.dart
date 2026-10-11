@@ -350,6 +350,12 @@ class L10nJa extends L10n {
   String get dailyViewOriginal => '原文を見る';
 
   @override
+  String get dailyPhotoSheetTitle => 'ひとこと写真の登録';
+
+  @override
+  String get dailyPhotoSheetSubtitle => '今日の質問に合う写真を1枚残してみましょう。';
+
+  @override
   String commentsTitle(String nickname) {
     return '$nicknameさんのポスト';
   }

@@ -350,6 +350,12 @@ class L10nKo extends L10n {
   String get dailyViewOriginal => '원문보기';
 
   @override
+  String get dailyPhotoSheetTitle => '한마디 사진 등록';
+
+  @override
+  String get dailyPhotoSheetSubtitle => '오늘의 질문에 어울리는 사진 한 장을 남겨보세요.';
+
+  @override
   String commentsTitle(String nickname) {
     return '$nickname님의 포스트';
   }
