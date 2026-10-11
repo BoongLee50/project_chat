@@ -147,6 +147,36 @@
 ⚠️ `back_upper.png`는 아이보리(250,248,245)라 흰 본문과 이음매가 보여서 **모양만 쓰고 흰색으로 칠한다**
 — 시안(참고 화면)이 흰색이다. 흰색으로 다시 받으면 칠하는 줄을 지우면 된다.
 
+## 0-4. 🏮 달빛 한마디 (`Scene_Word`, 2026-10-11 전달본 · 기획서 261011 9장)
+
+32장 전부 들였다(+ `Example/` 6장은 시안) → `assets/images/scene_word/{title, reply_register, reply_list}/`,
+상수는 `WordArt`(`lib/features/daily/presentation/widgets/word_art.dart`).
+`_kr`/`_jp`는 언어라 접미사를 떼고 `ja/`로, **`icon_mmflag_kor/jap`은 나라**라 이름 그대로다
+(`tools/spec/compare_ui_delivery.py`의 나라 접두어에 `icon_mmflag_`을 더했다).
+
+- ⚠️ **타이틀 배경 이름이 `back_friends_kr/jp`로 왔다** — 친구 화면 것이 아니라 이름만 그렇다. 대조 도구가
+  같은 이름끼리 맞대므로 **이름을 바꾸지 않고** `title/back_friends.png`로 뒀다.
+- 질문 카드가 배경에 **기울어져 구워져 있다**(≈ -10°) → 질문 글자도 같은 각도로 돌려 얹는다(배경 실측).
+- 🔴 **눌린 [최신]·[인기](`button_recent_color`·`button_popul_color`)가 투명 배경이 아니다(RGB)** —
+  미색 바탕에서 네 모서리가 하얗게 보여서 **알약 모양으로 잘라 그린다.** 투명 판으로 다시 받으면 좋다.
+- 셀 틀 `frame_replylist`(1045×647)는 **9조각으로 늘린다**(글 길이·사진 유무로 셀 높이가 다르다, 함정 #90).
+- `[원문보기]` 버튼은 **안 왔다** → 대화방 `button_view_trans`(209×73)를 같이 쓴다. 시안 색(미색·갈색)과 결이 달라
+  전용 그림이 오면 바꿀 것.
+- 시안 img24의 `0 / 300`·img25의 `[답글 상세]`(번역 버튼·이모티콘 단추·보내기)는 아직 그림이 없다 — B 묶음(07 §4 2026-10-11).
+
+✅ **일본어판이 온 것 5장**: `back_friends`(「月のひとこと」) · `reply_register/back_word` · `button_register`(登録する) ·
+`frame_question`(今日の質問) · `button_myword`(私の回答 — **326×96**, 한국어판 333×97보다 조금 작다).
+
+**아직 일본어판이 없는 것(글자가 구워진 그림 5장)**:
+
+| 파일 | 박힌 글자 | 규격 |
+|---|---|---|
+| `title/button_join.png` | 참여하기 | 834×167 |
+| `reply_list/button_recent_color.png` · `_normal` | 최신 | 287×96 ×2 |
+| `reply_list/button_popul_color.png` · `_normal` | 인기 | 288×97 ×2 |
+
+📌 앱의 일본어 이름(ARB `dailyTitle`)을 그림에 맞춰 **「月あかりのひとこと」→「月のひとこと」** 로 바꿨다.
+
 ## 0. 현재 상태 (2026-09-06 갱신)
 
 > 📁 **에셋 폴더는 전달 폴더를 그대로 따른다**(2026-09-14부터).
@@ -264,6 +294,8 @@
 > `lib/features/garden/presentation/widgets/garden_art.dart`의 상수 목록이 그대로 목록이 된다.
 
 ### 📌 수령 이력
+
+- **2026-10-11 — `Plan_Chat\UI\Scene_Word` 적용**(`Title` 5 · `Reply Register` 8 · `Reply List` 19 → **32장 들임**). §0-4.
 
 - **2026-09-19 — `Plan_Chat\UI\Scene_Friend` 적용**(`Friend List` 16장 · `Application Received` 1장 → **15장 들임**).
   `button_receive_*` 2장은 대화방 것과 **바이트까지 같아** 들이지 않고 대화방 경로를 가리킨다.

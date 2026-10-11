@@ -12,7 +12,7 @@
   - 폴더:  Scene_Post → scene_post,  "Talk List" → talk_list  (소문자 · 공백은 밑줄)
   - 파일:  `*_jap.png`·`*_jp.png` → 같은 폴더의 `ja/*.png`(UI 언어 변형) ·  `*_kor.png`·`*_kr.png` → 접미사를 뗀 원문
            · 파일명의 공백은 밑줄(`frame_post_album Pass.png` → `frame_post_album_pass.png`)
-  - ⚠️ `icon_flag_kor/jap`·`filtering_nation_kor/jap`·`icon_sflag_*`·`icon_mflag_*`은
+  - ⚠️ `icon_flag_kor/jap`·`filtering_nation_kor/jap`·`icon_sflag_*`·`icon_mflag_*`·`icon_mmflag_*`(달빛 한마디)은
     **언어가 아니라 나라**라서 이름 그대로 둔다(둘 다 항상 필요하다).
   - `Example/` 폴더(좌표·참고 그림)는 에셋이 아니라서 보지 않는다.
 
@@ -37,7 +37,8 @@ ASSETS = os.path.join(ROOT, 'assets', 'images')
 DEFAULT_UI = 'D:/MyProject/Plan_Chat/UI'
 
 # 언어가 아니라 **나라**를 뜻하는 접미사 — ja/로 옮기지 않는다.
-COUNTRY_PREFIXES = ('icon_flag_', 'filtering_nation_', 'icon_sflag_', 'icon_mflag_')
+COUNTRY_PREFIXES = ('icon_flag_', 'filtering_nation_', 'icon_sflag_', 'icon_mflag_',
+                    'icon_mmflag_')
 
 
 def dir_name(part):

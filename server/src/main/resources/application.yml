@@ -116,8 +116,9 @@ app:
     # 3단계까지 = 댓글 / 대댓글 / 대대댓글. 그 이상은 서버가 거절한다.
     max-depth: 3
   daily-question:
-    # 달빛 한마디 본문 길이(기획 8-3). 댓글은 app.comment.max-length를 따른다.
-    max-length: 100
+    # 달빛 한마디 답변글 길이(기획서 261011 9-1, 띄어쓰기 포함). **코드포인트로 센다**(V29).
+    # 100(V14) → 200. 시안 `0 / 300`은 오류(2026-10-11 기획자 확인). 댓글은 app.comment.max-length를 따른다.
+    max-length: 200
   chat:
     # 대화 신청 — 하루 N회는 공짜, 그 뒤로는 1건당 루나를 뺀다(기획서 5장).
     free-requests-per-day: 10

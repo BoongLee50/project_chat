@@ -299,27 +299,19 @@ class L10nKo extends L10n {
   String get dailyTitle => '달빛 한마디';
 
   @override
-  String get dailyMissionNotice => '매일 저녁 6시에 새로운 미션이 열려요 ✨';
-
-  @override
   String get dailyTodayQuestion => '오늘의 질문';
 
   @override
-  String dailyParticipants(int count) {
-    return '지금까지 $count명이 참여했어요';
-  }
-
-  @override
-  String get dailyRemaining => '남은 시간';
+  String get dailyRemaining => '남은시간';
 
   @override
   String get dailyJoin => '참여하기';
 
   @override
-  String get dailySortLatest => '최신순';
+  String get dailySortLatest => '최신';
 
   @override
-  String get dailySortPopular => '인기순';
+  String get dailySortPopular => '인기';
 
   @override
   String get dailyMine => '내 한마디';
@@ -328,13 +320,13 @@ class L10nKo extends L10n {
   String get dailyMineEmpty => '아직 작성한 내 한마디가 없어요. 오늘의 질문에 답해 보세요.';
 
   @override
-  String get dailyWriteTitle => '달빛 한마디 작성';
+  String get dailyWriteTitle => '내 한마디 등록';
 
   @override
-  String get dailyWriteHint => '여기에 당신의 한마디를 입력해주세요...';
+  String get dailyWriteHint => '여기에 당신의 이야기를\n자유롭게 남겨주세요.';
 
   @override
-  String get dailyWriteImage => '이미지 추가 (선택)';
+  String get dailyWriteImage => '사진 추가 (선택 사항)';
 
   @override
   String get dailyWriteSubmit => '등록하기';
@@ -347,6 +339,15 @@ class L10nKo extends L10n {
 
   @override
   String get dailyDetailTitle => '내 달빛 한마디';
+
+  @override
+  String get dailyWriteEmpty => '답변을 입력해 주세요.';
+
+  @override
+  String get dailyWriteUploading => '사진을 올리는 중이에요. 잠시만 기다려 주세요.';
+
+  @override
+  String get dailyViewOriginal => '원문보기';
 
   @override
   String commentsTitle(String nickname) {

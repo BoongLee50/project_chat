@@ -619,28 +619,16 @@ abstract class L10n {
   /// **'달빛 한마디'**
   String get dailyTitle;
 
-  /// No description provided for @dailyMissionNotice.
-  ///
-  /// In ko, this message translates to:
-  /// **'매일 저녁 6시에 새로운 미션이 열려요 ✨'**
-  String get dailyMissionNotice;
-
   /// No description provided for @dailyTodayQuestion.
   ///
   /// In ko, this message translates to:
   /// **'오늘의 질문'**
   String get dailyTodayQuestion;
 
-  /// No description provided for @dailyParticipants.
-  ///
-  /// In ko, this message translates to:
-  /// **'지금까지 {count}명이 참여했어요'**
-  String dailyParticipants(int count);
-
   /// No description provided for @dailyRemaining.
   ///
   /// In ko, this message translates to:
-  /// **'남은 시간'**
+  /// **'남은시간'**
   String get dailyRemaining;
 
   /// No description provided for @dailyJoin.
@@ -652,13 +640,13 @@ abstract class L10n {
   /// No description provided for @dailySortLatest.
   ///
   /// In ko, this message translates to:
-  /// **'최신순'**
+  /// **'최신'**
   String get dailySortLatest;
 
   /// No description provided for @dailySortPopular.
   ///
   /// In ko, this message translates to:
-  /// **'인기순'**
+  /// **'인기'**
   String get dailySortPopular;
 
   /// No description provided for @dailyMine.
@@ -676,19 +664,19 @@ abstract class L10n {
   /// No description provided for @dailyWriteTitle.
   ///
   /// In ko, this message translates to:
-  /// **'달빛 한마디 작성'**
+  /// **'내 한마디 등록'**
   String get dailyWriteTitle;
 
   /// No description provided for @dailyWriteHint.
   ///
   /// In ko, this message translates to:
-  /// **'여기에 당신의 한마디를 입력해주세요...'**
+  /// **'여기에 당신의 이야기를\n자유롭게 남겨주세요.'**
   String get dailyWriteHint;
 
   /// No description provided for @dailyWriteImage.
   ///
   /// In ko, this message translates to:
-  /// **'이미지 추가 (선택)'**
+  /// **'사진 추가 (선택 사항)'**
   String get dailyWriteImage;
 
   /// No description provided for @dailyWriteSubmit.
@@ -714,6 +702,24 @@ abstract class L10n {
   /// In ko, this message translates to:
   /// **'내 달빛 한마디'**
   String get dailyDetailTitle;
+
+  /// No description provided for @dailyWriteEmpty.
+  ///
+  /// In ko, this message translates to:
+  /// **'답변을 입력해 주세요.'**
+  String get dailyWriteEmpty;
+
+  /// No description provided for @dailyWriteUploading.
+  ///
+  /// In ko, this message translates to:
+  /// **'사진을 올리는 중이에요. 잠시만 기다려 주세요.'**
+  String get dailyWriteUploading;
+
+  /// No description provided for @dailyViewOriginal.
+  ///
+  /// In ko, this message translates to:
+  /// **'원문보기'**
+  String get dailyViewOriginal;
 
   /// No description provided for @commentsTitle.
   ///

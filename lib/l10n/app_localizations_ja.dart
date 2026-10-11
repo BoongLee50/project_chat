@@ -296,18 +296,10 @@ class L10nJa extends L10n {
   String get gardenPhotoLockedAction => '自分のポストを登録';
 
   @override
-  String get dailyTitle => '月あかりのひとこと';
-
-  @override
-  String get dailyMissionNotice => '毎晩6時に新しいミッションが開きます ✨';
+  String get dailyTitle => '月のひとこと';
 
   @override
   String get dailyTodayQuestion => '今日の質問';
-
-  @override
-  String dailyParticipants(int count) {
-    return 'これまでに$count人が参加しました';
-  }
 
   @override
   String get dailyRemaining => '残り時間';
@@ -316,25 +308,25 @@ class L10nJa extends L10n {
   String get dailyJoin => '参加する';
 
   @override
-  String get dailySortLatest => '新着順';
+  String get dailySortLatest => '新着';
 
   @override
-  String get dailySortPopular => '人気順';
+  String get dailySortPopular => '人気';
 
   @override
-  String get dailyMine => '自分のひとこと';
+  String get dailyMine => '私の回答';
 
   @override
   String get dailyMineEmpty => 'まだ自分のひとことがありません。今日の質問に答えてみましょう。';
 
   @override
-  String get dailyWriteTitle => 'ひとことを書く';
+  String get dailyWriteTitle => '私の回答を登録';
 
   @override
-  String get dailyWriteHint => 'ここにあなたのひとことを入力してください...';
+  String get dailyWriteHint => 'ここにあなたの話を\n自由に残してください。';
 
   @override
-  String get dailyWriteImage => '画像を追加（任意）';
+  String get dailyWriteImage => '写真を追加（任意）';
 
   @override
   String get dailyWriteSubmit => '登録する';
@@ -347,6 +339,15 @@ class L10nJa extends L10n {
 
   @override
   String get dailyDetailTitle => '自分のひとこと';
+
+  @override
+  String get dailyWriteEmpty => '回答を入力してください。';
+
+  @override
+  String get dailyWriteUploading => '写真をアップロード中です。少々お待ちください。';
+
+  @override
+  String get dailyViewOriginal => '原文を見る';
 
   @override
   String commentsTitle(String nickname) {

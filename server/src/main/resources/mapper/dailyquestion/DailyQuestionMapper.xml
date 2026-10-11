@@ -20,6 +20,7 @@
         <result property="nickname" column="nickname"/>
         <result property="birthYear" column="birth_year"/>
         <result property="country" column="country"/>
+        <result property="photoKey" column="photo_key"/>
         <result property="likes" column="likes"/>
         <result property="likedByMe" column="liked_by_me"/>
     </resultMap>
@@ -48,24 +49,27 @@
         SELECT COUNT(*) FROM daily_answers WHERE question_id = #{questionId}
     </select>
 
+    <!-- photo_key = **얼굴 사진**(목록 셀의 동그라미 — 친구·대화 목록과 같은 칸, V28). -->
     <sql id="answerColumns">
-        a.*, u.nickname, u.birth_year, u.country,
+        a.*, u.nickname, u.birth_year, u.country, p.photo_key,
         (SELECT COUNT(*) FROM daily_answer_likes l WHERE l.answer_id = a.id) AS likes,
         EXISTS (SELECT 1 FROM daily_answer_likes l2
                 WHERE l2.answer_id = a.id AND l2.user_id = #{viewerId}) AS liked_by_me
     </sql>
 
     <select id="selectMyAnswer" resultMap="AnswerResultMap">
-        SELECT a.*, u.nickname, u.birth_year, u.country,
+        SELECT a.*, u.nickname, u.birth_year, u.country, p.photo_key,
                (SELECT COUNT(*) FROM daily_answer_likes l WHERE l.answer_id = a.id) AS likes,
                0 AS liked_by_me
         FROM daily_answers a JOIN users u ON u.id = a.user_id
+                 LEFT JOIN user_profiles p ON p.user_id = a.user_id
         WHERE a.question_id = #{questionId} AND a.user_id = #{userId}
     </select>
 
     <select id="selectAnswerById" resultMap="AnswerResultMap">
         SELECT <include refid="answerColumns"/>
         FROM daily_answers a JOIN users u ON u.id = a.user_id
+                 LEFT JOIN user_profiles p ON p.user_id = a.user_id
         WHERE a.id = #{answerId}
     </select>
 
@@ -77,6 +81,7 @@
         SELECT <include refid="answerColumns"/>
         FROM daily_answers a
                  JOIN users u ON u.id = a.user_id
+                 LEFT JOIN user_profiles p ON p.user_id = a.user_id
         WHERE a.question_id = #{questionId}
           AND u.status = 'ACTIVE'
           AND NOT EXISTS (SELECT 1 FROM blocks b

@@ -170,17 +170,26 @@ API를 직접 부르는 것으로 뚫린다. 응답에 `photoLocked`(잠김 여�
 방에 30일 수명이 생겼으므로(§1.6), 자리를 돌려주면 **방을 비우기만 해도 무한**이 된다.
 그래서 `translate_rooms`(V20)는 방 상태를 보지 않고 **행 수**를 세고, 그 행은 지우지 않는다.
 
-### 1.9 달빛 한마디 (기획서 8장)
+### 1.9 달빛 한마디 (기획서 261011 **9장** — 260919까지는 8장)
 | Method | Path | 설명 | 화면 |
 |--------|------|------|------|
-| GET | `/daily-question/today?lang=` | 오늘의 질문·참여 인원·남은 시간 | 8-1 |
-| GET | `/daily-question/answers?sort=&page=` | 목록(LATEST/POPULAR) | 8-1 |
-| GET | `/daily-question/answers/me` | 내 한마디(없으면 404) | 8-1 |
-| GET | `/daily-question/answers/:id` | 상세 | 8-2 |
-| POST | `/daily-question/answers` | 작성(≤100자, 이미지 1장) | 8-3 |
-| POST | `/daily-question/answers/image:upload-url` | 메인 이미지 업로드 URL | 8-3 |
-| POST | `/daily-question/answers/:id/like` | 좋아요(사람마다 한 번) | 8-2 |
-| GET·POST | `/daily-question/answers/:id/comments` | **댓글 — 포스트와 같은 규칙** | 8-2 |
+| GET | `/daily-question/today?lang=` | 오늘의 질문·남은 시간·내가 답했는지(`answered`) | 9-1 타이틀 |
+| GET | `/daily-question/answers?sort=&page=` | [답글 목록](LATEST/POPULAR). **내 답이 없으면 403** | 9-2 |
+| GET | `/daily-question/answers/me` | 내 한마디(없으면 404) | 9-2 [내 한마디] |
+| GET | `/daily-question/answers/:id` | [답글 상세]. **남의 것은 내 답이 있어야**(403) | 9-2 |
+| POST | `/daily-question/answers` | [내 한마디 등록] — **≤200자(코드포인트)**, 사진 1장(선택) | 9-1 |
+| POST | `/daily-question/answers/image:upload-url` | 사진 업로드 URL | 9-1 |
+| POST | `/daily-question/answers/:id/like` | 좋아요(사람마다 한 번) | 9-2 |
+| GET·POST | `/daily-question/answers/:id/comments` | **댓글 — 포스트와 같은 규칙** | 9-2 |
+
+- 🚪 **내 답을 등록해야 남의 답을 본다**(261011 9-1) — 목록과 남의 상세는 그 전엔
+  `DAILY_ANSWER_NOT_YET`(**403**). [내 한마디]의 404와 **같은 코드**라 앱 문구도 같다.
+  댓글 조회는 막지 않았다 — 상세에 못 들어가면 댓글 창도 못 연다.
+- ✏️ 답변글 **200자**(V29, 100 → 200). 시안 img24의 `0 / 300`은 **오류**(2026-10-11 기획자 확인).
+  **코드포인트로 센다** — `body.length()`(UTF-16)로 세던 것을 고쳤다(함정 #82, 앱도 같은 단위).
+- 목록 한 건(`DailyAnswerDto`)에 셀 재료가 더해졌다(2026-10-11): `photoUrl`(**얼굴 사진** —
+  `user_profiles.photo_key`) · `online`(프레즌스) · `createdAt`. 셀은 접속 중이면 `● ON`, 아니면 `N분 전`.
+- 참여 인원(`participants`)은 응답에 남아 있지만 **화면에서 뺐다**(261011 타이틀에 없다).
 
 - **KST 18시에 초기화**되고 새 질문이 나온다 — ①단계의 영업일 경계와 **같은 시계**다.
   `remainingSeconds`는 **서버가 계산**해 준다(기기 시계를 믿으면 사람마다 다른 시간이 보인다).
@@ -188,12 +197,12 @@ API를 직접 부르는 것으로 뚫린다. 응답에 `photoLocked`(잠김 여�
 - 질문 본문은 **콘텐츠**라 ARB에 없다. `daily_questions`에 **한·일 두 벌**로 두고 `lang`으로 고른다.
   후보는 `daily_question_bank`이며, 오늘 질문이 없으면 **처음 들여다본 사람이 만든다**
   (배치로 미리 만들면 한 번 실패했을 때 그날 이벤트가 통째로 빈다).
-- **인기순 = 좋아요 + 댓글 합**(기획 8-1).
+- **[인기] = 좋아요 + 댓글 합**(기획 9-2).
 - 🚨 **경로·테이블에 콘텐츠 이름이 없다** — "달빛우편"이 "달빛 한마디"가 된 전례가 있어
   이름이 또 바뀌어도 ARB 문구만 고치면 되게 했다(docs/12 §6 E).
 
 **댓글은 포스트와 한 표를 쓴다**(V14) — `comments(target_type, target_id)`.
-세 화면(4-2 / 8-2 / 8-3)의 규칙이 문장까지 같아 표도 판정도 한 벌만 둔다.
+두 화면(4-2 / 9-2)의 규칙이 문장까지 같아 표도 판정도 한 벌만 둔다.
 ⚠️ 대상이 두 종류가 되며 `posts` FK가 사라졌다 → **지난 영업일 정리 배치가 주인 없는 댓글을 지운다.**
 
 ### 1.5 대화 신청 (하이브리드: 생성=REST, 도착알림=소켓)

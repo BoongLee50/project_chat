@@ -12,6 +12,7 @@ import com.moonlighttalk.server.dailyquestion.entity.DailyAnswer;
 import com.moonlighttalk.server.dailyquestion.entity.DailyQuestion;
 import com.moonlighttalk.server.dailyquestion.mapper.DailyQuestionMapper;
 import com.moonlighttalk.server.post.dto.UploadUrlResponse;
+import com.moonlighttalk.server.presence.PresenceService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -26,13 +27,14 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * 달빛 한마디 이벤트(기획서 8장).
+ * 달빛 한마디 이벤트(기획서 261011 <b>9장</b> — 260919까지는 8장).
  *
- * <p>매일 질문 하나에 <b>한마디(100자) + 사진 1장(선택)</b> 으로 답하고 서로 본다.
+ * <p>매일 질문 하나에 <b>답변글(200자) + 사진 1장(선택)</b> 으로 답하고 서로 본다.
+ * <b>내 답을 등록해야 남의 답을 볼 수 있다</b>(261011 9-1) — 목록과 남의 상세는 그 전엔 막는다.
  * <b>KST 18시에 모든 정보가 초기화</b>되고 새 질문이 나온다 — ①단계의 영업일 경계와 <b>같은 시계</b>다
  * ({@code app.session.rollover-hour}). 화면 문구도 "매일 저녁 6시에 새로운 미션이 열려요"다.
  *
- * <p><b>댓글은 만들지 않았다.</b> 기획서 8-2·8-3의 댓글 규칙이 4-2와 문장까지 같아
+ * <p><b>댓글은 만들지 않았다.</b> 기획서 9-2의 댓글 규칙이 4-2와 문장까지 같아
  * {@link CommentService}를 그대로 쓴다(3단계·50자·이미지 1장).
  *
  * <p>🚨 클래스·테이블·API 이름에 콘텐츠를 넣지 않았다 — "달빛우편"이 "달빛 한마디"가 된 전례가 있다.
@@ -47,6 +49,7 @@ public class DailyQuestionService {
     private final CommentService commentService;
     private final SessionTimeService sessionTime;
     private final FileStorageService fileStorageService;
+    private final PresenceService presenceService;
 
     private final int maxLength;
 
@@ -54,11 +57,13 @@ public class DailyQuestionService {
                                  CommentService commentService,
                                  SessionTimeService sessionTime,
                                  FileStorageService fileStorageService,
-                                 @Value("${app.daily-question.max-length:100}") int maxLength) {
+                                 PresenceService presenceService,
+                                 @Value("${app.daily-question.max-length:200}") int maxLength) {
         this.mapper = mapper;
         this.commentService = commentService;
         this.sessionTime = sessionTime;
         this.fileStorageService = fileStorageService;
+        this.presenceService = presenceService;
         this.maxLength = maxLength;
     }
 
@@ -77,21 +82,25 @@ public class DailyQuestionService {
                 mine == null ? null : mine.getId());
     }
 
-    /** 목록(기획 8-1). 기본 최신순, 인기순은 <b>좋아요 + 댓글 합</b>. */
+    /** [답글 목록](기획 9-2). 기본 최신순, 인기순은 <b>좋아요 + 댓글 합</b>. 내 답이 있어야 열린다. */
     @Transactional
     public List<DailyAnswerDto> answers(String userId, DailyAnswerSort sort, int page) {
         DailyQuestion question = requireTodayQuestion();
+        requireAnswered(question, userId);
         List<DailyAnswer> rows = mapper.selectAnswers(
                 question.getId(), userId, sort.name(), page * PAGE_SIZE, PAGE_SIZE);
         return toDtos(rows, userId);
     }
 
-    /** 상세(기획 8-2). */
+    /** [답글 상세](기획 9-2). 남의 답은 내 답을 등록한 뒤에만 — 목록과 같은 문이다. */
     @Transactional
     public DailyAnswerDto answer(String userId, String answerId) {
         DailyAnswer row = mapper.selectAnswerById(answerId, userId);
         if (row == null) {
             throw notFound();
+        }
+        if (!row.getUserId().equals(userId)) {
+            requireAnswered(requireTodayQuestion(), userId);
         }
         return toDtos(List.of(row), userId).get(0);
     }
@@ -115,10 +124,15 @@ public class DailyQuestionService {
                 fileStorageService.issueUploadUrl(storageKey, contentType), storageKey);
     }
 
-    /** 작성(기획 8-3). 하루에 한 번만 — 두 번째는 DB 유니크가 막고 여기서 먼저 걸러 준다. */
+    /**
+     * [내 한마디 등록](기획 9-1). 하루에 한 번만 — 두 번째는 DB 유니크가 막고 여기서 먼저 걸러 준다.
+     *
+     * <p>길이는 <b>코드포인트</b>로 센다 — DB {@code VARCHAR}와 같은 단위다. {@code length()}(UTF-16)로 세면
+     * 이모지가 둘로 세어져 앱이 받아 준 글을 서버가 거절했다(함정 #82, 신청 한마디와 같은 처리).
+     */
     @Transactional
     public DailyAnswerDto write(String userId, String body, String imageKey) {
-        if (body != null && body.length() > maxLength) {
+        if (body != null && body.codePointCount(0, body.length()) > maxLength) {
             throw new ApiException(ErrorCode.DAILY_ANSWER_TOO_LONG, HttpStatus.BAD_REQUEST,
                     "한마디가 너무 깁니다.", String.valueOf(maxLength));
         }
@@ -142,7 +156,7 @@ public class DailyQuestionService {
         return answer(userId, answer.getId());
     }
 
-    /** 좋아요(기획 8-2). 사람마다 한 번 — 두 번 눌러도 수치가 늘지 않는다. */
+    /** 좋아요(기획 9-2). 사람마다 한 번 — 두 번 눌러도 수치가 늘지 않는다. */
     @Transactional
     public void like(String userId, String answerId) {
         if (mapper.selectAnswerById(answerId, userId) == null) {
@@ -215,6 +229,17 @@ public class DailyQuestionService {
         return Math.max(0, ChronoUnit.SECONDS.between(now, next));
     }
 
+    /**
+     * 내 답이 없으면 막는다(기획 261011 9-1 "작성하고 등록해야 다른 사람들의 답변 목록 열람 가능").
+     * 코드는 [내 한마디]와 같은 {@code DAILY_ANSWER_NOT_YET} — 앱 문구도 "아직 작성한 내 한마디가 없어요"로 같다.
+     */
+    private void requireAnswered(DailyQuestion question, String userId) {
+        if (mapper.selectMyAnswer(question.getId(), userId) == null) {
+            throw new ApiException(ErrorCode.DAILY_ANSWER_NOT_YET, HttpStatus.FORBIDDEN,
+                    "먼저 답변을 작성해야 다른 사람들의 이야기를 볼 수 있어요.");
+        }
+    }
+
     private List<DailyAnswerDto> toDtos(List<DailyAnswer> rows, String viewerId) {
         List<String> ids = rows.stream().map(DailyAnswer::getId).toList();
         Map<String, Integer> commentCounts =
@@ -229,6 +254,10 @@ public class DailyQuestionService {
                     a.getNickname(),
                     a.getBirthYear() == null ? null : year - a.getBirthYear(),
                     a.getCountry(),
+                    a.getPhotoKey() == null
+                            ? null
+                            : fileStorageService.issueDownloadUrl(a.getPhotoKey()),
+                    presenceService.isOnline(a.getUserId()),
                     a.getBody(),
                     a.getImageKey() == null
                             ? null

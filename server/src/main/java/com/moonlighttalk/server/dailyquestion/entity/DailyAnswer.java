@@ -6,7 +6,7 @@ import lombok.Setter;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-/** 오늘의 질문에 대한 답(기획 8-3). 하루에 한 사람 한 글(DB 유니크로 막는다). */
+/** 오늘의 질문에 대한 답(기획서 261011 9-1). 하루에 한 사람 한 글(DB 유니크로 막는다). */
 @Getter
 @Setter
 public class DailyAnswer {
@@ -22,6 +22,8 @@ public class DailyAnswer {
     private String nickname;
     private Integer birthYear;
     private String country;
+    /** 얼굴 사진(user_profiles.photo_key) — 목록 셀의 동그라미. */
+    private String photoKey;
     private int likes;
     private boolean likedByMe;
 }

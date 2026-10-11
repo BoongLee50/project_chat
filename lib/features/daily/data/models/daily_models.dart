@@ -1,4 +1,6 @@
-// 달빛 한마디 DTO. (기획서 8장 / docs/01 §1.9)
+import '../../../../core/util/server_time.dart';
+
+// 달빛 한마디 DTO. (기획서 261011 9장 / docs/01 §1.9)
 //
 // 이름에 콘텐츠를 넣지 않는다 — "달빛우편"이 "달빛 한마디"가 된 전례가 있어
 // 코드는 `daily*` 라는 역할 이름을 쓰고, 화면 문구만 ARB에서 온다.
@@ -35,7 +37,7 @@ class DailyToday {
   );
 }
 
-/// 달빛 한마디 한 건.
+/// 달빛 한마디 한 건 — [답글 목록]의 셀 하나.
 class DailyAnswer {
   const DailyAnswer({
     required this.id,
@@ -48,7 +50,10 @@ class DailyAnswer {
     required this.mine,
     this.age,
     this.country,
+    this.photoUrl,
+    this.online = false,
     this.imageUrl,
+    this.createdAt,
   });
 
   final String id;
@@ -56,6 +61,13 @@ class DailyAnswer {
   final String nickname;
   final int? age;
   final String? country;
+
+  /// 얼굴 사진 — 셀 왼쪽 동그라미. 누르면 [프로필 보기](기획 9-2).
+  final String? photoUrl;
+
+  /// 지금 접속 중 → `● ON`, 아니면 쓴 지 얼마나 됐는지(시안 두 칸이 둘을 하나씩 보여 준다).
+  final bool online;
+  final DateTime? createdAt;
   final String body;
   final String? imageUrl;
   final int likes;
@@ -77,6 +89,9 @@ class DailyAnswer {
     nickname: json['nickname'] as String? ?? '',
     age: json['age'] as int?,
     country: json['country'] as String?,
+    photoUrl: json['photoUrl'] as String?,
+    online: json['online'] as bool? ?? false,
+    createdAt: parseServerTime(json['createdAt']),
     body: json['body'] as String? ?? '',
     imageUrl: json['imageUrl'] as String?,
     likes: json['likes'] as int? ?? 0,
@@ -86,5 +101,5 @@ class DailyAnswer {
   );
 }
 
-/// 목록 정렬. 기본은 최신순, 인기순은 **좋아요 + 댓글 합**이다(기획 8-1).
+/// 목록 정렬. 기본은 [최신], [인기]는 **좋아요 + 댓글 합**이다(기획 9-2).
 enum DailySort { latest, popular }

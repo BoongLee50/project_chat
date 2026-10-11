@@ -204,29 +204,23 @@
   "gardenPhotoLockedBody": "오늘 내 포스트를 공유하면 상대의 사진을 모두 볼 수 있어요.",
   "gardenPhotoLockedAction": "내 포스트 등록하기",
   "dailyTitle": "달빛 한마디",
-  "dailyMissionNotice": "매일 저녁 6시에 새로운 미션이 열려요 ✨",
   "dailyTodayQuestion": "오늘의 질문",
-  "dailyParticipants": "지금까지 {count}명이 참여했어요",
-  "@dailyParticipants": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "dailyRemaining": "남은 시간",
+  "dailyRemaining": "남은시간",
   "dailyJoin": "참여하기",
-  "dailySortLatest": "최신순",
-  "dailySortPopular": "인기순",
+  "dailySortLatest": "최신",
+  "dailySortPopular": "인기",
   "dailyMine": "내 한마디",
   "dailyMineEmpty": "아직 작성한 내 한마디가 없어요. 오늘의 질문에 답해 보세요.",
-  "dailyWriteTitle": "달빛 한마디 작성",
-  "dailyWriteHint": "여기에 당신의 한마디를 입력해주세요...",
-  "dailyWriteImage": "이미지 추가 (선택)",
+  "dailyWriteTitle": "내 한마디 등록",
+  "dailyWriteHint": "여기에 당신의 이야기를\n자유롭게 남겨주세요.",
+  "dailyWriteImage": "사진 추가 (선택 사항)",
   "dailyWriteSubmit": "등록하기",
   "dailyEmpty": "아직 한마디가 없어요. 첫 번째로 답해 보세요.",
   "dailyLoadFailed": "달빛 한마디를 불러오지 못했어요.",
   "dailyDetailTitle": "내 달빛 한마디",
+  "dailyWriteEmpty": "답변을 입력해 주세요.",
+  "dailyWriteUploading": "사진을 올리는 중이에요. 잠시만 기다려 주세요.",
+  "dailyViewOriginal": "원문보기",
   "commentsTitle": "{nickname}님의 포스트",
   "@commentsTitle": {
     "placeholders": {

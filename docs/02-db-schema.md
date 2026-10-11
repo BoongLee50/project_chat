@@ -110,6 +110,34 @@ post_comments                              -- 포스트 댓글(기획서 4-2). �
 > **동시성**: `post_stats` 갱신은 읽고-더하고-쓰기가 아니라 `INSERT ... ON DUPLICATE KEY UPDATE exposures = exposures + 1`(해당 컬럼만) 같은 원자적 UPSERT로 처리(동시 좋아요/노출 시 lost update 방지). `feed_skips`는 같은 대상을 중복 스킵해도 에러 안 나게 `INSERT IGNORE`로 처리.
 > **정리**: 06시 초기화 배치(§4)가 지난 `session_date`의 `post_stats`/`feed_skips`도 함께 정리 대상에 포함(무한정 누적 방지).
 
+### 1.4-B 달빛 한마디 (기획서 261011 9장, V14 · **V29**)
+```
+daily_questions                            -- 영업일마다 질문 하나(KST 18시 경계)
+  id            char(36) PK
+  session_date  date UNIQUE                -- 하루 두 질문이 생길 수 없게
+  body_ko/ja    varchar(200)               -- 질문은 **콘텐츠**라 ARB가 아니라 여기 한·일 두 벌
+  created_at
+
+daily_question_bank                        -- 질문 후보(기획이 채운다). 다 쓰면 처음부터 다시
+  id int PK, body_ko/ja varchar(200)
+
+daily_answers                              -- 답변 — 하루에 한 사람 한 글
+  id            char(36) PK
+  question_id   FK -> daily_questions (CASCADE)
+  user_id       FK -> users (CASCADE)
+  session_date  date                       -- 정리 기준(질문과 같은 값)
+  body          varchar(200)               -- **V29: 100 → 200**(261011 9-1, 띄어쓰기 포함, 코드포인트)
+  image_key     varchar(255) null          -- 사진 1장(선택)
+  created_at    datetime(3)
+  UNIQUE(question_id, user_id)
+
+daily_answer_likes                         -- 좋아요 — 사람마다 한 번(행으로 둬서 눌린 상태를 안다)
+  PK(answer_id, user_id)
+```
+> 댓글은 포스트와 **한 표**(`comments.target_type = 'DAILY_ANSWER'`, V14)다. 목록 셀의 얼굴 사진은
+> 따로 두지 않고 `user_profiles.photo_key`(얼굴 칸)를 조인한다. **18:05 배치**가 지난 영업일 답을 지운다
+> (질문은 남고, 좋아요는 FK로 함께 지워진다).
+
 ### 1.5 대화 신청 / 대화방 / 메시지
 ```
 chat_requests

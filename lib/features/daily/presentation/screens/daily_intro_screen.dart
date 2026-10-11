@@ -1,17 +1,30 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/theme/app_colors.dart';
-import '../../../../app/theme/app_dimens.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../../shared/widgets/design_canvas.dart';
 import '../providers/daily_provider.dart';
+import '../widgets/daily_write_sheet.dart';
+import '../widgets/word_art.dart';
 import 'daily_list_screen.dart';
 
-/// 달빛 한마디 [타이틀] 화면(기획 8-1) — 오늘의 질문 · 참여 인원 · 남은 시간 · [참여하기].
+/// 달빛 한마디 [타이틀](기획서 261011 **9-1**) — 오늘의 질문 · 남은 시간 · [참여하기] · `<` 나가기.
 ///
-/// 달빛가든 필터 줄의 네 번째 칸에서 들어온다.
+/// 달빛가든 필터 줄의 네 번째 칸(`button_Moonlight`)에서 들어온다.
+///
+/// 흐름(261011에서 바뀌었다 — 260919/261002는 [참여하기] → 목록이었다):
+/// - [참여하기] → **[내 한마디 등록] 시트가 아래에서 올라온다**(2026-10-11 사용자 결정).
+///   등록해야 [답글 목록]이 열린다(기획 9-1). 이미 등록했으면 바로 목록으로 간다.
+/// - 시트의 `✕` → **애니메이션 없이 뚝 사라지고**, 쓰던 글·사진도 지워진다(같은 결정).
+///   다시 열면 빈 시트다 — 시트는 닫힐 때 트리에서 빠져 상태가 남지 않는다.
+/// - [등록하기] → [답글 목록]으로 바꿔 끼운다. 목록의 [나가기]는 가든으로 간다.
+///
+/// 그림 한 장(`back_friends`)에 머리·안내·빈 질문 카드가 구워져 있어 **배경과 같은 배율로** 얹는다
+/// ([_Canvas]). 참여 인원은 261011에서 빠졌다.
 class DailyIntroScreen extends ConsumerStatefulWidget {
   const DailyIntroScreen({super.key});
 
@@ -22,7 +35,8 @@ class DailyIntroScreen extends ConsumerStatefulWidget {
   ConsumerState<DailyIntroScreen> createState() => _DailyIntroScreenState();
 }
 
-class _DailyIntroScreenState extends ConsumerState<DailyIntroScreen> {
+class _DailyIntroScreenState extends ConsumerState<DailyIntroScreen>
+    with SingleTickerProviderStateMixin {
   Timer? _ticker;
 
   /// 서버가 준 남은 초에서 1초씩 깎는다.
@@ -31,29 +45,62 @@ class _DailyIntroScreenState extends ConsumerState<DailyIntroScreen> {
   /// 사람마다 다른 시간이 보이기 때문이다. 기준은 서버가 주고 흐르게만 한다.
   int? _remaining;
 
+  /// 시트가 올라오는 연출. 닫을 때는 **되감지 않고** 값을 0으로 떨어뜨린다(뚝 사라지게).
+  late final AnimationController _sheet = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 320),
+  );
+  bool _writing = false;
+
   @override
   void initState() {
     super.initState();
     _ticker = Timer.periodic(const Duration(seconds: 1), (_) {
       if (!mounted) return;
       final left = _remaining;
-      if (left != null && left > 0) setState(() => _remaining = left - 1);
+      if (left == null) return;
+      if (left > 1) {
+        setState(() => _remaining = left - 1);
+      } else if (left == 1) {
+        // 18시가 지났다 — 새 질문을 받아 온다(기획 9-1 "18시에 모든 정보 초기화").
+        setState(() => _remaining = 0);
+        ref.invalidate(dailyTodayProvider);
+      }
     });
   }
 
   @override
   void dispose() {
     _ticker?.cancel();
+    _sheet.dispose();
     super.dispose();
   }
 
-  String _hms(int seconds) {
+  /// 남은 시간은 **분까지만**(기획 9-1) — `05 : 48`.
+  String _hm(int seconds) {
     final h = seconds ~/ 3600;
     final m = (seconds % 3600) ~/ 60;
-    final s = seconds % 60;
-    return '${h.toString().padLeft(2, '0')}:'
-        '${m.toString().padLeft(2, '0')}:'
-        '${s.toString().padLeft(2, '0')}';
+    return '${h.toString().padLeft(2, '0')} : ${m.toString().padLeft(2, '0')}';
+  }
+
+  void _join(bool answered) {
+    if (answered) {
+      Navigator.of(context).pushReplacement(DailyListScreen.route());
+      return;
+    }
+    setState(() => _writing = true);
+    _sheet.forward(from: 0);
+  }
+
+  /// `✕`·뒤로 가기 — 뚝 사라진다. 시트가 트리에서 빠지면서 쓰던 글·사진도 같이 버려진다.
+  void _closeSheet() {
+    _sheet.value = 0;
+    setState(() => _writing = false);
+  }
+
+  void _registered() {
+    ref.invalidate(dailyTodayProvider);
+    Navigator.of(context).pushReplacement(DailyListScreen.route());
   }
 
   @override
@@ -67,155 +114,195 @@ class _DailyIntroScreenState extends ConsumerState<DailyIntroScreen> {
       if (value != null) setState(() => _remaining = value.remainingSeconds);
     });
 
-    return Scaffold(
-      backgroundColor: AppColors.night,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        title: Text(l10n.dailyTitle),
-        actions: [
-          IconButton(
-            onPressed: () => Navigator.pop(context),
-            icon: const Icon(Icons.close_rounded),
-          ),
-        ],
-      ),
-      body: today.when(
-        loading: () => const Center(
-          child: CircularProgressIndicator(color: AppColors.moonlight),
-        ),
-        error: (error, _) => Center(
-          child: Text(
-            l10n.dailyLoadFailed,
-            style: const TextStyle(color: AppColors.textMuted),
-          ),
-        ),
-        data: (data) => Padding(
-          padding: const EdgeInsets.all(AppDimens.pagePad),
-          child: Column(
-            children: [
-              _Pill(text: l10n.dailyMissionNotice),
-              const SizedBox(height: AppDimens.gapLg),
-              Text(
-                l10n.dailyTodayQuestion,
-                style: const TextStyle(
-                  color: AppColors.moonlight,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(height: AppDimens.gapMd),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(AppDimens.pagePad),
-                decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(AppDimens.radiusLg),
-                  border: Border.all(color: AppColors.moonlight),
-                ),
-                child: Text(
-                  data.question,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
-                    fontSize: 20,
-                    fontWeight: FontWeight.w800,
-                    height: 1.4,
+    final data = today.valueOrNull;
+    final remaining = _remaining ?? data?.remainingSeconds;
+
+    return PopScope(
+      canPop: !_writing,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop && _writing) _closeSheet();
+      },
+      child: Scaffold(
+        backgroundColor: AppColors.night,
+        // 키보드는 시트가 직접 피한다([DailyWriteSheet]) — 배경까지 밀려 올라가면 그림이 찌그러진다.
+        resizeToAvoidBottomInset: false,
+        body: LayoutBuilder(
+          builder: (context, box) {
+            final c = _Canvas(box.biggest);
+            return Stack(
+              children: [
+                Positioned.fill(
+                  child: Image.asset(
+                    DesignCanvas.localizedAsset(context, WordArt.titleBack),
+                    fit: BoxFit.cover,
+                    alignment: Alignment.topCenter,
+                    filterQuality: FilterQuality.medium,
                   ),
                 ),
-              ),
-              const SizedBox(height: AppDimens.gapLg),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(
-                    Icons.people_alt_outlined,
-                    size: 16,
-                    color: AppColors.textSecondary,
+                // 오늘의 질문 — 구워진 카드의 점선 칸에 같은 기울기로 얹는다.
+                Positioned(
+                  left: c.x(
+                    WordArt.questionCenter.dx - WordArt.questionBox.width / 2,
                   ),
-                  const SizedBox(width: 6),
-                  Text(
-                    l10n.dailyParticipants(data.participants),
-                    style: const TextStyle(
-                      color: AppColors.textSecondary,
-                      fontSize: 13,
+                  top: c.y(
+                    WordArt.questionCenter.dy - WordArt.questionBox.height / 2,
+                  ),
+                  width: WordArt.questionBox.width * c.s,
+                  height: WordArt.questionBox.height * c.s,
+                  child: Transform.rotate(
+                    angle: WordArt.questionAngle,
+                    child: Center(
+                      child: today.when(
+                        loading: () => const CircularProgressIndicator(
+                          color: AppColors.moonlight,
+                        ),
+                        error: (_, _) => Text(
+                          l10n.dailyLoadFailed,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: WordArt.ink,
+                            fontSize: 36 * c.s,
+                          ),
+                        ),
+                        data: (d) => Text(
+                          d.question,
+                          textAlign: TextAlign.center,
+                          maxLines: 3,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: WordArt.ink,
+                            fontSize: 46 * c.s,
+                            fontWeight: FontWeight.w800,
+                            height: 1.4,
+                          ),
+                        ),
+                      ),
                     ),
                   ),
-                ],
-              ),
-              const Spacer(),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    l10n.dailyRemaining,
-                    style: const TextStyle(
-                      color: AppColors.textMuted,
-                      fontSize: 13,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    _hms(_remaining ?? data.remainingSeconds),
-                    style: const TextStyle(
-                      color: AppColors.textPrimary,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w800,
-                      fontFeatures: [FontFeature.tabularFigures()],
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: AppDimens.gapMd),
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton(
-                  onPressed: () => Navigator.of(
-                    context,
-                  ).pushReplacement(DailyListScreen.route()),
-                  child: Text(l10n.dailyJoin),
                 ),
-              ),
-            ],
-          ),
+                // 남은 시간 · [참여하기] — 화면 아래에 붙는다(세로가 짧은 폰에서도 잘리지 않게).
+                if (remaining != null)
+                  Positioned(
+                    left: 0,
+                    right: 0,
+                    top: c.fromBottom(WordArt.clockTop),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        ArtImage(
+                          WordArt.clock,
+                          width: WordArt.clockSize.width,
+                          height: WordArt.clockSize.height,
+                          scale: c.s,
+                        ),
+                        SizedBox(width: 18 * c.s),
+                        Text(
+                          '${l10n.dailyRemaining} ',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 42 * c.s,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        Text(
+                          _hm(remaining),
+                          style: TextStyle(
+                            color: WordArt.gold,
+                            fontSize: 42 * c.s,
+                            fontWeight: FontWeight.w800,
+                            fontFeatures: const [FontFeature.tabularFigures()],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                Positioned(
+                  left: c.x(WordArt.joinAt.dx),
+                  top: c.fromBottom(WordArt.joinAt.dy),
+                  child: Semantics(
+                    button: true,
+                    label: l10n.dailyJoin,
+                    child: GestureDetector(
+                      onTap: data == null ? null : () => _join(data.answered),
+                      child: ArtImage(
+                        WordArt.join,
+                        width: WordArt.joinSize.width,
+                        height: WordArt.joinSize.height,
+                        scale: c.s,
+                      ),
+                    ),
+                  ),
+                ),
+                if (_writing)
+                  AnimatedBuilder(
+                    animation: _sheet,
+                    builder: (context, child) {
+                      final t = Curves.easeOutCubic.transform(_sheet.value);
+                      return Transform.translate(
+                        offset: Offset(0, (1 - t) * box.maxHeight),
+                        child: child,
+                      );
+                    },
+                    child: DailyWriteSheet(
+                      canvasScale: c.s,
+                      canvasLeft: c.x(0),
+                      screen: box.biggest,
+                      question: data?.question ?? '',
+                      onClose: _closeSheet,
+                      onRegistered: _registered,
+                    ),
+                  ),
+                // `<` 나가기 — 시트가 떠 있어도 보이는 자리라(시안) 맨 위에 둔다. 누르면 가든으로.
+                Positioned(
+                  left: c.x(WordArt.exitMoonAt.dx),
+                  top: c.y(WordArt.exitMoonAt.dy),
+                  child: Semantics(
+                    button: true,
+                    label: l10n.commonBack,
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: () => Navigator.of(context).pop(),
+                      child: Padding(
+                        padding: EdgeInsets.all(12 * c.s),
+                        child: ArtImage(
+                          WordArt.exitMoon,
+                          width: WordArt.exitMoonSize.width,
+                          height: WordArt.exitMoonSize.height,
+                          scale: c.s,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
         ),
       ),
     );
   }
 }
 
-class _Pill extends StatelessWidget {
-  const _Pill({required this.text});
+/// 배경(1080×2640)을 **화면을 덮게** 늘렸을 때의 좌표 변환.
+///
+/// 배경은 위에 붙여 그린다 — 머리·질문 카드가 구워져 있어 그 자리가 움직이면 안 된다.
+/// 세로가 짧은 폰(대부분)에서는 배경 아래쪽이 잘리므로, 남은 시간·[참여하기]는 **화면 아래 기준**으로
+/// 같은 거리를 두고 놓는다([fromBottom]). 세로가 시안보다 긴 폰은 높이에 맞춰 늘리고 양옆이 잘린다.
+class _Canvas {
+  _Canvas(this.screen)
+    : s = math.max(
+        screen.width / DesignCanvas.width,
+        screen.height / DesignCanvas.height,
+      );
 
-  final String text;
+  final Size screen;
+  final double s;
 
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(
-            Icons.schedule_rounded,
-            size: 15,
-            color: AppColors.moonlight,
-          ),
-          const SizedBox(width: 6),
-          Text(
-            text,
-            style: const TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 12,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  double x(double designX) =>
+      (screen.width - DesignCanvas.width * s) / 2 + designX * s;
+  double y(double designY) => designY * s;
+
+  /// 시안에서 캔버스 아래까지 남은 거리를 화면 아래에서 그대로 잰다.
+  double fromBottom(double designY) =>
+      screen.height - (DesignCanvas.height - designY) * s;
 }

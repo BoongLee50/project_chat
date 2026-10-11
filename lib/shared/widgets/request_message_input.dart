@@ -26,6 +26,9 @@ class RequestMessageInput {
     const _NoLineBreak(),
     _CodePointLimit(max),
   ];
+
+  /// 코드포인트 한도만(줄바꿈은 둔다) — 달빛 한마디 답변글(200자)처럼 여러 줄을 받는 칸이 쓴다.
+  static TextInputFormatter codePointLimit(int max) => _CodePointLimit(max);
 }
 
 /// 줄바꿈을 공백으로 바꾼다 — 엔터·붙여넣기 모두. (서버도 같은 일을 한다)

@@ -121,6 +121,14 @@ class DesignCanvas {
     // 프로필 [작성하기] 머리 사진 — 「プロフィール」 문구가 구워져 있다.
     // 일본어판은 **틀이 다르다**(1080×771 vs 1426×1103) — 폭에 맞춰 위에서부터 그린다.
     'assets/images/scene_profile/create/back_profile.png': Size(1426, 1103),
+
+    // 달빛 한마디 — 타이틀 배경(「月のひとこと」·18時 안내), 등록 시트(질문 머리·잠금 안내·사진 추가),
+    // 목록 머리(「今日の質問」)·[내 한마디]·[등록하기]. 「私の回答」는 원문보다 조금 작다(333×97 → 326×96).
+    'assets/images/scene_word/title/back_friends.png': null,
+    'assets/images/scene_word/reply_register/back_word.png': null,
+    'assets/images/scene_word/reply_register/button_register.png': null,
+    'assets/images/scene_word/reply_list/frame_question.png': null,
+    'assets/images/scene_word/reply_list/button_myword.png': Size(326, 96),
   };
 
   /// [koAsset]을 [languageCode]로 그릴 때의 **규격**. 일본어판 크기가 따로 적혀 있으면 그것을 쓴다.
