@@ -148,6 +148,9 @@ API를 직접 부르는 것으로 뚫린다. 응답에 `photoLocked`(잠김 여�
   - 규칙을 한 줄로 줄이면 **"답글은 부모를 쓴 사람의 상대만 단다"** 이고, 이 한 문장이 둘 다 막는다.
   - 어기면 `COMMENT_REPLY_NOT_ALLOWED`(403). 클라는 **줄을 눌러 답글 대상을 고르고**(4-2·8-2 "댓글 타겟 선택"),
     못 고르는 줄을 누르면 이 문장(또는 `COMMENT_DEPTH_EXCEEDED`)을 띄운다.
+- 🚨 **포스트 주인은 자기 포스트에 1단계 댓글을 못 단다**(2026-10-11 — 내 포스트 좋아요가 안 되는 것과 같다).
+  어기면 `COMMENT_OWN_POST`(403). **답글(2단계)은 된다** — 위 스레드의 `A가 답글`이 그것이다.
+  달빛 한마디(`DAILY_ANSWER`)에는 이 제한이 없다.
 - **50자**까지 — **코드포인트로 센다**(DB `VARCHAR`와 같은 단위, 2026-10-04부터. 전엔 UTF-16이라 이모지가 2였다).
   넘으면 `COMMENT_TOO_LONG`(400) — 숫자는 `field`로 실어 보내 ARB가 문장을 만든다.
 - 목록의 각 줄: `id · parentId · depth · authorId · authorNickname · authorCountry · authorPhotoUrl · body · imageUrl · createdAt`.

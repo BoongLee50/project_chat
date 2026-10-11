@@ -751,6 +751,12 @@ abstract class L10n {
   /// **'따뜻한 댓글을 남겨보세요 😊'**
   String get commentsHint;
 
+  /// No description provided for @commentsHintOwnPost.
+  ///
+  /// In ko, this message translates to:
+  /// **'댓글을 눌러 답글 달기'**
+  String get commentsHintOwnPost;
+
   /// No description provided for @commentsCount.
   ///
   /// In ko, this message translates to:
@@ -2868,6 +2874,12 @@ abstract class L10n {
   /// In ko, this message translates to:
   /// **'답글은 글쓴이와 댓글을 단 사람이 번갈아 주고받을 수 있어요.'**
   String get errorCommentReplyNotAllowed;
+
+  /// No description provided for @errorCommentOwnPost.
+  ///
+  /// In ko, this message translates to:
+  /// **'내 포스트에는 댓글을 달 수 없어요. 받은 댓글을 눌러 답글을 남겨 보세요.'**
+  String get errorCommentOwnPost;
 
   /// No description provided for @errorDailyQuestionNotReady.
   ///

@@ -367,6 +367,9 @@ class L10nJa extends L10n {
   String get commentsHint => 'あたたかいコメントを残してみましょう 😊';
 
   @override
+  String get commentsHintOwnPost => 'コメントをタップして返信';
+
+  @override
   String commentsCount(int count) {
     return 'コメント $count';
   }
@@ -1549,6 +1552,9 @@ class L10nJa extends L10n {
 
   @override
   String get errorCommentReplyNotAllowed => '返信は投稿者とコメントした人が交互にやり取りできます。';
+
+  @override
+  String get errorCommentOwnPost => '自分のポストにはコメントできません。届いたコメントをタップして返信してみましょう。';
 
   @override
   String get errorDailyQuestionNotReady => '今日の質問はまだ準備中です。';

@@ -271,9 +271,21 @@ class _CommentsSheetState extends ConsumerState<_CommentsSheet> {
     }
   }
 
+  /// 내 포스트의 댓글창인가. 여기서는 **새 댓글(1단계)을 못 단다** — 답글만(기획 2026-10-11).
+  /// 내 포스트 좋아요가 안 되는 것과 같다. 달빛 한마디는 해당 없음.
+  bool get _isOwnPost =>
+      widget.kind == CommentTargetKind.post &&
+      ref.read(sessionProvider).profile?.id == widget.ownerId;
+
   Future<void> _send() async {
     final text = _controller.text.trim();
     if (text.isEmpty || _sending) return;
+    // 서버도 같은 규칙으로 거절한다(`COMMENT_OWN_POST`). 여기서는 헛걸음만 막는다 —
+    // 입력창을 죽이지 않고 **누르면 이유를 말한다**.
+    if (_isOwnPost && _replyTo == null) {
+      _toast(L10n.of(context).errorCommentOwnPost);
+      return;
+    }
 
     setState(() => _sending = true);
     try {
@@ -470,6 +482,10 @@ class _CommentsSheetState extends ConsumerState<_CommentsSheet> {
                 _InputBar(
                   controller: _controller,
                   sending: _sending,
+                  // 내 포스트는 새 댓글이 안 되므로 "답글을 남겨 보세요"로 안내한다.
+                  hint: _isOwnPost && _replyTo == null
+                      ? l10n.commentsHintOwnPost
+                      : l10n.commentsHint,
                   canAttach: !_sending && _imageBytes == null,
                   maxLength: _maxLength,
                   onPickImage: _pickImage,
@@ -721,6 +737,7 @@ class _InputBar extends StatelessWidget {
   const _InputBar({
     required this.controller,
     required this.sending,
+    required this.hint,
     required this.canAttach,
     required this.maxLength,
     required this.onPickImage,
@@ -730,6 +747,7 @@ class _InputBar extends StatelessWidget {
 
   final TextEditingController controller;
   final bool sending;
+  final String hint;
   final bool canAttach;
   final int maxLength;
   final VoidCallback onPickImage;
@@ -774,7 +792,7 @@ class _InputBar extends StatelessWidget {
                       cursorColor: _Palette.purple,
                       style: const TextStyle(color: _Palette.ink, fontSize: 15),
                       decoration: InputDecoration(
-                        hintText: l10n.commentsHint,
+                        hintText: hint,
                         hintStyle: const TextStyle(
                           color: _Palette.muted,
                           fontSize: 15,

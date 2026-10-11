@@ -693,13 +693,18 @@ class _CommentCount extends ConsumerWidget {
       // 내 포스트라 댓글의 대상도 나다.
       onTap: profile == null
           ? null
-          : () => showCommentsSheet(
-              context,
-              kind: CommentTargetKind.post,
-              targetId: profile.id,
-              ownerId: profile.id,
-              title: L10n.of(context).commentsTitle(profile.nickname ?? ''),
-            ),
+          : () async {
+              await showCommentsSheet(
+                context,
+                kind: CommentTargetKind.post,
+                targetId: profile.id,
+                ownerId: profile.id,
+                title: L10n.of(context).commentsTitle(profile.nickname ?? ''),
+              );
+              // 창에서 답글을 달았을 수 있다 — 닫히면 숫자를 다시 읽는다.
+              // (예전엔 "낡았으면 다시 읽기"만 믿어서 댓글이 늘어도 숫자가 그대로였다)
+              ref.read(myPostProvider.notifier).refresh();
+            },
       child: Row(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.center,

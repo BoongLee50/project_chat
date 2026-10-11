@@ -354,6 +354,13 @@ public class GardenService {
                     "현재 이 사용자에게 댓글을 남길 수 없어요.");
         }
 
+        // 내 포스트에 내가 새 댓글을 달 수는 없다(기획 2026-10-11 — 내 포스트 좋아요가 안 되는 것과 같다).
+        // 🚨 **답글은 막지 않는다** — "남 댓글 → 내 답글 → 남 답글"의 가운데가 글쓴이 몫이다.
+        if (userId.equals(targetUserId) && (parentId == null || parentId.isBlank())) {
+            throw new ApiException(ErrorCode.COMMENT_OWN_POST, HttpStatus.FORBIDDEN,
+                    "내 포스트에는 댓글을 달 수 없어요. 받은 댓글에 답글은 남길 수 있어요.");
+        }
+
         String postId = requireTodayPostId(targetUserId);
         // 글쓴이는 포스트 주인이다 — 답글은 그와 스레드 시작자가 번갈아 단다.
         commentService.add(CommentTarget.POST, postId, targetUserId, userId, body, parentId, imageKey);
