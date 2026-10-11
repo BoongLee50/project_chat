@@ -84,7 +84,18 @@ class DailyDetailScreen extends ConsumerWidget {
               children: [
                 GestureDetector(
                   // 사람마다 한 번이라 이미 누른 뒤에는 아무 일도 하지 않는다.
+                  // 내 한마디에는 못 누른다 — 서버도 막지만 부르기 전에 이유를 말한다(2026-10-11 사용자 결정).
                   onTap: () async {
+                    if (a.mine) {
+                      ScaffoldMessenger.of(context)
+                        ..hideCurrentSnackBar()
+                        ..showSnackBar(
+                          SnackBar(
+                            content: Text(l10n.errorDailyAnswerSelfLike),
+                          ),
+                        );
+                      return;
+                    }
                     final error = await ref
                         .read(dailyListProvider.notifier)
                         .like(a);

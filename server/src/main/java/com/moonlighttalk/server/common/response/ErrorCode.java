@@ -60,6 +60,10 @@ public enum ErrorCode {
     DAILY_ANSWER_TOO_LONG,
     /** 메인 이미지 키가 내 것이 아니다. */
     DAILY_ANSWER_IMAGE_KEY_INVALID,
+    /** 내 한마디에 내가 좋아요(2026-10-11 사용자 결정 — 내 글엔 좋아요·댓글을 못 한다). */
+    DAILY_ANSWER_SELF_LIKE,
+    /** 내 한마디에 내가 1단계 댓글. 남의 댓글에 답글(A → B → A의 B)은 된다. */
+    DAILY_ANSWER_SELF_COMMENT,
 
     // ── translate ──────────────────────────────────────
     TRANSLATE_QUOTA_EXCEEDED,

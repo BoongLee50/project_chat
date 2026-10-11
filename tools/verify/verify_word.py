@@ -7,6 +7,7 @@
   2. 답변글 **200자**(띄어쓰기 포함) — **코드포인트**로 센다. 이모지가 섞인 200자는 되고
      (`length()`로 세면 201이라 예전엔 거절됐다 — 함정 #82), 201자는 `DAILY_ANSWER_TOO_LONG`.
   3. 목록 셀 재료 — 얼굴 사진(`photoUrl`) · 접속(`online`) · 나라 · 시간(`createdAt`)이 실린다.
+  4. **내 한마디에는 좋아요도, 먼저 댓글도 못 한다**(2026-10-11 사용자 결정). 남의 댓글에 답글은 된다.
 
 실행: python tools/verify/verify_word.py   (local 프로필 서버 + MariaDB)
 ⚠️ 두 검증 계정의 답을 지우고 시작하고, 끝나면 다시 지운다(하루 한 번만 쓸 수 있고, 실기기 목록에도 뜬다).
@@ -77,6 +78,25 @@ if row:
     for key in ('photoUrl', 'online', 'country', 'createdAt'):
         check('셀 재료 `%s`가 실린다' % key, key in row, row.get(key))
     check('A의 나라는 KR', row.get('country') == 'KR')
+
+print('\n== 4. 내 한마디에는 좋아요·먼저 댓글 금지 (2026-10-11 사용자 결정) ==')
+st, body = call('POST', '/daily-question/answers/%s/like' % mine['id'], ta)
+check('A가 자기 한마디에 좋아요 → 403 DAILY_ANSWER_SELF_LIKE',
+      st == 403 and body.get('code') == 'DAILY_ANSWER_SELF_LIKE', (st, body))
+st, _ = call('POST', '/daily-question/answers/%s/like' % mine['id'], tb)
+check('B가 A의 한마디에 좋아요 → 된다', st == 200, st)
+st, body = call('POST', '/daily-question/answers/%s/comments' % mine['id'], ta, {'body': '내가 먼저'})
+check('A가 자기 한마디에 1단계 댓글 → 403 DAILY_ANSWER_SELF_COMMENT',
+      st == 403 and body.get('code') == 'DAILY_ANSWER_SELF_COMMENT', (st, body))
+st, _ = call('POST', '/daily-question/answers/%s/comments' % mine['id'], tb, {'body': 'すてき'})
+check('B가 A의 한마디에 댓글 → 된다', st == 200, st)
+st, cs = call('GET', '/daily-question/answers/%s/comments' % mine['id'], ta)
+parent = cs[0]['id'] if st == 200 and cs else None
+st, body = call('POST', '/daily-question/answers/%s/comments' % mine['id'], ta,
+                {'body': '고마워요', 'parentId': parent})
+check('A가 B의 댓글에 답글(A → B → A의 B 자리) → 된다', st == 200, (st, body))
+sql("DELETE FROM comments WHERE target_type = 'DAILY_ANSWER' AND target_id IN ('%s','%s')"
+    % (mine['id'], b_mine['id']))
 
 # 검증 데이터는 실기기 목록에도 뜬다(함정 #81) — 끝나면 지운다. 화면을 보려면 이 줄을 잠시 막을 것.
 sql("DELETE FROM daily_answers WHERE user_id IN ('%s','%s')" % (a, b))

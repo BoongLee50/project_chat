@@ -1569,6 +1569,13 @@ class L10nKo extends L10n {
   String get errorDailyAnswerImageKeyInvalid => '첨부한 사진이 올바르지 않아요. 다시 선택해 주세요.';
 
   @override
+  String get errorDailyAnswerSelfLike => '내 한마디에는 좋아요를 누를 수 없어요.';
+
+  @override
+  String get errorDailyAnswerSelfComment =>
+      '내 한마디에는 먼저 댓글을 달 수 없어요. 다른 사람의 댓글에 답글로 이야기해 보세요.';
+
+  @override
   String get errorTranslateQuotaExceeded =>
       '무료 번역을 모두 사용했어요. 자동 번역 패스를 이용해 보세요.';
 

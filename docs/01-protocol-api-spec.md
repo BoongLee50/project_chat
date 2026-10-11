@@ -190,6 +190,8 @@ API를 직접 부르는 것으로 뚫린다. 응답에 `photoLocked`(잠김 여�
 - 목록 한 건(`DailyAnswerDto`)에 셀 재료가 더해졌다(2026-10-11): `photoUrl`(**얼굴 사진** —
   `user_profiles.photo_key`) · `online`(프레즌스) · `createdAt`. 셀은 접속 중이면 `● ON`, 아니면 `N분 전`.
 - 참여 인원(`participants`)은 응답에 남아 있지만 **화면에서 뺐다**(261011 타이틀에 없다).
+- 🙅 **내 한마디에는 좋아요도, 먼저 댓글도 못 한다**(2026-10-11 사용자 결정) — `DAILY_ANSWER_SELF_LIKE` ·
+  `DAILY_ANSWER_SELF_COMMENT`(403). 남이 단 댓글에 **답글**은 된다(댓글 규칙 A → B → A의 B 자리).
 
 - **KST 18시에 초기화**되고 새 질문이 나온다 — ①단계의 영업일 경계와 **같은 시계**다.
   `remainingSeconds`는 **서버가 계산**해 준다(기기 시계를 믿으면 사람마다 다른 시간이 보인다).

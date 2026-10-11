@@ -2893,6 +2893,18 @@ abstract class L10n {
   /// **'첨부한 사진이 올바르지 않아요. 다시 선택해 주세요.'**
   String get errorDailyAnswerImageKeyInvalid;
 
+  /// No description provided for @errorDailyAnswerSelfLike.
+  ///
+  /// In ko, this message translates to:
+  /// **'내 한마디에는 좋아요를 누를 수 없어요.'**
+  String get errorDailyAnswerSelfLike;
+
+  /// No description provided for @errorDailyAnswerSelfComment.
+  ///
+  /// In ko, this message translates to:
+  /// **'내 한마디에는 먼저 댓글을 달 수 없어요. 다른 사람의 댓글에 답글로 이야기해 보세요.'**
+  String get errorDailyAnswerSelfComment;
+
   /// No description provided for @errorTranslateQuotaExceeded.
   ///
   /// In ko, this message translates to:

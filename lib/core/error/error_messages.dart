@@ -51,6 +51,8 @@ String errorMessage(L10n l10n, ApiException e) {
     'DAILY_ANSWER_ALREADY' => l10n.errorDailyAnswerAlready,
     'DAILY_ANSWER_TOO_LONG' => l10n.errorDailyAnswerTooLong(_count(e)),
     'DAILY_ANSWER_IMAGE_KEY_INVALID' => l10n.errorDailyAnswerImageKeyInvalid,
+    'DAILY_ANSWER_SELF_LIKE' => l10n.errorDailyAnswerSelfLike,
+    'DAILY_ANSWER_SELF_COMMENT' => l10n.errorDailyAnswerSelfComment,
 
     // ── translate ────────────────────────────────────
     'TRANSLATE_QUOTA_EXCEEDED' => l10n.errorTranslateQuotaExceeded,

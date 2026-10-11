@@ -1565,6 +1565,13 @@ class L10nJa extends L10n {
   String get errorDailyAnswerImageKeyInvalid => '添付した写真が正しくありません。選び直してください。';
 
   @override
+  String get errorDailyAnswerSelfLike => '自分のひとことには「いいね」できません。';
+
+  @override
+  String get errorDailyAnswerSelfComment =>
+      '自分のひとことには先にコメントできません。ほかの人のコメントに返信してみましょう。';
+
+  @override
   String get errorTranslateQuotaExceeded => '無料翻訳をすべて使いました。自動翻訳パスをご利用ください。';
 
   @override

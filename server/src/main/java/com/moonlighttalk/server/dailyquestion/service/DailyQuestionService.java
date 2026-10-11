@@ -156,11 +156,19 @@ public class DailyQuestionService {
         return answer(userId, answer.getId());
     }
 
-    /** 좋아요(기획 9-2). 사람마다 한 번 — 두 번 눌러도 수치가 늘지 않는다. */
+    /**
+     * 좋아요(기획 9-2). 사람마다 한 번 — 두 번 눌러도 수치가 늘지 않는다.
+     * <b>내 한마디에는 못 누른다</b>(2026-10-11 사용자 결정).
+     */
     @Transactional
     public void like(String userId, String answerId) {
-        if (mapper.selectAnswerById(answerId, userId) == null) {
+        DailyAnswer answer = mapper.selectAnswerById(answerId, userId);
+        if (answer == null) {
             throw notFound();
+        }
+        if (answer.getUserId().equals(userId)) {
+            throw new ApiException(ErrorCode.DAILY_ANSWER_SELF_LIKE, HttpStatus.FORBIDDEN,
+                    "내 한마디에는 좋아요를 누를 수 없어요.");
         }
         mapper.insertLike(answerId, userId);
     }
@@ -177,6 +185,13 @@ public class DailyQuestionService {
         DailyAnswer answer = mapper.selectAnswerById(answerId, userId);
         if (answer == null) {
             throw notFound();
+        }
+        // 내 한마디에 **먼저** 댓글을 달 수는 없다(2026-10-11 사용자 결정). 남이 단 댓글에 답글은 된다 —
+        // 댓글 규칙이 A(댓글 단 사람) → B(글쓴이) → A라서 B의 자리는 답글뿐이다.
+        // 포스트 댓글(가든)은 건드리지 않으려고 공용 CommentService가 아니라 여기서 막는다.
+        if ((parentId == null || parentId.isBlank()) && answer.getUserId().equals(userId)) {
+            throw new ApiException(ErrorCode.DAILY_ANSWER_SELF_COMMENT, HttpStatus.FORBIDDEN,
+                    "내 한마디에는 먼저 댓글을 달 수 없어요.");
         }
         // 글쓴이는 한마디를 쓴 사람이다 — 답글은 그와 스레드 시작자가 번갈아 단다.
         commentService.add(CommentTarget.DAILY_ANSWER, answerId, answer.getUserId(),

@@ -23,7 +23,8 @@ disable-model-invocation: true
 | 에셋 | `assets/images/scene_word/{title, reply_register, reply_list}/`(+ 각 `ja/`) · 상수 `WordArt`(`widgets/word_art.dart`) · 일본어판 등록은 `DesignCanvas.localizedAssets`. 새 폴더는 **`pubspec.yaml`에 줄 + 완전 재빌드** |
 | 클라 | `lib/features/daily/` — 타이틀 `daily_intro_screen.dart`(등록 시트를 이 안에서 올린다) · 등록 `widgets/daily_write_sheet.dart` · 목록 `daily_list_screen.dart` · 상세 `daily_detail_screen.dart`(🚧 옛 화면) · `daily_provider.dart` · `daily_api.dart` |
 | 서버 | `server/.../dailyquestion/` · `db/migration` **V14**(표 넷 + `comments.target_type='DAILY_ANSWER'`) · **V29**(답변글 200자) · 정리 배치 `daily-cleanup-cron`(18:05) |
-| 검증 | `python tools/verify/verify_word.py`(18개 — 등록 전 403 · 200자 코드포인트 · 셀 재료) |
+| 검증 | `python tools/verify/verify_word.py`(23개 — 등록 전 403 · 200자 코드포인트 · 셀 재료 · 내 글 좋아요·댓글 금지) |
+| 더미 | `python tools/demo/seed_word.py` — 임시 유저 14명의 답·좋아요·댓글(먼저 `seed_users.py`). 18:05에 지워지니 날마다 다시 |
 | 문서 | `01` §1.9 · `02` §1.4-B · `08` §0-4 · `13` 달빛 한마디 줄 |
 
 🚨 **가든과 같이 쓰는 것** — 고치면 가든도 바뀐다(보고에 적을 것):
@@ -42,6 +43,7 @@ disable-model-invocation: true
 - [답글 목록]: 아래에서 올라오는 시트 형태 · [최신](기본)/[인기](= 좋아요 + 댓글 합) · [내 한마디] · 얼굴 → [프로필 보기] · [나가기] → 메인
 - 🌐 목록 셀: **나라가 다르면 자동 번역 + 셀 오른쪽 위 [원문보기]**, **같은 나라면 버튼이 안 보이고 안 눌린다**(대화방·친구·프로필의 "흐리게"와 다르다). 🚧 번역 기능은 아직 없다
 - 내 한마디가 없는데 [내 한마디]: *"아직 작성한 내 한마디가 없어요. 오늘의 질문에 답해 보세요."*
+- 🙅 **내 한마디에는 좋아요·1단계 댓글 금지**(서버 403 `DAILY_ANSWER_SELF_LIKE`/`_COMMENT`). 남의 댓글에 답글은 된다
 - [답글 상세]: 좋아요 +1 · 댓글 **A → B → A까지**(A=댓글 단 사람, B=글쓴이 — 지금 3단계 규칙과 같다) · 댓글 **50자**·사진 1장 · 첨부 사진은 원본만 팝업
 - 번역: **[답글 상세] 창 5회 호출까지 무료** → 다 쓰면 *"무료 번역을 모두 사용했어요…"*. Prime·자동번역 패스는 무제한
 
