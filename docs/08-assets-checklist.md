@@ -182,6 +182,9 @@
 > 📁 **에셋 폴더는 전달 폴더를 그대로 따른다**(2026-09-14부터).
 > `Plan_Chat/UI/Scene_Post` → `assets/images/scene_post/` · `Scene_Garden` → `scene_garden/`.
 > **파일 이름도 전달본 그대로** 둔다 — 다음 전달본을 그대로 떨어뜨리면 되도록.
+> 🆕 2026-10-11 `Scene_Post/icon_lock.png`(70×84, 사진 잠금 마크 · 글자 없음 → 일본어판 불필요) 적용 —
+> 기획서 261011 3-1 그림대로 `[TOP]`과 PICK **사이 빈칸**(시안 326, 527).
+>
 > 손댄 것은 둘뿐이다:
 > - `frame_post_album Pass.png` → `frame_post_album_pass.png` (경로에 공백을 두지 않는다)
 > - `*_jap.png` → **`ja/` 하위 폴더의 같은 이름** (우리 언어 규칙, [14 §2](14-ui-ground-rules.md))

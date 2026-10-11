@@ -1513,6 +1513,9 @@ class L10nJa extends L10n {
   }
 
   @override
+  String get errorPostPhotoLocked => 'ロックされた写真です。ポストアルバムパスを利用すると再び使えます。';
+
+  @override
   String errorPostReplaceLimit(int count) {
     return '今日の写真の入れ替え回数（$count回）をすべて使いました。明日またご利用ください。';
   }

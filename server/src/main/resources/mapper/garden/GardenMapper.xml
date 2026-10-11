@@ -158,17 +158,10 @@
     </select>
 
     <!--
-        가든 카드의 첫 장은 **메인 사진**이다(Plan_3 §3-1·4-1). 그다음은 최신순.
-        ③단계의 열람 제한("무료는 상대 메인 1장만")이 이 순서를 전제로 얹힌다.
-        <=> 는 NULL 안전 비교라 메인이 지정되지 않은 포스트도 그냥 최신순으로 나온다.
+        🚨 남에게 내줄 포스트 사진 목록은 여기 없다 — `PostPhotoVisibility.publicKeys`가 맡는다.
+        주인이 무료로 돌아와 잠근 사진(기획서 261011 3-1)을 빼야 해서 SQL 한 줄로는 안 된다.
+        (메인이 첫 장 → 열람 제한 "무료는 상대 메인 1장만"이 그 순서를 전제로 얹힌다)
     -->
-    <select id="selectPhotoKeys" resultType="string">
-        SELECT ph.storage_key
-        FROM post_photos ph
-                 JOIN posts p ON p.id = ph.post_id
-        WHERE ph.post_id = #{postId}
-        ORDER BY (ph.id &lt;=&gt; p.main_photo_id) DESC, ph.order_idx DESC
-    </select>
 
     <select id="selectInterests" resultType="string">
         SELECT code FROM user_interests WHERE user_id = #{userId}

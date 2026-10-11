@@ -512,7 +512,33 @@ class _PostPhotoCardState extends ConsumerState<_PostPhotoCard> {
             top: PostArt.topChipAt.dy * cardScale,
             child: _MainPhotoChip(
               isMain: _photos[index].id == widget.post.mainPhotoId,
-              onTap: _setMain,
+              // 잠긴 사진은 TOP으로 세울 수 없다 — 죽이지 않고 누르면 이유를 말한다.
+              onTap: _photos[index].locked
+                  ? () => _toast(
+                      errorMessage(
+                        L10n.of(context),
+                        const ApiException(
+                          message: '',
+                          code: 'POST_PHOTO_LOCKED',
+                        ),
+                      ),
+                    )
+                  : _setMain,
+            ),
+          ),
+        // 사진 잠금 마크 — 유료 → 무료로 돌아와 한도를 넘은 사진(기획서 261011 3-1).
+        // 사진은 그대로 보여 준다(내 사진이다). 남에게 안 나간다는 표시만 붙인다.
+        if (hasPhoto && _photos[index].locked)
+          Positioned(
+            left: PostArt.lockAt.dx * cardScale,
+            top: PostArt.lockAt.dy * cardScale,
+            child: Semantics(
+              label: L10n.of(context).errorPostPhotoLocked,
+              child: ArtImage(
+                PostArt.iconLock,
+                width: PostArt.iconLockSize.width,
+                height: PostArt.iconLockSize.height,
+              ),
             ),
           ),
         // 부스트를 켠 동안만 PICK이 붙는다(기획 3-1).
@@ -549,7 +575,8 @@ class _PostPhotoCardState extends ConsumerState<_PostPhotoCard> {
                 (PostArt.deleteTop + PostArt.btnDeleteSize.height / 2 - 10) *
                     cardScale,
             child: Text(
-              '${index + 1}/${widget.post.maxPhotos}',
+              // 무료로 돌아와 한도(2)보다 많이 남아 있으면 `3/2`가 되므로 큰 쪽을 분모로.
+              '${index + 1}/${_photos.length > widget.post.maxPhotos ? _photos.length : widget.post.maxPhotos}',
               style: const TextStyle(
                 color: Colors.white,
                 fontSize: 13,

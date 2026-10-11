@@ -2809,6 +2809,12 @@ abstract class L10n {
   /// **'사진은 최대 {count}장까지 등록할 수 있어요. 기존 사진을 먼저 삭제해 주세요.'**
   String errorPostPhotoLimit(int count);
 
+  /// No description provided for @errorPostPhotoLocked.
+  ///
+  /// In ko, this message translates to:
+  /// **'잠긴 사진이에요. 포스트 앨범 패스를 이용하면 다시 쓸 수 있어요.'**
+  String get errorPostPhotoLocked;
+
   /// No description provided for @errorPostReplaceLimit.
   ///
   /// In ko, this message translates to:

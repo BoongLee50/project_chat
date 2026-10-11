@@ -452,6 +452,7 @@
   "errorPostPhotoNotFound": "写真が見つかりません。",
   "errorPostPhotoNotMine": "自分の写真のみ削除できます。",
   "errorPostPhotoLimit": "写真は最大{count}枚まで登録できます。先に既存の写真を削除してください。",
+  "errorPostPhotoLocked": "ロックされた写真です。ポストアルバムパスを利用すると再び使えます。",
   "errorPostReplaceLimit": "今日の写真の入れ替え回数（{count}回）をすべて使いました。明日またご利用ください。",
   "errorPostReplaceFreeLimit": "写真は1日{count}回まで入れ替えできます。明日またご利用ください。",
   "errorPostNotPublishedToday": "今日登録されたポストがありません。",

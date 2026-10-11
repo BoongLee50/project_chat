@@ -24,6 +24,7 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -50,6 +51,7 @@ public class PostService {
     private final FileStorageService fileStorageService;
     private final EntitlementService entitlementService;
     private final CommentService commentService;
+    private final PostPhotoVisibility visibility;
 
     // 기획이 바꿀 수 있는 수치는 전부 설정으로 뺀다 — 값이 바뀌어도 코드 수정·배포가 없다.
     // 등록 창(1시간)은 Plan_3에서 폐지됐다. 이제 영업일 안이면 언제든 올릴 수 있다.
@@ -64,6 +66,7 @@ public class PostService {
                         FileStorageService fileStorageService,
                         EntitlementService entitlementService,
                         CommentService commentService,
+                        PostPhotoVisibility visibility,
                         @Value("${app.post.max-photos-free:2}") int maxPhotosFree,
                         @Value("${app.post.max-photos-pass:9}") int maxPhotosPass,
                         @Value("${app.post.replace-limit-free:3}") int replaceLimitFree,
@@ -74,6 +77,7 @@ public class PostService {
         this.fileStorageService = fileStorageService;
         this.entitlementService = entitlementService;
         this.commentService = commentService;
+        this.visibility = visibility;
         this.maxPhotosFree = maxPhotosFree;
         this.maxPhotosPass = maxPhotosPass;
         this.replaceLimitFree = replaceLimitFree;
@@ -87,8 +91,11 @@ public class PostService {
         boolean unlimited = isUnlimited(userId);
 
         List<PostPhoto> rows = postMapper.selectPhotos(post.getId());
+        // 유료 → 무료로 돌아와 한도를 넘은 사진은 잠근다(기획서 261011 3-1). 지우지는 않는다.
+        Set<String> locked = visibility.lockedIds(post, rows, unlimited);
         List<PostPhotoDto> photos = rows.stream()
-                .map(p -> new PostPhotoDto(p.getId(), fileStorageService.issueDownloadUrl(p.getStorageKey()), p.getOrderIdx()))
+                .map(p -> new PostPhotoDto(p.getId(), fileStorageService.issueDownloadUrl(p.getStorageKey()),
+                        p.getOrderIdx(), locked.contains(p.getId())))
                 .toList();
 
         return new MyPostResponse(
@@ -209,6 +216,13 @@ public class PostService {
             throw new ApiException(ErrorCode.POST_PHOTO_NOT_MINE, HttpStatus.FORBIDDEN,
                     "오늘의 포스트 사진만 메인으로 지정할 수 있습니다.");
         }
+        // 잠긴 사진은 유료를 다시 써야 "이용 가능"하다(기획서 261011 3-1). 메인으로 세우면
+        // 공개 범위(메인 + 다음 슬롯)가 옮겨 가 잠금이 사실상 풀리므로 막는다.
+        List<PostPhoto> photos = postMapper.selectPhotos(post.getId());
+        if (visibility.lockedIds(post, photos, isUnlimited(userId)).contains(photoId)) {
+            throw new ApiException(ErrorCode.POST_PHOTO_LOCKED, HttpStatus.CONFLICT,
+                    "잠긴 사진은 포스트 앨범 패스를 이용하면 다시 쓸 수 있어요.");
+        }
 
         postMapper.updateMainPhotoId(post.getId(), photoId);
         postMapper.touchContentUpdatedAt(post.getId());
@@ -264,11 +278,7 @@ public class PostService {
      * 사진이 있는데 메인이 비어 보이는 일이 없도록.
      */
     private String resolveMainPhotoId(Post post, List<PostPhoto> photos) {
-        if (photos.isEmpty()) {
-            return null;
-        }
-        String stored = storedMainIfValid(post, photos);
-        return stored != null ? stored : photos.get(0).getId();
+        return visibility.mainPhotoId(post, photos);
     }
 
     /**

@@ -65,6 +65,11 @@ class PostArt {
   static const String btnTopOff = '$_dir/button_mainpost_normal.png';
   static const Size btnTopSize = Size(244, 84);
 
+  /// 사진 잠금 마크(기획서 261011 3-1) — 시안에서 `[TOP]`과 PICK **사이 빈칸**에 놓인다.
+  /// 글자가 없는 그림이라 일본어판이 따로 없다.
+  static const String iconLock = '$_dir/icon_lock.png';
+  static const Size iconLockSize = Size(70, 84);
+
   static const String badgePick = '$_dir/icon_pick.png';
   static const Size badgePickSize = Size(144, 71);
 
@@ -106,6 +111,10 @@ class PostArt {
 
   /// `[TOP]` — 시안 `64, 527`.
   static Offset get topChipAt => _fromCardTopLeft(const Offset(64, 527));
+
+  /// 잠금 마크 — `[TOP]`(64~308)과 PICK(414~) **사이 106의 가운데**, 세로는 [TOP]과 같은 줄
+  /// (높이도 84로 같다). 기획서 261011 3-1 그림에서 그 빈칸에 들어가 있다.
+  static Offset get lockAt => _fromCardTopLeft(const Offset(326, 527));
 
   /// `PICK` — 시안 `414, 527`. **[TOP] 바로 옆이 아니다**(사이가 106 벌어져 있다).
   static Offset get pickAt => _fromCardTopLeft(const Offset(414, 527));

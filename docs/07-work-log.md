@@ -609,6 +609,27 @@ adb shell cmd locale set-app-locales com.example.project_chat --locales ko-KR
 검증: Pixel_10 에뮬 — 장수 우측·지역 표기 확인, 댓글 0 → 1(재실행 뒤에도 1), 임시로 `MOVIE`+`TRAVEL`을 준 계정에서
 `영화` 칩만 뜨는 것 확인 → 시험 데이터(관심사·댓글·집계)는 되돌렸다. `analyze lib/features/garden` 깨끗.
 
+### 2026-10-11 [포스트] — 사진 잠금: 유료 → 무료 전환 (기획서 261011 3-1 · `icon_lock`)
+
+기획서 261011에서 3-1에 4줄이 늘었다 — 유료가 무료로 바뀌면 **사진은 지우지 않고**,
+**메인 1장 + 다음 슬롯 1장**만 남에게 공개, 나머지는 잠금 표시, 유료 재개 시 다시 이용 가능.
+(같은 판의 다른 변경은 **9장 달빛 한마디** 개편뿐 — /word 세션 몫, 손대지 않음. 3-1 그림만 바뀌어 잠금 마크 자리가 생겼다)
+
+- **서버**: `post/service/PostPhotoVisibility` 신설 — 잠금을 **저장하지 않고 매번 계산**(유료 여부 + 메인 위치).
+  남에게 사진을 내주는 세 곳(가든 `toItem` · `PostInfoService` · `FriendService.todayPost`)을 전부 `publicKeys`로 돌렸고,
+  우회로가 남지 않게 **`GardenMapper.selectPhotoKeys`를 지웠다.** `PostPhotoDto.locked` 추가.
+  잠긴 사진 TOP 지정 → **409 `POST_PHOTO_LOCKED`**(공용 `ErrorCode`에 한 줄). 마이그레이션 없음.
+  메인 판정(`resolveMainPhotoId`)은 컴포넌트로 옮겨 한 벌만 남겼다.
+- **클라**: 잠긴 사진에 `icon_lock`(`[TOP]`과 PICK 사이, 시안 326·527 — 높이 84로 TOP과 같다).
+  사진 자체는 그대로 보인다(내 사진). 잠긴 사진의 TOP은 죽이지 않고 누르면 `errorPostPhotoLocked`.
+  장수 표시는 무료로 돌아와 `3/2`가 되지 않게 `max(장수, maxPhotos)`를 분모로.
+- **판단(사용자 확인 전)**: ① 잠긴 사진은 TOP 불가 — "유료 재개 시 다시 이용 가능"을 "지금은 못 쓴다"로 읽음.
+  ② 메인이 마지막 슬롯이면 **직전 슬롯**을 연다(메인 삭제 승계와 같은 방향). ③ 잠긴 사진도 삭제는 된다.
+- **검증**: 새 `tools/verify/verify_post_lock.py` **17/17**(유료 9장 → 만료 → 잠금 7장 · post-info·친구 포스트 `[4,3]` ·
+  TOP 409/200 · 끝 슬롯 `[0,1]` · 무료에서 메인 삭제 · 재개 시 해제). 회귀 `verify_friend` 26/26 · `verify_feed_block_page2` 4/4 ·
+  `verify_profile` 17/17. 에뮬(Nari, 9장·패스 만료로 잠깐 바꿨다가 원복): 잠금 마크 · 메인 5/9 · 다음 6/9 열림 · 토스트 확인.
+  **서버 재기동 1회.**
+
 ### 2026-10-04 [포스트] — 공유 버튼은 사진 없어도 눌린다 · BM 상태 글자 20% 축소
 
 사용자 지시 두 건(`home_screen.dart`만, 서버·스키마 변화 없음).

@@ -994,6 +994,7 @@
   "errorPostPhotoNotFound": "사진을 찾을 수 없어요.",
   "errorPostPhotoNotMine": "내 사진만 삭제할 수 있어요.",
   "errorPostPhotoLimit": "사진은 최대 {count}장까지 등록할 수 있어요. 기존 사진을 먼저 삭제해 주세요.",
+  "errorPostPhotoLocked": "잠긴 사진이에요. 포스트 앨범 패스를 이용하면 다시 쓸 수 있어요.",
   "errorPostReplaceLimit": "오늘의 사진 교체 횟수({count}회)를 모두 썼어요. 내일 다시 이용해 주세요.",
   "errorPostReplaceFreeLimit": "사진은 하루 {count}번까지 교체할 수 있어요. 내일 다시 이용해 주세요.",
   "errorPostNotPublishedToday": "오늘 등록된 포스트가 없어요.",

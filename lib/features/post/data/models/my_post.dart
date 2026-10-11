@@ -5,6 +5,7 @@ class PostPhoto {
     required this.id,
     required this.url,
     required this.orderIdx,
+    this.locked = false,
   });
 
   final String id;
@@ -14,10 +15,15 @@ class PostPhoto {
 
   final int orderIdx;
 
+  /// 유료 → 무료로 돌아와 한도를 넘은 사진(기획서 261011 3-1). 지워지지 않고 남지만
+  /// **남에게 안 보이고 TOP으로 세울 수 없다.** 유료를 다시 쓰면 서버가 false로 준다.
+  final bool locked;
+
   factory PostPhoto.fromJson(Map<String, dynamic> json) => PostPhoto(
     id: json['id'] as String,
     url: json['url'] as String,
     orderIdx: json['orderIdx'] as int? ?? 0,
+    locked: json['locked'] as bool? ?? false,
   );
 }
 

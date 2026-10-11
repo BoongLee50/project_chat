@@ -1,5 +1,6 @@
 package com.moonlighttalk.server.friend.service;
 
+import com.moonlighttalk.server.post.service.PostPhotoVisibility;
 import com.moonlighttalk.server.auth.entity.User;
 import com.moonlighttalk.server.auth.mapper.UserMapper;
 import com.moonlighttalk.server.auth.service.SessionTimeService;
@@ -60,6 +61,7 @@ public class FriendService {
     private final EntitlementService entitlementService;
     private final SocketRegistry socketRegistry;
     private final FileStorageService fileStorageService;
+    private final PostPhotoVisibility postPhotoVisibility;
 
     /**
      * 최대 친구 수. 기획서에 20과 30이 함께 적혀 있어(보완 문서 대기) 설정으로 뺐다.
@@ -84,6 +86,7 @@ public class FriendService {
                           EntitlementService entitlementService,
                           SocketRegistry socketRegistry,
                           FileStorageService fileStorageService,
+                          PostPhotoVisibility postPhotoVisibility,
                           @Value("${app.friend.max-count:100}") int maxFriends,
                           @Value("${app.friend.max-count-premium:100}") int maxFriendsPremium,
                           @Value("${app.friend.request-message-max-length:100}")
@@ -99,6 +102,7 @@ public class FriendService {
         this.entitlementService = entitlementService;
         this.socketRegistry = socketRegistry;
         this.fileStorageService = fileStorageService;
+        this.postPhotoVisibility = postPhotoVisibility;
         this.maxFriends = maxFriends;
         this.maxFriendsPremium = maxFriendsPremium;
         this.maxRequestMessage = maxRequestMessage;
@@ -321,7 +325,8 @@ public class FriendService {
                     "친구가 아직 오늘의 포스트를 공유하지 않았어요.");
         }
 
-        List<String> photoUrls = gardenMapper.selectPhotoKeys(post.getPostId()).stream()
+        // 주인이 무료로 돌아와 잠근 사진은 친구에게도 안 보인다(기획서 261011 3-1).
+        List<String> photoUrls = postPhotoVisibility.publicKeys(post.getPostId()).stream()
                 .map(fileStorageService::issueDownloadUrl)
                 .toList();
 

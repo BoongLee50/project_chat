@@ -1516,6 +1516,9 @@ class L10nKo extends L10n {
   }
 
   @override
+  String get errorPostPhotoLocked => '잠긴 사진이에요. 포스트 앨범 패스를 이용하면 다시 쓸 수 있어요.';
+
+  @override
   String errorPostReplaceLimit(int count) {
     return '오늘의 사진 교체 횟수($count회)를 모두 썼어요. 내일 다시 이용해 주세요.';
   }

@@ -1,5 +1,6 @@
 package com.moonlighttalk.server.garden.service;
 
+import com.moonlighttalk.server.post.service.PostPhotoVisibility;
 import com.moonlighttalk.server.auth.service.SessionTimeService;
 import com.moonlighttalk.server.common.exception.ApiException;
 import com.moonlighttalk.server.common.response.ErrorCode;
@@ -71,6 +72,7 @@ public class GardenService {
     /** 피드 스코어·믹싱 수치 — 운영하며 튜닝할 값이라 재배포 없이 바꿀 수 있어야 한다. */
     private final GardenProperties garden;
     private final FeedSessionStore feedSessions;
+    private final PostPhotoVisibility postPhotoVisibility;
 
     public GardenService(GardenMapper gardenMapper,
                           SessionTimeService sessionTime,
@@ -81,7 +83,8 @@ public class GardenService {
                           CommentService commentService,
                           GardenProperties garden,
                           FeedSessionStore feedSessions,
-                          TranslateAccessService translateAccess) {
+                          TranslateAccessService translateAccess,
+                          PostPhotoVisibility postPhotoVisibility) {
         this.gardenMapper = gardenMapper;
         this.sessionTime = sessionTime;
         this.presenceService = presenceService;
@@ -92,6 +95,7 @@ public class GardenService {
         this.feedSessions = feedSessions;
         this.translateAccess = translateAccess;
         this.commentService = commentService;
+        this.postPhotoVisibility = postPhotoVisibility;
     }
 
     /**
@@ -422,12 +426,13 @@ public class GardenService {
      * 카드 1건. <b>열람 제한은 여기서 실제로 잘라 낸다</b> — 잠긴 사진의 URL은 응답에 담기지 않는다.
      * 화면에서만 가리면 API를 직접 부르는 것으로 뚫린다(함정 #18).
      *
-     * <p>{@code selectPhotoKeys}가 <b>메인을 첫 장</b>으로 주므로(②단계) 앞에서 1장만 자르면
+     * <p>{@code PostPhotoVisibility.publicKeys}가 <b>메인을 첫 장</b>으로 주므로(②단계) 앞에서 1장만 자르면
      * 그게 곧 "메인 사진 1장"이다.
      */
     private FeedItemDto toItem(FeedCandidate c, int score, boolean boosted,
                                 boolean decorated, boolean canViewAll) {
-        List<String> keys = gardenMapper.selectPhotoKeys(c.getPostId());
+        // 주인이 무료로 돌아와 잠근 사진은 여기서 이미 빠진다(기획서 261011 3-1).
+        List<String> keys = postPhotoVisibility.publicKeys(c.getPostId());
         boolean locked = !canViewAll && keys.size() > 1;
         List<String> visible = locked ? keys.subList(0, 1) : keys;
 

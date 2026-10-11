@@ -24,6 +24,10 @@
         SELECT * FROM posts WHERE user_id = #{userId} AND session_date = #{sessionDate}
     </select>
 
+    <select id="selectPostById" resultMap="PostResultMap">
+        SELECT * FROM posts WHERE id = #{postId}
+    </select>
+
     <insert id="insertPost">
         INSERT INTO posts (id, user_id, session_date, published_at, replace_count)
         VALUES (#{id}, #{userId}, #{sessionDate}, #{publishedAt}, #{replaceCount})

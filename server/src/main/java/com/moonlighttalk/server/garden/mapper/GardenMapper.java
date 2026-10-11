@@ -37,9 +37,6 @@ public interface GardenMapper {
             @Param("viewerId") String viewerId,
             @Param("ids") List<String> ids);
 
-    /** 사진 URL 계산용 storage key 목록(노출 순서대로). */
-    List<String> selectPhotoKeys(@Param("postId") String postId);
-
     /** 관심사(탭으로 추가 사진 검색 시 하루 한마디 대신 노출). */
     List<String> selectInterests(@Param("userId") String userId);
 

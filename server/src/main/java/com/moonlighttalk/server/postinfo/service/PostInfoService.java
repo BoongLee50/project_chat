@@ -1,5 +1,6 @@
 package com.moonlighttalk.server.postinfo.service;
 
+import com.moonlighttalk.server.post.service.PostPhotoVisibility;
 import com.moonlighttalk.server.auth.entity.User;
 import com.moonlighttalk.server.auth.mapper.UserMapper;
 import com.moonlighttalk.server.auth.service.SessionTimeService;
@@ -54,6 +55,7 @@ public class PostInfoService {
     private final PresenceService presenceService;
     private final FileStorageService fileStorageService;
     private final SessionTimeService sessionTime;
+    private final PostPhotoVisibility postPhotoVisibility;
 
     public PostInfoService(UserMapper userMapper,
                             ProfileMapper profileMapper,
@@ -63,7 +65,8 @@ public class PostInfoService {
                             FriendMapper friendMapper,
                             PresenceService presenceService,
                             FileStorageService fileStorageService,
-                            SessionTimeService sessionTime) {
+                            SessionTimeService sessionTime,
+                            PostPhotoVisibility postPhotoVisibility) {
         this.userMapper = userMapper;
         this.profileMapper = profileMapper;
         this.gardenMapper = gardenMapper;
@@ -73,6 +76,7 @@ public class PostInfoService {
         this.presenceService = presenceService;
         this.fileStorageService = fileStorageService;
         this.sessionTime = sessionTime;
+        this.postPhotoVisibility = postPhotoVisibility;
     }
 
     public PostInfoDto get(String userId, String targetUserId) {
@@ -158,7 +162,8 @@ public class PostInfoService {
             return new Photos(urls, false, urls.size(), false);
         }
 
-        List<String> keys = gardenMapper.selectPhotoKeys(postId);
+        // 주인이 무료로 돌아와 잠근 사진은 여기서 이미 빠진다(기획서 261011 3-1).
+        List<String> keys = postPhotoVisibility.publicKeys(postId);
         boolean locked = !gardenService.canViewAllPhotos(userId) && keys.size() > 1;
         // 메인이 첫 장이므로(②단계) 앞에서 1장만 자르면 그게 곧 "메인 사진 1장"이다.
         List<String> visible = locked ? keys.subList(0, 1) : keys;

@@ -14,6 +14,9 @@ public interface PostMapper {
 
     Post selectByUserAndDate(@Param("userId") String userId, @Param("sessionDate") LocalDate sessionDate);
 
+    /** 남에게 사진을 내줄 때 주인·메인을 알아야 한다({@code PostPhotoVisibility}). */
+    Post selectPostById(@Param("postId") String postId);
+
     void insertPost(Post post);
     void updatePublishedAt(@Param("postId") String postId, @Param("publishedAt") LocalDateTime publishedAt);
 

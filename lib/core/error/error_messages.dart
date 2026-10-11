@@ -30,6 +30,7 @@ String errorMessage(L10n l10n, ApiException e) {
     // 장수·횟수는 설정값이라 언제든 바뀐다 — 서버가 field에 실어 보내고 ARB가 조립한다
     // (`FRIEND_LIMIT_EXCEEDED`와 같은 방식). 문구에 숫자를 굳히면 설정만 바꿔도 거짓말이 된다.
     'POST_PHOTO_LIMIT' => l10n.errorPostPhotoLimit(_count(e)),
+    'POST_PHOTO_LOCKED' => l10n.errorPostPhotoLocked,
     'POST_REPLACE_LIMIT' => l10n.errorPostReplaceLimit(_count(e)),
     'POST_REPLACE_FREE_LIMIT' => l10n.errorPostReplaceFreeLimit(_count(e)),
     'POST_NOT_PUBLISHED_TODAY' => l10n.errorPostNotPublishedToday,
