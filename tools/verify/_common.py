@@ -12,6 +12,7 @@
 ⚠️ **배치는 개발 DB 전체를 본다.** 내 테스트 계정만 세면 결과가 안 맞는다(함정 #61) —
    배치가 돌려주는 건수를 `==`로 단정하지 말고 `>=`로 볼 것.
 """
+import atexit
 import json
 import os
 import subprocess
@@ -77,6 +78,25 @@ def session_date():
     return scalar("SELECT DATE(NOW() - INTERVAL IF(HOUR(NOW()) < 18, 1, 0) DAY)")
 
 
+_published = set()
+
+
+@atexit.register
+def _unpublish_all():
+    """`publish_post()`로 만든 포스트를 지운다 — 통과·실패·예외 어느 쪽으로 끝나도 돈다.
+
+    사진·좋아요·댓글은 `posts`에 걸린 ON DELETE CASCADE로 함께 사라진다.
+    """
+    if not _published or os.environ.get('VERIFY_KEEP_POSTS') == '1':
+        return
+    ids = ','.join("'%s'" % p for p in sorted(_published))
+    try:
+        sql("DELETE FROM posts WHERE id IN (%s)" % ids)
+        print('  (정리) 검증 포스트 %d건을 지웠다 — 실제 가든에 검은 카드로 남지 않게' % len(_published))
+    except RuntimeError as e:  # DB가 먼저 내려갔어도 검증 결과는 가리지 않는다
+        print('  (정리 실패) 검증 포스트가 남았을 수 있다: %s' % e)
+
+
 def publish_post(user_id, post_id):
     """그 사람을 오늘 가든 후보로 만든다(포스트를 '공유'한 상태).
 
@@ -87,7 +107,14 @@ def publish_post(user_id, post_id):
 
     파일은 만들지 않는다. 스토리지 key만 있으면 후보 조건과 장수 계산에는 충분하고,
     다운로드 URL은 열어 봐야 404일 뿐 검증에 쓰지 않는다.
+
+    🚨 **스크립트가 끝나면 이 포스트는 지워진다**(`_unpublish_all`, 2026-10-11).
+    검증 계정은 이름이 없고 사진 파일도 없어서, 남겨 두면 **같은 영업일의 실제 가든**에
+    검은 카드로 깔린다 — 실기기로 화면을 보던 사용자가 "가든이 어둡고 데이터가 없다"고 본 것이
+    바로 이것이었다(검증 계정 15명이 임시 유저 40명보다 앞에 섰다).
+    끝난 뒤 DB를 들여다봐야 하면 `VERIFY_KEEP_POSTS=1`로 돌릴 것.
     """
+    _published.add(post_id)
     sql("INSERT INTO posts (id, user_id, session_date, published_at, content_updated_at) "
         "VALUES ('%s','%s','%s', NOW(), NOW()) "
         "ON DUPLICATE KEY UPDATE published_at = NOW(), content_updated_at = NOW()"

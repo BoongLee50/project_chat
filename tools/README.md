@@ -41,6 +41,11 @@ python tools/verify/verify_friend.py
   **버그가 없는데도 실패**한다. `verify_moderation.py`의 `garden_of()`는 끝까지 훑는다.
 - **18시가 지나면 후보가 빈다**(그날 공유한 사람이 아직 없어서다). 스크립트가
   `publish_post()`로 직접 만들어 두므로 시간과 무관하게 돈다.
+- 🚨 **`publish_post()`로 만든 포스트는 스크립트가 끝나면 지워진다**(2026-10-11, 실패·예외로 끝나도).
+  검증 계정은 이름도 사진 파일도 없어서, 남겨 두면 **그날 실제 가든에 검은 카드로 깔린다** —
+  `verify_feed_block_page2.py`가 남긴 15장이 임시 유저 40명을 가려 "가든이 어둡고 비었다"로 보였다.
+  끝난 뒤 DB를 봐야 하면 `VERIFY_KEEP_POSTS=1`. 포스트를 `publish_post()` 없이 직접 넣는 검증은 **스스로 치울 것**
+  (`verify_post_lock.py`는 끝에서 `reset()`으로 치운다).
 
 ## spec/ — 전달본 리소스 비교
 
