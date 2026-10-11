@@ -67,6 +67,9 @@ class _DailyIntroScreenState extends ConsumerState<DailyIntroScreen>
         setState(() => _remaining = left - 1);
       } else if (left == 1) {
         // 18시가 지났다 — 새 질문을 받아 온다(기획 9-1 "18시에 모든 정보 초기화").
+        // 쓰던 등록 시트도 닫는다 — 갱신판 9-1 "[내 한마디 등록]에서 작성된 답변글은 18시에 초기화".
+        // 그대로 두면 지난 질문에 쓴 글이 새 질문의 답으로 올라간다.
+        if (_writing) _closeSheet();
         setState(() => _remaining = 0);
         ref.invalidate(dailyTodayProvider);
       }

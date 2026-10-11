@@ -353,6 +353,12 @@ class L10nJa extends L10n {
   String get dailyCommentHint => 'メッセージを入力してください';
 
   @override
+  String get dailyCommentPhotoTitle => '写真 1/1';
+
+  @override
+  String get dailyCommentPhotoAttached => '写真が添付されました。';
+
+  @override
   String get dailyCommentSend => '送信';
 
   @override

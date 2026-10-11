@@ -353,6 +353,12 @@ class L10nKo extends L10n {
   String get dailyCommentHint => '메시지를 입력해 주세요';
 
   @override
+  String get dailyCommentPhotoTitle => '사진 1/1';
+
+  @override
+  String get dailyCommentPhotoAttached => '사진이 첨부되었습니다.';
+
+  @override
   String get dailyCommentSend => '보내기';
 
   @override

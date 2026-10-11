@@ -400,13 +400,12 @@ class _DailyDetailScreenState extends ConsumerState<DailyDetailScreen> {
                   cancelLabel: l10n.commentsCancelReply,
                   onCancel: () => setState(() => _replyTo = null),
                 ),
+              // 기획서 261011(갱신판) image26 "답글 사진 등록 썸네일" — 보낼 때까지 남는다.
               if (_imageBytes != null)
-                _StripBar(
+                _PhotoStrip(
                   scale: s,
-                  thumbnail: _imageBytes,
-                  label: l10n.commentsImageAttached,
-                  cancelLabel: l10n.commentsRemoveImage,
-                  onCancel: () => setState(() {
+                  bytes: _imageBytes!,
+                  onRemove: () => setState(() {
                     _imageKey = null;
                     _imageBytes = null;
                   }),
@@ -962,21 +961,110 @@ class _MoreMenu extends StatelessWidget {
   }
 }
 
-/// 입력줄 위의 얇은 줄 — "○○님에게 답글" 또는 첨부한 사진. ✕로 푼다.
+/// 첨부할 사진 썸네일 줄(기획서 261011 갱신판 9-2 · image26) — 입력줄 바로 위.
+///
+/// *"첨부될 사진을 선택하면 메시지 입력창 위에 썸네일 사진을 표시. 썸네일 사진 영역에서 사용자가 올릴 사진
+/// 확인 및 제거 가능. 썸네일 사진 영역은 댓글 전송 완료전까지 유지."*
+/// - 썸네일을 누르면 **크게 본다**(확인) · 오른쪽 ✕(등록 시트의 `button_wordclose`를 같이 쓴다)로 **지운다**
+/// - 글자는 시안 그대로 `사진 1/1` · `사진이 첨부되었습니다.` — 한 장까지라 분모가 1이다
+class _PhotoStrip extends StatelessWidget {
+  const _PhotoStrip({
+    required this.scale,
+    required this.bytes,
+    required this.onRemove,
+  });
+
+  final double scale;
+  final Uint8List bytes;
+  final VoidCallback onRemove;
+
+  void _preview(BuildContext context) {
+    showDialog<void>(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.all(16),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: Image.memory(bytes, fit: BoxFit.contain),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
+    final s = scale;
+    final thumb = 150 * s;
+    return Container(
+      // 시안 실측 — 미색 판 + 아래 옅은 선.
+      decoration: const BoxDecoration(
+        color: Color(0xFFFFF8EE),
+        border: Border(bottom: BorderSide(color: Color(0xFFF0E3CE))),
+      ),
+      padding: EdgeInsets.fromLTRB(40 * s, 16 * s, 30 * s, 16 * s),
+      child: Row(
+        children: [
+          GestureDetector(
+            onTap: () => _preview(context),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(14 * s),
+              child: Image.memory(
+                bytes,
+                width: thumb,
+                height: thumb,
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+          SizedBox(width: 22 * s),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n.dailyCommentPhotoTitle,
+                  style: TextStyle(color: WordArt.ink, fontSize: 30 * s),
+                ),
+                SizedBox(height: 10 * s),
+                Text(
+                  l10n.dailyCommentPhotoAttached,
+                  style: TextStyle(
+                    color: const Color(0xFFB08A5A),
+                    fontSize: 26 * s,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Semantics(
+            button: true,
+            label: l10n.commentsRemoveImage,
+            child: GestureDetector(
+              onTap: onRemove,
+              child: ArtImage(WordArt.close, width: 96, height: 96),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// 입력줄 위의 얇은 줄 — "○○님에게 답글". ✕로 푼다.
 class _StripBar extends StatelessWidget {
   const _StripBar({
     required this.scale,
     required this.label,
     required this.cancelLabel,
     required this.onCancel,
-    this.thumbnail,
   });
 
   final double scale;
   final String label;
   final String cancelLabel;
   final VoidCallback onCancel;
-  final Uint8List? thumbnail;
 
   @override
   Widget build(BuildContext context) {
@@ -986,18 +1074,6 @@ class _StripBar extends StatelessWidget {
       padding: EdgeInsets.fromLTRB(40 * s, 8 * s, 10 * s, 8 * s),
       child: Row(
         children: [
-          if (thumbnail != null) ...[
-            ClipRRect(
-              borderRadius: BorderRadius.circular(8 * s),
-              child: Image.memory(
-                thumbnail!,
-                width: 90 * s,
-                height: 90 * s,
-                fit: BoxFit.cover,
-              ),
-            ),
-            SizedBox(width: 20 * s),
-          ],
           Expanded(
             child: Text(
               label,

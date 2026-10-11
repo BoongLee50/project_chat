@@ -105,6 +105,8 @@
   "dailyWriteUploading": "写真をアップロード中です。少々お待ちください。",
   "dailyViewOriginal": "原文を見る",
   "dailyCommentHint": "メッセージを入力してください",
+  "dailyCommentPhotoTitle": "写真 1/1",
+  "dailyCommentPhotoAttached": "写真が添付されました。",
   "dailyCommentSend": "送信",
   "dailyLike": "いいね",
   "dailyPhotoSheetTitle": "ひとこと写真の登録",
