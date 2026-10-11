@@ -98,6 +98,9 @@ feed_skips                                 -- 내가 스킵한 대상(당일 재
   created_at     timestamptz
   PK(user_id, target_user_id, session_date)
 
+-- ⚠️ 아래 post_comments는 초기 설계다. 지금 표는 `comments`(V13·V14·V30) — target_type(POST|DAILY_ANSWER)·target_id ·
+--    parent_id · depth(1~3) · body 50자 · image_key. 🚨 V30: UNIQUE uk_comments_parent(parent_id) — **댓글 하나에 답글 하나**
+--    (1차는 parent_id NULL이라 몇 개든). 규칙 정본은 01 §댓글.
 post_comments                              -- 포스트 댓글(기획서 4-2). 대댓글 없음, 최대 25자
   id         uuid PK
   post_id    uuid FK -> posts (ON DELETE CASCADE — 06시 포스트 정리 시 함께 삭제)

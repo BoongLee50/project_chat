@@ -2905,6 +2905,12 @@ abstract class L10n {
   /// **'답글은 글쓴이와 댓글을 단 사람이 번갈아 주고받을 수 있어요.'**
   String get errorCommentReplyNotAllowed;
 
+  /// No description provided for @errorCommentAlreadyReplied.
+  ///
+  /// In ko, this message translates to:
+  /// **'이 댓글에는 이미 답글이 있어요. 댓글 하나에 답글은 하나씩만 달 수 있어요.'**
+  String get errorCommentAlreadyReplied;
+
   /// No description provided for @errorCommentOwnPost.
   ///
   /// In ko, this message translates to:

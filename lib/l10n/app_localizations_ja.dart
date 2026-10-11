@@ -1569,6 +1569,10 @@ class L10nJa extends L10n {
   String get errorCommentReplyNotAllowed => '返信は投稿者とコメントした人が交互にやり取りできます。';
 
   @override
+  String get errorCommentAlreadyReplied =>
+      'このコメントにはもう返信があります。返信は1つのコメントに1つまでです。';
+
+  @override
   String get errorCommentOwnPost => '自分のポストにはコメントできません。届いたコメントをタップして返信してみましょう。';
 
   @override

@@ -158,13 +158,21 @@ class _DailyDetailScreenState extends ConsumerState<DailyDetailScreen> {
 
   // ── 답글 대상 ──────────────────────────────────────────
 
-  /// 이 댓글에 **내가** 답글을 달 수 있는가 — 3단계 미만 · 내 댓글 아님 · 나는 글쓴이이거나 그 스레드를 연 사람.
-  bool _canReply(Comment comment, List<Comment> all, String ownerId) {
+  /// 이 댓글에 **내가** 답글을 못 다는 이유(달 수 있으면 null) — 3단계 미만 · 내 댓글 아님 ·
+  /// 나는 글쓴이이거나 그 스레드를 연 사람 · 🚨 **아직 답글이 없는 댓글**(댓글 하나에 답글은 하나,
+  /// 사용자 확정 2026-10-11, V30). 규칙은 가든 `comments_sheet.dart`와 같다 — 정본 `docs/01` §댓글.
+  /// 순서가 뜻이다: 제3자에게는 "이미 답글이 있다"보다 "이 대화의 사람이 아니다"가 맞는 말이다.
+  String? _replyBlockedReason(Comment comment, List<Comment> all, String ownerId) {
     final me = ref.read(sessionProvider).profile?.id;
-    if (me == null) return false;
-    if (comment.depth >= _maxDepth) return false;
-    if (comment.authorId == me) return false;
-    return me == ownerId || me == _threadStarterId(comment, all);
+    final l10n = L10n.of(context);
+    if (comment.depth >= _maxDepth) return l10n.errorCommentDepthExceeded(_maxDepth);
+    if (me == null ||
+        comment.authorId == me ||
+        (me != ownerId && me != _threadStarterId(comment, all))) {
+      return l10n.errorCommentReplyNotAllowed;
+    }
+    if (all.any((c) => c.parentId == comment.id)) return l10n.errorCommentAlreadyReplied;
+    return null;
   }
 
   String? _threadStarterId(Comment comment, List<Comment> all) {
@@ -181,17 +189,13 @@ class _DailyDetailScreenState extends ConsumerState<DailyDetailScreen> {
       setState(() => _replyTo = null);
       return;
     }
-    if (_canReply(comment, all, ownerId)) {
+    final blocked = _replyBlockedReason(comment, all, ownerId);
+    if (blocked == null) {
       setState(() => _replyTo = comment);
       _focus.requestFocus();
       return;
     }
-    final l10n = L10n.of(context);
-    _toast(
-      comment.depth >= _maxDepth
-          ? l10n.errorCommentDepthExceeded(_maxDepth)
-          : l10n.errorCommentReplyNotAllowed,
-    );
+    _toast(blocked);
   }
 
   // ── 보내기 ────────────────────────────────────────────

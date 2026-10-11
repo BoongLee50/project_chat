@@ -33,7 +33,7 @@ enum CommentTargetKind { post, dailyAnswer }
 /// 줄마다 얼굴 사진 · 이름 · 국기 · `N분 전` · `⋯`(프로필 보기 / 대화 신청), 번역문은 원문 아래 회색 한 줄.
 ///
 /// [targetId]는 포스트 주인의 userId(포스트) 또는 한마디 id다.
-/// [ownerId]는 **글쓴이**다 — 답글 자격을 가리는 데 쓴다(아래 [_CommentsSheetState._canReply]).
+/// [ownerId]는 **글쓴이**다 — 답글 자격을 가리는 데 쓴다(아래 [_CommentsSheetState._replyBlockedReason]).
 /// [title]은 예전 머리글(`○○님의 포스트`)이다. 시안 머리글은 `댓글 N`이라 **더는 그리지 않는다** —
 /// 부르는 곳(오늘의 포스트·달빛 한마디)이 아직 넘기므로 받아만 둔다.
 Future<void> showCommentsSheet(
@@ -117,19 +117,30 @@ class _CommentsSheetState extends ConsumerState<_CommentsSheet> {
   /// 이 댓글에 **내가** 답글을 달 수 있는가.
   ///
   /// 한 스레드는 **글쓴이와 그 스레드를 시작한 사람**의 1:1 대화이고 답글은 **번갈아** 달린다:
-  /// `A가 글 → B가 댓글 → A가 답글 → B가 답글`. 그래서 조건은 셋이다.
+  /// `A가 글 → B가 댓글 → A가 답글 → B가 답글`. 그래서 조건은 넷이다.
   /// 1. 3단계에는 더 못 단다
   /// 2. **내 댓글에는 내가 못 단다**(자기 말에 자기가 답하면 대화가 아니다)
   /// 3. 나는 이 스레드의 두 사람 중 하나여야 한다 — 제3자는 **1단계 댓글로 새 스레드**를 연다
+  /// 4. 🚨 **이미 답글이 달린 댓글에는 못 단다** — 댓글 하나에 답글은 하나(사용자 확정 2026-10-11, V30).
+  ///    2차는 1차 하나당 1번, 3차는 2차 하나당 1번이라 한 1차 댓글 아래는 언제나 한 줄이다
   ///
-  /// 서버가 같은 규칙으로 다시 판정한다(`COMMENT_REPLY_NOT_ALLOWED`).
+  /// 서버가 같은 규칙으로 다시 판정한다(`COMMENT_REPLY_NOT_ALLOWED` · `COMMENT_ALREADY_REPLIED`).
   /// 여기서 가리는 건 **헛걸음을 막으려는 것**이지 방어가 아니다.
-  bool _canReply(Comment comment, List<Comment> all) {
+  ///
+  /// 못 다는 **이유**를 돌려준다(달 수 있으면 null) — 줄을 눌렀을 때 왜 안 되는지 말하려고.
+  /// 순서가 뜻이다: 제3자에게는 "이미 답글이 있다"보다 "이 대화의 사람이 아니다"가 맞는 말이다.
+  /// ⚠️ 한마디 [답글 상세](`daily_detail_screen.dart`)에 같은 판정이 한 벌 더 있다 — 함께 고칠 것.
+  String? _replyBlockedReason(Comment comment, List<Comment> all) {
     final me = ref.read(sessionProvider).profile?.id;
-    if (me == null) return false;
-    if (comment.depth >= _maxDepth) return false;
-    if (comment.authorId == me) return false;
-    return me == widget.ownerId || me == _threadStarterId(comment, all);
+    final l10n = L10n.of(context);
+    if (comment.depth >= _maxDepth) return l10n.errorCommentDepthExceeded(_maxDepth);
+    if (me == null ||
+        comment.authorId == me ||
+        (me != widget.ownerId && me != _threadStarterId(comment, all))) {
+      return l10n.errorCommentReplyNotAllowed;
+    }
+    if (all.any((c) => c.parentId == comment.id)) return l10n.errorCommentAlreadyReplied;
+    return null;
   }
 
   /// 스레드를 시작한 사람(1단계 댓글의 작성자). 깊이가 3까지라 한 번만 거슬러 올라가면 된다.
@@ -150,16 +161,12 @@ class _CommentsSheetState extends ConsumerState<_CommentsSheet> {
       setState(() => _replyTo = null);
       return;
     }
-    if (_canReply(comment, all)) {
+    final blocked = _replyBlockedReason(comment, all);
+    if (blocked == null) {
       setState(() => _replyTo = comment);
       return;
     }
-    final l10n = L10n.of(context);
-    _toast(
-      comment.depth >= _maxDepth
-          ? l10n.errorCommentDepthExceeded(_maxDepth)
-          : l10n.errorCommentReplyNotAllowed,
-    );
+    _toast(blocked);
   }
 
   /// 첨부한 사진 — 올린 뒤 받은 키와, 미리보기용 바이트.

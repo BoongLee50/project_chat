@@ -89,7 +89,7 @@
   - **3단계까지**만. 3차 댓글은 답글 대상으로 고를 수 없다
   - **1차**: 게시자(포스트 주인·한마디 작성자)를 **뺀** 모든 사용자, 몇 번이든 — **게시자는 자기 글에 1차 댓글 금지**
   - **2차**(1차의 대댓글): **게시자만, 1차 하나당 1번** · **3차**(2차의 대댓글): **그 1차 댓글 쓴 사람만, 2차 하나당 1번**
-  - ⚠️ **'한 번만'은 아직 코드에 없다**(2026-10-11 확인) — 서버 `CommentService`도 앱 `_canReply`도 부모에 이미 답글이 있는지 보지 않아, 지금은 게시자가 같은 1차 댓글에 2차를 **여러 번** 달 수 있다.
+  - ✅ **구현됨(2026-10-11, V30)** — 서버 `CommentService.resolveDepth`가 부모에 답글이 있으면 409 `COMMENT_ALREADY_REPLIED`, 동시에 두 번 들어온 요청은 DB 유니크 `uk_comments_parent(parent_id)`가 막는다(같은 409). 앱은 가든 `comments_sheet.dart`·한마디 `daily_detail_screen.dart`의 `_replyBlockedReason`이 미리 가리고 이유를 말한다 (⚠️ 앱 판정이 **두 파일에 한 벌씩** — 함께 고칠 것). 검증 `tools/verify/verify_comment_once.py`(17건).
   - → 한 댓글 아래 대화는 **게시자와 댓글 단 사람 둘이서 세 마디**(대댓글 최대 2개). 더 하려면 1차 댓글을 새로 단다
   - ⚠️ "게시자 1차 금지"는 서버 **호출부 두 곳**(`GardenService.addComment` · `DailyQuestionService.addComment`)에 따로 있다 — 한쪽만 바꾸지 말 것
 - 고정 화면은 **스크롤하지 않는다** — 넘치면 늘어나는 칸 하나가 흡수(`Expanded`). 끌어서 울렁이면 안 된다

@@ -157,7 +157,7 @@ API를 직접 부르는 것으로 뚫린다. 응답에 `photoLocked`(잠김 여�
 > 📌 **2차는 1차 댓글 하나당 한 번만**(사용자 추가 2026-10-11). 3차도 한 번 — *"한 댓글에 대댓글은 총 2개가 끝"*.
 > 그래서 한 1차 댓글 아래는 **언제나 한 줄**(1차 → 2차 → 3차)이고 가지가 갈라지지 않는다.
 >
-> ⚠️ **'한 번만'은 아직 코드에 없다**(2026-10-11 확인) — 서버 `CommentService`도 앱 `_canReply`도 부모에 이미 답글이 있는지 보지 않아, 지금은 게시자가 같은 1차 댓글에 2차를 **여러 번** 달 수 있다.
+> ✅ **구현됨(2026-10-11, V30)** — 서버 `CommentService.resolveDepth`가 부모에 답글이 있으면 409 `COMMENT_ALREADY_REPLIED`, 동시에 두 번 들어온 요청은 DB 유니크 `uk_comments_parent(parent_id)`가 막는다(같은 409). 앱은 가든 `comments_sheet.dart`·한마디 `daily_detail_screen.dart`의 `_replyBlockedReason`이 미리 가리고 이유를 말한다 (⚠️ 앱 판정이 **두 파일에 한 벌씩** — 함께 고칠 것). 검증 `tools/verify/verify_comment_once.py`(17건).
 >
 > 구현(서버가 정본 판정, 앱은 헛걸음을 막으려 같은 규칙으로 미리 가린다):
 > 2·3차 자격 = 공용 `CommentService.requireCounterpart` · 깊이 = `app.comment.max-depth`(3) ·
@@ -173,6 +173,10 @@ API를 직접 부르는 것으로 뚫린다. 응답에 `photoLocked`(잠김 여�
   - 규칙을 한 줄로 줄이면 **"답글은 부모를 쓴 사람의 상대만 단다"** 이고, 이 한 문장이 둘 다 막는다.
   - 어기면 `COMMENT_REPLY_NOT_ALLOWED`(403). 클라는 **줄을 눌러 답글 대상을 고르고**(4-2·8-2 "댓글 타겟 선택"),
     못 고르는 줄을 누르면 이 문장(또는 `COMMENT_DEPTH_EXCEEDED`)을 띄운다.
+- 🚨 **댓글 하나에 답글은 하나**(2026-10-11, V30) — 이미 답글이 있는 댓글에 또 달면 `COMMENT_ALREADY_REPLIED`(409).
+  판정 순서: 깊이(`COMMENT_DEPTH_EXCEEDED`) → 대화의 두 사람인가(`COMMENT_REPLY_NOT_ALLOWED`) → 이미 답글이 있는가.
+  그래서 제3자에게는 "이미 답글이 있다"가 아니라 "이 대화의 사람이 아니다"가 나간다.
+  동시에 두 번 보낸 답글은 DB 유니크(`uk_comments_parent`)가 막고 **같은 409**로 바꿔 돌려준다(500 아님).
 - 🚨 **포스트 주인은 자기 포스트에 1단계 댓글을 못 단다**(2026-10-11 — 내 포스트 좋아요가 안 되는 것과 같다).
   어기면 `COMMENT_OWN_POST`(403). **답글(2단계)은 된다** — 위 스레드의 `A가 답글`이 그것이다.
   달빛 한마디도 같다(`DAILY_ANSWER_SELF_COMMENT`, 아래 §1.9) — ~~"달빛 한마디에는 이 제한이 없다"~~는 낡은 문장이었다(2026-10-11 고침).

@@ -9,6 +9,7 @@ import com.moonlighttalk.server.common.response.ErrorCode;
 import com.moonlighttalk.server.common.storage.FileStorageService;
 import com.moonlighttalk.server.post.dto.UploadUrlResponse;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -109,7 +110,12 @@ public class CommentService {
         comment.setParentId(emptyToNull(parentId));
         comment.setDepth(depth);
         comment.setImageKey(emptyToNull(imageKey));
-        commentMapper.insert(comment);
+        try {
+            commentMapper.insert(comment);
+        } catch (DuplicateKeyException e) {
+            // 위 검사를 동시에 통과한 두 번째 답글 — 유니크(parent_id)가 막았다(V30). 500이 아니라 같은 안내로.
+            throw alreadyReplied();
+        }
         return comment.getId();
     }
 
@@ -173,7 +179,18 @@ public class CommentService {
                     "답글은 " + maxDepth + "단계까지만 달 수 있어요.", String.valueOf(maxDepth));
         }
         requireCounterpart(parent, ownerId, authorId);
+        // 🚨 **댓글 하나에 답글은 하나**(사용자 확정 2026-10-11) — 2차는 1차 하나당 1번, 3차는 2차 하나당 1번.
+        // 그래서 한 1차 댓글 아래는 언제나 한 줄이다. 동시에 두 번 들어온 요청은 여기를 둘 다 통과하므로
+        // DB 유니크(`uk_comments_parent`, V30)가 마지막으로 막는다 → add()의 DuplicateKeyException.
+        if (commentMapper.existsReplyTo(parent.getId())) {
+            throw alreadyReplied();
+        }
         return depth;
+    }
+
+    private ApiException alreadyReplied() {
+        return new ApiException(ErrorCode.COMMENT_ALREADY_REPLIED, HttpStatus.CONFLICT,
+                "이 댓글에는 이미 답글이 있어요.");
     }
 
     /** 답글을 달 자격 — 부모를 쓴 사람의 <b>상대</b>여야 한다. */

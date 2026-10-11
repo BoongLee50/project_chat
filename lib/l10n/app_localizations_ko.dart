@@ -1573,6 +1573,10 @@ class L10nKo extends L10n {
       '답글은 글쓴이와 댓글을 단 사람이 번갈아 주고받을 수 있어요.';
 
   @override
+  String get errorCommentAlreadyReplied =>
+      '이 댓글에는 이미 답글이 있어요. 댓글 하나에 답글은 하나씩만 달 수 있어요.';
+
+  @override
   String get errorCommentOwnPost =>
       '내 포스트에는 댓글을 달 수 없어요. 받은 댓글을 눌러 답글을 남겨 보세요.';
 

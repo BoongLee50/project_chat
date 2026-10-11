@@ -33,6 +33,10 @@
         ORDER BY c.created_at
     </select>
 
+    <select id="existsReplyTo" resultType="boolean">
+        SELECT EXISTS (SELECT 1 FROM comments WHERE parent_id = #{parentId})
+    </select>
+
     <select id="countByTarget" resultType="int">
         SELECT COUNT(*) FROM comments
         WHERE target_type = #{targetType} AND target_id = #{targetId}

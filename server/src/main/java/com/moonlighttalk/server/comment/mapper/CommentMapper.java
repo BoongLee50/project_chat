@@ -25,6 +25,9 @@ public interface CommentMapper {
     /** 답글을 달 부모 댓글(없으면 null). */
     Comment selectById(@Param("commentId") String commentId);
 
+    /** 이 댓글에 이미 답글이 달렸는가 — 댓글 하나에 답글은 하나뿐이다(V30). */
+    boolean existsReplyTo(@Param("parentId") String parentId);
+
     void insert(Comment comment);
 
     /**
