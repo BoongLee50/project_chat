@@ -1,20 +1,23 @@
 # 콘텐츠 세션 공통 규칙
 
-> `/post` · `/garden` · `/talk` · `/friend` · `/profile` 이 이 파일을 먼저 읽게 한다.
-> 정본은 이 파일 하나다 — 다섯 스킬에 같은 말을 따로 적지 않는다(한쪽만 늙는다).
+> `/post` · `/garden` · `/talk` · `/friend` · `/profile` · `/word` 가 이 파일을 먼저 읽게 한다.
+> 정본은 이 파일 하나다 — 여섯 스킬에 같은 말을 따로 적지 않는다(한쪽만 늙는다).
 
-## 1. 세션은 여섯이다
+## 1. 세션은 일곱이다
 
-달빛톡 작업을 **콘텐츠별 세션**으로 나눠 동시에 돌린다(2026-10-04 결정).
+달빛톡 작업을 **콘텐츠별 세션**으로 나눠 동시에 돌린다(2026-10-04 결정, 2026-10-11 달빛 한마디 분리).
 
-| 명령 | 콘텐츠 | 기획서 260919 | 주로 볼 UI (`D:\Plan_Chat\UI\`) |
+| 명령 | 콘텐츠 | 기획서 261002 | 주로 볼 UI (`D:\Plan_Chat\UI\`) |
 |---|---|---|---|
 | `/post` | 포스트 | **3장** 포스트 등록 | `Scene_Post` |
-| `/garden` | 달빛가든 | **4장**(피드·댓글·대화 신청) + **8장** 달빛 한마디 | `Scene_Garden` |
+| `/garden` | 달빛가든 | **4장**(피드·댓글·대화 신청) | `Scene_Garden` |
 | `/talk` | 대화방 | **6장** 대화방 + **5장** 채팅창 | `Scene_Talk` |
 | `/friend` | 친구 | **7장** 친구관리 + **5-1** 친구 신청 | `Scene_Friend` |
-| `/profile` | 프로필 | **7장** 프로필(⚠️ 기획서에 `7.`이 두 번 나온다 — 두 번째 것) | `Scene_Profile` |
-| (명령 없음) | **그 외** | 1·2장 로그인·온보딩 · **9장** 유료 상점 · 공용 위젯 · 하단 주메뉴 · 문서 정리 · 환경 | — |
+| `/profile` | 프로필 | **8장** 프로필 | `Scene_Profile` |
+| `/word` | 🏮 달빛 한마디 | **9장** 달빛 한마디 이벤트(⚠️ 9-2·9-3이 `8-2`·`8-3`으로 잘못 붙어 있다) | 아직 전용 폴더 없음 — 입구 버튼은 `Scene_Garden` |
+| (명령 없음) | **그 외** | 1·2장 로그인·온보딩 · 유료 상점(⚠️ 이것도 `9.`로 번호가 겹친다) · 공용 위젯 · 하단 주메뉴 · 문서 정리 · 환경 | — |
+
+> 📌 260919판까지는 프로필·달빛 한마디가 **7·8장**이었다(`7.`이 두 번). 261002판에서 8·9장으로 바로잡혔다 — 옛 문서의 장 번호를 볼 때 판을 확인할 것.
 
 **"주로 볼 UI"는 출발점이지 울타리가 아니다.** 화면은 다른 콘텐츠의 그림을 빌려 쓴다:
 
@@ -52,6 +55,7 @@
    | `lib/shared/widgets/*`(`design_canvas.dart`·`art_top_bar.dart`·`main_bottom_nav.dart` 등), `lib/core/*` | 전부 |
    | `lib/features/chat/presentation/widgets/talk_cell.dart`·`request_popup.dart` | **대화방·친구**(셀 · 팝업 세 개가 한 벌) |
    | `lib/features/chat/presentation/widgets/chat_request_dialog.dart` | 대화방·가든(4-3 대화 신청) |
+   | `lib/features/garden/presentation/widgets/comments_sheet.dart` · 서버 `comment/` | **가든·달빛 한마디**(포스트 댓글과 한마디 댓글이 한 벌) |
    | `lib/features/postinfo/*`(`profile_view_screen.dart`·`post_info_provider.dart`) | 가든·대화방·친구·프로필 |
    | `lib/shared/widgets/request_message_input.dart`(신청 한마디 100자) | 대화방·친구 |
    | `pubspec.yaml` · `lib/l10n/*.arb`(+생성물) · `server/.../common/*` · `application.yml` | 전부 |
@@ -64,7 +68,7 @@
    `ls server/src/main/resources/db/migration | sort -V | tail -3`으로 최신 번호를 보고, 만들면 **바로 커밋**한다.
    같은 번호가 둘이면 서버가 아예 안 뜨고 **여섯 세션이 다 멈춘다.** 문서의 함정 번호(`docs/07` §3 `#NN`)도 같다.
 4. **ARB 키는 그 화면의 기존 접두어를 따른다** — 포스트 `home*` · 가든 `garden*` · 대화방 `chat*` ·
-   친구 `friend*` · 프로필 `profile*`/`interest*`. **ko·ja 둘 다** 넣고 `flutter gen-l10n` 생성물도 함께 커밋.
+   친구 `friend*` · 프로필 `profile*`/`interest*` · 달빛 한마디 `daily*`. **ko·ja 둘 다** 넣고 `flutter gen-l10n` 생성물도 함께 커밋.
 5. **서버(8080)와 폰은 하나다.** 서버를 다시 띄우면 다른 세션의 검증이 끊긴다 — 서버 코드나 마이그레이션을
    바꿨을 때만 재기동하고, 했다고 보고한다. `flutter analyze` 오류가 **남의 파일**에서 나면 고치지 말고 알린다
    (다른 세션이 쓰는 중일 수 있다).

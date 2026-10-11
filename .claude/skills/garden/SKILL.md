@@ -1,6 +1,6 @@
 ---
 name: garden
-description: 이 세션을 달빛톡 '달빛가든' 콘텐츠 전담으로 설정한다 — 기획서 4장(피드·댓글·대화 신청)과 8장(달빛 한마디), D:\Plan_Chat\UI\Scene_Garden 위주. 사용자가 /garden을 입력할 때만 쓴다.
+description: 이 세션을 달빛톡 '달빛가든' 콘텐츠 전담으로 설정한다 — 기획서 4장(피드·댓글·대화 신청), D:\Plan_Chat\UI\Scene_Garden 위주. 사용자가 /garden을 입력할 때만 쓴다.
 disable-model-invocation: true
 ---
 
@@ -17,14 +17,14 @@ disable-model-invocation: true
 
 | | 어디 |
 |---|---|
-| 기획서 | **4장**(4-1 피드창 · 4-2 포스트 댓글 · 4-3 대화 신청) + **8장** 달빛 한마디(8-1~8-3) |
+| 기획서 | **4장**(4-1 피드창 · 4-2 포스트 댓글 · 4-3 대화 신청). 🏮 **달빛 한마디(261002 9장)는 `/word` 세션 몫**(2026-10-11 분리) — 입구 버튼 `button_Moonlight`만 가든에 있다 |
 | UI | **`D:\Plan_Chat\UI\Scene_Garden\`** (+ `Example/`). ⚠️ 이 폴더에는 **하단 주메뉴·Prime·루나 그림**도 들어 있다 — 그건 모든 탭이 쓰는 공용이다 |
 | 에셋 | `assets/images/scene_garden/` (+ `ja/`) |
-| 클라 | `lib/features/garden/`(피드 `garden_screen.dart` · 댓글 `comments_sheet.dart` · `garden_art.dart`) · `lib/features/daily/`(달빛 한마디) |
-| 서버 | `server/.../garden/`(+`translate/`) · `comment/` · `dailyquestion/` |
-| 공용 | 4-3 대화 신청 창 `chat/.../chat_request_dialog.dart`(대화방과 공용) · [포스트 정보] `postinfo/` |
+| 클라 | `lib/features/garden/`(피드 `garden_screen.dart` · 댓글 `comments_sheet.dart` · `garden_art.dart`) |
+| 서버 | `server/.../garden/`(+`translate/`) · `comment/`(🏮 달빛 한마디 댓글과 공용 — `CommentTarget.DAILY_ANSWER`) |
+| 공용 | 🏮 **댓글 창 `comments_sheet.dart`는 달빛 한마디 상세도 쓴다** — 고치면 `/word` 화면도 바뀐다 · 4-3 대화 신청 창 `chat/.../chat_request_dialog.dart`(대화방과 공용) · [포스트 정보] `postinfo/` |
 | 검증 | `tools/verify/verify_feed_block_page2.py` · `verify_moderation.py` |
-| 문서 | `01` garden·comment·daily API · `02` · `08` §0-1(#2~6·#10)·§0-2(관심사) · `09` §4-1(봇) · `13` |
+| 문서 | `01` garden·comment API · `02` · `08` §0-1(#2~6·#10)·§0-2(관심사) · `09` §4-1(봇) · `13` |
 
 ## 이미 정해진 것
 
