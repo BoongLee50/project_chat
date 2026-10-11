@@ -31,10 +31,10 @@ class WordArt {
 
   /// 구워진 질문 카드의 점선 칸. 카드가 **기울어져 있어** 질문 글자도 같이 돌린다.
   /// 배경을 실측했다: 점선 칸 가운데 ≈ (562, 1426), 윗변·아랫변 기울기 ≈ -10°.
-  /// 실측대로 돌리니 글자가 편지보다 덜 기울어 보여 **오른쪽을 더 올렸다**(-10° → -12°, 2026-10-11 사용자 지시).
+  /// 실측대로 돌리니 글자가 편지보다 덜 기울어 보여 **오른쪽을 더 올렸다**(-10° → -12° → **-11°**, 2026-10-11 사용자 지시).
   static const Offset questionCenter = Offset(562, 1426);
   static const Size questionBox = Size(600, 230);
-  static const double questionAngle = -0.21; // 라디안(≈ -12°)
+  static const double questionAngle = -0.192; // 라디안(≈ -11°)
 
   static const String clock = '$_title/icon_clock.png';
   static const Size clockSize = Size(52, 52);
