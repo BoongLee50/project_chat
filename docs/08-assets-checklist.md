@@ -160,9 +160,14 @@
 - 🔴 **눌린 [최신]·[인기](`button_recent_color`·`button_popul_color`)가 투명 배경이 아니다(RGB)** —
   미색 바탕에서 네 모서리가 하얗게 보여서 **알약 모양으로 잘라 그린다.** 투명 판으로 다시 받으면 좋다.
 - 셀 틀 `frame_replylist`(1045×647)는 **9조각으로 늘린다**(글 길이·사진 유무로 셀 높이가 다르다, 함정 #90).
-- `[원문보기]` 버튼은 **안 왔다** → 대화방 `button_view_trans`(209×73)를 같이 쓴다. 시안 색(미색·갈색)과 결이 달라
-  전용 그림이 오면 바꿀 것.
-- 시안 img24의 `0 / 300`·img25의 `[답글 상세]`(번역 버튼·이모티콘 단추·보내기)는 아직 그림이 없다 — B 묶음(07 §4 2026-10-11).
+- `[원문보기]`는 같은 날 두 번째 전달에서 **`Reply List/button_view trans_m`(182×53)** 이 왔다 → `reply_list/button_view_trans_m.png`
+  (그 전엔 대화방 `button_view_trans`를 빌려 썼다).
+- **`Reply Detail` 17장**(같은 날 두 번째 전달) → `reply_detail/`. `icon_flag_kor/jap`(70)·`icon_mmflag_kor/jap`(41)은 나라라 이름 그대로.
+  - ⚠️ `frame_commentphoto`(1045×1111)는 **테두리가 아니라 속이 흰 카드**다(알파 실측 — 가장자리 ≈10px 안쪽부터 불투명).
+    위에 얹으면 사진을 덮는다 → **카드를 깔고 사진을 10px 안쪽에** 얹는다.
+  - 🚧 **안 온 것**: 입력줄 왼쪽 **[사진] 버튼**(시안의 노란 원 — 지금은 노란 원 + 아이콘) · 댓글 줄 **`•••`**(아이콘) ·
+    ♥의 **눌린 상태 그림**(한 장뿐이라 눌러도 모양이 같다).
+  - `button_infotrans`는 `★ 번역 |`까지만 그려져 있고 오른쪽 칸(그림 안 x 190~282)에 상태 글자(`4일`·`무료 3회`·`준비 중`)를 얹는다.
 
 ✅ **일본어판이 온 것 5장**: `back_friends`(「月のひとこと」) · `reply_register/back_word` · `button_register`(登録する) ·
 `frame_question`(今日の質問) · `button_myword`(私の回答 — **326×96**, 한국어판 333×97보다 조금 작다).
@@ -299,6 +304,7 @@
 ### 📌 수령 이력
 
 - **2026-10-11 — `Plan_Chat\UI\Scene_Word` 적용**(`Title` 5 · `Reply Register` 8 · `Reply List` 19 → **32장 들임**). §0-4.
+  같은 날 두 번째 전달 — `Reply Detail` 17장 + `Reply List/button_view trans_m` 1장 → **18장 더**.
 
 - **2026-09-19 — `Plan_Chat\UI\Scene_Friend` 적용**(`Friend List` 16장 · `Application Received` 1장 → **15장 들임**).
   `button_receive_*` 2장은 대화방 것과 **바이트까지 같아** 들이지 않고 대화방 경로를 가리킨다.

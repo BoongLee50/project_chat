@@ -151,6 +151,7 @@ class Comment {
     this.imageUrl,
     this.authorCountry,
     this.authorPhotoUrl,
+    this.authorAge,
     this.createdAt,
   });
 
@@ -164,6 +165,9 @@ class Comment {
 
   /// 작성자 **얼굴 사진**(서버 상대경로). 없으면 자리 동그라미.
   final String? authorPhotoUrl;
+
+  /// 작성자 나이 — 달빛 한마디 [답글 상세]가 이름 옆에 쓴다(`사쿠라 24`). 포스트 댓글 창은 안 쓴다.
+  final int? authorAge;
 
   /// 작성 시각 — `10분 전`.
   final DateTime? createdAt;
@@ -187,6 +191,7 @@ class Comment {
     imageUrl: json['imageUrl'] as String?,
     authorCountry: json['authorCountry'] as String?,
     authorPhotoUrl: json['authorPhotoUrl'] as String?,
+    authorAge: json['authorAge'] as int?,
     createdAt: parseServerTime(json['createdAt']),
   );
 }

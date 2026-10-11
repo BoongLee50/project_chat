@@ -18,10 +18,10 @@ disable-model-invocation: true
 | | 어디 |
 |---|---|
 | 기획서 | **261011 9장 달빛 한마디 이벤트** — 9-1 **작성**(타이틀 · [내 한마디 등록]) · 9-2 **[답글 목록]·[답글 상세]**. 유료 상점도 `9.`로 번호가 겹친다. 261002에는 9-2·9-3이 `8-2`·`8-3`으로 잘못 붙어 있었고, 260919까지는 **8장**이었다 |
-| UI | **`D:\Plan_Chat\UI\Scene_Word`**(2026-10-11 첫 전달) — `Title` · `Reply Register` · `Reply List`. 🚧 **[답글 상세] 폴더는 아직 없다**(기획서 img25 오른쪽만 있다) |
+| UI | **`D:\Plan_Chat\UI\Scene_Word`**(2026-10-11) — `Title` · `Reply Register` · `Reply List` · **`Reply Detail`**(같은 날 두 번째 전달 + 목록 `button_view trans_m`) |
 | 입구 | `[달빛 한마디]` 버튼 그림 `button_Moonlight`은 **`Scene_Garden`에 있고 가든 세션 몫**(가든 필터 줄 네 번째 칸, `garden_screen.dart`가 `DailyIntroScreen.route()`를 연다) |
 | 에셋 | `assets/images/scene_word/{title, reply_register, reply_list}/`(+ 각 `ja/`) · 상수 `WordArt`(`widgets/word_art.dart`) · 일본어판 등록은 `DesignCanvas.localizedAssets`. 새 폴더는 **`pubspec.yaml`에 줄 + 완전 재빌드** |
-| 클라 | `lib/features/daily/` — 타이틀 `daily_intro_screen.dart`(등록 시트를 이 안에서 올린다) · 등록 `widgets/daily_write_sheet.dart` · 목록 `daily_list_screen.dart` · 상세 `daily_detail_screen.dart`(🚧 옛 화면) · `daily_provider.dart` · `daily_api.dart` |
+| 클라 | `lib/features/daily/` — 타이틀 `daily_intro_screen.dart`(등록 시트를 이 안에서 올린다) · 등록 `widgets/daily_write_sheet.dart` · 목록 `daily_list_screen.dart` · 상세 `daily_detail_screen.dart`(전체 화면, 댓글이 본문 아래) · `daily_provider.dart` · `daily_api.dart` |
 | 서버 | `server/.../dailyquestion/` · `db/migration` **V14**(표 넷 + `comments.target_type='DAILY_ANSWER'`) · **V29**(답변글 200자) · 정리 배치 `daily-cleanup-cron`(18:05) |
 | 검증 | `python tools/verify/verify_word.py`(23개 — 등록 전 403 · 200자 코드포인트 · 셀 재료 · 내 글 좋아요·댓글 금지) |
 | 더미 | `python tools/demo/seed_word.py` — 임시 유저 14명의 답·좋아요·댓글(먼저 `seed_users.py`). 18:05에 지워지니 날마다 다시 |
@@ -47,12 +47,16 @@ disable-model-invocation: true
 - [답글 상세]: 좋아요 +1 · 댓글 **A → B → A까지**(A=댓글 단 사람, B=글쓴이 — 지금 3단계 규칙과 같다) · 댓글 **50자**·사진 1장 · 첨부 사진은 원본만 팝업
 - 번역: **[답글 상세] 창 5회 호출까지 무료** → 다 쓰면 *"무료 번역을 모두 사용했어요…"*. Prime·자동번역 패스는 무제한
 
-## 🚧 B 묶음 — [답글 상세] (그림·기획이 더 와야 한다, 2026-10-11 사용자 전달)
+## [답글 상세] — `Reply Detail` + 기획 메모(2026-10-11 사용자 전달, 기획서보다 우선)
 
-- 유저 이름 **바로 아래부터 스크롤**
-- 시안의 "시스템 이모티콘 호출" 단추는 이모티콘이 아니라 **사진 첨부**다
-- 댓글 입력에서 **시스템 이모지**를 낼 수 있게 · 댓글에 **보내기 버튼**
-- 지금 상세는 옛 어두운 화면 그대로다 — 그림이 오면 통째로 다시 그린다
+- **전체 화면**이다 — 261011 본문의 "댓글은 Bottom Sheet" 대신 시안대로 **댓글을 본문 아래에 이어 그린다**.
+  가든 공용 댓글 시트(`comments_sheet.dart`)는 **안 쓴다**(규칙·번역 로직만 같은 식으로 옮겼다)
+- 머리(`<` · 얼굴 · 이름 나이 · 국기)와 아래 입력줄은 고정, **이름 바로 아래부터 스크롤**
+- 입력줄 왼쪽 단추는 **사진 첨부**(시안의 "시스템 이모티콘 호출"은 오기). 이모지는 **자판의 이모지**로
+- 답글 앞에 **`ㄴ`**(`icon_link`) · 댓글 규칙은 그대로(A → B → A)
+- 보내기: **글이 없으면 회색·안 눌림, 글이 들어가면 노랑·눌림**
+- 🚧 그림이 안 온 것: 입력줄 **[사진] 버튼**(노란 원 + 아이콘) · 줄 오른쪽 **`•••`**(아이콘) · ♥의 **눌린/안 눌린 두 벌**(지금 한 장)
+- ⚠️ 큰 사진 틀 `frame_commentphoto`는 **속이 흰 카드**다 — 카드를 깔고 사진을 그 위 10px 안쪽에
 
 ## 알아둘 것
 

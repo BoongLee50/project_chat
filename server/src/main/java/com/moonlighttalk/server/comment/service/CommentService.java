@@ -13,6 +13,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Year;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -32,6 +34,8 @@ import java.util.UUID;
  */
 @Service
 public class CommentService {
+
+    private static final ZoneId KST = ZoneId.of("Asia/Seoul");
 
     private final CommentMapper commentMapper;
     private final FileStorageService fileStorageService;
@@ -120,6 +124,10 @@ public class CommentService {
                 c.getAuthorNickname(),
                 c.getAuthorCountry(),
                 downloadUrl(c.getAuthorPhotoKey()),
+                // 나이는 다른 화면과 같은 셈(올해 - 출생 연도, KST).
+                c.getAuthorBirthYear() == null
+                        ? null
+                        : Year.now(KST).getValue() - c.getAuthorBirthYear(),
                 c.getBody(),
                 downloadUrl(c.getImageKey()),
                 c.getCreatedAt());

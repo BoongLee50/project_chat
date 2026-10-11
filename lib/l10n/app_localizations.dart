@@ -721,6 +721,24 @@ abstract class L10n {
   /// **'원문보기'**
   String get dailyViewOriginal;
 
+  /// No description provided for @dailyCommentHint.
+  ///
+  /// In ko, this message translates to:
+  /// **'메시지를 입력해 주세요'**
+  String get dailyCommentHint;
+
+  /// No description provided for @dailyCommentSend.
+  ///
+  /// In ko, this message translates to:
+  /// **'보내기'**
+  String get dailyCommentSend;
+
+  /// No description provided for @dailyLike.
+  ///
+  /// In ko, this message translates to:
+  /// **'좋아요'**
+  String get dailyLike;
+
   /// No description provided for @dailyPhotoSheetTitle.
   ///
   /// In ko, this message translates to:

@@ -10,6 +10,7 @@
         <result property="authorNickname" column="author_nickname"/>
         <result property="authorCountry" column="author_country"/>
         <result property="authorPhotoKey" column="author_photo_key"/>
+        <result property="authorBirthYear" column="author_birth_year"/>
         <result property="body" column="body"/>
         <result property="parentId" column="parent_id"/>
         <result property="depth" column="depth"/>
@@ -23,6 +24,7 @@
     -->
     <select id="selectByTarget" resultMap="CommentResultMap">
         SELECT c.*, u.nickname AS author_nickname, u.country AS author_country,
+               u.birth_year AS author_birth_year,
                pr.photo_key AS author_photo_key
         FROM comments c
                  JOIN users u ON u.id = c.author_id

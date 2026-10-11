@@ -162,6 +162,10 @@ class TranslatePassButton extends StatelessWidget {
   }
 
   /// 오른쪽 칸의 말과 강조 여부.
+  /// 오른쪽 칸의 말과 "쓸 수 있는 상태인가" — 버튼을 그림으로 그리는 화면(달빛 한마디 [답글 상세]의
+  /// `button_infotrans`)이 글자만 가져다 얹을 때 쓴다. 규칙은 여기 한 곳에만 둔다.
+  static (String, bool) labelOf(L10n l10n, TranslateAccess a) => _describe(l10n, a);
+
   static (String, bool) _describe(L10n l10n, TranslateAccess a) {
     if (!a.providerReady) return (l10n.translateNotReady, false);
     if (a.unlimited) {

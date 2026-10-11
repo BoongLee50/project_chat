@@ -350,6 +350,15 @@ class L10nJa extends L10n {
   String get dailyViewOriginal => '原文を見る';
 
   @override
+  String get dailyCommentHint => 'メッセージを入力してください';
+
+  @override
+  String get dailyCommentSend => '送信';
+
+  @override
+  String get dailyLike => 'いいね';
+
+  @override
   String get dailyPhotoSheetTitle => 'ひとこと写真の登録';
 
   @override

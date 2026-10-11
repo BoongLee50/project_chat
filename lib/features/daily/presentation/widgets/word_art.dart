@@ -164,6 +164,81 @@ class WordArt {
   /// 나가기 아래 여백(2640 - 2435 - 147).
   static const double exitBottom = 2640 - 2435 - 147;
 
+  /// 목록 셀 [원문보기](182×53, 2026-10-11 두 번째 전달). 전엔 대화방 `button_view_trans`를 빌려 썼다.
+  static const String viewOriginal = '$_list/button_view_trans_m.png';
+  static const Size viewOriginalSize = Size(182, 53);
+
+  // ── [답글 상세] (`Reply Detail`, 2026-10-11 두 번째 전달) ─────────────
+
+  static const String _detail = 'assets/images/scene_word/reply_detail';
+
+  /// 머리(고정) — `<` · 얼굴 · 이름 나이 · 국기. 아래 `frame_titledividing`부터 스크롤이다.
+  static const String detailBack = '$_detail/button_previewback.png';
+  static const Size detailBackSize = Size(60, 101);
+  static const Offset detailBackAt = Offset(43, 138);
+  static const String detailAvatar = '$_detail/frame_userprofile.png';
+  static const Size detailAvatarSize = Size(161, 161);
+  static const Offset detailAvatarAt = Offset(177, 115);
+  static const double detailNameLeft = 393;
+  static const String detailFlagKr = '$_detail/icon_flag_kor.png';
+  static const String detailFlagJp = '$_detail/icon_flag_jap.png';
+  static const Size detailFlagSize = Size(70, 70);
+  static const double detailHeaderHeight = 284;
+  static const String titleDivider = '$_detail/frame_titledividing.png';
+  static const Size titleDividerSize = Size(1080, 27);
+
+  /// 본문(`59, 312`) · 큰 사진 틀(`25, 484`, 1045×1111).
+  static const double detailTextLeft = 59;
+  static const String detailPhotoFrame = '$_detail/frame_commentphoto.png';
+  static const Size detailPhotoSize = Size(1045, 1111);
+  static const double detailPhotoLeft = 25;
+
+  /// 좋아요·댓글 줄(`61 / 330, 1605`) · [번역](`758, 1595`, 292×83).
+  static const String detailHeart = '$_detail/button_heart.png';
+  static const Size detailHeartSize = Size(72, 67);
+  static const String detailComment = '$_detail/icon_comment.png';
+  static const Size detailCommentSize = Size(70, 67);
+  static const double detailHeartLeft = 61;
+  static const double detailCommentLeft = 330;
+  static const String infoTrans = '$_detail/button_infotrans.png';
+  static const Size infoTransSize = Size(292, 83);
+  static const double infoTransLeft = 758;
+
+  /// `번역 |` 오른쪽 빈칸(그림 안 x 190~282) — 남은 일수·무료 횟수 글자 자리.
+  static const Rect infoTransLabel = Rect.fromLTWH(190, 0, 92, 83);
+  static const Color infoTransInk = Color(0xFFB0793F);
+
+  static const String listDivider = '$_detail/frame_listdividing.png';
+  static const Size listDividerSize = Size(1031, 4);
+
+  /// 댓글 줄. 얼굴은 깊이마다 오른쪽으로(1단계 `50` · 2단계 `170` · 3단계 `251`),
+  /// 답글 앞에는 `ㄴ`(`icon_link` — 2단계 `128` · 3단계 `211`).
+  static const String commentAvatar = '$_detail/frame_commentprofile.png';
+  static const double commentAvatarSize = 124;
+  static const List<double> commentAvatarLeft = [50, 170, 251];
+  static const String link = '$_detail/icon_link.png';
+  static const Size linkSize = Size(29, 59);
+  static const List<double> linkLeft = [0, 128, 211];
+  static const String commentFlagKr = '$_detail/icon_mmflag_kor.png';
+  static const String commentFlagJp = '$_detail/icon_mmflag_jap.png';
+
+  /// 댓글 사진(`326, 2064` 실측 ≈ 185×169).
+  static const Size commentPhotoSize = Size(185, 169);
+
+  /// 아래 입력줄(고정, `2373`) — [사진] `24` · 메시지 칸 `160`(751×122) · 보내기 `932`(119×118).
+  static const String messageFrame = '$_detail/frame_message.png';
+  static const Size messageFrameSize = Size(751, 122);
+  static const String sendOn = '$_detail/button_message_color.png';
+  static const String sendOff = '$_detail/button_message_normal.png';
+  static const Size sendSize = Size(119, 118);
+
+  /// 🚧 **[사진] 버튼 그림은 안 왔다** — 노란 원(보내기와 같은 색)에 아이콘을 얹어 자리만 채운다.
+  static const double photoButtonSize = 120;
+  static const Color yellow = Color(0xFFFDC302);
+
+  /// 배경 미색(시안 실측 253,243,230).
+  static const Color paper = Color(0xFFFDF3E6);
+
   /// 글자색 — 시안 실측(이름·본문은 짙은 남색 · 시간은 회색 · 남은 시간 숫자는 금색 `254,182,68`).
   static const Color ink = Color(0xFF14213D);
   static const Color muted = Color(0xFFA7A7AE);

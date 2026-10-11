@@ -10,7 +10,6 @@ import '../../../../shared/widgets/authed_image.dart';
 import '../../../../shared/widgets/design_canvas.dart';
 import '../../../../shared/widgets/image_viewer.dart';
 import '../../../auth/presentation/providers/session_provider.dart';
-import '../../../chat/presentation/widgets/talk_art.dart';
 import '../../../chat/presentation/widgets/talk_cell.dart'
     show timeAgoWithin30Days;
 import '../../../postinfo/presentation/screens/profile_view_screen.dart';
@@ -49,6 +48,7 @@ class DailyListScreen extends ConsumerWidget {
       final mine = await ref.read(dailyApiProvider).myAnswer();
       if (!context.mounted) return;
       await Navigator.of(context).push(DailyDetailScreen.route(mine.id));
+      if (context.mounted) ref.read(dailyListProvider.notifier).refresh();
     } on ApiException catch (e) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context)
@@ -299,7 +299,7 @@ class _ArtButton extends StatelessWidget {
 ///   대화방·친구·프로필은 "흐리게 자리만"인데 여기는 **아예 없다**(사용자 결정이 다르다).
 /// - 🚧 **번역은 아직 없다** — 지금은 번역문 자리에도 원문이 나간다. 버튼은 원문 ↔ 번역문 상태만 바꾼다.
 ///   번역이 붙으면 [_translated]만 채우면 된다.
-/// - 그림은 대화방 `button_view_trans`(209×73)를 같이 쓴다 — `Scene_Word`에는 이 버튼이 안 왔다.
+/// - 그림은 `Reply List/button_view trans_m`(182×53, 2026-10-11 두 번째 전달) — 그 전엔 대화방 것을 빌려 썼다.
 class _AnswerCell extends ConsumerStatefulWidget {
   const _AnswerCell({required this.answer});
 
@@ -343,7 +343,11 @@ class _AnswerCellState extends ConsumerState<_AnswerCell> {
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
-      onTap: () => Navigator.of(context).push(DailyDetailScreen.route(a.id)),
+      // 상세에서 좋아요·댓글이 늘었을 수 있다 — 돌아오면 목록 숫자를 다시 읽는다.
+      onTap: () async {
+        await Navigator.of(context).push(DailyDetailScreen.route(a.id));
+        if (mounted) ref.read(dailyListProvider.notifier).refresh();
+      },
       child: Stack(
         children: [
           // 틀은 9조각으로 늘린다 — 글 길이·사진 유무로 셀 높이가 다르다.
@@ -442,9 +446,9 @@ class _AnswerCellState extends ConsumerState<_AnswerCell> {
                                     () => _showOriginal = !_showOriginal,
                                   ),
                                   child: ArtImage(
-                                    TalkArt.viewOriginal,
-                                    width: TalkArt.viewOriginalSize.width,
-                                    height: TalkArt.viewOriginalSize.height,
+                                    WordArt.viewOriginal,
+                                    width: WordArt.viewOriginalSize.width,
+                                    height: WordArt.viewOriginalSize.height,
                                   ),
                                 ),
                               ),
