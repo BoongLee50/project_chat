@@ -18,9 +18,9 @@ disable-model-invocation: true
 | | 어디 |
 |---|---|
 | 기획서 | 261011 **5장 채팅창**. ⚠️ 이 기획서는 **완전 최신이 아닐 수 있다**(사용자 2026-10-25) — 대화 중 결정이 더 우선. 5-1 친구 신청은 **규칙은 `/friend`, 채팅창 안 버튼·팝업 자리는 여기** |
-| UI | **`D:\Plan_Chat\UI\Scene_Chat\`** (21장, 2026-10-25 첫 전달) — 좌표는 `Example/채팅창 좌표값.png`, 시안 `Example/채팅창 참고 화면.png`·`참고화면.png` |
-| 에셋 | 아직 없음 → `assets/images/scene_chat/` 를 만들고 **`pubspec.yaml`에 줄 + 완전 재빌드**(폴더 선언은 재귀가 아니다). 들이기 전에 `python tools/spec/compare_ui_delivery.py "D:/Plan_Chat/UI"` |
-| 클라 | `lib/features/chat/` 중 **채팅창 쪽** — `screens/chat_screen.dart`(776줄) · `widgets/voice_message.dart` · `widgets/emoji_sheet.dart` · `providers/voice_recorder.dart`·`voice_player.dart` |
+| UI | **`D:\Plan_Chat\UI\Scene_Chat\`** (그림 19장 + `Example/` 3장, 2026-10-25 첫 전달 — ✅ 반영) — 좌표는 `Example/채팅창 좌표값.png`, 시안 `Example/채팅창 참고 화면.png`·`참고화면.png` |
+| 에셋 | `assets/images/scene_chat/`(19장, `pubspec.yaml` 한 줄) · 상수 **`ChatArt`**(`widgets/chat_art.dart`) · 현황 `08` §0-5. 새 전달본은 먼저 `python tools/spec/compare_ui_delivery.py "D:/Plan_Chat/UI"` |
+| 클라 | `lib/features/chat/` 중 **채팅창 쪽** — `screens/chat_screen.dart` · `widgets/chat_art.dart` · `widgets/voice_message.dart` · `providers/voice_recorder.dart`·`voice_player.dart` |
 | 서버 | `server/.../chat/` 중 **메시지 쪽** — `socket/`(WebSocket) · 메시지·음성 업로드·읽음 · 번역 자리 `translate_rooms` |
 | 문서 | `01` §1.6 대화방(메시지·음성) · §2 WebSocket · `02` `chat_messages`·`translate_rooms` · `08`(새 절로) · `13` |
 
@@ -52,10 +52,17 @@ disable-model-invocation: true
 - 소켓 화면이라 공통 갱신 방침("낡았으면 1분마다 다시 읽기")의 **예외**다
 - 🚨 실기기 소켓은 `adb reverse tcp:8080 tcp:8080` + `--dart-define=API_BASE_URL=http://localhost:8080`(에뮬 `10.0.2.2`는 30~60초마다 끊긴다)
 - 음성 바이트는 **소켓을 지나지 않는다**(업로드 URL → 키만 메시지로, `01` "음성 메시지")
+- 🆕 **채팅창은 밝은 바탕**(`Scene_Chat`, 2026-10-25) — 앱의 다른 화면과 달리. 상태바 글자를 어둡게 바꾼다
+- **GIF는 되살린다, 키는 나중에**(사용자 2026-10-25) — 지금은 [GIF]를 누르면 `chatGifNotReady`. 키가 오면 검색 시트 + 메시지 종류 `GIF`(서버 `chat_messages.type` + 허용 도메인 검사) + GIF 말풍선
+- **이모지는 폰 키보드 것**(기획서 5장) — 앱 자체 이모지 시트는 지웠다. 매칭 안내 줄·읽음 ✓✓도 새 시안에 없어 뺐다
+- [대화방 나가기]는 **확인 팝업**을 거친다(기획서 "안내 팝업")
+- 말풍선은 그림 **9조각** — `DecorationImage(centerSlice:)` 말고 `drawImageNine`(함정 #90·#94)
 
 ## 알아둘 것
 
-- 🚧 **GIF는 예전에 뺐다** — 키 없이 죽은 버튼을 두느니 기획서의 *"문제 있을 경우 해당 기능 삭제"* 를 따랐다(09 §3).
-  그런데 이번 전달본에 **`button_chat_gif`가 왔고** 261011 본문도 GIF를 적고 있다 → **되살릴지 사용자에게 먼저 물을 것**(외부 API 키가 필요하다)
+- 🚧 **그림이 안 온 자리 셋**(08 §0-5): 안내 문구 `작은 배려, 아름다운 대화`(지금 폰트) · 노란 [정지](지금 `button_playstop`) · [⋯] 패널(지금 흰 글자 메뉴).
+  `참고화면.png`의 사진(+) 버튼은 기획서에 없어 안 만들었다 — 사용자 확인 대기
+- 개발 DB 데모 대화: Nari(LINE) ↔ `ゆい`(친구 방 `609b9d91…`)에 `demo-chat-1~4`
+- 받은 음성 첫 재생이 조용히 실패한 적이 한 번 있다(재현 안 됨) — `voice_player.dart`가 실패를 말없이 삼킨다
 - 실시간 파형은 *"구현 안 되면 이미지"* 가 허락돼 있다
 - 번역 공급자는 아직 없다(막힌 것 D) — 개발 중 흐름은 `APP_TRANSLATE_PROVIDER=mock`으로 서버를 띄워 본다
