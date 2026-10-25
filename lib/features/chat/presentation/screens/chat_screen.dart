@@ -55,10 +55,29 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   /// **방에 들어올 때 한 번** 자리를 잡는다. 이미 연 방이면 자리를 더 쓰지 않는다.
   TranslateAccess? _translate;
 
+  /// 지난 프레임의 키보드 높이. 키보드가 올라오면 목록이 줄어 마지막 메시지가 가려지므로 아래로 내린다.
+  double _keyboard = 0;
+
   @override
   void initState() {
     super.initState();
     _openTranslate();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // 눌렀을 때 **바뀌어 나오는** 그림은 미리 읽어 둔다 — 처음 바꿔 그릴 때 읽느라 늦지 않게.
+    // (그래도 바뀌는 한 프레임은 빌 수 있어 [▶]↔[Ⅱ]는 `gaplessPlayback`도 켰다)
+    for (final asset in const [
+      ChatArt.play,
+      ChatArt.pause,
+      ChatArt.sendOn,
+      ChatArt.sendOff,
+      ChatArt.delete,
+    ]) {
+      precacheImage(AssetImage(asset), context);
+    }
   }
 
   Future<void> _openTranslate() async {
@@ -243,6 +262,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     ref.listen(chatMessagesProvider(widget.room.roomId), (_, _) {
       _scrollToBottom();
     });
+    final keyboard = MediaQuery.viewInsetsOf(context).bottom;
+    if (keyboard > _keyboard) _scrollToBottom();
+    _keyboard = keyboard;
 
     // 밝은 바탕이라 상태바 글자를 어둡게 — 앱의 다른 화면은 어두운 바탕이다.
     return AnnotatedRegion<SystemUiOverlayStyle>(

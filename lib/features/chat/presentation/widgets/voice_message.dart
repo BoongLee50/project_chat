@@ -171,6 +171,9 @@ class VoicePlayButton extends StatelessWidget {
                 width: size,
                 height: size,
                 filterQuality: FilterQuality.medium,
+                // [▶] ↔ [Ⅱ]가 바뀌는 순간 새 그림이 붙기 전까지 옛 그림을 둔다 —
+                // 끄면 그 사이 한 프레임 버튼이 통째로 사라진다(실기 확인).
+                gaplessPlayback: true,
               ),
               if (loading)
                 SizedBox(

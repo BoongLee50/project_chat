@@ -97,8 +97,9 @@ class ChatArt {
   /// 내 말풍선 오른쪽 끝(꼬리 포함, `1039, 694`).
   static const double myBubbleRight = 1039;
 
-  /// 내 줄 왼쪽에 더 비워 두는 폭 — 시간(약 132) 옆으로 남는 자리. 내 말풍선은 최대 700쯤이 된다.
-  static const double myReserve = 150;
+  /// 내 줄 왼쪽에 더 비워 두는 폭 — 시간(약 132) 옆으로 남는 자리. 내 말풍선은 최대 750쯤이 된다.
+  /// (150이면 실기 폰트에서 시안의 `저는 오늘 퇴근하고 지금 집에 왔어요.`가 두 줄로 넘어갔다)
+  static const double myReserve = 100;
 
   /// 말풍선과 말풍선 사이(실측 약 58). 얼굴이 23 위로 솟으므로 줄 사이는 그만큼 뺀 값이다.
   static const double rowGap = 58 - bubbleDrop;

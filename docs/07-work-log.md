@@ -435,7 +435,13 @@ adb shell cmd locale set-app-locales com.example.project_chat --locales ko-KR
   키가 오면 남은 것: 검색 시트 · 메시지 종류 `GIF`(서버 `chat_messages.type` + 허용 도메인 검사) · GIF 말풍선
 - ARB: `chatSlogan` · `chatGifNotReady` · `chatLeaveConfirm` 추가, `chatInputHint` → `메시지를 입력해 주세요`(시안은 `메세지` — 맞춤법을 따랐다),
   `chatMenuFriendRequest` `친구 요청` → **`친구 신청`**(기획서 5장), `chatMatchedNotice`·`chatEmoji`·`chatEmojiRecent` 삭제
-- 검증: `analyze` 0 · `flutter test` 29/29 · 가짜 데이터로 화면을 찍어 시안과 대조(기본·글 입력·녹음 중·녹음 완료 네 모습). **실기기 확인은 아직**
+- 검증: `analyze` 0 · `flutter test` 29/29 · 가짜 데이터로 화면을 찍어 시안과 대조(기본·글 입력·녹음 중·녹음 완료 네 모습)
+- **에뮬(Pixel_10, `adb reverse`)에서 확인** — Nari ↔ `ゆい`(친구 방) · 소켓 `AUTH_OK` · 글 전송 · [GIF] 안내 · 녹음(권한 창 → 녹음 → 정지 → 미리듣기 → 전송) ·
+  받은 음성 재생 · [⋯] 메뉴(친구 방이라 [친구 신청]은 숨김 — 기존 규칙) · 나가기 확인 팝업(취소). 대화는 `demo-chat-1~4`로 개발 DB에 넣었다
+  - 고친 것 셋: ① 내 말풍선 최대 폭(`myReserve` 150 → 100 — 실기 폰트에서 시안 문장이 두 줄로 넘어갔다)
+    ② 키보드가 올라오면 마지막 메시지가 가려졌다 → 키보드 높이가 늘면 맨 아래로 ③ [▶]→[Ⅱ] 순간 버튼이 한 프레임 사라졌다 → `gaplessPlayback`
+  - 처음 한 번 받은 음성 재생이 조용히 실패한 적이 있는데 **재현되지 않았다**(서버는 파일을 정상으로 준다). 실패하면 `voice_player.dart`가 말없이 초기화한다
+  - 확인 팝업(`ConfirmDialog`, 공용)은 어두운 상자라 밝은 채팅창 위에서 튄다 — 시안이 오면 함께
 - 🚧 그림이 안 온 것 셋(08 §0-5): 안내 문구 · 노란 [정지] · [⋯] 패널. `참고화면.png`의 사진(+) 버튼은 기획서에 없어 안 만들었다
 
 ### 2026-10-25 [그 외] — 채팅창 `/chat` · 상점 `/shop` 세션 분리
