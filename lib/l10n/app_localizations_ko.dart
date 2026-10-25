@@ -484,16 +484,22 @@ class L10nKo extends L10n {
   String get chatLoadFailed => '대화를 불러오지 못했어요.';
 
   @override
-  String get chatInputHint => '메시지를 입력하세요...';
+  String get chatSlogan => '작은 배려, 아름다운 대화';
 
   @override
-  String get chatMatchedNotice => '매칭되었습니다. 예의 있는 멋진 대화를 나눠보세요.';
+  String get chatGifNotReady => 'GIF 검색은 아직 준비 중이에요.';
+
+  @override
+  String get chatLeaveConfirm => '대화방을 나가면 대화 내용이 모두 사라지고 되돌릴 수 없어요. 나갈까요?';
+
+  @override
+  String get chatInputHint => '메시지를 입력해 주세요';
 
   @override
   String get chatMenuProfile => '프로필 보기';
 
   @override
-  String get chatMenuFriendRequest => '친구 요청';
+  String get chatMenuFriendRequest => '친구 신청';
 
   @override
   String get chatMenuReport => '신고하기';
@@ -543,12 +549,6 @@ class L10nKo extends L10n {
   @override
   String get voiceQuotaExhausted =>
       '무료 음성 메시지를 모두 사용했어요.\nPRIME 구독 시 음성 메시지를 계속 이용할 수 있어요.';
-
-  @override
-  String get chatEmoji => '이모지';
-
-  @override
-  String get chatEmojiRecent => '자주 쓰는 이모지';
 
   @override
   String get chatFriendRequestSent => '친구 요청을 보냈어요. 상대가 수락하면 친구가 돼요.';

@@ -406,6 +406,7 @@ adb shell cmd locale set-app-locales com.example.project_chat --locales ko-KR
 | 91 | **`resizeToAvoidBottomInset: false` 화면의 스낵바는 키보드 뒤에 숨는다** | 달빛 한마디 등록 시트는 배경 그림이 밀려 찌그러지지 않게 Scaffold가 키보드를 무시하게 했는데, 그러자 **"200자까지 입력할 수 있어요" 안내가 키보드 아래에 떠서 안 보였다**(실기 확인 — 글자가 왜 안 들어가는지 모른다). 📌 그런 화면의 안내는 `SnackBarBehavior.floating` + `margin.bottom = viewInsets.bottom + 16`으로 **키보드 위에** 띄울 것(`daily_write_sheet.dart` `_toast`) |
 | 92 | **`Row`에 `Flexible`과 `Spacer`를 같이 두면 남는 폭을 반씩 나눈다** | 목록 셀 이름 줄을 `Flexible(이름) … Spacer() [원문보기] >`로 짰더니 **`>`가 셀마다 다른 자리**에 섰다 — 둘 다 flex 1이라 남는 폭을 나눠 가진다. 📌 왼쪽 묶음을 `Expanded(Row(...))`로 감싸고 `Spacer`를 빼면 오른쪽 버튼이 늘 끝에 붙는다(`daily_list_screen.dart`) |
 | 93 | 🚨 **`autoDispose`인데도 화면을 다시 열면 옛 값이 나온다** | 달빛 한마디의 "오늘 이미 답했나"를 `FutureProvider.autoDispose`로 두고 화면을 닫았다 다시 열었더니, 서버에선 답이 지워졌는데 **옛 값("답함")으로 타이틀을 건너뛰었다**(실기 확인 — 앱을 껐다 켜야 맞았다). Riverpod은 버릴 provider를 **다음 프레임에** 치우는데, 뒤 화면(가든)이 가만히 있으면 그 다음 프레임이 곧 **새 화면이 같은 provider를 다시 구독하는 프레임**이라 버려지지 않는다. 📌 들어올 때 반드시 새로 읽어야 하는 값은 **첫 `didChangeDependencies`에서 `ref.invalidate`** 할 것(`initState`에서는 `ref`를 못 쓴다 — `dependOnInheritedWidgetOfExactType … before initState() completed`로 빨간 화면). `daily_intro_screen.dart` |
+| 94 | **`centerSlice` + `scale`은 늘이기 전에 단언부터 깨진다** | 채팅창 말풍선을 `DecorationImage(centerSlice:, scale: 1/s, fit: fill)`로 깔았더니 `centerSlice was used with a BoxFit that does not guarantee that the image is fully visible`로 빨간 화면 — 내부에서 `원본/배율×배율 == 원본`을 **부동소수로 비교**한다(#90과 같은 뿌리). 📌 9조각은 **`CustomPainter`에서 `canvas.scale(s)` 후 그림 원본 픽셀 좌표로 `drawImageNine`** 을 부를 것 — 모서리가 배율대로 줄고 단언도 없다(`chat_screen.dart` `_SlicedBubble`) |
 
 ---
 
@@ -414,6 +415,28 @@ adb shell cmd locale set-app-locales com.example.project_chat --locales ko-KR
 > 📌 **여기까지가 다른 기기와 싱크된 범위다**(2026-09-19, 대화방 UI 개편 + V26 + 확인창·팝업 스크롤 제거 + **친구 화면 개편 V27**).
 > 다음에 할 일은 [09 인수인계](09-next-task-handoff.md) §2의 **막힌 것 3건**에서 고른다(A·B가 해소됐다).
 > 다음 "싱크용 문서" 요청은 **그 이후 작업부터** 정리하면 된다.
+
+### 2026-10-25 [채팅창] — `Scene_Chat` 시안대로 다시 그림(밝은 바탕) · GIF 되살림(키 전)
+
+`Scene_Chat` 19장을 `assets/images/scene_chat/`에 들이고(`pubspec.yaml` 한 줄 — **완전 재빌드 필요**)
+`chat_screen.dart`를 시안 좌표대로 다시 그렸다. 상수는 새 `ChatArt`(`widgets/chat_art.dart`). 서버·마이그레이션 변경 없음.
+
+| | 무엇 |
+|---|---|
+| 머리 | 뒤로 · 사진 틀 · `이름 나이`(이름만 굵게) · 국기 그림 · [⋯] — 모두 `y 190` 선. 사진을 누르면 [프로필 보기] |
+| 안내 줄 | `작은 배려, 아름다운 대화`(🚧 그림이 없어 ARB `chatSlogan`) · [번역] 그림 + 상태 글자(`TranslatePassButton.labelOf` — 달빛 한마디와 같은 방식) |
+| 말풍선 | 그림 9조각(함정 #94) · 상대는 얼굴 + 흰 말풍선 · 나는 노랑 · 시간은 말풍선 바깥 아랫변 |
+| 음성 | `button_playback`/`playstop` + 파형(시안처럼 낮은 점 사이로 가끔 높은 막대). 녹음 중·완료는 **입력칸 안**에서 |
+| 입력줄 | [GIF] · 칸 · [음성]↔[보내기](글을 치면 바뀜) / 녹음 중 [정지] / 완료 [녹음 삭제]·칸 안 [녹음 재생]·[보내기] |
+| 뺀 것 | 매칭 안내 줄 · 읽음 ✓✓ · 😊 버튼과 **`emoji_sheet.dart`**(기획서 *"스마트폰 내장 기본 이미지 패널"* — 키보드 이모지) |
+| 더한 것 | [대화방 나가기] **확인 팝업**(기획서 "안내 팝업" — 예전엔 누르자마자 방이 지워졌다) |
+
+- **GIF** — 사용자 결정(2026-10-25) *"되살린다, 키는 나중에"*. 지금은 버튼만 있고 누르면 `GIF 검색은 아직 준비 중이에요`.
+  키가 오면 남은 것: 검색 시트 · 메시지 종류 `GIF`(서버 `chat_messages.type` + 허용 도메인 검사) · GIF 말풍선
+- ARB: `chatSlogan` · `chatGifNotReady` · `chatLeaveConfirm` 추가, `chatInputHint` → `메시지를 입력해 주세요`(시안은 `메세지` — 맞춤법을 따랐다),
+  `chatMenuFriendRequest` `친구 요청` → **`친구 신청`**(기획서 5장), `chatMatchedNotice`·`chatEmoji`·`chatEmojiRecent` 삭제
+- 검증: `analyze` 0 · `flutter test` 29/29 · 가짜 데이터로 화면을 찍어 시안과 대조(기본·글 입력·녹음 중·녹음 완료 네 모습). **실기기 확인은 아직**
+- 🚧 그림이 안 온 것 셋(08 §0-5): 안내 문구 · 노란 [정지] · [⋯] 패널. `참고화면.png`의 사진(+) 버튼은 기획서에 없어 안 만들었다
 
 ### 2026-10-25 [그 외] — 채팅창 `/chat` · 상점 `/shop` 세션 분리
 

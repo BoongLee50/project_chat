@@ -484,16 +484,22 @@ class L10nJa extends L10n {
   String get chatLoadFailed => '会話を読み込めませんでした。';
 
   @override
-  String get chatInputHint => 'メッセージを入力してください...';
+  String get chatSlogan => '小さな気づかい、すてきな会話';
 
   @override
-  String get chatMatchedNotice => 'マッチしました。礼儀正しく素敵な会話を楽しみましょう。';
+  String get chatGifNotReady => 'GIF検索はまだ準備中です。';
+
+  @override
+  String get chatLeaveConfirm => 'チャットルームを出ると会話内容がすべて消え、元に戻せません。退出しますか？';
+
+  @override
+  String get chatInputHint => 'メッセージを入力してください';
 
   @override
   String get chatMenuProfile => 'プロフィールを見る';
 
   @override
-  String get chatMenuFriendRequest => '友だちリクエスト';
+  String get chatMenuFriendRequest => '友達申請';
 
   @override
   String get chatMenuReport => '通報する';
@@ -543,12 +549,6 @@ class L10nJa extends L10n {
   @override
   String get voiceQuotaExhausted =>
       '無料の音声メッセージをすべて使いました。\nプライムなら音声メッセージを使い続けられます。';
-
-  @override
-  String get chatEmoji => '絵文字';
-
-  @override
-  String get chatEmojiRecent => 'よく使う絵文字';
 
   @override
   String get chatFriendRequestSent => '友だちリクエストを送りました。相手が承認すると友だちになります。';

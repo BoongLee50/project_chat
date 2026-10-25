@@ -961,17 +961,29 @@ abstract class L10n {
   /// **'대화를 불러오지 못했어요.'**
   String get chatLoadFailed;
 
+  /// No description provided for @chatSlogan.
+  ///
+  /// In ko, this message translates to:
+  /// **'작은 배려, 아름다운 대화'**
+  String get chatSlogan;
+
+  /// No description provided for @chatGifNotReady.
+  ///
+  /// In ko, this message translates to:
+  /// **'GIF 검색은 아직 준비 중이에요.'**
+  String get chatGifNotReady;
+
+  /// No description provided for @chatLeaveConfirm.
+  ///
+  /// In ko, this message translates to:
+  /// **'대화방을 나가면 대화 내용이 모두 사라지고 되돌릴 수 없어요. 나갈까요?'**
+  String get chatLeaveConfirm;
+
   /// No description provided for @chatInputHint.
   ///
   /// In ko, this message translates to:
-  /// **'메시지를 입력하세요...'**
+  /// **'메시지를 입력해 주세요'**
   String get chatInputHint;
-
-  /// No description provided for @chatMatchedNotice.
-  ///
-  /// In ko, this message translates to:
-  /// **'매칭되었습니다. 예의 있는 멋진 대화를 나눠보세요.'**
-  String get chatMatchedNotice;
 
   /// No description provided for @chatMenuProfile.
   ///
@@ -982,7 +994,7 @@ abstract class L10n {
   /// No description provided for @chatMenuFriendRequest.
   ///
   /// In ko, this message translates to:
-  /// **'친구 요청'**
+  /// **'친구 신청'**
   String get chatMenuFriendRequest;
 
   /// No description provided for @chatMenuReport.
@@ -1068,18 +1080,6 @@ abstract class L10n {
   /// In ko, this message translates to:
   /// **'무료 음성 메시지를 모두 사용했어요.\nPRIME 구독 시 음성 메시지를 계속 이용할 수 있어요.'**
   String get voiceQuotaExhausted;
-
-  /// No description provided for @chatEmoji.
-  ///
-  /// In ko, this message translates to:
-  /// **'이모지'**
-  String get chatEmoji;
-
-  /// No description provided for @chatEmojiRecent.
-  ///
-  /// In ko, this message translates to:
-  /// **'자주 쓰는 이모지'**
-  String get chatEmojiRecent;
 
   /// No description provided for @chatFriendRequestSent.
   ///
