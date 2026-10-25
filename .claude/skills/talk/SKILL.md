@@ -1,12 +1,12 @@
 ---
 name: talk
-description: 이 세션을 달빛톡 '대화방' 콘텐츠 전담으로 설정한다 — 기획서 6장(대화 목록·받은 신청)과 5장(채팅창), D:\Plan_Chat\UI\Scene_Talk 위주. 사용자가 /talk를 입력할 때만 쓴다.
+description: 이 세션을 달빛톡 '대화방' 콘텐츠 전담으로 설정한다 — 기획서 6장(대화 목록·받은 신청), D:\Plan_Chat\UI\Scene_Talk 위주. 사용자가 /talk를 입력할 때만 쓴다.
 disable-model-invocation: true
 ---
 
 # 💬 대화방 세션
 
-이 세션은 이제 **대화방**(+채팅창) 담당이다. 이후 요청은 별말 없으면 대화방 기준으로 해석한다.
+이 세션은 이제 **대화방**(대화 목록·받은 신청) 담당이다. 💌 **채팅창(5장)은 `/chat` 세션 몫**(2026-10-25 분리). 이후 요청은 별말 없으면 대화방 기준으로 해석한다.
 
 **먼저 `.claude/content-sessions.md`를 읽고 그 §2 시작 절차를 따른다** — 특히 §4 동시 작업 규칙.
 (가능하면 세션 제목을 `💬 대화방`으로 바꿔 둔다.)
@@ -17,10 +17,10 @@ disable-model-invocation: true
 
 | | 어디 |
 |---|---|
-| 기획서 | **6장**(6-1 대화 목록 · 6-2 받은 신청) + **5장** 채팅창(5-1 친구 신청의 *버튼 자리*까지. 친구 신청 규칙은 친구 세션) |
+| 기획서 | **6장**(6-1 대화 목록 · 6-2 받은 신청). 5장 채팅창은 `/chat`(`Scene_Chat`, 2026-10-25 전달) |
 | UI | **`D:\Plan_Chat\UI\Scene_Talk\`** — `Talk List/` · `Application Received/` (+ `Example/`) |
 | 에셋 | `assets/images/scene_talk/talk_list/` · `application_received/` |
-| 클라 | `lib/features/chat/` — 목록 `chat_rooms_screen.dart` · 받은 신청 `received_request_screen.dart` · 채팅창 `chat_screen.dart` · 좌표 `talk_art.dart` · 음성·이모지 |
+| 클라 | `lib/features/chat/` — 목록 `chat_rooms_screen.dart` · 받은 신청 `received_request_screen.dart` · 좌표 `talk_art.dart`. ⚠️ 같은 폴더의 채팅창(`chat_screen.dart` · 음성 · 이모지)은 `/chat` 몫, `chat_provider`·`chat_api`·`chat_models`와 서버 `chat/`은 **둘이 같이 쓴다** |
 | 서버 | `server/.../chat/`(+`socket/` WebSocket) |
 | 검증·데모 | `tools/verify/verify_talk_room.py`(23건) · `tools/demo/demo_talk.sql` |
 | 문서 | `01` chat API · `02` `chat_*` · `08` §0-1(#11~17) · `07` §4 2026-09-19(6)(기획사항 원문·충돌 결정표) |
@@ -44,7 +44,7 @@ disable-model-invocation: true
 
 ## 알아둘 것
 
-- **채팅창(5장)은 아직 새 리소스가 안 왔다** — `Scene_Talk`에는 목록·받은 신청 둘뿐. 오면 09가 말한 "다음 작업"이 이것이다
+- 채팅창(5장) 리소스는 2026-10-25 `Scene_Chat`으로 왔고 **`/chat` 세션이 맡는다**
 - 🚨 **받은 신청에서 신고·차단할 길이 없다**(새 시안에 메뉴가 없음) — 폐지인지 기획 확인 대기(`10` §0-2)
 - `[원문보기]`는 번역문이 원문과 다를 때만 보인다 → 개발 중엔 안 보인다. 보려면 `APP_TRANSLATE_PROVIDER=mock`으로 서버 기동
 - 실기기 소켓은 `adb reverse tcp:8080 tcp:8080` + `--dart-define=API_BASE_URL=http://localhost:8080`

@@ -23,7 +23,7 @@ disable-model-invocation: true
 | 클라 | `lib/features/post/` — 화면은 **`home_screen.dart`**(이름이 home이다), 그림 좌표 `post_art.dart` |
 | 서버 | `server/.../post/` · `db/migration` V11(메인 사진·9장·삭제 3회) |
 | 문서 | `01` post API · `02` `posts`/`post_photos` · `08` §0-1(일본어판 #1·#7~9) · `13` 포스트 화면 |
-| 인접 | 부스트 화면 `store/presentation/screens/boost_screen.dart`(상점은 "그 외" 몫 — 버튼만 포스트에 있다) |
+| 인접 | 부스트·앨범 패스 화면 `store/presentation/screens/boost_screen.dart`·`pass_screen.dart`(👑 **`/shop` 몫** — 버튼만 포스트에 있다) |
 
 ## 이미 정해진 것
 

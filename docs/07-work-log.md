@@ -415,6 +415,25 @@ adb shell cmd locale set-app-locales com.example.project_chat --locales ko-KR
 > 다음에 할 일은 [09 인수인계](09-next-task-handoff.md) §2의 **막힌 것 3건**에서 고른다(A·B가 해소됐다).
 > 다음 "싱크용 문서" 요청은 **그 이후 작업부터** 정리하면 된다.
 
+### 2026-10-25 [그 외] — 채팅창 `/chat` · 상점 `/shop` 세션 분리
+
+사용자가 리소스 둘을 넣었다 — `Plan_Chat\UI\Scene_Chat`(21장 + `Example/` 좌표값·참고 화면) ·
+`Plan_Chat\UI\Scene_Shop`(`PrimeSub/` 넷 `SubStart`·`SubManage`·`SubEnd`·`SubEndCancel` 38장, **`LunaShop/`·`LunaCharge/`는 빈 폴더**).
+작업 공간으로 명령 둘을 만들었다 → 콘텐츠 세션 **아홉**.
+
+| 명령 | 맡는 것 | 갈라 온 곳 |
+|---|---|---|
+| `/chat` 💌 | 기획서 261011 **5장 채팅창** — `chat_screen.dart` · 음성 · 이모지 · 서버 메시지·소켓 | `/talk`에서 떼어 냄(대화방은 6장 목록·받은 신청만) |
+| `/shop` 👑 | 261011 **10장 유료 상점** — `lib/features/store/` · 서버 `store/`·`luna/` | "그 외"에서 떼어 냄 |
+
+- 🚨 **`lib/features/chat/` 폴더와 서버 `chat/` 패키지를 `/talk`·`/chat`이 나눠 쓴다** — 화면 파일은 갈랐고 `chat_provider`·`chat_api`·`chat_models`·서버 `chat/`은 공용(공통 규칙 공용 파일 표에 추가).
+- 상점은 **문이 남의 화면에 있다** — 상단 [Prime]·[루나](`art_top_bar.dart`), 포스트 [부스트]·[포스트 앨범], [번역 패스](`translate_pass_button.dart`). 문을 바꾸면 보고.
+- 🚧 `/chat`이 먼저 물어야 할 것: **GIF를 되살릴지** — 예전에 키가 없어 *"문제 있을 경우 해당 기능 삭제"* 를 따라 뺐는데, 이번 전달본에 `button_chat_gif`가 왔고 261011 본문도 GIF(KLIPY·Tenor)를 적고 있다.
+- `Scene_Shop` 그림 이름의 `_kr`/`_jp`는 **언어 변형**이다(프로필과 같은 규칙: 접미사 떼고 `_jp`는 `ja/`).
+- 📌 **기획서 261011이 같은 이름으로 또 바뀌었다** — 지금 파일은 **2026-10-25 17:56 · 302,500,303바이트**(달빛 한마디 세션이 10-11에 본 갱신판은 303,499,904바이트).
+  사용자도 *"완전 최신화는 아닐 수 있다"* 고 했다. 각 세션은 자기 장을 **본문 diff**로 다시 볼 것(`tools/spec/diff_docx_text.py`).
+- 공통 규칙 표를 261011 장 번호로(상점 **10장**) · ARB 접두어에 채팅창 `chat*`·상점 `prime*`/`store*`/`boost*`/`pass*`/`luna*` · `/talk`·`/post` 스킬의 경계 문장 · 09 §0에 두 줄.
+
 ### 2026-10-11 [달빛 한마디] — 대댓글 시험용 더미 (`seed_word.py --me`)
 
 사용자 요청 "대댓글 쓰고 싶은데 내 계정에 더미 댓글을". 같은 일을 또 할 것 같아 스크립트 옵션으로 넣었다.
