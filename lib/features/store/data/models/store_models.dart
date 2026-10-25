@@ -82,6 +82,7 @@ class PrimePlan {
     required this.luna,
     required this.entitlements,
     required this.boosts,
+    this.price = 0,
   });
 
   final String productId;
@@ -90,6 +91,9 @@ class PrimePlan {
   final int luna;
   final List<String> entitlements;
   final Map<String, int> boosts;
+
+  /// 표시용 기준가(원). 실제 청구액은 스토어가 정한다 — 결제창이 붙으면 스토어 SDK 현지 가격으로 바꾼다.
+  final int price;
 
   int get months => (durationDays / 30).round();
 
@@ -103,6 +107,7 @@ class PrimePlan {
     boosts: (json['boosts'] as Map? ?? const {}).map(
       (key, value) => MapEntry(key as String, value as int),
     ),
+    price: json['price'] as int? ?? 0,
   );
 }
 
@@ -157,6 +162,7 @@ class Wallet {
     required this.boostInventory,
     required this.activeBoosts,
     this.subscriptionProduct,
+    this.subscriptionStartedAt,
     this.subscriptionExpiresAt,
   });
 
@@ -164,6 +170,7 @@ class Wallet {
   final bool prime;
   final bool autoRenew;
   final String? subscriptionProduct;
+  final DateTime? subscriptionStartedAt;
   final DateTime? subscriptionExpiresAt;
 
   /// kind → 만료 시각.
@@ -212,6 +219,9 @@ class Wallet {
     prime: json['prime'] as bool? ?? false,
     autoRenew: json['autoRenew'] as bool? ?? false,
     subscriptionProduct: json['subscriptionProduct'] as String?,
+    subscriptionStartedAt: json['subscriptionStartedAt'] == null
+        ? null
+        : parseServerTime(json['subscriptionStartedAt']),
     subscriptionExpiresAt: json['subscriptionExpiresAt'] == null
         ? null
         : parseServerTime(json['subscriptionExpiresAt']),

@@ -768,102 +768,77 @@
   "passTranslateBenefit2Desc": "달빛가든과 포스트의 댓글을 자동으로 번역해줘요.",
   "passTranslateBenefit3": "프로필 자동 번역 무제한",
   "passTranslateBenefit3Desc": "상대방의 프로필 정보와 하루 한마디를 자동으로 번역해줘요.",
-  "primeTitle": "PRIME 멤버십",
-  "primeSubtitle": "PRIME으로 더 특별한 경험을 즐겨보세요.",
-  "primeHeadline": "달빛톡을 완벽하게 즐기는 방법",
-  "primeHeadlineDetail": "모든 기능을 제한 없이!",
   "primePlanSection": "요금제 선택하기",
-  "primeMonths": "{months}개월",
-  "@primeMonths": {
-    "placeholders": {
-      "months": {
-        "type": "int"
-      }
-    }
-  },
-  "primeBestValue": "가성비 끝판왕",
-  "primeStorePrice": "스토어 가격",
-  "primePay": "결제하기",
   "primeStarted": "PRIME 멤버십이 시작됐어요!",
-  "primeActive": "PRIME 이용 중",
-  "primeActiveMonths": "{months}개월 이용 중",
-  "@primeActiveMonths": {
-    "placeholders": {
-      "months": {
-        "type": "int"
-      }
-    }
-  },
-  "primeRemainingDays": "남은 기간 {days}일",
-  "@primeRemainingDays": {
-    "placeholders": {
-      "days": {
-        "type": "int"
-      }
-    }
-  },
-  "primeNextBilling": "다음 결제 예정일  {date}",
-  "@primeNextBilling": {
-    "placeholders": {
-      "date": {
-        "type": "String"
-      }
-    }
-  },
-  "primeEndDate": "이용 종료일  {date}",
-  "@primeEndDate": {
-    "placeholders": {
-      "date": {
-        "type": "String"
-      }
-    }
-  },
-  "primeAutoRenew": "자동 갱신",
-  "primeAutoRenewOff": "갱신 안 함",
-  "primeCancelRenew": "자동 갱신 해지",
-  "primeCancelConfirm": "자동 갱신을 해지할까요?",
-  "primeCancelDetail": "남은 기간 동안은 혜택이 그대로 유지되고, 만료일에 갱신되지 않아요.",
   "primeCancelDone": "자동 갱신을 해지했어요.",
   "commonUnsubscribe": "해지",
-  "primeBenefitsSection": "프라임 혜택",
-  "primeCurrentPlan": "현재 적용 중",
-  "primeAlbumBenefit": "포스트 사진 앨범 패스 {days}일",
-  "@primeAlbumBenefit": {
+  "primeBenefitsSection": "PRIME 혜택",
+  "primeSubscriptionNotice": "구독 서비스는 동일한 기간, 동일한 가격으로 자동 갱신되며,\n회원님이 언제든 구독을 해지할 수 있습니다.",
+  "primeSubInfoSection": "구독 정보",
+  "primeProductName": "PRIME {months}개월",
+  "@primeProductName": {
     "placeholders": {
-      "days": {
+      "months": {
         "type": "int"
       }
     }
   },
-  "primeAlbumBenefitDesc": "포스트 사진을 더 많이 등록하고, 상대방 포스트도 제한 없이 열람할 수 있어요.",
-  "primeBoostBenefit": "{item} 1시간, {count}매",
-  "@primeBoostBenefit": {
+  "primeInfoPrice": "구독 요금",
+  "primeInfoStart": "구독 시작일",
+  "primeInfoNextBilling": "다음 결제일",
+  "primeInfoEndDate": "이용 종료일",
+  "primeMonthlyPrice": "월 {price}원",
+  "@primeMonthlyPrice": {
     "placeholders": {
-      "item": {
+      "price": {
         "type": "String"
-      },
+      }
+    }
+  },
+  "primeBuyPrice": "₩{price}",
+  "@primeBuyPrice": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "primeManageNotice": "구독을 해지해도 현재 구독 기간까지\nPRIME 혜택을 계속 이용할 수 있습니다.",
+  "primeCanceledNotice": "{date}까지 프라임 멤버십 혜택을 이용할 수 있으며,\n이후에는 자동으로 일반 회원으로 전환됩니다.",
+  "@primeCanceledNotice": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "primeCancelTitle": "프라임 구독을 해지할까요?",
+  "primeCancelBody": "해지 신청 시 다음 결제일부터\n자동 결제가 진행되지 않으며,\n현재 구독 기간인 {date}까지는\n프라임 혜택을 계속 이용할 수 있습니다.",
+  "@primeCancelBody": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "primeResumeDone": "해지 신청을 취소했어요. 다음 결제일에 자동 갱신돼요.",
+  "primeBenefitAlbum": "포스트 앨범 패스 무제한",
+  "primeBenefitAlbumDesc": "구독 기간 동안 포스트 앨범을 제한 없이\n이용할 수 있어요.",
+  "primeBenefitBoost": "매달 포스트 부스트 {count}개",
+  "@primeBenefitBoost": {
+    "placeholders": {
       "count": {
         "type": "int"
       }
     }
   },
-  "primeBoostSummary": "{item} {count}매",
-  "@primeBoostSummary": {
-    "placeholders": {
-      "item": {
-        "type": "String"
-      },
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "primePostBoostDesc": "1시간 동안 포스트가 우선 노출돼요! PICK 마크 추천으로 더 눈에 띄게 보여요.",
-  "primeUnlimitedChat": "대화 신청 무제한",
-  "primeUnlimitedChatDesc": "하루 무료 횟수에 관계없이 대화를 신청할 수 있어요.",
-  "primeTranslateDesc": "대화와 댓글을 자동 번역해 언어 걱정 없이 소통할 수 있어요.",
-  "primeAutoRenewNotice": "* PRIME은 선택하신 기간 동안 혜택이 자동 갱신됩니다.",
-  "primeSubscriptionNotice": "구독 서비스는 동일한 기간, 동일한 가격으로 자동 갱신되며,\n언제든 구독을 해지할 수 있습니다.",
+  "primeBenefitBoostDesc": "포스트를 1시간 동안 더 많은 사람에게\n우선적으로 노출해요.",
+  "primeBenefitChat": "대화 신청 무제한",
+  "primeBenefitChatDesc": "마음에 드는 상대에게 제한 없이 대화를 신청해요.",
+  "primeBenefitTranslate": "자동 번역 무제한",
+  "primeBenefitTranslateDesc": "채팅과 댓글을 편리하게 번역해 소통해요.",
+  "primeBenefitNoAds": "광고 제거",
+  "primeBenefitNoAdsDesc": "앱 이용 중 표시되는 광고가 제거돼요.",
   "chargeTitle": "루나 충전",
   "chargeSubtitle": "루나로 더 특별한 경험을 즐겨보세요.",
   "chargeLunaPrefix": "루나 ",
@@ -1090,6 +1065,7 @@
   "errorStoreAlreadySubscribed": "이미 프라임을 구독 중이에요.",
   "errorStoreNotSubscribed": "구독 중이 아니에요.",
   "errorStoreAlreadyCanceled": "이미 자동 갱신을 해지했어요.",
+  "errorStoreNotCanceled": "해지 신청한 구독이 아니에요.",
   "errorStoreReceiptInvalid": "결제 정보를 확인할 수 없어요.",
   "errorStorePurchaseFailed": "지금은 결제를 처리할 수 없어요.",
   "errorModerationSelf": "자기 자신은 대상이 될 수 없어요.",

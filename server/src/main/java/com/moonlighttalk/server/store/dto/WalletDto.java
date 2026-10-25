@@ -12,6 +12,7 @@ public record WalletDto(
         int luna,
         boolean prime,
         String subscriptionProduct,
+        LocalDateTime subscriptionStartedAt,
         LocalDateTime subscriptionExpiresAt,
         boolean autoRenew,
         Map<String, LocalDateTime> entitlements,

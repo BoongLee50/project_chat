@@ -2011,125 +2011,17 @@ abstract class L10n {
   /// **'상대방의 프로필 정보와 하루 한마디를 자동으로 번역해줘요.'**
   String get passTranslateBenefit3Desc;
 
-  /// No description provided for @primeTitle.
-  ///
-  /// In ko, this message translates to:
-  /// **'PRIME 멤버십'**
-  String get primeTitle;
-
-  /// No description provided for @primeSubtitle.
-  ///
-  /// In ko, this message translates to:
-  /// **'PRIME으로 더 특별한 경험을 즐겨보세요.'**
-  String get primeSubtitle;
-
-  /// No description provided for @primeHeadline.
-  ///
-  /// In ko, this message translates to:
-  /// **'달빛톡을 완벽하게 즐기는 방법'**
-  String get primeHeadline;
-
-  /// No description provided for @primeHeadlineDetail.
-  ///
-  /// In ko, this message translates to:
-  /// **'모든 기능을 제한 없이!'**
-  String get primeHeadlineDetail;
-
   /// No description provided for @primePlanSection.
   ///
   /// In ko, this message translates to:
   /// **'요금제 선택하기'**
   String get primePlanSection;
 
-  /// No description provided for @primeMonths.
-  ///
-  /// In ko, this message translates to:
-  /// **'{months}개월'**
-  String primeMonths(int months);
-
-  /// No description provided for @primeBestValue.
-  ///
-  /// In ko, this message translates to:
-  /// **'가성비 끝판왕'**
-  String get primeBestValue;
-
-  /// No description provided for @primeStorePrice.
-  ///
-  /// In ko, this message translates to:
-  /// **'스토어 가격'**
-  String get primeStorePrice;
-
-  /// No description provided for @primePay.
-  ///
-  /// In ko, this message translates to:
-  /// **'결제하기'**
-  String get primePay;
-
   /// No description provided for @primeStarted.
   ///
   /// In ko, this message translates to:
   /// **'PRIME 멤버십이 시작됐어요!'**
   String get primeStarted;
-
-  /// No description provided for @primeActive.
-  ///
-  /// In ko, this message translates to:
-  /// **'PRIME 이용 중'**
-  String get primeActive;
-
-  /// No description provided for @primeActiveMonths.
-  ///
-  /// In ko, this message translates to:
-  /// **'{months}개월 이용 중'**
-  String primeActiveMonths(int months);
-
-  /// No description provided for @primeRemainingDays.
-  ///
-  /// In ko, this message translates to:
-  /// **'남은 기간 {days}일'**
-  String primeRemainingDays(int days);
-
-  /// No description provided for @primeNextBilling.
-  ///
-  /// In ko, this message translates to:
-  /// **'다음 결제 예정일  {date}'**
-  String primeNextBilling(String date);
-
-  /// No description provided for @primeEndDate.
-  ///
-  /// In ko, this message translates to:
-  /// **'이용 종료일  {date}'**
-  String primeEndDate(String date);
-
-  /// No description provided for @primeAutoRenew.
-  ///
-  /// In ko, this message translates to:
-  /// **'자동 갱신'**
-  String get primeAutoRenew;
-
-  /// No description provided for @primeAutoRenewOff.
-  ///
-  /// In ko, this message translates to:
-  /// **'갱신 안 함'**
-  String get primeAutoRenewOff;
-
-  /// No description provided for @primeCancelRenew.
-  ///
-  /// In ko, this message translates to:
-  /// **'자동 갱신 해지'**
-  String get primeCancelRenew;
-
-  /// No description provided for @primeCancelConfirm.
-  ///
-  /// In ko, this message translates to:
-  /// **'자동 갱신을 해지할까요?'**
-  String get primeCancelConfirm;
-
-  /// No description provided for @primeCancelDetail.
-  ///
-  /// In ko, this message translates to:
-  /// **'남은 기간 동안은 혜택이 그대로 유지되고, 만료일에 갱신되지 않아요.'**
-  String get primeCancelDetail;
 
   /// No description provided for @primeCancelDone.
   ///
@@ -2146,74 +2038,152 @@ abstract class L10n {
   /// No description provided for @primeBenefitsSection.
   ///
   /// In ko, this message translates to:
-  /// **'프라임 혜택'**
+  /// **'PRIME 혜택'**
   String get primeBenefitsSection;
-
-  /// No description provided for @primeCurrentPlan.
-  ///
-  /// In ko, this message translates to:
-  /// **'현재 적용 중'**
-  String get primeCurrentPlan;
-
-  /// No description provided for @primeAlbumBenefit.
-  ///
-  /// In ko, this message translates to:
-  /// **'포스트 사진 앨범 패스 {days}일'**
-  String primeAlbumBenefit(int days);
-
-  /// No description provided for @primeAlbumBenefitDesc.
-  ///
-  /// In ko, this message translates to:
-  /// **'포스트 사진을 더 많이 등록하고, 상대방 포스트도 제한 없이 열람할 수 있어요.'**
-  String get primeAlbumBenefitDesc;
-
-  /// No description provided for @primeBoostBenefit.
-  ///
-  /// In ko, this message translates to:
-  /// **'{item} 1시간, {count}매'**
-  String primeBoostBenefit(String item, int count);
-
-  /// No description provided for @primeBoostSummary.
-  ///
-  /// In ko, this message translates to:
-  /// **'{item} {count}매'**
-  String primeBoostSummary(String item, int count);
-
-  /// No description provided for @primePostBoostDesc.
-  ///
-  /// In ko, this message translates to:
-  /// **'1시간 동안 포스트가 우선 노출돼요! PICK 마크 추천으로 더 눈에 띄게 보여요.'**
-  String get primePostBoostDesc;
-
-  /// No description provided for @primeUnlimitedChat.
-  ///
-  /// In ko, this message translates to:
-  /// **'대화 신청 무제한'**
-  String get primeUnlimitedChat;
-
-  /// No description provided for @primeUnlimitedChatDesc.
-  ///
-  /// In ko, this message translates to:
-  /// **'하루 무료 횟수에 관계없이 대화를 신청할 수 있어요.'**
-  String get primeUnlimitedChatDesc;
-
-  /// No description provided for @primeTranslateDesc.
-  ///
-  /// In ko, this message translates to:
-  /// **'대화와 댓글을 자동 번역해 언어 걱정 없이 소통할 수 있어요.'**
-  String get primeTranslateDesc;
-
-  /// No description provided for @primeAutoRenewNotice.
-  ///
-  /// In ko, this message translates to:
-  /// **'* PRIME은 선택하신 기간 동안 혜택이 자동 갱신됩니다.'**
-  String get primeAutoRenewNotice;
 
   /// No description provided for @primeSubscriptionNotice.
   ///
   /// In ko, this message translates to:
-  /// **'구독 서비스는 동일한 기간, 동일한 가격으로 자동 갱신되며,\n언제든 구독을 해지할 수 있습니다.'**
+  /// **'구독 서비스는 동일한 기간, 동일한 가격으로 자동 갱신되며,\n회원님이 언제든 구독을 해지할 수 있습니다.'**
   String get primeSubscriptionNotice;
+
+  /// No description provided for @primeSubInfoSection.
+  ///
+  /// In ko, this message translates to:
+  /// **'구독 정보'**
+  String get primeSubInfoSection;
+
+  /// No description provided for @primeProductName.
+  ///
+  /// In ko, this message translates to:
+  /// **'PRIME {months}개월'**
+  String primeProductName(int months);
+
+  /// No description provided for @primeInfoPrice.
+  ///
+  /// In ko, this message translates to:
+  /// **'구독 요금'**
+  String get primeInfoPrice;
+
+  /// No description provided for @primeInfoStart.
+  ///
+  /// In ko, this message translates to:
+  /// **'구독 시작일'**
+  String get primeInfoStart;
+
+  /// No description provided for @primeInfoNextBilling.
+  ///
+  /// In ko, this message translates to:
+  /// **'다음 결제일'**
+  String get primeInfoNextBilling;
+
+  /// No description provided for @primeInfoEndDate.
+  ///
+  /// In ko, this message translates to:
+  /// **'이용 종료일'**
+  String get primeInfoEndDate;
+
+  /// No description provided for @primeMonthlyPrice.
+  ///
+  /// In ko, this message translates to:
+  /// **'월 {price}원'**
+  String primeMonthlyPrice(String price);
+
+  /// No description provided for @primeBuyPrice.
+  ///
+  /// In ko, this message translates to:
+  /// **'₩{price}'**
+  String primeBuyPrice(String price);
+
+  /// No description provided for @primeManageNotice.
+  ///
+  /// In ko, this message translates to:
+  /// **'구독을 해지해도 현재 구독 기간까지\nPRIME 혜택을 계속 이용할 수 있습니다.'**
+  String get primeManageNotice;
+
+  /// No description provided for @primeCanceledNotice.
+  ///
+  /// In ko, this message translates to:
+  /// **'{date}까지 프라임 멤버십 혜택을 이용할 수 있으며,\n이후에는 자동으로 일반 회원으로 전환됩니다.'**
+  String primeCanceledNotice(String date);
+
+  /// No description provided for @primeCancelTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'프라임 구독을 해지할까요?'**
+  String get primeCancelTitle;
+
+  /// No description provided for @primeCancelBody.
+  ///
+  /// In ko, this message translates to:
+  /// **'해지 신청 시 다음 결제일부터\n자동 결제가 진행되지 않으며,\n현재 구독 기간인 {date}까지는\n프라임 혜택을 계속 이용할 수 있습니다.'**
+  String primeCancelBody(String date);
+
+  /// No description provided for @primeResumeDone.
+  ///
+  /// In ko, this message translates to:
+  /// **'해지 신청을 취소했어요. 다음 결제일에 자동 갱신돼요.'**
+  String get primeResumeDone;
+
+  /// No description provided for @primeBenefitAlbum.
+  ///
+  /// In ko, this message translates to:
+  /// **'포스트 앨범 패스 무제한'**
+  String get primeBenefitAlbum;
+
+  /// No description provided for @primeBenefitAlbumDesc.
+  ///
+  /// In ko, this message translates to:
+  /// **'구독 기간 동안 포스트 앨범을 제한 없이\n이용할 수 있어요.'**
+  String get primeBenefitAlbumDesc;
+
+  /// No description provided for @primeBenefitBoost.
+  ///
+  /// In ko, this message translates to:
+  /// **'매달 포스트 부스트 {count}개'**
+  String primeBenefitBoost(int count);
+
+  /// No description provided for @primeBenefitBoostDesc.
+  ///
+  /// In ko, this message translates to:
+  /// **'포스트를 1시간 동안 더 많은 사람에게\n우선적으로 노출해요.'**
+  String get primeBenefitBoostDesc;
+
+  /// No description provided for @primeBenefitChat.
+  ///
+  /// In ko, this message translates to:
+  /// **'대화 신청 무제한'**
+  String get primeBenefitChat;
+
+  /// No description provided for @primeBenefitChatDesc.
+  ///
+  /// In ko, this message translates to:
+  /// **'마음에 드는 상대에게 제한 없이 대화를 신청해요.'**
+  String get primeBenefitChatDesc;
+
+  /// No description provided for @primeBenefitTranslate.
+  ///
+  /// In ko, this message translates to:
+  /// **'자동 번역 무제한'**
+  String get primeBenefitTranslate;
+
+  /// No description provided for @primeBenefitTranslateDesc.
+  ///
+  /// In ko, this message translates to:
+  /// **'채팅과 댓글을 편리하게 번역해 소통해요.'**
+  String get primeBenefitTranslateDesc;
+
+  /// No description provided for @primeBenefitNoAds.
+  ///
+  /// In ko, this message translates to:
+  /// **'광고 제거'**
+  String get primeBenefitNoAds;
+
+  /// No description provided for @primeBenefitNoAdsDesc.
+  ///
+  /// In ko, this message translates to:
+  /// **'앱 이용 중 표시되는 광고가 제거돼요.'**
+  String get primeBenefitNoAdsDesc;
 
   /// No description provided for @chargeTitle.
   ///
@@ -3168,6 +3138,12 @@ abstract class L10n {
   /// In ko, this message translates to:
   /// **'이미 자동 갱신을 해지했어요.'**
   String get errorStoreAlreadyCanceled;
+
+  /// No description provided for @errorStoreNotCanceled.
+  ///
+  /// In ko, this message translates to:
+  /// **'해지 신청한 구독이 아니에요.'**
+  String get errorStoreNotCanceled;
 
   /// No description provided for @errorStoreReceiptInvalid.
   ///

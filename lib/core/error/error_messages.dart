@@ -104,6 +104,7 @@ String errorMessage(L10n l10n, ApiException e) {
     'STORE_ALREADY_SUBSCRIBED' => l10n.errorStoreAlreadySubscribed,
     'STORE_NOT_SUBSCRIBED' => l10n.errorStoreNotSubscribed,
     'STORE_ALREADY_CANCELED' => l10n.errorStoreAlreadyCanceled,
+    'STORE_NOT_CANCELED' => l10n.errorStoreNotCanceled,
     'STORE_RECEIPT_INVALID' => l10n.errorStoreReceiptInvalid,
     'STORE_PURCHASE_FAILED' => l10n.errorStorePurchaseFailed,
 

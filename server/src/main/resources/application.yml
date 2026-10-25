@@ -102,11 +102,13 @@ app:
       PRIME_1M:
         product: PRIME_1M
         duration-days: 30
+        price: 12900
         entitlements: [ALBUM_PASS, UNLIMITED_CHAT_REQ, TRANSLATE_PASS]
         boosts: { POST_BOOST: 10 }
       PRIME_6M:
         product: PRIME_6M
         duration-days: 180
+        price: 61900
         entitlements: [ALBUM_PASS, UNLIMITED_CHAT_REQ, TRANSLATE_PASS]
         # ⚠️ 6개월 부스트를 일괄 지급할지 매월 지급할지 기획 확인 필요 — 일단 6배로 둔다
         boosts: { POST_BOOST: 60 }

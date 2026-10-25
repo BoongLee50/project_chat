@@ -22,6 +22,8 @@ public interface StoreMapper {
 
     void cancelAutoRenew(@Param("id") String id);
 
+    void resumeAutoRenew(@Param("id") String id);
+
     /** 만료된 구독을 EXPIRED로 내리고 부분 유니크 키를 비운다. */
     int expireSubscriptions(@Param("now") LocalDateTime now);
 

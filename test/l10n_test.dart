@@ -156,7 +156,7 @@ Map<String, String> _samples(L10n l) => {
   'lunaStoreTitle': l.lunaStoreTitle,
   'boostEffectTitle': l.boostEffectTitle,
   'passPeriodSection': l.passPeriodSection,
-  'primeTitle': l.primeTitle,
+  'primeSubInfoSection': l.primeSubInfoSection,
   'chargeTitle': l.chargeTitle,
   'reportAction': l.reportAction,
   'blockAction': l.blockAction,

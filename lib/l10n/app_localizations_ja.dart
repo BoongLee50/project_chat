@@ -1086,74 +1086,10 @@ class L10nJa extends L10n {
   String get passTranslateBenefit3Desc => '相手のプロフィール情報と今日のひとことを自動で翻訳します。';
 
   @override
-  String get primeTitle => 'PRIMEメンバーシップ';
-
-  @override
-  String get primeSubtitle => 'PRIMEでもっと特別な体験を楽しみましょう。';
-
-  @override
-  String get primeHeadline => '月光トークを完璧に楽しむ方法';
-
-  @override
-  String get primeHeadlineDetail => 'すべての機能を制限なく！';
-
-  @override
   String get primePlanSection => 'プランを選ぶ';
 
   @override
-  String primeMonths(int months) {
-    return '$monthsか月';
-  }
-
-  @override
-  String get primeBestValue => 'コスパ最強';
-
-  @override
-  String get primeStorePrice => 'ストア価格';
-
-  @override
-  String get primePay => '支払う';
-
-  @override
   String get primeStarted => 'PRIMEメンバーシップが始まりました！';
-
-  @override
-  String get primeActive => 'PRIME利用中';
-
-  @override
-  String primeActiveMonths(int months) {
-    return '$monthsか月プラン利用中';
-  }
-
-  @override
-  String primeRemainingDays(int days) {
-    return '残り$days日';
-  }
-
-  @override
-  String primeNextBilling(String date) {
-    return '次回のお支払い予定日  $date';
-  }
-
-  @override
-  String primeEndDate(String date) {
-    return '利用終了日  $date';
-  }
-
-  @override
-  String get primeAutoRenew => '自動更新';
-
-  @override
-  String get primeAutoRenewOff => '更新しない';
-
-  @override
-  String get primeCancelRenew => '自動更新を解約';
-
-  @override
-  String get primeCancelConfirm => '自動更新を解約しますか？';
-
-  @override
-  String get primeCancelDetail => '残りの期間は特典がそのまま維持され、満了日に更新されません。';
 
   @override
   String get primeCancelDone => '自動更新を解約しました。';
@@ -1162,46 +1098,91 @@ class L10nJa extends L10n {
   String get commonUnsubscribe => '解約';
 
   @override
-  String get primeBenefitsSection => 'プライム特典';
-
-  @override
-  String get primeCurrentPlan => '適用中';
-
-  @override
-  String primeAlbumBenefit(int days) {
-    return 'ポスト写真アルバムパス $days日';
-  }
-
-  @override
-  String get primeAlbumBenefitDesc => 'ポスト写真をもっと登録でき、相手のポストも制限なく見られます。';
-
-  @override
-  String primeBoostBenefit(String item, int count) {
-    return '$item 1時間、$count枚';
-  }
-
-  @override
-  String primeBoostSummary(String item, int count) {
-    return '$item $count枚';
-  }
-
-  @override
-  String get primePostBoostDesc => '1時間ポストが優先表示されます！PICKマークでさらに目立ちます。';
-
-  @override
-  String get primeUnlimitedChat => '会話リクエスト無制限';
-
-  @override
-  String get primeUnlimitedChatDesc => '1日の無料回数に関係なく、会話をリクエストできます。';
-
-  @override
-  String get primeTranslateDesc => 'トークとコメントを自動翻訳して、言葉の壁なくやり取りできます。';
-
-  @override
-  String get primeAutoRenewNotice => '※ PRIMEは選択した期間のあいだ、特典が自動更新されます。';
+  String get primeBenefitsSection => 'PRIME特典';
 
   @override
   String get primeSubscriptionNotice => '定期購読は同じ期間・同じ価格で自動更新され、\nいつでも解約できます。';
+
+  @override
+  String get primeSubInfoSection => '購読情報';
+
+  @override
+  String primeProductName(int months) {
+    return 'PRIME $monthsか月';
+  }
+
+  @override
+  String get primeInfoPrice => '購読料金';
+
+  @override
+  String get primeInfoStart => '購読開始日';
+
+  @override
+  String get primeInfoNextBilling => '次回決済日';
+
+  @override
+  String get primeInfoEndDate => '利用終了日';
+
+  @override
+  String primeMonthlyPrice(String price) {
+    return '月額 ₩$price';
+  }
+
+  @override
+  String primeBuyPrice(String price) {
+    return '₩$price';
+  }
+
+  @override
+  String get primeManageNotice => '解約しても現在の購読期間が終わるまで\nPRIME特典を引き続きご利用いただけます。';
+
+  @override
+  String primeCanceledNotice(String date) {
+    return '$dateまでプライム特典をご利用いただけます。\n以降は自動的に一般会員に切り替わります。';
+  }
+
+  @override
+  String get primeCancelTitle => 'プライムを解約しますか？';
+
+  @override
+  String primeCancelBody(String date) {
+    return '解約すると次回決済日から\n自動決済は行われません。\n現在の購読期間（$date）までは\nプライム特典をご利用いただけます。';
+  }
+
+  @override
+  String get primeResumeDone => '解約申請を取り消しました。次回決済日に自動更新されます。';
+
+  @override
+  String get primeBenefitAlbum => 'ポストアルバムパス無制限';
+
+  @override
+  String get primeBenefitAlbumDesc => '購読期間中、ポストアルバムを\n制限なくご利用いただけます。';
+
+  @override
+  String primeBenefitBoost(int count) {
+    return '毎月ポストブースト$count個';
+  }
+
+  @override
+  String get primeBenefitBoostDesc => 'ポストを1時間、より多くの人に\n優先的に表示します。';
+
+  @override
+  String get primeBenefitChat => '会話リクエスト無制限';
+
+  @override
+  String get primeBenefitChatDesc => '気になる相手に何度でも会話をリクエスト。';
+
+  @override
+  String get primeBenefitTranslate => '自動翻訳無制限';
+
+  @override
+  String get primeBenefitTranslateDesc => 'チャットもコメントも自動翻訳で楽々。';
+
+  @override
+  String get primeBenefitNoAds => '広告非表示';
+
+  @override
+  String get primeBenefitNoAdsDesc => 'アプリ内の広告が表示されません。';
 
   @override
   String get chargeTitle => 'ルナチャージ';
@@ -1707,6 +1688,9 @@ class L10nJa extends L10n {
 
   @override
   String get errorStoreAlreadyCanceled => 'すでに自動更新を解約しています。';
+
+  @override
+  String get errorStoreNotCanceled => '解約申請中の購読ではありません。';
 
   @override
   String get errorStoreReceiptInvalid => '決済情報を確認できません。';

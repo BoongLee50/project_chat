@@ -1086,74 +1086,10 @@ class L10nKo extends L10n {
   String get passTranslateBenefit3Desc => '상대방의 프로필 정보와 하루 한마디를 자동으로 번역해줘요.';
 
   @override
-  String get primeTitle => 'PRIME 멤버십';
-
-  @override
-  String get primeSubtitle => 'PRIME으로 더 특별한 경험을 즐겨보세요.';
-
-  @override
-  String get primeHeadline => '달빛톡을 완벽하게 즐기는 방법';
-
-  @override
-  String get primeHeadlineDetail => '모든 기능을 제한 없이!';
-
-  @override
   String get primePlanSection => '요금제 선택하기';
 
   @override
-  String primeMonths(int months) {
-    return '$months개월';
-  }
-
-  @override
-  String get primeBestValue => '가성비 끝판왕';
-
-  @override
-  String get primeStorePrice => '스토어 가격';
-
-  @override
-  String get primePay => '결제하기';
-
-  @override
   String get primeStarted => 'PRIME 멤버십이 시작됐어요!';
-
-  @override
-  String get primeActive => 'PRIME 이용 중';
-
-  @override
-  String primeActiveMonths(int months) {
-    return '$months개월 이용 중';
-  }
-
-  @override
-  String primeRemainingDays(int days) {
-    return '남은 기간 $days일';
-  }
-
-  @override
-  String primeNextBilling(String date) {
-    return '다음 결제 예정일  $date';
-  }
-
-  @override
-  String primeEndDate(String date) {
-    return '이용 종료일  $date';
-  }
-
-  @override
-  String get primeAutoRenew => '자동 갱신';
-
-  @override
-  String get primeAutoRenewOff => '갱신 안 함';
-
-  @override
-  String get primeCancelRenew => '자동 갱신 해지';
-
-  @override
-  String get primeCancelConfirm => '자동 갱신을 해지할까요?';
-
-  @override
-  String get primeCancelDetail => '남은 기간 동안은 혜택이 그대로 유지되고, 만료일에 갱신되지 않아요.';
 
   @override
   String get primeCancelDone => '자동 갱신을 해지했어요.';
@@ -1162,49 +1098,93 @@ class L10nKo extends L10n {
   String get commonUnsubscribe => '해지';
 
   @override
-  String get primeBenefitsSection => '프라임 혜택';
-
-  @override
-  String get primeCurrentPlan => '현재 적용 중';
-
-  @override
-  String primeAlbumBenefit(int days) {
-    return '포스트 사진 앨범 패스 $days일';
-  }
-
-  @override
-  String get primeAlbumBenefitDesc =>
-      '포스트 사진을 더 많이 등록하고, 상대방 포스트도 제한 없이 열람할 수 있어요.';
-
-  @override
-  String primeBoostBenefit(String item, int count) {
-    return '$item 1시간, $count매';
-  }
-
-  @override
-  String primeBoostSummary(String item, int count) {
-    return '$item $count매';
-  }
-
-  @override
-  String get primePostBoostDesc =>
-      '1시간 동안 포스트가 우선 노출돼요! PICK 마크 추천으로 더 눈에 띄게 보여요.';
-
-  @override
-  String get primeUnlimitedChat => '대화 신청 무제한';
-
-  @override
-  String get primeUnlimitedChatDesc => '하루 무료 횟수에 관계없이 대화를 신청할 수 있어요.';
-
-  @override
-  String get primeTranslateDesc => '대화와 댓글을 자동 번역해 언어 걱정 없이 소통할 수 있어요.';
-
-  @override
-  String get primeAutoRenewNotice => '* PRIME은 선택하신 기간 동안 혜택이 자동 갱신됩니다.';
+  String get primeBenefitsSection => 'PRIME 혜택';
 
   @override
   String get primeSubscriptionNotice =>
-      '구독 서비스는 동일한 기간, 동일한 가격으로 자동 갱신되며,\n언제든 구독을 해지할 수 있습니다.';
+      '구독 서비스는 동일한 기간, 동일한 가격으로 자동 갱신되며,\n회원님이 언제든 구독을 해지할 수 있습니다.';
+
+  @override
+  String get primeSubInfoSection => '구독 정보';
+
+  @override
+  String primeProductName(int months) {
+    return 'PRIME $months개월';
+  }
+
+  @override
+  String get primeInfoPrice => '구독 요금';
+
+  @override
+  String get primeInfoStart => '구독 시작일';
+
+  @override
+  String get primeInfoNextBilling => '다음 결제일';
+
+  @override
+  String get primeInfoEndDate => '이용 종료일';
+
+  @override
+  String primeMonthlyPrice(String price) {
+    return '월 $price원';
+  }
+
+  @override
+  String primeBuyPrice(String price) {
+    return '₩$price';
+  }
+
+  @override
+  String get primeManageNotice =>
+      '구독을 해지해도 현재 구독 기간까지\nPRIME 혜택을 계속 이용할 수 있습니다.';
+
+  @override
+  String primeCanceledNotice(String date) {
+    return '$date까지 프라임 멤버십 혜택을 이용할 수 있으며,\n이후에는 자동으로 일반 회원으로 전환됩니다.';
+  }
+
+  @override
+  String get primeCancelTitle => '프라임 구독을 해지할까요?';
+
+  @override
+  String primeCancelBody(String date) {
+    return '해지 신청 시 다음 결제일부터\n자동 결제가 진행되지 않으며,\n현재 구독 기간인 $date까지는\n프라임 혜택을 계속 이용할 수 있습니다.';
+  }
+
+  @override
+  String get primeResumeDone => '해지 신청을 취소했어요. 다음 결제일에 자동 갱신돼요.';
+
+  @override
+  String get primeBenefitAlbum => '포스트 앨범 패스 무제한';
+
+  @override
+  String get primeBenefitAlbumDesc => '구독 기간 동안 포스트 앨범을 제한 없이\n이용할 수 있어요.';
+
+  @override
+  String primeBenefitBoost(int count) {
+    return '매달 포스트 부스트 $count개';
+  }
+
+  @override
+  String get primeBenefitBoostDesc => '포스트를 1시간 동안 더 많은 사람에게\n우선적으로 노출해요.';
+
+  @override
+  String get primeBenefitChat => '대화 신청 무제한';
+
+  @override
+  String get primeBenefitChatDesc => '마음에 드는 상대에게 제한 없이 대화를 신청해요.';
+
+  @override
+  String get primeBenefitTranslate => '자동 번역 무제한';
+
+  @override
+  String get primeBenefitTranslateDesc => '채팅과 댓글을 편리하게 번역해 소통해요.';
+
+  @override
+  String get primeBenefitNoAds => '광고 제거';
+
+  @override
+  String get primeBenefitNoAdsDesc => '앱 이용 중 표시되는 광고가 제거돼요.';
 
   @override
   String get chargeTitle => '루나 충전';
@@ -1713,6 +1693,9 @@ class L10nKo extends L10n {
 
   @override
   String get errorStoreAlreadyCanceled => '이미 자동 갱신을 해지했어요.';
+
+  @override
+  String get errorStoreNotCanceled => '해지 신청한 구독이 아니에요.';
 
   @override
   String get errorStoreReceiptInvalid => '결제 정보를 확인할 수 없어요.';

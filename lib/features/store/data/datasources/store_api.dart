@@ -57,4 +57,10 @@ class StoreApi {
     final data = await _client.post('/me/subscription:cancel');
     return Wallet.fromJson(Map<String, dynamic>.from(data as Map));
   }
+
+  /// 해지 신청 취소 — 자동갱신을 다시 켠다(만료 전만).
+  Future<Wallet> resumeSubscription() async {
+    final data = await _client.post('/me/subscription:resume');
+    return Wallet.fromJson(Map<String, dynamic>.from(data as Map));
+  }
 }

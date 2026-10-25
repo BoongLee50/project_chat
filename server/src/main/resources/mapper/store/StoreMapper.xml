@@ -59,6 +59,10 @@
         UPDATE subscriptions SET status = 'CANCELLED', auto_renew = 0 WHERE id = #{id}
     </update>
 
+    <update id="resumeAutoRenew">
+        UPDATE subscriptions SET status = 'ACTIVE', auto_renew = 1 WHERE id = #{id}
+    </update>
+
     <!-- active_user_id를 비워야 다음 구독을 새로 만들 수 있다(부분 유니크 트릭). -->
     <update id="expireSubscriptions">
         UPDATE subscriptions

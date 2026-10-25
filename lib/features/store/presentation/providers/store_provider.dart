@@ -42,6 +42,9 @@ class StoreActions {
   Future<ApiException?> cancelSubscription() =>
       _run(() => _ref.read(storeApiProvider).cancelSubscription());
 
+  Future<ApiException?> resumeSubscription() =>
+      _run(() => _ref.read(storeApiProvider).resumeSubscription());
+
   /// 인앱결제. 실제 스토어 결제창은 계정 발급 후 붙는다(01 §1.8 ①).
   Future<ApiException?> verifyPurchase({
     required String productId,

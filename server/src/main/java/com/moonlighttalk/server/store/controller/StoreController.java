@@ -58,4 +58,10 @@ public class StoreController {
     public WalletDto cancelSubscription(@CurrentUserId String userId) {
         return storeService.cancelSubscription(userId);
     }
+
+    /** 해지 신청 취소 — 자동갱신을 다시 켠다(만료 전만). */
+    @PostMapping("/me/subscription:resume")
+    public WalletDto resumeSubscription(@CurrentUserId String userId) {
+        return storeService.resumeSubscription(userId);
+    }
 }

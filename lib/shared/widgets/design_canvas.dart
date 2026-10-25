@@ -129,6 +129,21 @@ class DesignCanvas {
     'assets/images/scene_word/reply_register/button_register.png': null,
     'assets/images/scene_word/reply_list/frame_question.png': null,
     'assets/images/scene_word/reply_list/button_myword.png': Size(326, 96),
+
+    // 상점 프라임 구독(Scene_Shop/PrimeSub) — 전달 이름의 `_kr`/`_jp`가 언어 변형이다.
+    // 타이틀 「PRIMEメンバーシップ」은 원문보다 넓고(450 → 532), 배너는 2px 좁다.
+    'assets/images/scene_shop/prime_sub/sub_start/title_prime.png': Size(532, 69),
+    'assets/images/scene_shop/prime_sub/sub_start/back_primebanner.png': Size(976, 252),
+    'assets/images/scene_shop/prime_sub/sub_start/button_1monthcolor.png': null,
+    'assets/images/scene_shop/prime_sub/sub_start/button_1monthnormal.png': null,
+    'assets/images/scene_shop/prime_sub/sub_start/button_6monthcolor.png': null,
+    'assets/images/scene_shop/prime_sub/sub_start/button_6monthnormal.png': null,
+    'assets/images/scene_shop/prime_sub/sub_start/button_primebuy.png': null,
+    'assets/images/scene_shop/prime_sub/sub_manage/button_primemanagement.png': null,
+    'assets/images/scene_shop/prime_sub/sub_manage/icon_primeuse.png': null,
+    'assets/images/scene_shop/prime_sub/sub_end/button_subcancel.png': null,
+    'assets/images/scene_shop/prime_sub/sub_end/button_cancel.png': null,
+    'assets/images/scene_shop/prime_sub/sub_end_cancel/button_subkeep.png': null,
   };
 
   /// [koAsset]을 [languageCode]로 그릴 때의 **규격**. 일본어판 크기가 따로 적혀 있으면 그것을 쓴다.

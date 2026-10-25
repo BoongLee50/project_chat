@@ -74,7 +74,7 @@ public class StoreService {
         List<PrimePlanDto> plans = new ArrayList<>();
         properties.getPrimePlans().forEach((id, p) -> plans.add(new PrimePlanDto(
                 id, p.getProduct(), p.getDurationDays(), p.getLuna(),
-                p.getEntitlements(), p.getBoosts())));
+                p.getEntitlements(), p.getBoosts(), p.getPrice())));
 
         return new ProductCatalogDto(lunaProducts, packs, plans, maxPhotosFree, maxPhotosPass);
     }
@@ -102,6 +102,7 @@ public class StoreService {
                 lunaService.balance(userId),
                 subscription != null,
                 subscription == null ? null : subscription.getProduct(),
+                subscription == null ? null : subscription.getStartedAt(),
                 subscription == null ? null : subscription.getExpiresAt(),
                 subscription != null && Boolean.TRUE.equals(subscription.getAutoRenew()),
                 entitlements,
@@ -175,6 +176,25 @@ public class StoreService {
                     "이미 자동갱신을 해지했어요.");
         }
         storeMapper.cancelAutoRenew(subscription.getId());
+        return wallet(userId);
+    }
+
+    /**
+     * [해지 신청 취소] — 해지한 구독의 자동갱신을 다시 켠다(시안 `SubEndCancel`).
+     * 기간이 끝나기 전에만 된다. 끝난 구독은 새로 결제해야 한다.
+     */
+    @Transactional
+    public WalletDto resumeSubscription(String userId) {
+        Subscription subscription = entitlementService.currentSubscription(userId);
+        if (subscription == null) {
+            throw new ApiException(ErrorCode.STORE_NOT_SUBSCRIBED, HttpStatus.NOT_FOUND,
+                    "구독 중이 아니에요.");
+        }
+        if (Boolean.TRUE.equals(subscription.getAutoRenew())) {
+            throw new ApiException(ErrorCode.STORE_NOT_CANCELED, HttpStatus.CONFLICT,
+                    "해지 신청한 구독이 아니에요.");
+        }
+        storeMapper.resumeAutoRenew(subscription.getId());
         return wallet(userId);
     }
 }

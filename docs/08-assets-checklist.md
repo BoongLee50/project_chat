@@ -463,7 +463,24 @@ Image.asset(..., fit: BoxFit.cover, alignment: Alignment.topCenter)
 
 ---
 
-## 3. BM 화면용 (화면 25~30, 미착수)
+## 3. BM 화면용 (화면 25~30)
+
+### 3-0. 👑 `Scene_Shop/PrimeSub` — 프라임 구독 30장 **반영**(2026-10-25)
+
+`assets/images/scene_shop/prime_sub/{sub_start,sub_manage,sub_end,sub_end_cancel}/`. 전달 이름의 `_kr`/`_jp`는 **언어 변형** —
+접미사를 떼고 `_kr`은 제자리, `_jp`는 `ja/`(`DesignCanvas.localizedAssets` 12줄). **일본어판까지 한 번에 왔다**(12쌍 + 글자 없는 6장).
+
+| 폴더 | 그림 | 쓰는 곳 |
+|---|---|---|
+| `sub_start` | `title_prime`(일본어판 532폭) · `back_primebanner`(일본어판 976폭) · `button_{1,6}month{color,normal}` · `button_primebuy` · `button_primeexit` · `frame_primeinfo` · `icon_primecheck` | 구독 화면 · 혜택 틀은 세 상태 공통 |
+| `sub_manage` | `frame_primesubinfo` · `icon_primeuse`(`이용 중`) · `button_primemanagement` | 관리 화면(해지 상태도 같은 틀) |
+| `sub_end` | `frame_subcandelpopup`(전달 이름 철자 그대로) · `icon_notice` · `button_subcancel` · `button_cancel` | 해지 팝업 |
+| `sub_end_cancel` | `button_subkeep` | [해지 신청 취소] |
+
+- 폰트가 그리는 것: 섹션 제목 셋(`요금제 선택하기`·`구독 정보`·`PRIME 혜택` — 그림이 안 왔다) · 혜택 다섯 줄 · 가격·날짜 · 아래 안내 두 줄 · 팝업 제목·본문.
+- 🚧 **`LunaShop/`·`LunaCharge/`는 아직 빈다** — 루나 상점·충전·부스트·패스 화면은 옛 코드 그림 그대로.
+
+#### 아래 표는 옛 목록(루나 쪽은 아직 유효)
 
 | # | 리소스 | 용도 |
 |---|--------|------|

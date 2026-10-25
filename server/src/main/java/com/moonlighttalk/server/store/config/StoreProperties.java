@@ -147,6 +147,11 @@ public class StoreProperties {
         private Map<String, Integer> boosts = new LinkedHashMap<>();
         /** 함께 지급할 루나. */
         private int luna;
+        /**
+         * 표시용 기준가(원). 실제 청구액은 스토어가 정한다 — 결제창(in_app_purchase)이 붙으면
+         * 스토어 SDK의 현지 가격으로 바꾼다. 그전까지 시안의 가격 자리를 비우지 않으려고 둔다.
+         */
+        private int price;
 
         public String getProduct() {
             return product;
@@ -186,6 +191,14 @@ public class StoreProperties {
 
         public void setLuna(int luna) {
             this.luna = luna;
+        }
+
+        public int getPrice() {
+            return price;
+        }
+
+        public void setPrice(int price) {
+            this.price = price;
         }
     }
 }
