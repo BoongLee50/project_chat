@@ -1,294 +1,314 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../app/theme/app_colors.dart';
-import '../../../../app/theme/app_dimens.dart';
 import '../../../../core/error/error_messages.dart';
+import '../../../../l10n/app_localizations.dart';
+import '../../../../shared/widgets/design_canvas.dart';
 import '../../data/models/store_models.dart';
 import '../providers/store_provider.dart';
+import '../widgets/luna_popups.dart';
 import '../widgets/store_widgets.dart';
 import 'luna_charge_screen.dart';
-import 'pass_screen.dart';
-import '../../../../l10n/app_localizations.dart';
 
-/// 화면 25 — 루나상점. 보유 루나 + 루나로 사는 상품 4종.
+/// 루나 상점 (기획서 261011 10-2 · 시안 `Scene_Shop/LunaShop`).
 ///
-/// 가격·구성은 서버 카탈로그에서 온다(`GET /store/products`). 여기에 숫자를 적지 않는다.
-class LunaStoreScreen extends ConsumerWidget {
-  const LunaStoreScreen({super.key});
+/// 보유량 배너 + 상품 카드 셋(포스트 부스트 · 포스트 앨범 패스 · 자동 번역). 카드마다 옵션 둘 중 하나를 고르고
+/// 아래 버튼을 누른다. 버튼은 상태에 따라 그림이 바뀐다:
+///
+/// | 상태 | 버튼 | 누르면 |
+/// |---|---|---|
+/// | 없음 | [구매하기] | 루나로 산다 → 구매 완료 팝업 |
+/// | 부스트 보유·안 씀 | [사용하기 ›] | 상품 관리 팝업(사용 전) |
+/// | 쓰는 중(부스트 1시간 · 패스 기간) | [사용 중 ›] | 상품 관리 팝업 |
+///
+/// 📌 전달 이름이 뜻과 엇갈려 있다 — `button_lunashopuse`가 **`사용 중`**, `button_lunashopusing`이 **`사용하기`** 다.
+///
+/// 가격·구성은 서버 카탈로그(`GET /store/products`)에서 온다. 옵션 그림은 `5개`·`10개`·`7일`·`30일`이
+/// 구워져 있어 **그 구성만** 그린다(다른 구성이 설정에 생기면 그림부터 받아야 한다).
+class LunaStoreScreen extends ConsumerStatefulWidget {
+  const LunaStoreScreen({super.key, this.focus});
 
-  static Route<void> route() =>
-      MaterialPageRoute(builder: (_) => const LunaStoreScreen());
+  /// 다른 화면의 문([부스트]·[포스트 앨범]·[번역 패스])으로 들어왔을 때의 상품. 이미 갖고 있으면
+  /// 들어오자마자 그 상품 관리 팝업을 연다(기획서 10-2-1 `사용`·`사용 정보` 화면).
+  final String? focus;
 
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = L10n.of(context);
-    final catalog = ref.watch(catalogProvider);
-    final wallet = ref.watch(walletProvider);
-
-    return Scaffold(
-      backgroundColor: AppColors.night,
-      appBar: StoreAppBar(
-        icon: Icons.star_rounded,
-        title: l10n.lunaStoreTitle,
-        subtitle: l10n.lunaStoreSubtitle,
-        iconColor: AppColors.gold,
-      ),
-      body: catalog.when(
-        loading: () => const Center(
-          child: CircularProgressIndicator(color: AppColors.moonlight),
-        ),
-        error: (error, _) => _ErrorView(
-          message: l10n.storeLoadFailed,
-          onRetry: () => ref.invalidate(catalogProvider),
-        ),
-        data: (data) => RefreshIndicator(
-          color: AppColors.moonlight,
-          backgroundColor: AppColors.surface,
-          onRefresh: () async {
-            ref.invalidate(catalogProvider);
-            await ref.read(walletProvider.notifier).refresh();
-          },
-          child: ListView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.fromLTRB(
-              AppDimens.pagePad,
-              AppDimens.gapMd,
-              AppDimens.pagePad,
-              AppDimens.gapLg,
-            ),
-            children: [
-              LunaBalanceCard(
-                luna: wallet.valueOrNull?.luna ?? 0,
-                onCharge: () =>
-                    Navigator.of(context).push(LunaChargeScreen.route()),
-              ),
-              const SizedBox(height: AppDimens.gapMd),
-              _ProductSection(
-                kind: StoreKind.postBoost,
-                icon: Icons.bolt,
-                accent: const Color(0xFFE8386D),
-                options: data.optionsOf(StoreKind.postBoost),
-              ),
-              _ProductSection(
-                kind: StoreKind.albumPass,
-                icon: Icons.photo_camera_outlined,
-                accent: const Color(0xFF2F7BF6),
-                options: data.optionsOf(StoreKind.albumPass),
-                onDetail: () => Navigator.of(context)
-                    .push(PassScreen.route(StoreKind.albumPass)),
-              ),
-              _ProductSection(
-                kind: StoreKind.translatePass,
-                icon: Icons.translate,
-                accent: const Color(0xFF23A455),
-                options: data.optionsOf(StoreKind.translatePass),
-                onDetail: () => Navigator.of(context)
-                    .push(PassScreen.route(StoreKind.translatePass)),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// 상품 한 묶음 — 제목·설명 + 가격 옵션들 + 구매 버튼. 시안 25의 카드 하나.
-class _ProductSection extends ConsumerStatefulWidget {
-  const _ProductSection({
-    required this.kind,
-    required this.icon,
-    required this.accent,
-    required this.options,
-    this.onDetail,
-  });
-
-  final String kind;
-  final IconData icon;
-  final Color accent;
-  final List<LunaProduct> options;
-  final VoidCallback? onDetail;
+  static Route<void> route({String? focus}) =>
+      MaterialPageRoute(builder: (_) => LunaStoreScreen(focus: focus));
 
   @override
-  ConsumerState<_ProductSection> createState() => _ProductSectionState();
+  ConsumerState<LunaStoreScreen> createState() => _LunaStoreScreenState();
 }
 
-class _ProductSectionState extends ConsumerState<_ProductSection> {
-  int _selected = 0;
+const _dir = '$shopDir/luna_shop';
+
+/// 카드 윗변(시안 49, 590 · 1227 · 1863).
+const _cardTops = [590.0, 1227.0, 1863.0];
+
+class _LunaStoreScreenState extends ConsumerState<LunaStoreScreen> {
+  /// kind → 고른 상품 id. 처음엔 각 카드의 첫 옵션.
+  final Map<String, String> _selected = {};
   bool _busy = false;
+  bool _focusHandled = false;
 
-  Future<void> _purchase() async {
+  @override
+  void initState() {
+    super.initState();
+    // 루나·보유 상태는 다른 화면에서도 바뀐다 — 들어올 때마다 다시 읽는다(클라 갱신 방침).
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) ref.read(walletProvider.notifier).refresh();
+    });
+  }
+
+  bool _owns(Wallet w, String kind) => kind == StoreKind.postBoost
+      ? w.isBoostOn(kind) || w.stockOf(kind) > 0
+      : w.has(kind);
+
+  void _maybeOpenFocus(Wallet wallet) {
+    if (_focusHandled || widget.focus == null) return;
+    _focusHandled = true;
+    if (!_owns(wallet, widget.focus!)) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) showLunaManagePopup(context, widget.focus!);
+    });
+  }
+
+  Future<void> _buy(LunaProduct product) async {
     final l10n = L10n.of(context);
-    if (widget.options.isEmpty) return;
-    final product = widget.options[_selected];
-
     setState(() => _busy = true);
     final error = await ref
         .read(storeActionsProvider)
         .purchaseWithLuna(product.id);
     if (!mounted) return;
     setState(() => _busy = false);
-
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          content: Text(
-            error == null
-                ? l10n.storePurchased(
-                    StoreKind.label(l10n, widget.kind),
-                    product.optionLabel(l10n),
-                  )
-                : errorMessage(l10n, error),
-          ),
-        ),
-      );
+    if (error != null) {
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(errorMessage(l10n, error))));
+      return;
+    }
+    await showLunaPurchasedPopup(context, product);
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = L10n.of(context);
-    if (widget.options.isEmpty) return const SizedBox.shrink();
+    final wallet = ref.watch(walletProvider);
+    final catalog = ref.watch(catalogProvider);
 
-    // 가장 비싼(=많이 담긴) 옵션에 할인 배지. 시안에서 20% 할인이 붙던 자리.
-    final maxIndex = widget.options.length - 1;
+    Widget body;
+    if (wallet.valueOrNull == null || catalog.valueOrNull == null) {
+      final failed = wallet.hasError || catalog.hasError;
+      body = Center(
+        child: failed
+            ? Text(
+                l10n.storeLoadFailed,
+                style: const TextStyle(color: ShopColors.sub),
+              )
+            : const CircularProgressIndicator(color: ShopColors.purple),
+      );
+    } else {
+      final w = wallet.value!;
+      final c = catalog.value!;
+      _maybeOpenFocus(w);
+      body = ShopCanvas(
+        contentBottom: _cardTops.last + 589,
+        gaps: const [(269, 24), (349, 24), (590, 36), (1227, 30), (1863, 30)],
+        children: (y) => [
+          // 타이틀은 언어마다 폭이 다르다(393 · 475) — 시안 시작점(302)은 같게 둔다.
+          shopArt('$_dir/title_lunashop.png', 302, y(145), 393, 75),
+          shopClose(context, y(133)),
+          shopSubtitle(l10n.lunaStoreSubtitle, y(269)),
+          ...shopBalance(
+            banner: '$_dir/banner_luna.png',
+            luna: w.luna,
+            button: '$_dir/button_lunacharge.png',
+            buttonSize: const Size(371, 90),
+            buttonAt: const Offset(626, 398),
+            onTap: () => Navigator.of(
+              context,
+            ).push(LunaChargeScreen.route(fromShop: true)),
+            y: y,
+          ),
+          for (var i = 0; i < ShopKindArt.all.length; i++)
+            ..._card(l10n, ShopKindArt.all[i], y(_cardTops[i]), w, c),
+        ],
+      );
+    }
 
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppDimens.gapMd),
-      child: StoreCard(
-        accent: widget.accent,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: widget.accent,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(widget.icon, color: Colors.white, size: 22),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    StoreKind.label(l10n, widget.kind),
-                    style: TextStyle(
-                      color: widget.accent,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                ),
-                if (widget.onDetail != null)
-                  TextButton(
-                    onPressed: widget.onDetail,
-                    child: Text(
-                      l10n.storeDetail,
-                      style: TextStyle(color: AppColors.textSecondary),
-                    ),
-                  ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Text(
-              StoreKind.description(l10n, widget.kind),
-              style: const TextStyle(
-                color: AppColors.textSecondary,
-                fontSize: 13,
-                height: 1.5,
-              ),
-            ),
-            const SizedBox(height: AppDimens.gapMd),
-            for (var i = 0; i < widget.options.length; i++)
-              PriceOptionTile(
-                label: widget.options[i].optionLabel(l10n),
-                price: widget.options[i].price,
-                selected: i == _selected,
-                accent: widget.accent,
-                badge: i == maxIndex && widget.options.length > 1
-                    ? _discountBadge(l10n, widget.options)
-                    : null,
-                onTap: () => setState(() => _selected = i),
-              ),
-            const SizedBox(height: 4),
-            SizedBox(
-              width: double.infinity,
-              height: 48,
-              child: FilledButton(
-                style: FilledButton.styleFrom(
-                  backgroundColor: widget.accent,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(AppDimens.radiusMd),
-                  ),
-                ),
-                onPressed: _busy ? null : _purchase,
-                child: _busy
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2.5,
-                          color: Colors.white,
-                        ),
-                      )
-                    : Text(
-                        l10n.storeBuy,
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-              ),
-            ),
-          ],
-        ),
-      ),
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle.dark,
+      child: Scaffold(backgroundColor: Colors.white, body: body),
     );
   }
 
-  /// 단가 기준 할인율. 서버가 가격만 주므로 화면에서 계산한다(가격이 바뀌어도 따라간다).
-  String? _discountBadge(L10n l10n, List<LunaProduct> options) {
-    final base = options.first;
-    final top = options.last;
-    final baseUnit = base.isBoost ? base.quantity : base.durationDays;
-    final topUnit = top.isBoost ? top.quantity : top.durationDays;
-    if (baseUnit == 0 || topUnit == 0) return null;
+  /// 상품 카드 하나(981×589). [top]은 이미 당겨진 화면 y다.
+  List<Widget> _card(
+    L10n l10n,
+    ShopKindArt art,
+    double top,
+    Wallet w,
+    ProductCatalog c,
+  ) {
+    final options = c
+        .optionsOf(art.kind)
+        .where((p) => art.optionAsset(p, false) != null)
+        .take(2)
+        .toList();
+    if (options.isEmpty) return const [];
+    final selectedId = _selected[art.kind] ?? options.first.id;
+    final selected = options.firstWhere(
+      (p) => p.id == selectedId,
+      orElse: () => options.first,
+    );
 
-    final basePerUnit = base.price / baseUnit;
-    final topPerUnit = top.price / topUnit;
-    if (topPerUnit >= basePerUnit) return null;
+    final active = art.isBoost ? w.isBoostOn(art.kind) : w.has(art.kind);
+    final owned = art.isBoost && w.stockOf(art.kind) > 0;
+    final (button, onTap) = active
+        ? (
+            '$_dir/button_lunashopuse.png',
+            () => showLunaManagePopup(context, art.kind),
+          )
+        : owned
+        ? (
+            '$_dir/button_lunashopusing.png',
+            () => showLunaManagePopup(context, art.kind),
+          )
+        : ('$_dir/button_lunashopbuy.png', _busy ? null : () => _buy(selected));
 
-    final percent = ((1 - topPerUnit / basePerUnit) * 100).round();
-    return percent <= 0 ? null : l10n.storeDiscount(percent);
+    final desc = switch (art.kind) {
+      StoreKind.postBoost => l10n.lunaShopDescBoost,
+      StoreKind.albumPass => l10n.lunaShopDescAlbum(c.maxPhotosPass),
+      _ => l10n.lunaShopDescTrans,
+    };
+    final describeAt = switch (art.kind) {
+      StoreKind.postBoost => const Offset(110, 382),
+      StoreKind.albumPass => const Offset(116, 381),
+      _ => const Offset(147, 383),
+    };
+
+    return [
+      shopArt('$_dir/frame_lunashopinfo.png', 49, top, 981, 589),
+      shopArt(art.icon, 87, top + 39, art.iconSize.width, art.iconSize.height),
+      shopArt(
+        art.title,
+        219,
+        top + 61,
+        art.titleSize.width,
+        art.titleSize.height,
+      ),
+      // 그림 바탕이 불투명해 글자보다 먼저 깐다(넷째 줄이 가려졌다).
+      shopArt(
+        art.describe,
+        describeAt.dx,
+        top + describeAt.dy,
+        art.describeSize.width,
+        art.describeSize.height,
+      ),
+      Positioned(
+        left: 87,
+        top: top + 160,
+        width: 560 - 87,
+        child: Text(
+          desc,
+          style: const TextStyle(
+            color: ShopColors.ink,
+            fontSize: 39,
+            fontWeight: FontWeight.w700,
+            height: 1.36,
+          ),
+        ),
+      ),
+      for (var i = 0; i < options.length; i++)
+        Positioned(
+          left: 569,
+          top: top + (i == 0 ? 139 : 279),
+          child: _OptionButton(
+            asset: art.optionAsset(options[i], options[i].id == selected.id)!,
+            price: options[i].price,
+            onTap: () => setState(() => _selected[art.kind] = options[i].id),
+          ),
+        ),
+      // `20% 할인` — 둘째 옵션 왼쪽 위에 걸친다. 글자는 서버 설정 표시값.
+      for (var i = 0; i < options.length; i++)
+        if (options[i].discount > 0)
+          Positioned(
+            left: 570,
+            top: top + (i == 0 ? 117 : 257),
+            child: SizedBox(
+              width: 156,
+              height: 53,
+              child: Stack(
+                children: [
+                  const ArtImage(
+                    '$_dir/icon_discount.png',
+                    width: 156,
+                    height: 53,
+                    scale: 1,
+                  ),
+                  Center(
+                    child: Text(
+                      l10n.storeDiscount(options[i].discount),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 30,
+                        fontWeight: FontWeight.w800,
+                        height: 1,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+      Positioned(
+        left: 569,
+        top: top + 432,
+        child: ShopArtButton(
+          asset: button,
+          width: 425,
+          height: 104,
+          onTap: onTap,
+        ),
+      ),
+    ];
   }
 }
 
-class _ErrorView extends StatelessWidget {
-  const _ErrorView({required this.message, required this.onRetry});
+/// 옵션 하나(435×104) — `5개 | ★`까지 그림, 금액은 별 오른쪽(그림 안 x 301)에 폰트로.
+class _OptionButton extends StatelessWidget {
+  const _OptionButton({
+    required this.asset,
+    required this.price,
+    required this.onTap,
+  });
 
-  final String message;
-  final VoidCallback onRetry;
+  final String asset;
+  final int price;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    final l10n = L10n.of(context);
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(Icons.error_outline, color: AppColors.textMuted, size: 48),
-          const SizedBox(height: AppDimens.gapMd),
-          Text(
-            message,
-            style: const TextStyle(color: AppColors.textPrimary, fontSize: 15),
+    return ShopArtButton(
+      asset: asset,
+      width: 435,
+      height: 104,
+      onTap: onTap,
+      overlay: Positioned(
+        left: 301,
+        top: 0,
+        bottom: 0,
+        child: Center(
+          child: Text(
+            shopNumber(price),
+            style: const TextStyle(
+              color: Colors.black,
+              fontSize: 52,
+              fontWeight: FontWeight.w800,
+              height: 1,
+            ),
           ),
-          const SizedBox(height: AppDimens.gapMd),
-          TextButton(onPressed: onRetry, child: Text(l10n.commonRetry)),
-        ],
+        ),
       ),
     );
   }

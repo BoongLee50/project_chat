@@ -353,7 +353,7 @@ API를 직접 부르는 것으로 뚫린다. 응답에 `photoLocked`(잠김 여�
 | POST | `/store/webhooks/apple` | App Store Server Notifications V2 수신 — 서명 검증, `@NoAuth` | - |
 | POST | `/me/subscription:cancel` | 자동갱신 해지(만료까지 유효) — [구독 관리] → 해지 팝업 [구독 해지] | 26 |
 | POST | `/me/subscription:resume` | **해지 신청 취소** — 자동갱신을 다시 켠다(만료 전만, 아니면 404 `STORE_NOT_SUBSCRIBED` · 해지 안 한 구독은 409 `STORE_NOT_CANCELED`). `SubEndCancel` 시안 [해지 신청 취소] (2026-10-25) | 26 |
-| POST | `/store/luna:purchase` | 루나로 개별상품 구매(부스트 매수/앨범패스/번역패스) — 루나 차감 트랜잭션 | 25,28,29,30 |
+| POST | `/store/luna:purchase` | 루나로 개별상품 구매(부스트 매수/앨범패스/번역패스) — 루나 차감 트랜잭션. **패스는 이용 중이면 409 `STORE_ALREADY_OWNED`**(기획서 261011 10-2-2·10-2-3 "중복 구매 불가", 프라임이 준 패스 포함 · 2026-10-31) | 25,28,29,30 |
 | POST | `/boosts:use` | 보유 부스트 사용(kind: POST/SPOTLIGHT) → 1시간 활성 | 28 |
 
 **결제 흐름 (중요)** — 클라가 "샀다"고 말하는 것을 믿지 않는다.
@@ -370,6 +370,9 @@ API를 직접 부르는 것으로 뚫린다. 응답에 `photoLocked`(잠김 여�
 - 상품ID·가격은 **스토어 콘솔 + 서버 설정**에서 관리(코드 하드코딩 금지). `GET /store/products`는 카탈로그(구성·혜택)를 내려주고, 실제 표시 가격은 스토어 SDK가 제공하는 현지 가격을 쓰는 것이 원칙.
 - 📌 **프라임 화면이 쓰는 값**(2026-10-25 `Scene_Shop/PrimeSub`): `GET /me/wallet`의 `subscriptionStartedAt`(구독 시작일) · `subscriptionExpiresAt`(다음 결제일 / 해지 뒤엔 이용 종료일) · `autoRenew`(관리 ↔ 해지 상태),
   `GET /store/products`의 `primePlans[].price` — **표시용 기준가(원)**, 설정 `app.store.prime-plans.*.price`(1개월 12,900 · 6개월 61,900). 실제 청구액은 스토어가 정하므로 **결제창이 붙으면 스토어 SDK 현지 가격으로 바꾼다**(막힌 것 E).
+- 📌 **루나 화면이 쓰는 값**(2026-10-31 `Scene_Shop/Luna*`): `lunaProducts[].discount`(상점 카드 `○% 할인` **표시값** — 설정 `luna-products.*.discount`, 단가에서 계산하지 않는다) ·
+  `lunaPacks[].price`(표시용 기준가, 원) · `lunaPacks[].badge`(`POPULAR` 인기 상품 · `BEST` 최고 할인 리본) · `GET /me/wallet`의 `entitlementStartedAt`(kind → 시작 시각, 상품 관리 팝업 `사용 시작`).
+  패스를 다시 살 때 만료가 지난 행이면 `started_at`도 새로 잡는다(`upsertEntitlement`).
 - LINE은 **로그인 provider일 뿐 결제 수단이 아님**(디지털 재화는 스토어 결제 강제).
 - 광고 제거 혜택 → 광고 SDK(AdMob 등) 연동 필요.
 - ⚠️ 인앱결제 정책·수수료·외부결제 허용 범위는 **국가별/시기별로 변동**되므로, BM 확정 시점에 각 스토어 최신 정책을 재확인할 것.

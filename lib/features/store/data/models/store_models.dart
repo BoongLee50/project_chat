@@ -15,6 +15,7 @@ class LunaProduct {
     required this.price,
     required this.quantity,
     required this.durationDays,
+    this.discount = 0,
   });
 
   final String id;
@@ -28,6 +29,9 @@ class LunaProduct {
   final int price;
   final int quantity;
   final int durationDays;
+
+  /// 상점 카드의 `○% 할인` 표시(0이면 없음). 서버 설정의 표시값이다 — 단가에서 계산하지 않는다.
+  final int discount;
 
   bool get isBoost => type == 'BOOST';
 
@@ -46,6 +50,7 @@ class LunaProduct {
     price: json['price'] as int? ?? 0,
     quantity: json['quantity'] as int? ?? 0,
     durationDays: json['durationDays'] as int? ?? 0,
+    discount: json['discount'] as int? ?? 0,
   );
 }
 
@@ -56,6 +61,8 @@ class LunaPack {
     required this.luna,
     required this.bonus,
     required this.total,
+    this.price = 0,
+    this.badge,
   });
 
   final String productId;
@@ -63,13 +70,24 @@ class LunaPack {
   final int bonus;
   final int total;
 
+  /// 표시용 기준가(원). 실제 청구액은 스토어가 정한다 — 결제창이 붙으면 스토어 SDK 현지 가격으로 바꾼다.
+  final int price;
+
+  /// 카드 리본 — `POPULAR`(인기 상품) · `BEST`(최고 할인) · 없으면 null.
+  final String? badge;
+
   bool get hasBonus => bonus > 0;
+
+  /// 덤으로 얹어 준 몫 = 할인율(`○% 할인` 표시).
+  int get discountPercent => total == 0 ? 0 : (bonus * 100 / total).round();
 
   factory LunaPack.fromJson(Map<String, dynamic> json) => LunaPack(
     productId: json['productId'] as String,
     luna: json['luna'] as int? ?? 0,
     bonus: json['bonus'] as int? ?? 0,
     total: json['total'] as int? ?? 0,
+    price: json['price'] as int? ?? 0,
+    badge: json['badge'] as String?,
   );
 }
 
@@ -102,8 +120,9 @@ class PrimePlan {
     product: json['product'] as String? ?? '',
     durationDays: json['durationDays'] as int? ?? 0,
     luna: json['luna'] as int? ?? 0,
-    entitlements:
-        (json['entitlements'] as List? ?? const []).map((e) => e as String).toList(),
+    entitlements: (json['entitlements'] as List? ?? const [])
+        .map((e) => e as String)
+        .toList(),
     boosts: (json['boosts'] as Map? ?? const {}).map(
       (key, value) => MapEntry(key as String, value as int),
     ),
@@ -159,6 +178,7 @@ class Wallet {
     required this.prime,
     required this.autoRenew,
     required this.entitlements,
+    this.entitlementStartedAt = const {},
     required this.boostInventory,
     required this.activeBoosts,
     this.subscriptionProduct,
@@ -175,6 +195,9 @@ class Wallet {
 
   /// kind → 만료 시각.
   final Map<String, DateTime> entitlements;
+
+  /// kind → 시작 시각(상품 관리 팝업의 `사용 시작`).
+  final Map<String, DateTime> entitlementStartedAt;
 
   /// kind → 보유 매수.
   final Map<String, int> boostInventory;
@@ -202,7 +225,9 @@ class Wallet {
     final expires = entitlements[kind];
     if (expires == null) return null;
     final diff = expires.difference(DateTime.now());
-    return diff.isNegative ? 0 : diff.inHours ~/ 24 + (diff.inHours % 24 > 0 ? 1 : 0);
+    return diff.isNegative
+        ? 0
+        : diff.inHours ~/ 24 + (diff.inHours % 24 > 0 ? 1 : 0);
   }
 
   static const empty = Wallet(
@@ -226,11 +251,10 @@ class Wallet {
         ? null
         : parseServerTime(json['subscriptionExpiresAt']),
     entitlements: (json['entitlements'] as Map? ?? const {}).map(
-      (key, value) => MapEntry(
-        key as String,
-        parseServerTimeOr(value),
-      ),
+      (key, value) => MapEntry(key as String, parseServerTimeOr(value)),
     ),
+    entitlementStartedAt: (json['entitlementStartedAt'] as Map? ?? const {})
+        .map((key, value) => MapEntry(key as String, parseServerTimeOr(value))),
     boostInventory: (json['boostInventory'] as Map? ?? const {}).map(
       (key, value) => MapEntry(key as String, value as int),
     ),

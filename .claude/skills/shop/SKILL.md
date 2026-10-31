@@ -18,9 +18,9 @@ disable-model-invocation: true
 | | 어디 |
 |---|---|
 | 기획서 | 261011 **10장 유료 상점** — 10-1 프라임 멤버십 · 10-2 루나 상점(10-2-1 포스트 부스트 · 10-2-2 포스트 앨범 패스 · 10-2-3 자동 번역). ⚠️ **완전 최신이 아닐 수 있다**(사용자 2026-10-25) — 대화 중 결정이 더 우선 |
-| UI | **`D:\Plan_Chat\UI\Scene_Shop\`** — `PrimeSub/`(`SubStart` 구독 화면 · `SubManage` 관리 · `SubEnd` 해지 팝업 · `SubEndCancel` 해지 상태), 각 `Example/*좌표값.png`. 🚧 **`LunaShop/` · `LunaCharge/`는 2026-10-25 현재 비어 있다** — 루나 쪽은 그림이 오기 전까지 기획서·지금 화면으로 본다 |
-| 에셋 | 아직 없음 → `assets/images/scene_shop/…`(전달 폴더 구조대로, 공백·대문자 정리) + **`pubspec.yaml`에 줄(폴더마다) + 완전 재빌드**. 🚨 전달 이름의 **`_kr`/`_jp`는 언어 변형** → 접미사를 떼고 `_kr`은 제자리, `_jp`는 `ja/`로(08 §0-3과 같은 규칙) |
-| 클라 | `lib/features/store/` — `prime_screen.dart` · `luna_store_screen.dart` · `luna_charge_screen.dart` · `boost_screen.dart` · `pass_screen.dart` · `store_widgets.dart` · `store_provider.dart`. (`lib/features/luna/`는 빈 자리 `.gitkeep`뿐) |
+| UI | **`D:\Plan_Chat\UI\Scene_Shop\`** — `PrimeSub/`(`SubStart` 구독 화면 · `SubManage` 관리 · `SubEnd` 해지 팝업 · `SubEndCancel` 해지 상태), 각 `Example/*좌표값.png`. `LunaShop/`(상점) · `LunaCharge/`(충전) · `LunaBuyPrev/`(상품 관리 팝업) · `LunaBuyAfter/`(구매 완료 팝업) — **전부 반영**(10-25 · 10-31, 08 §3-0·3-1) |
+| 에셋 | `assets/images/scene_shop/{prime_sub/…,luna_shop,luna_charge,luna_buy_prev,luna_buy_after}/`(전달 폴더 구조대로, 공백·대문자 정리) + **`pubspec.yaml`에 줄(폴더마다) + 완전 재빌드**. 🚨 전달 이름의 **`_kr`/`_jp`는 언어 변형** → 접미사를 떼고 `_kr`은 제자리, `_jp`는 `ja/`로(08 §0-3과 같은 규칙) |
+| 클라 | `lib/features/store/` — `prime_screen.dart` · `luna_store_screen.dart` · `luna_charge_screen.dart` · `widgets/luna_popups.dart`(상품 관리·구매 완료 팝업) · `widgets/store_widgets.dart`(`ShopCanvas`·`ShopPopup`·`ShopKindArt`) · `store_provider.dart`. `boost_screen.dart`·`pass_screen.dart`는 **문만**(루나 상점 + 관리 팝업으로 보낸다). (`lib/features/luna/`는 빈 자리 `.gitkeep`뿐) |
 | 서버 | `server/.../store/`(`StoreService` · `PurchaseService` · `EntitlementService` · 영수증 검증 `verifier/` Apple·Google·Mock · 웹훅) · `server/.../luna/`(`LunaService`) |
 | 문서 | `01` §1.8 유료 상점·구독·부스트 · `02` `subscriptions`·`user_entitlements`·`luna_wallets`·`luna_transactions`·`boost_inventory`·`boost_activations`·`store_purchases` · `08` §3 BM 화면 |
 

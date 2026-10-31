@@ -79,19 +79,21 @@ app:
       # 부스트 — 1매당 1시간. 10매 묶음은 20% 할인가(화면 25)
       # Plan_3에서 스포트라이트 부스트는 폐지됐다(포스트 부스트만 남는다).
       POST_BOOST_5:       { type: BOOST,       kind: POST_BOOST,      price: 400, quantity: 5,  reason: BUY_BOOST }
-      POST_BOOST_10:      { type: BOOST,       kind: POST_BOOST,      price: 640, quantity: 10, reason: BUY_BOOST }
+      POST_BOOST_10:      { type: BOOST,       kind: POST_BOOST,      price: 640, quantity: 10, reason: BUY_BOOST, discount: 20 }
       # 패스 — 7일/30일 (화면 25·29·30)
       ALBUM_PASS_7D:      { type: ENTITLEMENT, kind: ALBUM_PASS,      price: 250, duration-days: 7,  reason: BUY_ALBUM_PASS }
-      ALBUM_PASS_30D:     { type: ENTITLEMENT, kind: ALBUM_PASS,      price: 800, duration-days: 30, reason: BUY_ALBUM_PASS }
+      ALBUM_PASS_30D:     { type: ENTITLEMENT, kind: ALBUM_PASS,      price: 800, duration-days: 30, reason: BUY_ALBUM_PASS, discount: 20 }
       TRANSLATE_PASS_7D:  { type: ENTITLEMENT, kind: TRANSLATE_PASS,  price: 250, duration-days: 7,  reason: BUY_TRANSLATE_PASS }
-      TRANSLATE_PASS_30D: { type: ENTITLEMENT, kind: TRANSLATE_PASS,  price: 800, duration-days: 30, reason: BUY_TRANSLATE_PASS }
+      TRANSLATE_PASS_30D: { type: ENTITLEMENT, kind: TRANSLATE_PASS,  price: 800, duration-days: 30, reason: BUY_TRANSLATE_PASS, discount: 20 }
+    # ↑ discount = 상점 카드의 `○% 할인` 표시값(Scene_Shop/LunaShop 시안 20%). 단가로 계산하면 패스 30일은 25%다(10 §0-6).
     # 루나 충전 패키지(인앱결제) — 화면 27. 표시 가격은 스토어 SDK의 현지 가격을 쓴다.
     luna-packs:
-      LUNA_200:   { luna: 200,   bonus: 0 }
-      LUNA_1000:  { luna: 900,   bonus: 100 }    # 10% 할인 · 9,000원
-      LUNA_5000:  { luna: 4250,  bonus: 750 }    # 15% 할인 · 42,500원
-      LUNA_10000: { luna: 8000,  bonus: 2000 }   # 20% 할인 · 80,000원
-      LUNA_25000: { luna: 17500, bonus: 7500 }   # 30% 할인 · 175,000원
+    # price = 표시용 기준가(원, 1루나 10원 기준) · badge = 카드 리본(POPULAR 인기 상품 · BEST 최고 할인, Scene_Shop/LunaCharge 시안 3·5번째).
+      LUNA_200:   { luna: 200,   bonus: 0,    price: 2000 }
+      LUNA_1000:  { luna: 900,   bonus: 100,  price: 9000 }                    # 10% 할인
+      LUNA_5000:  { luna: 4250,  bonus: 750,  price: 42500,  badge: POPULAR }  # 15% 할인
+      LUNA_10000: { luna: 8000,  bonus: 2000, price: 80000 }                   # 20% 할인
+      LUNA_25000: { luna: 17500, bonus: 7500, price: 175000, badge: BEST }     # 30% 할인
     # 프라임(인앱결제) — 화면 26. 1개월 12,900원 / 6개월 61,900원(20% 할인)
     #
     # 🚨 TRANSLATE_PASS가 여기 들어 있어야 한다(기획 화면 26의 네 번째 혜택 "자동 번역 무제한").

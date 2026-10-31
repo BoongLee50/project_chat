@@ -16,6 +16,8 @@ public record WalletDto(
         LocalDateTime subscriptionExpiresAt,
         boolean autoRenew,
         Map<String, LocalDateTime> entitlements,
+        /** kind → 이 권리가 시작된 때. 상품 관리 팝업의 `사용 시작`(Scene_Shop/LunaBuyPrev). */
+        Map<String, LocalDateTime> entitlementStartedAt,
         Map<String, Integer> boostInventory,
         List<ActiveBoostDto> activeBoosts
 ) {

@@ -81,6 +81,8 @@
                 DATE_ADD(#{now}, INTERVAL #{days} DAY), NOW())
         ON DUPLICATE KEY UPDATE
             source     = VALUES(source),
+            <!-- expires_at보다 먼저 — MariaDB는 왼쪽부터 대입해서, 뒤에 두면 늘어난 만료로 비교한다 -->
+            started_at = CASE WHEN expires_at &gt; #{now} THEN started_at ELSE #{now} END,
             expires_at = DATE_ADD(
                 CASE WHEN expires_at &gt; #{now} THEN expires_at ELSE #{now} END,
                 INTERVAL #{days} DAY)

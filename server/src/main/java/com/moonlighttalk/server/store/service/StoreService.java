@@ -65,11 +65,13 @@ public class StoreService {
     public ProductCatalogDto catalog() {
         List<LunaProductDto> lunaProducts = new ArrayList<>();
         properties.getLunaProducts().forEach((id, p) -> lunaProducts.add(new LunaProductDto(
-                id, p.getType(), p.getKind(), p.getPrice(), p.getQuantity(), p.getDurationDays())));
+                id, p.getType(), p.getKind(), p.getPrice(), p.getQuantity(), p.getDurationDays(),
+                p.getDiscount())));
 
         List<LunaPackDto> packs = new ArrayList<>();
         properties.getLunaPacks().forEach((id, p) ->
-                packs.add(new LunaPackDto(id, p.getLuna(), p.getBonus(), p.total())));
+                packs.add(new LunaPackDto(id, p.getLuna(), p.getBonus(), p.total(),
+                        p.getPrice(), p.getBadge())));
 
         List<PrimePlanDto> plans = new ArrayList<>();
         properties.getPrimePlans().forEach((id, p) -> plans.add(new PrimePlanDto(
@@ -85,8 +87,10 @@ public class StoreService {
         Subscription subscription = storeMapper.selectCurrentSubscription(userId, now);
 
         Map<String, LocalDateTime> entitlements = new LinkedHashMap<>();
+        Map<String, LocalDateTime> entitlementStartedAt = new LinkedHashMap<>();
         for (Entitlement e : storeMapper.selectActiveEntitlements(userId, now)) {
             entitlements.put(e.getKind(), e.getExpiresAt());
+            entitlementStartedAt.put(e.getKind(), e.getStartedAt());
         }
 
         Map<String, Integer> inventory = new LinkedHashMap<>();
@@ -106,6 +110,7 @@ public class StoreService {
                 subscription == null ? null : subscription.getExpiresAt(),
                 subscription != null && Boolean.TRUE.equals(subscription.getAutoRenew()),
                 entitlements,
+                entitlementStartedAt,
                 inventory,
                 activeBoosts);
     }
@@ -120,6 +125,15 @@ public class StoreService {
         if (product == null) {
             throw new ApiException(ErrorCode.STORE_PRODUCT_NOT_FOUND, HttpStatus.NOT_FOUND,
                     "존재하지 않는 상품이에요.");
+        }
+
+        // 패스는 "중복 구매 불가"(기획서 261011 10-2-2·10-2-3) — 쓰는 중이면 루나를 빼기 전에 막는다.
+        // 프라임이 준 패스도 같은 권리라 함께 막힌다(이미 무제한이다).
+        if ("ENTITLEMENT".equals(product.getType())
+                && storeMapper.selectActiveEntitlements(userId, LocalDateTime.now()).stream()
+                        .anyMatch(e -> e.getKind().equals(product.getKind()))) {
+            throw new ApiException(ErrorCode.STORE_ALREADY_OWNED, HttpStatus.CONFLICT,
+                    "이미 이용 중인 상품이에요.");
         }
 
         lunaService.deduct(userId, product.getPrice(), product.getReason(), productId,

@@ -60,6 +60,11 @@ public class StoreProperties {
         private int durationDays;
         /** 원장에 남길 사유(BUY_BOOST 등). */
         private String reason;
+        /**
+         * 상점 카드의 `○% 할인` 표시(0이면 없음). 시안이 정한 표시값이라 단가에서 계산하지 않는다 —
+         * 단가로 따지면 패스 30일은 25%인데 시안·기획은 20%라고 적는다(10 §0-6).
+         */
+        private int discount;
 
         public String getType() {
             return type;
@@ -101,6 +106,14 @@ public class StoreProperties {
             this.durationDays = durationDays;
         }
 
+        public int getDiscount() {
+            return discount;
+        }
+
+        public void setDiscount(int discount) {
+            this.discount = discount;
+        }
+
         public String getReason() {
             return reason;
         }
@@ -114,6 +127,26 @@ public class StoreProperties {
     public static class LunaPack {
         private int luna;
         private int bonus;
+        /** 표시용 기준가(원). 실제 청구액은 스토어가 정한다 — 결제창이 붙으면 스토어 SDK 현지 가격으로. */
+        private int price;
+        /** 카드 리본 — POPULAR(인기 상품) · BEST(최고 할인) · 없으면 null. */
+        private String badge;
+
+        public int getPrice() {
+            return price;
+        }
+
+        public void setPrice(int price) {
+            this.price = price;
+        }
+
+        public String getBadge() {
+            return badge;
+        }
+
+        public void setBadge(String badge) {
+            this.badge = badge;
+        }
 
         public int getLuna() {
             return luna;

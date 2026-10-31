@@ -478,9 +478,26 @@ Image.asset(..., fit: BoxFit.cover, alignment: Alignment.topCenter)
 | `sub_end_cancel` | `button_subkeep` | [해지 신청 취소] |
 
 - 폰트가 그리는 것: 섹션 제목 셋(`요금제 선택하기`·`구독 정보`·`PRIME 혜택` — 그림이 안 왔다) · 혜택 다섯 줄 · 가격·날짜 · 아래 안내 두 줄 · 팝업 제목·본문.
-- 🚧 **`LunaShop/`·`LunaCharge/`는 아직 빈다** — 루나 상점·충전·부스트·패스 화면은 옛 코드 그림 그대로.
 
-#### 아래 표는 옛 목록(루나 쪽은 아직 유효)
+### 3-1. 🌟 `Scene_Shop/Luna*` — 루나 상점·충전·상품 관리·구매 완료 97장 **반영**(2026-10-31)
+
+`assets/images/scene_shop/{luna_shop,luna_charge,luna_buy_prev,luna_buy_after}/` + 각 `ja/`(31장, `DesignCanvas.localizedAssets`).
+**규격이 다른 일본어판 넷** — `title_lunashop`(393 → 475) · `title_lunacharge`(390 → 415) · `title_album`(338 → 360) · `button_lunacharge`(371×90 → 378×95).
+
+| 폴더 | 그림 | 쓰는 곳 |
+|---|---|---|
+| `luna_shop` | `title_lunashop` · `banner_luna`(보유량 틀) · `button_lunacharge` · `frame_lunashopinfo` · 카드별 `icon_*`·`title_*`·`icon_*_descrbe` · 옵션 `button_{5boost,10boost,7day,30day}{color,normal}` · `icon_discount`(빨간 알약 — 글자 없음) · `button_lunashopbuy`·`…use`·`…using` · `button_primeexit` | 루나 상점 |
+| `luna_charge` | `title_lunacharge` · `banner_luna` · `button_golunashop` · `frame_lunacharge` · 병 `icon_chargeitem1~5` · `button_chargeprice`(글자 없음) · `icon_discountmark`(`할인`만 구워짐) · 리본 `icon_popular`·`icon_discount`(최고 할인) | 루나 충전 |
+| `luna_buy_prev` | `frame_itempopup`(패스) · `frame_boostpopup` · `icon_*_image` · `frame_albumsubinfo`(사용 시작·종료 예정·남은 기간) · `frame_boostubinfo`(종료 예정·남은 시간) · `frame_boostamount`(보유량) · `frame_iteminfo` · `icon_primeuse` · `button_boostuse`(사용하기 (1개)) · `button_popupexit` | 상품 관리 팝업 |
+| `luna_buy_after` | `frame_lunapopup` · `icon_notice` · `frame_itemname` · `frame_iteminfo` · `button_checkitem`(보유 상품 확인) · `button_popupexit` | 구매 완료 팝업 |
+
+- ⚠️ **이름이 뜻과 엇갈린다** — `button_lunashopuse` = **`사용 중 ›`**, `button_lunashopusing` = **`사용하기 ›`**.
+- ⚠️ 같은 이름 다른 그림 — `luna_shop/icon_discount`(빨간 알약) ≠ `luna_charge/icon_discount`(보라 리본 `최고 할인`). 폴더가 달라 부딪히지 않는다.
+- ⚠️ **`frame_lunapopup`(982×1650)이 시안 틀(1816)보다 짧다** — 그대로 그리면 [나가기]가 틀 밖으로 나간다. 모서리는 두고 가운데만 늘려 그린다(`ShopPopup.frameSize`). 맞는 그림을 받을지 10 §0-6.
+- 옵션 그림에 `5개`·`10개`·`7일`·`30일`이 구워져 있다 — **이 구성만 그린다**. 설정에 다른 구성이 생기면 그림부터.
+- 폰트가 그리는 것: 타이틀 밑 한 줄 · 보유량 숫자 · 카드 설명 네 줄 · 옵션 금액 · `20% 할인` · 충전 카드의 `루나 ○개`·한 줄·금액·`○%` · 팝업의 상품 이름·날짜·남은 시간·혜택 세 줄.
+
+#### 아래 표는 옛 목록(지금은 위 두 절로 대체 — 프로필·피드의 프라임 배지만 아직 없다)
 
 | # | 리소스 | 용도 |
 |---|--------|------|
