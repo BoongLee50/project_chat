@@ -16,21 +16,27 @@ import java.util.Map;
 @ConfigurationProperties(prefix = "app.store")
 public class StoreProperties {
 
-    /** 루나로 사는 개별 상품(부스트·패스). IAP 대상이 아니다. */
-    private Map<String, LunaProduct> lunaProducts = new LinkedHashMap<>();
+    /**
+     * 개별 상품(부스트·포스트 앨범·자동 번역) — <b>인앱결제(현금)로 산다</b>(기획서 261111 10-2~10-4).
+     * 예전엔 루나로 샀다(루나 상점, 2026-11-14 폐지).
+     */
+    private Map<String, ShopProduct> shopProducts = new LinkedHashMap<>();
 
-    /** 인앱결제로 사는 것 — 루나 충전 패키지. */
+    /**
+     * 인앱결제로 사는 것 — 루나 충전 패키지.
+     * ⚠️ 루나 상점·충전 화면은 없어졌다(기획서 261111). 서버 루나 지갑은 대화 신청이 아직 쓰고 있어 남겨 둔다.
+     */
     private Map<String, LunaPack> lunaPacks = new LinkedHashMap<>();
 
     /** 인앱결제로 사는 것 — 프라임 구독. */
     private Map<String, PrimePlan> primePlans = new LinkedHashMap<>();
 
-    public Map<String, LunaProduct> getLunaProducts() {
-        return lunaProducts;
+    public Map<String, ShopProduct> getShopProducts() {
+        return shopProducts;
     }
 
-    public void setLunaProducts(Map<String, LunaProduct> lunaProducts) {
-        this.lunaProducts = lunaProducts;
+    public void setShopProducts(Map<String, ShopProduct> shopProducts) {
+        this.shopProducts = shopProducts;
     }
 
     public Map<String, LunaPack> getLunaPacks() {
@@ -49,17 +55,16 @@ public class StoreProperties {
         this.primePlans = primePlans;
     }
 
-    /** 루나로 사는 상품 하나. 부스트면 quantity, 패스면 durationDays를 쓴다. */
-    public static class LunaProduct {
+    /** 상점 상품 하나(인앱결제). 부스트면 quantity, 패스면 durationDays를 쓴다. */
+    public static class ShopProduct {
         /** BOOST | ENTITLEMENT */
         private String type;
         /** BOOST면 POST_BOOST, ENTITLEMENT면 ALBUM_PASS/TRANSLATE_PASS 등 */
         private String kind;
+        /** 표시용 기준가(원). 실제 청구액은 스토어가 정한다 — 결제창이 붙으면 스토어 SDK 현지 가격으로. */
         private int price;
         private int quantity = 1;
         private int durationDays;
-        /** 원장에 남길 사유(BUY_BOOST 등). */
-        private String reason;
         /**
          * 상점 카드의 `○% 할인` 표시(0이면 없음). 시안이 정한 표시값이라 단가에서 계산하지 않는다 —
          * 단가로 따지면 패스 30일은 25%인데 시안·기획은 20%라고 적는다(10 §0-6).
@@ -112,14 +117,6 @@ public class StoreProperties {
 
         public void setDiscount(int discount) {
             this.discount = discount;
-        }
-
-        public String getReason() {
-            return reason;
-        }
-
-        public void setReason(String reason) {
-            this.reason = reason;
         }
     }
 

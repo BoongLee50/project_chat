@@ -19,6 +19,10 @@ public record WalletDto(
         /** kind → 이 권리가 시작된 때. 상품 관리 팝업의 `사용 시작`(Scene_Shop/LunaBuyPrev). */
         Map<String, LocalDateTime> entitlementStartedAt,
         Map<String, Integer> boostInventory,
+        /** kind → 프라임 구독분 / 상점 구매분(기획서 261111 10-2). */
+        Map<String, BoostHoldingDto> boosts,
+        /** kind → 프라임 구독분 / 상점 구매분 기간(기획서 261111 10-3·10-4). */
+        Map<String, PassHoldingDto> passes,
         List<ActiveBoostDto> activeBoosts
 ) {
 }

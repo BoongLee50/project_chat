@@ -854,29 +854,10 @@ class L10nKo extends L10n {
   }
 
   @override
-  String get lunaStoreTitle => '루나상점';
-
-  @override
-  String get lunaStoreSubtitle => '루나로 더 편리하고 특별한 경험을 누려 보세요.';
-
-  @override
-  String get lunaShopDescBoost =>
-      '포스트에 추천 마크를 붙이고\n1시간 동안 우선 노출해요.\n더 많은 관심과 매칭 기회를\n만나 보세요.';
-
-  @override
-  String lunaShopDescAlbum(int count) {
-    return '포스트 사진을 최대 $count장까지\n등록하고 무지개빛 테두리로\n꾸며 보세요. 모든 포스트를\n제한없이 감상해 보세요.';
-  }
-
-  @override
-  String get lunaShopDescTrans =>
-      '언어 걱정 없이 대화와\n댓글을 자동으로 번역해요.\n정해진 기간 동안\n편리하게 이용해 보세요.';
-
-  @override
   String get lunaItemBoost => '포스트 부스트';
 
   @override
-  String get lunaItemAlbum => '포스트 앨범 패스';
+  String get lunaItemAlbum => '포스트 앨범';
 
   @override
   String get lunaItemTrans => '자동 번역';
@@ -895,6 +876,61 @@ class L10nKo extends L10n {
   String get lunaPurchasedTitle => '구매가 완료되었어요!';
 
   @override
+  String get shopDescBoost =>
+      '포스트에 추천 마크를 붙이고 1시간 동안 우선 노출해요.\n더 많은 관심과 매칭 기회를 만나 보세요.';
+
+  @override
+  String shopDescAlbum(int count) {
+    return '포스트를 최대 $count장까지 등록하고, 무지개빛 테두리로\n꾸며 보세요. 모든 포스트를 제한 없이 감상하세요.';
+  }
+
+  @override
+  String get shopDescTrans =>
+      '언어 걱정 없이 대화와 댓글을 자동으로 번역해요.\n정해진 기간 동안 편리하게 이용해 보세요.';
+
+  @override
+  String get shopTagFirst => '부담 없이 이용하기';
+
+  @override
+  String get shopTagSecond => '가성비 최고!';
+
+  @override
+  String get shopUnitCount => '개';
+
+  @override
+  String get shopUnitDays => '일';
+
+  @override
+  String shopPrice(String price) {
+    return '₩$price';
+  }
+
+  @override
+  String shopDiscountPercent(int percent) {
+    return '$percent%';
+  }
+
+  @override
+  String get shopOr => '또는';
+
+  @override
+  String get shopUseInfo => '사용 정보';
+
+  @override
+  String get shopBoostUseTitle => '포스트 부스트 1개를 사용합니다.';
+
+  @override
+  String get shopBoostUseBody => '해당 포스트 사진들이 1시간 동안\n더 많은 사람에게 우선 노출됩니다.';
+
+  @override
+  String primePurchasedName(int months) {
+    return '프라임 멤버십 $months개월';
+  }
+
+  @override
+  String get primePurchasedHead => '프라임 멤버십 혜택';
+
+  @override
   String lunaRemainDays(int days) {
     return '$days일';
   }
@@ -908,7 +944,7 @@ class L10nKo extends L10n {
   String get lunaBenefitHeadBoost => '포스트 부스트 혜택 (1시간)';
 
   @override
-  String get lunaBenefitHeadAlbum => '포스트 앨범 패스 혜택';
+  String get lunaBenefitHeadAlbum => '포스트 앨범 혜택';
 
   @override
   String get lunaBenefitHeadTrans => '자동 번역 혜택';
@@ -978,51 +1014,12 @@ class L10nKo extends L10n {
       '번역 기능으로 한국어와 일본어 대화를\n더 편리하고 자연스럽게 이어가 보세요.';
 
   @override
-  String get chargeTag1 => '부담 없이 루나를 시작해 보세요';
-
-  @override
-  String get chargeTag2 => '대화의 즐거움을 한층 더 풍성하게!';
-
-  @override
-  String get chargeTag3 => '가장 많이 선택하는 인기 충전 상품';
-
-  @override
-  String get chargeTag4 => '자주 이용할수록 더욱 실속 있는 선택!';
-
-  @override
-  String get chargeTag5 => '루나를 가장 실속 있게 충전하는 방법!';
-
-  @override
-  String chargePrice(String price) {
-    return '₩$price';
-  }
-
-  @override
-  String chargeDiscountPercent(int percent) {
-    return '$percent%';
-  }
-
-  @override
   String get storeLoadFailed => '상품을 불러오지 못했어요.';
-
-  @override
-  String storeDiscount(int percent) {
-    return '$percent% 할인';
-  }
 
   @override
   String boostStock(int count) {
     return '보유 $count매';
   }
-
-  @override
-  String get boostEffectTitle => '예상 효과';
-
-  @override
-  String get boostUsed => '부스트를 사용했어요. 1시간 동안 우선 노출됩니다!';
-
-  @override
-  String get passPeriodSection => '기간 선택';
 
   @override
   String passDays(int days) {
@@ -1031,9 +1028,6 @@ class L10nKo extends L10n {
 
   @override
   String get primePlanSection => '요금제 선택하기';
-
-  @override
-  String get primeStarted => 'PRIME 멤버십이 시작됐어요!';
 
   @override
   String get primeCancelDone => '자동 갱신을 해지했어요.';
@@ -1113,7 +1107,7 @@ class L10nKo extends L10n {
   String get primeBenefitBoostDesc => '포스트를 1시간 동안 더 많은 사람에게\n우선적으로 노출해요.';
 
   @override
-  String get primeBenefitChat => '대화 신청 무제한';
+  String get primeBenefitChat => '대화 신청 및 음성 메시지 무제한';
 
   @override
   String get primeBenefitChatDesc => '마음에 드는 상대에게 제한 없이 대화를 신청해요.';
@@ -1129,23 +1123,6 @@ class L10nKo extends L10n {
 
   @override
   String get primeBenefitNoAdsDesc => '앱 이용 중 표시되는 광고가 제거돼요.';
-
-  @override
-  String get chargeTitle => '루나 충전';
-
-  @override
-  String get chargeSubtitle => '루나를 충전하고, 풍성한 혜택과 특별한 경험을 만나 보세요.';
-
-  @override
-  String get chargeLunaPrefix => '루나 ';
-
-  @override
-  String get chargeLunaSuffix => '개';
-
-  @override
-  String chargeDone(int total) {
-    return '루나 $total개가 충전됐어요.';
-  }
 
   @override
   String get navPost => '포스트';
@@ -1622,7 +1599,7 @@ class L10nKo extends L10n {
   String get errorStoreNotCanceled => '해지 신청한 구독이 아니에요.';
 
   @override
-  String get errorStoreAlreadyOwned => '이미 이용 중인 상품이에요.';
+  String get errorStoreAlreadyOwned => '이미 보유 중인 상품이에요.';
 
   @override
   String get errorStoreReceiptInvalid => '결제 정보를 확인할 수 없어요.';

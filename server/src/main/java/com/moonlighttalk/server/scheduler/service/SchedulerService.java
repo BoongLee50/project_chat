@@ -10,6 +10,7 @@ import com.moonlighttalk.server.comment.mapper.CommentMapper;
 import com.moonlighttalk.server.dailyquestion.mapper.DailyQuestionMapper;
 import com.moonlighttalk.server.scheduler.mapper.SchedulerMapper;
 import com.moonlighttalk.server.store.mapper.StoreMapper;
+import com.moonlighttalk.server.store.service.StoreService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -40,6 +41,7 @@ public class SchedulerService {
     private final SessionTimeService sessionTime;
     private final MessageRetentionPurger messageRetentionPurger;
     private final StoreMapper storeMapper;
+    private final StoreService storeService;
     private final CommentMapper commentMapper;
     private final DailyQuestionMapper dailyQuestionMapper;
 
@@ -54,6 +56,7 @@ public class SchedulerService {
                              SessionTimeService sessionTime,
                              MessageRetentionPurger messageRetentionPurger,
                              StoreMapper storeMapper,
+                             StoreService storeService,
                              CommentMapper commentMapper,
                              DailyQuestionMapper dailyQuestionMapper,
                              @Value("${app.chat.retention-days:30}") int retentionDays,
@@ -66,6 +69,7 @@ public class SchedulerService {
         this.sessionTime = sessionTime;
         this.messageRetentionPurger = messageRetentionPurger;
         this.storeMapper = storeMapper;
+        this.storeService = storeService;
         this.commentMapper = commentMapper;
         this.dailyQuestionMapper = dailyQuestionMapper;
         this.retentionDays = retentionDays;
@@ -153,7 +157,10 @@ public class SchedulerService {
         int subscriptions = storeMapper.expireSubscriptions(now);
         int entitlements = storeMapper.deleteExpiredEntitlements(now);
         int boosts = storeMapper.deleteExpiredBoostActivations(now);
-        log.info("[배치] BM 만료 정리 구독 {} · 권리 {} · 부스트 {}", subscriptions, entitlements, boosts);
+        // 프라임 부스트 30일마다 10개로 + 끝난 구독의 프라임 구독분 치우기(V31, 사용자 2026-11-14).
+        int refilled = storeService.refreshPrimeBoosts();
+        log.info("[배치] BM 만료 정리 구독 {} · 권리 {} · 부스트 {} · 프라임 부스트 채움 {}",
+                subscriptions, entitlements, boosts, refilled);
     }
 
     /**

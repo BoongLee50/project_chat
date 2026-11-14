@@ -73,20 +73,17 @@ app:
     # 한 번 산정한 노출 순서를 유지하는 시간("그 세션 동안").
     session-ttl-minutes: 30
   store:
-    # 기획서 Plan_2 화면 25~30의 가격표를 그대로 옮긴 값이다.
-    # price 단위는 "루나". 현금 가격(충전팩·프라임)은 스토어 콘솔이 권위이므로 여기 두지 않는다.
-    luna-products:
-      # 부스트 — 1매당 1시간. 10매 묶음은 20% 할인가(화면 25)
-      # Plan_3에서 스포트라이트 부스트는 폐지됐다(포스트 부스트만 남는다).
-      POST_BOOST_5:       { type: BOOST,       kind: POST_BOOST,      price: 400, quantity: 5,  reason: BUY_BOOST }
-      POST_BOOST_10:      { type: BOOST,       kind: POST_BOOST,      price: 640, quantity: 10, reason: BUY_BOOST, discount: 20 }
-      # 패스 — 7일/30일 (화면 25·29·30)
-      ALBUM_PASS_7D:      { type: ENTITLEMENT, kind: ALBUM_PASS,      price: 250, duration-days: 7,  reason: BUY_ALBUM_PASS }
-      ALBUM_PASS_30D:     { type: ENTITLEMENT, kind: ALBUM_PASS,      price: 800, duration-days: 30, reason: BUY_ALBUM_PASS, discount: 20 }
-      TRANSLATE_PASS_7D:  { type: ENTITLEMENT, kind: TRANSLATE_PASS,  price: 250, duration-days: 7,  reason: BUY_TRANSLATE_PASS }
-      TRANSLATE_PASS_30D: { type: ENTITLEMENT, kind: TRANSLATE_PASS,  price: 800, duration-days: 30, reason: BUY_TRANSLATE_PASS, discount: 20 }
-    # ↑ discount = 상점 카드의 `○% 할인` 표시값(Scene_Shop/LunaShop 시안 20%). 단가로 계산하면 패스 30일은 25%다(10 §0-6).
-    # 루나 충전 패키지(인앱결제) — 화면 27. 표시 가격은 스토어 SDK의 현지 가격을 쓴다.
+    # 개별 상품 — 기획서 261111 10-2 포스트 부스트 · 10-3 포스트 앨범 · 10-4 자동 번역. **인앱결제(현금)로 산다**(루나 상점 폐지, 2026-11-14).
+    # price = 표시용 기준가(원) — 시안은 전부 `₩12,000`(자리 채움)이라 옛 루나 값 × 10원으로 둔다(10 §0-7). 실제 청구액은 스토어 콘솔이 정한다.
+    # discount = 카드의 `○% 할인` 표시값(기획서 "20%할인"). 단가에서 계산하지 않는다.
+    shop-products:
+      POST_BOOST_5:       { type: BOOST,       kind: POST_BOOST,     price: 4000, quantity: 5 }
+      POST_BOOST_10:      { type: BOOST,       kind: POST_BOOST,     price: 6400, quantity: 10, discount: 20 }
+      ALBUM_PASS_7D:      { type: ENTITLEMENT, kind: ALBUM_PASS,     price: 2500, duration-days: 7 }
+      ALBUM_PASS_30D:     { type: ENTITLEMENT, kind: ALBUM_PASS,     price: 8000, duration-days: 30, discount: 20 }
+      TRANSLATE_PASS_7D:  { type: ENTITLEMENT, kind: TRANSLATE_PASS, price: 2500, duration-days: 7 }
+      TRANSLATE_PASS_30D: { type: ENTITLEMENT, kind: TRANSLATE_PASS, price: 8000, duration-days: 30, discount: 20 }
+    # 루나 충전 패키지(인앱결제) — ⚠️ 충전 화면은 없어졌다(기획서 261111). 서버 루나는 대화 신청이 아직 써서 남겨 둔다.
     luna-packs:
     # price = 표시용 기준가(원, 1루나 10원 기준) · badge = 카드 리본(POPULAR 인기 상품 · BEST 최고 할인, Scene_Shop/LunaCharge 시안 3·5번째).
       LUNA_200:   { luna: 200,   bonus: 0,    price: 2000 }
@@ -112,8 +109,8 @@ app:
         duration-days: 180
         price: 61900
         entitlements: [ALBUM_PASS, UNLIMITED_CHAT_REQ, TRANSLATE_PASS]
-        # ⚠️ 6개월 부스트를 일괄 지급할지 매월 지급할지 기획 확인 필요 — 일단 6배로 둔다
-        boosts: { POST_BOOST: 60 }
+        # 기획서 261111: 구독 기간 동안 **매달 10개**(6개월도 같다). 30일마다 10개로 다시 채운다(사용자 2026-11-14).
+        boosts: { POST_BOOST: 10 }
   comment:
     # 댓글 규칙(기획 4-2). 달빛 한마디(8-2·8-3)의 댓글도 규칙이 같아 이 값을 함께 쓴다.
     max-length: 50

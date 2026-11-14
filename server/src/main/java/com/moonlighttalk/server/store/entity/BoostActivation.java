@@ -9,6 +9,8 @@ public class BoostActivation {
     private String id;
     private String userId;
     private String kind;
+    /** PRIME(프라임 구독분) · STORE(상점 구매분). */
+    private String source;
     private LocalDate sessionDate;
     private LocalDateTime startedAt;
     private LocalDateTime expiresAt;
@@ -59,5 +61,13 @@ public class BoostActivation {
 
     public void setExpiresAt(LocalDateTime expiresAt) {
         this.expiresAt = expiresAt;
+    }
+
+    public String getSource() {
+        return source;
+    }
+
+    public void setSource(String source) {
+        this.source = source;
     }
 }

@@ -8,20 +8,24 @@ import '../../data/models/store_models.dart';
 
 /// 상점(`Scene_Shop`) 화면들이 함께 쓰는 조각.
 ///
-/// 시안은 **밝은 바탕**이고 좌표는 `*좌표값.png`의 1080 캔버스 숫자 그대로다.
-/// 화면은 [ShopCanvas], 팝업은 [ShopPopup]이 한꺼번에 줄여 그린다 — 그래서 여기 숫자는 전부 시안 픽셀이다.
+/// 좌표는 시안 `*좌표값.png`의 1080 캔버스 숫자 그대로다. 화면은 [ShopCanvas], 팝업은 [ShopPopup]이
+/// 한꺼번에 줄여 그린다 — 그래서 여기 숫자는 전부 시안 픽셀이다.
 /// (프라임 화면은 아래 버튼·안내가 바닥에 붙는 다른 모양이라 `prime_screen.dart`가 따로 갖는다)
 
 const shopDir = 'assets/images/scene_shop';
 
+/// 상품 구매·관리·구매 완료 그림(`Scene_Shop(New)`, 2026-11-14) — 폴더마다 같은 그림이 겹쳐 와서 한 벌로 모았다.
+const itemDir = '$shopDir/item';
+
 /// 시안에서 뽑은 색(참고화면 픽셀).
 abstract final class ShopColors {
-  static const ink = Color(0xFF1E1E1D); // 카드 설명 · 본문
-  static const sub = Color(0xFF5E5D5D); // 타이틀 밑 한 줄
-  static const soft = Color(0xFF606470); // 혜택 설명
-  static const tag = Color(0xFF3A3939); // 충전 카드 한 줄
-  static const purple = Color(0xFF3C03FA); // `루나 100개`의 숫자
-  static const red = Color(0xFFFB0B44); // 충전 카드 `20%`
+  static const name = Color(0xFF1C1F24); // 목록 `포스트 부스트 5개` · 한 줄
+  static const purple = Color(0xFF2702FB); // 목록 이름의 숫자 · 관리 칸 숫자
+  static const yellow = Color(0xFFFFC21C); // 관리 `15개`의 숫자
+  static const lavender = Color(0xFFE3D1FC); // 보라 틀 안 혜택 설명
+  static const head = Color(0xFFE9EAEC); // 보라 바탕 위 머리글(`사용 정보` 등)
+  static const soft = Color(0xFF606470); // 흰 팝업 혜택 설명
+  static const red = Color(0xFFFB0B44); // `20%`(할인 표시 그림의 흰 칸)
 }
 
 /// 시안 y → 화면에 놓을 y. 세로가 모자란 기기에서 빈 띠를 줄인 만큼 당겨 준다.
@@ -32,14 +36,15 @@ typedef ShopY = double Function(double designY);
 /// 시안은 1080×2640(약 2.44:1)인데 흔한 폰은 20:9(2.22:1)라 세로가 모자란다. 모자라면
 /// ① 타이틀 위(상태바 바로 아래까지) ② [gaps]에 적은 틈들을 차례로 줄이고(각자 한도까지)
 /// ③ 그래도 모자랄 때만 **전체를 같은 비율로 줄인다**(좌우에 여백이 생긴다).
-/// 위치는 [children]이 받는 `y()`로 이 몫을 반영한다.
+/// 위치는 [children]이 받는 `y()`로 이 몫을 반영한다. [background]는 줄이지 않고 화면 전체에 깐다.
 class ShopCanvas extends StatelessWidget {
   const ShopCanvas({
     super.key,
     required this.contentBottom,
     required this.children,
     this.gaps = const [],
-    this.topmost = 133,
+    this.topmost = 107,
+    this.background,
   });
 
   /// 가장 아래 있는 것의 아랫변(시안 y).
@@ -48,8 +53,11 @@ class ShopCanvas extends StatelessWidget {
   /// 줄여도 되는 틈 — (이 y부터 아래가 당겨진다, 최대 몇 px).
   final List<(double, double)> gaps;
 
-  /// 가장 위에 있는 것의 윗변(보통 [X]의 133).
+  /// 가장 위에 있는 것의 윗변(타이틀 아이콘 107).
   final double topmost;
+
+  /// 화면 전체 배경 그림(1080×2640) — 세로가 모자라면 아래가 잘린다.
+  final String? background;
 
   final List<Widget> Function(ShopY y) children;
 
@@ -80,16 +88,28 @@ class ShopCanvas extends StatelessWidget {
           return out;
         }
 
-        return MediaQuery.withNoTextScaling(
-          child: FittedBox(
-            fit: BoxFit.contain,
-            alignment: Alignment.topCenter,
-            child: SizedBox(
-              width: DesignCanvas.width,
-              height: h + short,
-              child: Stack(children: children(y)),
+        return Stack(
+          children: [
+            if (background != null)
+              Positioned.fill(
+                child: Image.asset(
+                  background!,
+                  fit: BoxFit.cover,
+                  alignment: Alignment.topCenter,
+                ),
+              ),
+            MediaQuery.withNoTextScaling(
+              child: FittedBox(
+                fit: BoxFit.contain,
+                alignment: Alignment.topCenter,
+                child: SizedBox(
+                  width: DesignCanvas.width,
+                  height: h + short,
+                  child: Stack(children: children(y)),
+                ),
+              ),
             ),
-          ),
+          ],
         );
       },
     );
@@ -104,82 +124,20 @@ Widget shopArt(String asset, double left, double top, double w, double h) =>
       child: ArtImage(asset, width: w, height: h, scale: 1),
     );
 
-/// 오른쪽 위 [X] — 상점 화면 셋이 같은 그림·같은 자리(928, 133)다.
-Widget shopClose(BuildContext context, double top) => Positioned(
-  left: 928 - 20,
-  top: top - 20,
-  child: GestureDetector(
-    behavior: HitTestBehavior.opaque,
-    onTap: () => Navigator.of(context).maybePop(),
-    child: const Padding(
-      padding: EdgeInsets.all(20), // 손가락 자리 — 그림(94)보다 넓게
-      child: ArtImage(
-        '$shopDir/luna_shop/button_primeexit.png',
-        width: 94,
-        height: 94,
-        scale: 1,
-      ),
-    ),
-  ),
+/// 시안 좌표에 글 한 줄(윗변 = 시안 좌표값의 y — 글꼴 위 여백만큼 살짝 올린다).
+Widget shopText(
+  String text,
+  double left,
+  double top,
+  TextStyle style, {
+  double? width,
+  TextAlign align = TextAlign.start,
+}) => Positioned(
+  left: left,
+  top: top - style.fontSize! * 0.12,
+  width: width,
+  child: Text(text, textAlign: align, style: style),
 );
-
-/// 타이틀 밑 한 줄(가운데).
-Widget shopSubtitle(String text, double top) => Positioned(
-  left: 40,
-  right: 40,
-  top: top - 4,
-  child: Text(
-    text,
-    textAlign: TextAlign.center,
-    style: const TextStyle(
-      color: ShopColors.sub,
-      fontSize: 36,
-      fontWeight: FontWeight.w500,
-      height: 1,
-    ),
-  ),
-);
-
-/// 보유량 배너(49, 349) — 보라 알약 안에 숫자, 오른쪽에 버튼 하나(상점은 [루나 충전하기], 충전은 [루나 상점가기]).
-List<Widget> shopBalance({
-  required String banner,
-  required int luna,
-  required String button,
-  required Size buttonSize,
-  required Offset buttonAt,
-  required VoidCallback onTap,
-  required ShopY y,
-}) => [
-  shopArt(banner, 49, y(349), 986, 185),
-  // 알약(그림 안 252~529) 별 오른쪽 칸 가운데.
-  Positioned(
-    left: 49 + 335,
-    width: 529 - 335,
-    top: y(349) + 53,
-    height: 130 - 53,
-    child: Center(
-      child: Text(
-        shopNumber(luna),
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 58,
-          fontWeight: FontWeight.w800,
-          height: 1,
-        ),
-      ),
-    ),
-  ),
-  Positioned(
-    left: buttonAt.dx,
-    top: y(buttonAt.dy),
-    child: ShopArtButton(
-      asset: button,
-      width: buttonSize.width,
-      height: buttonSize.height,
-      onTap: onTap,
-    ),
-  ),
-];
 
 /// 글자가 구워진 그림 버튼. 금액처럼 변하는 값은 [overlay]로 얹는다.
 class ShopArtButton extends StatelessWidget {
@@ -228,22 +186,14 @@ class ShopPopup extends StatelessWidget {
     required this.size,
     required this.origin,
     required this.children,
-    this.frameSize,
   });
 
   final String frame;
   final Size size;
   final Offset origin;
 
-  /// 틀 그림의 실제 크기가 시안 틀([size])과 다를 때. 둥근 모서리는 그대로 두고 **가운데만 늘린다**.
-  /// (구매 완료 틀 `frame_lunapopup`은 1650인데 시안 틀은 1816이라 [나가기]가 틀 밖으로 나갔다)
-  final Size? frameSize;
-
   /// (시안 x, 시안 y) → 틀 안 위치로 바꿔 주는 함수를 받아 아이들을 만든다.
-  final List<Widget> Function(
-    double Function(double) x,
-    double Function(double) y,
-  )
+  final List<Widget> Function(double Function(double) x, double Function(double) y)
   children;
 
   @override
@@ -266,28 +216,7 @@ class ShopPopup extends StatelessWidget {
                 type: MaterialType.transparency,
                 child: Stack(
                   children: [
-                    if (frameSize == null)
-                      ArtImage(
-                        frame,
-                        width: size.width,
-                        height: size.height,
-                        scale: 1,
-                      )
-                    else
-                      Image.asset(
-                        frame,
-                        width: size.width,
-                        height: size.height,
-                        fit: BoxFit.fill,
-                        filterQuality: FilterQuality.medium,
-                        // 모서리 120px은 늘리지 않는다(그림 크기 기준).
-                        centerSlice: Rect.fromLTWH(
-                          120,
-                          120,
-                          frameSize!.width - 240,
-                          frameSize!.height - 240,
-                        ),
-                      ),
+                    ArtImage(frame, width: size.width, height: size.height, scale: 1),
                     ...children((v) => v - origin.dx, (v) => v - origin.dy),
                   ],
                 ),
@@ -308,116 +237,104 @@ Future<T?> showShopPopup<T>(BuildContext context, WidgetBuilder builder) =>
       builder: builder,
     );
 
-/// 혜택 세 줄 틀(`frame_iteminfo` 903×625) — 체크 · 굵은 제목 · 회색 두 줄. 팝업 둘이 함께 쓴다.
+/// 혜택 줄 틀 — 체크 · 굵은 제목 · 두 줄 설명. 틀 그림은 호출부가 깔고 이건 **글만** 세로 가운데에 둔다.
 ///
-/// 시안: 틀 왼쪽 위에서 체크 (43, 58), 제목 (129, 42), 줄 간격 약 200.
-class ShopBenefitBox extends StatelessWidget {
-  const ShopBenefitBox({super.key, required this.asset, required this.items});
+/// 보라 틀(구매·관리 화면)은 흰 체크·흰 제목·연보라 설명, 흰 팝업은 검은 체크·검은 제목·회색 설명이다.
+/// 시안: 체크는 틀 왼쪽에서 약 40, 제목은 약 130.
+class ShopBenefitList extends StatelessWidget {
+  const ShopBenefitList({
+    super.key,
+    required this.size,
+    required this.items,
+    this.onPurple = true,
+    this.gap = 34,
+  });
 
-  final String asset;
+  final Size size;
   final List<(String, String)> items;
+  final bool onPurple;
+  final double gap;
 
   @override
   Widget build(BuildContext context) {
+    final title = onPurple ? Colors.white : Colors.black;
+    final desc = onPurple ? ShopColors.lavender : ShopColors.soft;
+    final check = onPurple ? '$itemDir/icon_wcheck.png' : '$itemDir/icon_primecheck.png';
     return SizedBox(
-      width: 903,
-      height: 625,
-      child: Stack(
-        children: [
-          ArtImage(asset, width: 903, height: 625, scale: 1),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(43, 34, 20, 30),
-            // 일본어처럼 줄이 늘어도 틀 밖으로 나가지 않게 — 넘치면 통째로 조금 줄인다.
-            child: FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.topLeft,
-              child: SizedBox(
-                width: 903 - 43 - 20,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    for (var i = 0; i < items.length; i++) ...[
-                      if (i > 0) const SizedBox(height: 26),
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Padding(
-                            padding: EdgeInsets.only(top: 22),
-                            child: ArtImage(
-                              '$shopDir/luna_buy_after/icon_primecheck.png',
-                              width: 56,
-                              height: 45,
-                              scale: 1,
+      width: size.width,
+      height: size.height,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(40, 24, 20, 24),
+        // 일본어처럼 줄이 늘어도 틀 밖으로 나가지 않게 — 넘치면 통째로 조금 줄인다.
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: Alignment.centerLeft,
+          child: SizedBox(
+            width: size.width - 40 - 20,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                for (var i = 0; i < items.length; i++) ...[
+                  if (i > 0) SizedBox(height: gap),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(top: 24),
+                        child: ArtImage(check, width: 56, height: 45, scale: 1),
+                      ),
+                      const SizedBox(width: 130 - 40 - 56),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              items[i].$1,
+                              style: TextStyle(
+                                color: title,
+                                fontSize: 47,
+                                fontWeight: FontWeight.w800,
+                                height: 1.15,
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: 129 - 43 - 56),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  items[i].$1,
-                                  style: const TextStyle(
-                                    color: Colors.black,
-                                    fontSize: 46,
-                                    fontWeight: FontWeight.w800,
-                                    height: 1.15,
-                                  ),
-                                ),
-                                const SizedBox(height: 10),
-                                Text(
-                                  items[i].$2,
-                                  style: const TextStyle(
-                                    color: ShopColors.soft,
-                                    fontSize: 35,
-                                    fontWeight: FontWeight.w500,
-                                    height: 1.3,
-                                  ),
-                                ),
-                              ],
+                            const SizedBox(height: 8),
+                            Text(
+                              items[i].$2,
+                              style: TextStyle(
+                                color: desc,
+                                fontSize: 36,
+                                fontWeight: FontWeight.w500,
+                                height: 1.3,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ],
-                  ],
-                ),
-              ),
+                  ),
+                ],
+              ],
             ),
           ),
-        ],
+        ),
       ),
     );
   }
 }
 
-/// 팝업의 `○○ 혜택` 머리(108, …).
-Widget shopBenefitHead(String text, double left, double top) => Positioned(
-  left: left,
-  top: top - 6,
-  child: Text(
-    text,
-    style: const TextStyle(
-      color: Colors.black,
-      fontSize: 46,
-      fontWeight: FontWeight.w500,
-      height: 1,
-    ),
-  ),
-);
-
-/// 상품 종류별 그림·문구 — 상점 카드 · 상품 관리 · 구매 완료가 같은 표를 본다.
-class ShopKindArt {
-  const ShopKindArt._(this.kind);
+/// 상품 종류별 그림·문구 — 구매 화면 · 관리 화면 · 구매 완료 팝업이 같은 표를 본다.
+class ShopKind {
+  const ShopKind._(this.kind);
 
   final String kind;
 
-  static const boost = ShopKindArt._(StoreKind.postBoost);
-  static const album = ShopKindArt._(StoreKind.albumPass);
-  static const trans = ShopKindArt._(StoreKind.translatePass);
+  static const boost = ShopKind._(StoreKind.postBoost);
+  static const album = ShopKind._(StoreKind.albumPass);
+  static const trans = ShopKind._(StoreKind.translatePass);
   static const all = [boost, album, trans];
 
-  static ShopKindArt? of(String kind) {
+  static ShopKind? of(String kind) {
     for (final k in all) {
       if (k.kind == kind) return k;
     }
@@ -426,96 +343,102 @@ class ShopKindArt {
 
   bool get isBoost => kind == StoreKind.postBoost;
 
-  String get _short => switch (kind) {
-    StoreKind.postBoost => 'boost',
-    StoreKind.albumPass => 'album',
-    _ => 'trans',
+  T _pick<T>(T boost, T album, T trans) => switch (kind) {
+    StoreKind.postBoost => boost,
+    StoreKind.albumPass => album,
+    _ => trans,
   };
 
-  /// 동그란 아이콘(약 102×100).
-  String get icon => '$shopDir/luna_shop/icon_$_short.png';
-  Size get iconSize => switch (kind) {
-    StoreKind.postBoost => const Size(101, 99),
-    StoreKind.albumPass => const Size(102, 99),
-    _ => const Size(102, 101),
-  };
+  /// 타이틀 줄 — 큰 아이콘(시안 좌표)과 이름 그림.
+  (String, Size, Offset) get bigIcon => _pick(
+    ('$itemDir/icon_postboost_l.png', const Size(119, 117), const Offset(215, 107)),
+    ('$itemDir/icon_postalbum_l.png', const Size(104, 96), const Offset(244, 119)),
+    ('$itemDir/icon_trans_l.png', const Size(120, 119), const Offset(232, 107)),
+  );
+  (String, Size, Offset) get title => _pick(
+    ('$itemDir/title_boostshop.png', const Size(475, 77), const Offset(366, 129)),
+    ('$itemDir/title_albumshop.png', const Size(399, 76), const Offset(386, 131)),
+    ('$itemDir/title_transshop.png', const Size(315, 76), const Offset(389, 130)),
+  );
 
-  /// 상점 카드 왼쪽 아래 그림.
-  String get describe => '$shopDir/luna_shop/icon_${_short}_descrbe.png';
-  Size get describeSize => switch (kind) {
-    StoreKind.postBoost => const Size(385, 187),
-    StoreKind.albumPass => const Size(363, 187),
-    _ => const Size(319, 186),
-  };
+  /// 구매 화면 가운데 그림.
+  (String, Size, Offset) get hero => _pick(
+    ('$itemDir/icon_boost_image.png', const Size(415, 226), const Offset(371, 386)),
+    ('$itemDir/icon_album_image.png', const Size(311, 209), const Offset(365, 397)),
+    ('$itemDir/icon_trans_image.png', const Size(278, 221), const Offset(390, 389)),
+  );
 
-  /// 상점 카드 제목(그림 — 글자가 구워져 있다).
-  String get title => '$shopDir/luna_shop/title_$_short.png';
-  Size get titleSize => switch (kind) {
-    StoreKind.postBoost => const Size(429, 53),
-    StoreKind.albumPass => const Size(338, 50),
-    _ => const Size(207, 52),
-  };
+  /// 구매 목록 줄의 작은 아이콘.
+  (String, Size) get smallIcon => _pick(
+    ('$itemDir/icon_postboost_s.png', const Size(90, 88)),
+    ('$itemDir/icon_postalbum_s.png', const Size(87, 80)),
+    ('$itemDir/icon_trans_s.png', const Size(89, 88)),
+  );
 
-  /// 상품 관리 팝업 맨 위 그림.
-  String get image => '$shopDir/luna_buy_prev/icon_${_short}_image.png';
-  Size get imageSize => switch (kind) {
-    StoreKind.postBoost => const Size(365, 162),
-    StoreKind.albumPass => const Size(365, 194),
-    _ => const Size(330, 194),
-  };
+  /// 구매 완료 팝업의 아이콘.
+  (String, Size) get popupIcon => _pick(
+    ('$itemDir/icon_boost_l.png', const Size(101, 99)),
+    ('$itemDir/icon_postalbum_l.png', const Size(104, 96)),
+    ('$itemDir/icon_trans.png', const Size(102, 101)),
+  );
 
-  String name(L10n l10n) => switch (kind) {
-    StoreKind.postBoost => l10n.lunaItemBoost,
-    StoreKind.albumPass => l10n.lunaItemAlbum,
-    _ => l10n.lunaItemTrans,
-  };
+  /// 구매 화면의 [프라임 멤버십 구독 시 ›] 배너(글자가 구워져 있다).
+  String get primeBanner => _pick(
+    '$itemDir/button_prime_boost.png',
+    '$itemDir/button_prime_album.png',
+    '$itemDir/button_prime_trans.png',
+  );
+
+  /// 관리 화면 두 칸 — 자동 번역도 앨범과 같은 칸(`구독 기간 적용`·`구매한 이용 기간`)을 쓴다.
+  String get primeColumn =>
+      isBoost ? '$itemDir/frame_primeboost.png' : '$itemDir/frame_primealbum.png';
+  String get storeColumn =>
+      isBoost ? '$itemDir/frame_shopboost.png' : '$itemDir/frame_shopalbum.png';
+
+  /// 관리 화면 `보유량`(부스트) · `보유기간`(패스) 그림.
+  (String, Size, Offset) get holdingTitle => isBoost
+      ? ('$itemDir/title_reserves.png', const Size(265, 91), const Offset(409, 309))
+      : ('$itemDir/title_retention.png', const Size(347, 90), const Offset(366, 309));
+
+  String name(L10n l10n) =>
+      _pick(l10n.lunaItemBoost, l10n.lunaItemAlbum, l10n.lunaItemTrans);
 
   /// `포스트 부스트 5개` · `자동 번역 7일`.
-  String productName(L10n l10n, LunaProduct p) => p.isBoost
+  String productName(L10n l10n, ShopProduct p) => p.isBoost
       ? l10n.lunaItemCount(name(l10n), p.quantity)
       : l10n.lunaItemDays(name(l10n), p.durationDays);
 
-  String benefitHead(L10n l10n) => switch (kind) {
-    StoreKind.postBoost => l10n.lunaBenefitHeadBoost,
-    StoreKind.albumPass => l10n.lunaBenefitHeadAlbum,
-    _ => l10n.lunaBenefitHeadTrans,
-  };
+  /// 구매 화면 맨 위 설명 두 줄. 앨범 장수는 서버 설정값이다.
+  String description(L10n l10n, int maxPhotos) => _pick(
+    l10n.shopDescBoost,
+    l10n.shopDescAlbum(maxPhotos),
+    l10n.shopDescTrans,
+  );
+
+  String benefitHead(L10n l10n) => _pick(
+    l10n.lunaBenefitHeadBoost,
+    l10n.lunaBenefitHeadAlbum,
+    l10n.lunaBenefitHeadTrans,
+  );
 
   /// 혜택 세 줄. 앨범 장수는 서버 설정값([ProductCatalog.maxPhotosPass])이다.
-  List<(String, String)> benefits(L10n l10n, int maxPhotos) => switch (kind) {
-    StoreKind.postBoost => [
+  List<(String, String)> benefits(L10n l10n, int maxPhotos) => _pick(
+    [
       (l10n.lunaBoostBenefit1, l10n.lunaBoostBenefit1Desc),
       (l10n.lunaBoostBenefit2, l10n.lunaBoostBenefit2Desc),
       (l10n.lunaBoostBenefit3, l10n.lunaBoostBenefit3Desc),
     ],
-    StoreKind.albumPass => [
-      (
-        l10n.lunaAlbumBenefit1(maxPhotos),
-        l10n.lunaAlbumBenefit1Desc(maxPhotos),
-      ),
+    [
+      (l10n.lunaAlbumBenefit1(maxPhotos), l10n.lunaAlbumBenefit1Desc(maxPhotos)),
       (l10n.lunaAlbumBenefit2, l10n.lunaAlbumBenefit2Desc),
       (l10n.lunaAlbumBenefit3, l10n.lunaAlbumBenefit3Desc),
     ],
-    _ => [
+    [
       (l10n.lunaTransBenefit1, l10n.lunaTransBenefit1Desc),
       (l10n.lunaTransBenefit2, l10n.lunaTransBenefit2Desc),
       (l10n.lunaTransBenefit3, l10n.lunaTransBenefit3Desc),
     ],
-  };
-
-  /// 상점 카드 옵션 그림(글자 `5개`·`30일`이 구워져 있다). 그림이 없는 구성은 null.
-  String? optionAsset(LunaProduct p, bool on) {
-    final base = switch ((p.isBoost, p.isBoost ? p.quantity : p.durationDays)) {
-      (true, 5) => '5boost',
-      (true, 10) => '10boost',
-      (false, 7) => '7day',
-      (false, 30) => '30day',
-      _ => null,
-    };
-    return base == null
-        ? null
-        : '$shopDir/luna_shop/button_$base${on ? 'color' : 'normal'}.png';
-  }
+  );
 }
 
 /// `12,900` — 세 자리마다 쉼표.
@@ -529,7 +452,7 @@ String shopNumber(int value) {
   return out.toString();
 }
 
-/// `2026. 10. 12 14:26` — 상품 관리 팝업의 날짜 표기.
+/// `2026. 10. 12 14:26` — 관리 화면의 날짜 표기.
 String shopDateTime(DateTime? value) {
   if (value == null) return '-';
   final v = value.toLocal();

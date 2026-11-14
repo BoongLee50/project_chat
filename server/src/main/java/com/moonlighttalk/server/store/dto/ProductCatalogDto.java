@@ -14,7 +14,7 @@ import java.util.List;
  * 설정(`app.post.max-photos-*`)이 바뀌는 순간 화면이 거짓말을 하게 된다.
  */
 public record ProductCatalogDto(
-        List<LunaProductDto> lunaProducts,
+        List<ShopProductDto> shopProducts,
         List<LunaPackDto> lunaPacks,
         List<PrimePlanDto> primePlans,
         int maxPhotosFree,

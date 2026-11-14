@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_dimens.dart';
 import '../../features/store/presentation/providers/store_provider.dart';
-import '../../features/store/presentation/screens/luna_store_screen.dart';
 import '../../features/store/presentation/screens/prime_screen.dart';
 
 /// 대화방·친구 목록 상단의 밤 풍경 머리글(기획 6-1 · 7-1).
@@ -136,13 +135,7 @@ class HeaderPills extends ConsumerWidget {
           color: prime ? AppColors.gold : AppColors.moonlight,
           onTap: () => Navigator.of(context).push(PrimeScreen.route()),
         ),
-        const SizedBox(width: 6),
-        _Pill(
-          icon: Icons.star_rounded,
-          label: '${wallet?.luna ?? 0}',
-          color: AppColors.gold,
-          onTap: () => Navigator.of(context).push(LunaStoreScreen.route()),
-        ),
+        // 🗑 루나 알약은 없어졌다(기획서 261111 — 루나 폐지, 사용자 2026-11-14).
       ],
     );
   }

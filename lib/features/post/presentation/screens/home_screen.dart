@@ -21,7 +21,6 @@ import '../../../garden/presentation/widgets/garden_art.dart';
 import '../../../store/data/models/store_models.dart';
 import '../../../store/presentation/providers/store_provider.dart';
 import '../../../store/presentation/screens/boost_screen.dart';
-import '../../../store/presentation/screens/luna_store_screen.dart';
 import '../../../store/presentation/screens/prime_screen.dart';
 import '../../data/models/my_post.dart';
 import '../providers/post_provider.dart';
@@ -234,51 +233,8 @@ class _TopBar extends ConsumerWidget {
             height: PostArt.btnPrimeSize.height,
           ),
         ),
-        SizedBox(
-          width:
-              (PostArt.btnLunaAt.dx -
-                      (PostArt.btnPrimeAt.dx + PostArt.btnPrimeSize.width)) *
-                  DesignCanvas.scaleOf(context),
-        ),
-        GestureDetector(
-          onTap: () => Navigator.of(context).push(LunaStoreScreen.route()),
-          // 그림에는 별만 있고 **숫자가 없다** — 사람마다 다른 값이라 굽지 않는 게 옳다.
-          // 보유 루나를 위에 얹는다(달빛가든 머리글과 같은 방식).
-          child: Stack(
-            alignment: Alignment.centerRight,
-            children: [
-              ArtImage(
-                PostArt.btnLuna,
-                width: PostArt.btnLunaSize.width,
-                height: PostArt.btnLunaSize.height,
-              ),
-              const Padding(
-                padding: EdgeInsets.only(right: 14),
-                child: _LunaCount(),
-              ),
-            ],
-          ),
-        ),
+        // 🗑 루나상점 버튼은 없어졌다(기획서 261111 — 루나 폐지, 사용자 2026-11-14). Prime이 오른쪽 끝으로 간다.
       ],
-    );
-  }
-}
-
-/// 상단 바의 루나 잔액. 그림 위에 얹는다.
-class _LunaCount extends ConsumerWidget {
-  const _LunaCount();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final luna = ref.watch(walletProvider).valueOrNull?.luna;
-    if (luna == null) return const SizedBox.shrink();
-    return Text(
-      '$luna',
-      style: const TextStyle(
-        color: AppColors.gold,
-        fontSize: 15,
-        fontWeight: FontWeight.w800,
-      ),
     );
   }
 }

@@ -12,8 +12,6 @@ import '../../../../shared/widgets/design_canvas.dart';
 import '../../data/models/feed_item.dart';
 import '../../../daily/presentation/screens/daily_intro_screen.dart';
 import '../../../profile/data/models/profile_catalog.dart';
-import '../../../store/presentation/providers/store_provider.dart';
-import '../../../store/presentation/screens/luna_store_screen.dart';
 import '../../../store/presentation/screens/prime_screen.dart';
 import '../providers/garden_provider.dart';
 import '../widgets/comments_sheet.dart';
@@ -161,52 +159,8 @@ class _GardenHeader extends StatelessWidget {
             height: GardenArt.btnPrimeSize.height,
           ),
         ),
-        SizedBox(
-          width:
-              (GardenArt.btnLunaAt.dx -
-                  (GardenArt.btnPrimeAt.dx + GardenArt.btnPrimeSize.width)) *
-              DesignCanvas.scaleOf(context),
-        ),
-        GestureDetector(
-          onTap: () => Navigator.of(context).push(LunaStoreScreen.route()),
-          // 그림에는 별만 있고 **숫자가 없다.** 시안의 `[★ 80]`처럼 보이려면
-          // 보유 루나를 위에 얹어야 한다 — 대화방·친구 머리글은 이미 그렇게 한다.
-          // (숫자를 그림에 굽지 않는 편이 옳다. 사람마다 다른 값이다)
-          child: Stack(
-            alignment: Alignment.centerRight,
-            children: [
-              ArtImage(
-                GardenArt.btnLuna,
-                width: GardenArt.btnLunaSize.width,
-                height: GardenArt.btnLunaSize.height,
-              ),
-              const Padding(
-                padding: EdgeInsets.only(right: 14),
-                child: _LunaCount(),
-              ),
-            ],
-          ),
-        ),
+        // 🗑 루나상점 버튼은 없어졌다(기획서 261111 — 루나 폐지, 사용자 2026-11-14). Prime이 오른쪽 끝으로 간다.
       ],
-    );
-  }
-}
-
-/// 가든 머리글의 루나 잔액. 그림 위에 얹는다.
-class _LunaCount extends ConsumerWidget {
-  const _LunaCount();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final luna = ref.watch(walletProvider).valueOrNull?.luna;
-    if (luna == null) return const SizedBox.shrink();
-    return Text(
-      '$luna',
-      style: const TextStyle(
-        color: AppColors.gold,
-        fontSize: 15,
-        fontWeight: FontWeight.w800,
-      ),
     );
   }
 }

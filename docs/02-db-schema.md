@@ -270,32 +270,36 @@ subscriptions              -- 프라임 멤버십(구독, 8-1)
   status      enum(ACTIVE, CANCELLED, EXPIRED)   -- CANCELLED=자동갱신만 해지(만료까지 유효)
   started_at  timestamptz
   expires_at  timestamptz
+  boost_granted_at timestamptz null              -- V31: 프라임 부스트를 마지막으로 채운 때(30일마다 10개로)
   auto_renew  bool default true
   store_txn   text null                          -- 인앱결제 참조
   created_at  timestamptz
   -- 중복결제 방지: 같은 user의 ACTIVE 구독은 1개만(부분 유니크, §1.5 chat_rooms와 동일 트릭)
 
 user_entitlements          -- 시간제 권리(앨범패스/번역패스/대화무제한/광고제거) (8-2,8-4,8-5)
-  user_id     uuid FK                            -- V6 구현: (user_id, kind)가 PK
+  user_id     uuid FK
   kind        enum(ALBUM_PASS, TRANSLATE_PASS, UNLIMITED_CHAT_REQ, NO_ADS)
-  source      enum(PRIME, LUNA_PURCHASE)         -- 프라임 번들 / 루나 개별구매
-  started_at  timestamptz
+  source      enum(PRIME, STORE)                 -- V31: 프라임 구독분 / 상점 구매분(옛 LUNA_PURCHASE → STORE)
+  started_at  timestamptz                        -- 상점 구매분은 프라임이 끝난 뒤 시작 — **미래일 수 있다**
   expires_at  timestamptz
   created_at  timestamptz
-  PK(user_id, kind)                              -- "같은 kind 활성 1개" 제약을 구조로 보장(설계의 id PK 대신)
+  PK(user_id, kind, source)                      -- V31: 출처마다 한 행(V6은 (user_id, kind))
   KEY(expires_at)                                -- 만료 정리 배치용
-  -- 연장은 UPSERT: 아직 살아 있으면 남은 기간에 더하고, 만료됐으면 지금부터 다시 센다
+  -- 혜택 판정은 started_at <= now < expires_at 인 행만(아직 시작 안 한 상점 구매분은 빠진다)
+  -- 프라임 행은 UPSERT 연장 · 상점 행은 putStoreEntitlement로 시작·끝을 정해 넣는다
 
 boost_inventory            -- 부스트 보유 매수 (8-3)
   user_id   uuid FK
-  kind      enum(POST_BOOST, SPOTLIGHT_BOOST)
+  kind      enum(POST_BOOST)                     -- V23에서 SPOTLIGHT 폐지
+  source    enum(PRIME, STORE)                   -- V31: 프라임 구독분 / 상점 구매분 — 쓸 때 PRIME부터
   quantity  int default 0
-  PK(user_id, kind)
+  PK(user_id, kind, source)                      -- V31(옛 (user_id, kind) 매수는 STORE로 옮겼다)
 
 boost_activations          -- 부스트 사용(1시간 적용) → Post Score의 Pick Point 반영
   id           uuid PK
   user_id      uuid FK
   kind         enum(POST_BOOST, SPOTLIGHT_BOOST)
+  source       enum(PRIME, STORE)                -- V31: 나간 쪽(관리 화면 `이용 중` 자리)
   session_date date
   started_at   timestamptz
   expires_at   timestamptz                        -- started_at + 1시간
@@ -370,6 +374,7 @@ store_purchases            -- 인앱결제 영수증(V6 추가 — 01 §1.8의 "
   (`status='ENDED'` + `active_pair_key=NULL` + 양쪽에 `ROOM_STATE(ended)`). 순서가 있다 — §1.5 참고.
 - **5분** presence 만료 항목 청소(Redis 비활성 시. Redis면 TTL이 처리).
 - **10분** 만료된 `subscriptions`(→EXPIRED, `active_user_id` 해제) · `user_entitlements` · `boost_activations` 정리. 부스트가 1시간짜리라 주기를 짧게 뒀다.
+  + (V31) 프라임 부스트 **30일마다 10개로 다시 채우기**(`boost_granted_at`) · 끝난 구독의 **프라임 구독분 부스트 치우기**.
 - **미구현** 구독 자동 갱신(스토어 웹훅 서명 검증이 있어야 가능).
 - ⚠️ `ended_at+30분`은 **목록 표시 규칙**이지 삭제 작업이 아니다(§1.5). `chat_messages`가 `chat_rooms`에 `ON DELETE CASCADE`라 방을 지우면 메시지까지 사라져 보관 정책과 충돌하므로, 배치로 방을 지우지 않는다.
 - **구독**: `subscriptions` 만료 시 `auto_renew=true`면 자동 갱신(결제 연동), `CANCELLED`이면 `EXPIRED` 처리 + 연동 엔티틀먼트 만료.

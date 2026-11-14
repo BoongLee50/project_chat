@@ -2,5 +2,6 @@ package com.moonlighttalk.server.store.dto;
 
 import java.time.LocalDateTime;
 
-public record ActiveBoostDto(String kind, LocalDateTime expiresAt) {
+/** 켜진 부스트. source = 나간 쪽(PRIME · STORE). */
+public record ActiveBoostDto(String kind, String source, LocalDateTime startedAt, LocalDateTime expiresAt) {
 }

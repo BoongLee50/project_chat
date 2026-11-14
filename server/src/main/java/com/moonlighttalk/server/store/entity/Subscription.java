@@ -11,6 +11,8 @@ public class Subscription {
     private String status;
     private LocalDateTime startedAt;
     private LocalDateTime expiresAt;
+    /** 프라임 부스트를 마지막으로 채운 때(30일마다 10개로). */
+    private LocalDateTime boostGrantedAt;
     private Boolean autoRenew;
     private String storeTxn;
     private LocalDateTime createdAt;
@@ -85,5 +87,13 @@ public class Subscription {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public LocalDateTime getBoostGrantedAt() {
+        return boostGrantedAt;
+    }
+
+    public void setBoostGrantedAt(LocalDateTime boostGrantedAt) {
+        this.boostGrantedAt = boostGrantedAt;
     }
 }

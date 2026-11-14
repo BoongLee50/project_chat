@@ -24,16 +24,26 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * 유료 상점 — 카탈로그 조회, 루나 개별구매, 부스트 사용, 구독 해지. (01 §1.8, 02 §1.7)
+ * 유료 상점 — 카탈로그 조회, 상점 상품 지급 규칙, 부스트 사용, 구독 해지. (01 §1.8, 02 §1.7)
  *
- * <p>인앱결제(현금)는 {@link PurchaseService}가 맡는다. 여기서 다루는 건
- * <b>이미 가진 루나로 사는 것</b>이라 스토어와 무관하다.
+ * <p>결제(영수증 검증)는 {@link PurchaseService}가 맡고, <b>무엇을 어떻게 넣는지</b>는 여기서 정한다.
+ * 기획서 261111부터 루나 상점이 없다 — 부스트·포스트 앨범·자동 번역도 현금으로 하나씩 산다.
+ *
+ * <p><b>프라임 구독분 / 상점 구매분</b>(V31, 사용자 2026-11-14):
+ * <ul>
+ *   <li>부스트 — 출처별 매수. 쓸 때 <b>프라임 구독분부터</b>. 프라임 구독분은 30일마다 10개로 다시 채우고 구독이 끝나면 사라진다.</li>
+ *   <li>패스 — 출처별 한 행. 상점 구매분은 <b>프라임이 끝난 뒤부터</b> 흐른다(구독 중엔 멈춰 있다).</li>
+ *   <li>상점에서 다시 사기 — 상점 구매분이 남아 있으면 안 된다(기획서 "미 사용량이 모두 소진될 경우 구매 가능").</li>
+ * </ul>
  */
 @Service
 public class StoreService {
 
     /** 부스트 1회 사용 시 유지 시간(기획 8-3). */
     private static final int BOOST_HOURS = 1;
+
+    /** 부스트는 포스트 부스트 하나뿐이다(Plan_3에서 스포트라이트 폐지). */
+    private static final String BOOST_KIND = "POST_BOOST";
 
     private final StoreProperties properties;
     private final StoreMapper storeMapper;
@@ -63,8 +73,8 @@ public class StoreService {
 
     /** 카탈로그. 가격·구성은 설정에서 온다(코드 하드코딩 금지 — 01 §1.8). */
     public ProductCatalogDto catalog() {
-        List<LunaProductDto> lunaProducts = new ArrayList<>();
-        properties.getLunaProducts().forEach((id, p) -> lunaProducts.add(new LunaProductDto(
+        List<ShopProductDto> shopProducts = new ArrayList<>();
+        properties.getShopProducts().forEach((id, p) -> shopProducts.add(new ShopProductDto(
                 id, p.getType(), p.getKind(), p.getPrice(), p.getQuantity(), p.getDurationDays(),
                 p.getDiscount())));
 
@@ -78,7 +88,7 @@ public class StoreService {
                 id, p.getProduct(), p.getDurationDays(), p.getLuna(),
                 p.getEntitlements(), p.getBoosts(), p.getPrice())));
 
-        return new ProductCatalogDto(lunaProducts, packs, plans, maxPhotosFree, maxPhotosPass);
+        return new ProductCatalogDto(shopProducts, packs, plans, maxPhotosFree, maxPhotosPass);
     }
 
     /** 화면이 필요로 하는 상태를 한 번에. */
@@ -86,21 +96,55 @@ public class StoreService {
         LocalDateTime now = LocalDateTime.now();
         Subscription subscription = storeMapper.selectCurrentSubscription(userId, now);
 
+        // 지금 흐르는 권리(출처가 둘이면 늦게 끝나는 쪽) — 기능 판정·PASS 표시용.
         Map<String, LocalDateTime> entitlements = new LinkedHashMap<>();
         Map<String, LocalDateTime> entitlementStartedAt = new LinkedHashMap<>();
         for (Entitlement e : storeMapper.selectActiveEntitlements(userId, now)) {
-            entitlements.put(e.getKind(), e.getExpiresAt());
-            entitlementStartedAt.put(e.getKind(), e.getStartedAt());
+            LocalDateTime prev = entitlements.get(e.getKind());
+            if (prev == null || e.getExpiresAt().isAfter(prev)) {
+                entitlements.put(e.getKind(), e.getExpiresAt());
+                entitlementStartedAt.put(e.getKind(), e.getStartedAt());
+            }
         }
 
+        // 관리 화면 — 패스는 출처별 기간(아직 시작 안 한 상점 구매분 포함).
+        Map<String, LocalDateTime[]> held = new LinkedHashMap<>();
+        for (Entitlement e : storeMapper.selectHeldEntitlements(userId, now)) {
+            LocalDateTime[] slot = held.computeIfAbsent(e.getKind(), k -> new LocalDateTime[4]);
+            int at = "PRIME".equals(e.getSource()) ? 0 : 2;
+            slot[at] = e.getStartedAt();
+            slot[at + 1] = e.getExpiresAt();
+        }
+        Map<String, PassHoldingDto> passes = new LinkedHashMap<>();
+        for (String kind : List.of(EntitlementService.ALBUM_PASS, EntitlementService.TRANSLATE_PASS)) {
+            LocalDateTime[] slot = held.get(kind);
+            if (slot != null) {
+                passes.put(kind, new PassHoldingDto(slot[0], slot[1], slot[2], slot[3]));
+            }
+        }
+
+        // 부스트 — 출처별 매수 + 지금 켜진 것.
         Map<String, Integer> inventory = new LinkedHashMap<>();
+        Map<String, int[]> stocks = new LinkedHashMap<>();
         for (BoostStock stock : storeMapper.selectBoostStocks(userId)) {
-            inventory.put(stock.getKind(), stock.getQuantity());
+            inventory.merge(stock.getKind(), stock.getQuantity(), Integer::sum);
+            stocks.computeIfAbsent(stock.getKind(), k -> new int[2])
+                    ["PRIME".equals(stock.getSource()) ? 0 : 1] += stock.getQuantity();
         }
-
-        List<ActiveBoostDto> activeBoosts = storeMapper.selectActiveBoosts(userId, now).stream()
-                .map(b -> new ActiveBoostDto(b.getKind(), b.getExpiresAt()))
+        List<BoostActivation> active = storeMapper.selectActiveBoosts(userId, now);
+        List<ActiveBoostDto> activeBoosts = active.stream()
+                .map(b -> new ActiveBoostDto(b.getKind(), b.getSource(), b.getStartedAt(), b.getExpiresAt()))
                 .toList();
+        Map<String, BoostHoldingDto> boosts = new LinkedHashMap<>();
+        for (String kind : List.of(BOOST_KIND)) {
+            int[] n = stocks.getOrDefault(kind, new int[2]);
+            BoostActivation on = active.stream().filter(b -> kind.equals(b.getKind()))
+                    .max((a, b) -> a.getStartedAt().compareTo(b.getStartedAt())).orElse(null);
+            boosts.put(kind, new BoostHoldingDto(n[0], n[1],
+                    on == null ? null : on.getSource(),
+                    on == null ? null : on.getStartedAt(),
+                    on == null ? null : on.getExpiresAt()));
+        }
 
         return new WalletDto(
                 lunaService.balance(userId),
@@ -112,45 +156,84 @@ public class StoreService {
                 entitlements,
                 entitlementStartedAt,
                 inventory,
+                boosts,
+                passes,
                 activeBoosts);
     }
 
+    /** 상점 상품(인앱결제) — 없으면 404. */
+    public StoreProperties.ShopProduct shopProduct(String productId) {
+        return properties.getShopProducts().get(productId);
+    }
+
     /**
-     * 루나로 개별 상품 구매(부스트 매수 / 패스). 차감과 지급이 한 트랜잭션이라
-     * 루나만 빠지고 물건이 안 들어오는 일이 없다.
+     * 다시 사도 되는지 — <b>상점 구매분이 남아 있으면 안 된다</b>(기획서 261111 10-2~10-4
+     * "중복 구매는 안되고, 미 사용량이 모두 소진될 경우 구매 가능"). 프라임 구독분은 따지지 않는다.
+     * 결제가 기록되기 <b>전에</b> 부른다(지급만 막히고 결제가 남는 일이 없게).
+     */
+    public void assertCanBuy(String userId, StoreProperties.ShopProduct product) {
+        LocalDateTime now = LocalDateTime.now();
+        boolean holding = switch (product.getType()) {
+            case "BOOST" -> storeMapper.selectBoostStocks(userId).stream()
+                    .anyMatch(b -> b.getKind().equals(product.getKind())
+                            && "STORE".equals(b.getSource()) && b.getQuantity() > 0);
+            case "ENTITLEMENT" -> storeMapper.selectHeldEntitlements(userId, now).stream()
+                    .anyMatch(e -> e.getKind().equals(product.getKind()) && "STORE".equals(e.getSource()));
+            default -> throw new ApiException(ErrorCode.STORE_PRODUCT_INVALID,
+                    HttpStatus.INTERNAL_SERVER_ERROR, "상품 구성이 잘못됐어요.");
+        };
+        if (holding) {
+            throw new ApiException(ErrorCode.STORE_ALREADY_OWNED, HttpStatus.CONFLICT,
+                    "이미 보유 중인 상품이에요.");
+        }
+    }
+
+    /**
+     * 상점 상품 지급(결제 검증 뒤). 부스트는 상점 구매분 매수에 더하고, 패스는
+     * <b>프라임 중이면 프라임이 끝나는 때부터</b> 기간을 센다(사용자 2026-11-14).
      */
     @Transactional
-    public WalletDto purchaseWithLuna(String userId, String productId) {
-        StoreProperties.LunaProduct product = properties.getLunaProducts().get(productId);
-        if (product == null) {
-            throw new ApiException(ErrorCode.STORE_PRODUCT_NOT_FOUND, HttpStatus.NOT_FOUND,
-                    "존재하지 않는 상품이에요.");
-        }
-
-        // 패스는 "중복 구매 불가"(기획서 261011 10-2-2·10-2-3) — 쓰는 중이면 루나를 빼기 전에 막는다.
-        // 프라임이 준 패스도 같은 권리라 함께 막힌다(이미 무제한이다).
-        if ("ENTITLEMENT".equals(product.getType())
-                && storeMapper.selectActiveEntitlements(userId, LocalDateTime.now()).stream()
-                        .anyMatch(e -> e.getKind().equals(product.getKind()))) {
-            throw new ApiException(ErrorCode.STORE_ALREADY_OWNED, HttpStatus.CONFLICT,
-                    "이미 이용 중인 상품이에요.");
-        }
-
-        lunaService.deduct(userId, product.getPrice(), product.getReason(), productId,
-                "루나가 부족해요.");
-
+    public void grantShopProduct(String userId, StoreProperties.ShopProduct product) {
+        LocalDateTime now = LocalDateTime.now();
         switch (product.getType()) {
-            case "BOOST" -> storeMapper.addBoostStock(userId, product.getKind(), product.getQuantity());
-            case "ENTITLEMENT" -> storeMapper.upsertEntitlement(
-                    userId, product.getKind(), "LUNA_PURCHASE",
-                    LocalDateTime.now(), product.getDurationDays());
+            case "BOOST" -> storeMapper.addBoostStock(userId, product.getKind(), "STORE",
+                    product.getQuantity());
+            case "ENTITLEMENT" -> {
+                Subscription prime = storeMapper.selectCurrentSubscription(userId, now);
+                LocalDateTime start = prime == null ? now : prime.getExpiresAt();
+                storeMapper.putStoreEntitlement(userId, product.getKind(), start,
+                        start.plusDays(product.getDurationDays()));
+            }
             default -> throw new ApiException(ErrorCode.STORE_PRODUCT_INVALID,
                     HttpStatus.INTERNAL_SERVER_ERROR, "상품 구성이 잘못됐어요.");
         }
-        return wallet(userId);
     }
 
-    /** 보유 부스트 1매 사용 → 1시간 활성. 활성 중이면 중복 사용을 막는다. */
+    /**
+     * 프라임 부스트 다시 채우기 + 끝난 구독의 프라임 구독분 치우기(배치, 10분마다).
+     * 매달 10개로 <b>맞춘다</b> — 남은 건 사라진다(사용자 2026-11-14).
+     */
+    @Transactional
+    public int refreshPrimeBoosts() {
+        LocalDateTime now = LocalDateTime.now();
+        int refilled = 0;
+        for (Subscription sub : storeMapper.selectSubscriptionsDueForBoost(now)) {
+            StoreProperties.PrimePlan plan = properties.getPrimePlans().values().stream()
+                    .filter(p -> p.getProduct().equals(sub.getProduct())).findFirst().orElse(null);
+            if (plan == null) continue;
+            plan.getBoosts().forEach((kind, quantity) ->
+                    storeMapper.setBoostStock(sub.getUserId(), kind, "PRIME", quantity));
+            // 밀린 달이 여러 번이어도 한 번만 채우고, 다음 채울 때는 지금부터 센다.
+            LocalDateTime next = sub.getBoostGrantedAt();
+            while (!next.plusDays(30).isAfter(now)) next = next.plusDays(30);
+            storeMapper.updateBoostGrantedAt(sub.getId(), next);
+            refilled++;
+        }
+        storeMapper.deleteOrphanPrimeBoostStock(now);
+        return refilled;
+    }
+
+    /** 보유 부스트 1매 사용 → 1시간 활성. **프라임 구독분부터** 쓴다. 활성 중이면 중복 사용을 막는다. */
     @Transactional
     public WalletDto useBoost(String userId, String kind) {
         LocalDateTime now = LocalDateTime.now();
@@ -160,7 +243,9 @@ public class StoreService {
             throw new ApiException(ErrorCode.STORE_BOOST_ALREADY_ACTIVE, HttpStatus.CONFLICT,
                     "이미 사용 중인 부스트예요.");
         }
-        if (storeMapper.consumeBoostStock(userId, kind) == 0) {
+        String source = storeMapper.consumeBoostStock(userId, kind, "PRIME") > 0 ? "PRIME"
+                : storeMapper.consumeBoostStock(userId, kind, "STORE") > 0 ? "STORE" : null;
+        if (source == null) {
             throw new ApiException(ErrorCode.STORE_BOOST_NONE, HttpStatus.CONFLICT,
                     "보유한 부스트가 없어요.");
         }
@@ -169,6 +254,7 @@ public class StoreService {
         activation.setId(UUID.randomUUID().toString());
         activation.setUserId(userId);
         activation.setKind(kind);
+        activation.setSource(source);
         activation.setSessionDate(sessionTime.currentSessionDate());
         activation.setStartedAt(now);
         activation.setExpiresAt(now.plusHours(BOOST_HOURS));

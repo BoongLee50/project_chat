@@ -24,6 +24,11 @@ public interface StoreMapper {
 
     void resumeAutoRenew(@Param("id") String id);
 
+    /** 프라임 부스트를 다시 채울 때가 된(마지막으로 채운 지 30일) 살아 있는 구독. */
+    List<Subscription> selectSubscriptionsDueForBoost(@Param("now") LocalDateTime now);
+
+    void updateBoostGrantedAt(@Param("id") String id, @Param("at") LocalDateTime at);
+
     /** 만료된 구독을 EXPIRED로 내리고 부분 유니크 키를 비운다. */
     int expireSubscriptions(@Param("now") LocalDateTime now);
 
@@ -45,6 +50,21 @@ public interface StoreMapper {
 
     int deleteExpiredEntitlements(@Param("now") LocalDateTime now);
 
+    /** 끝나지 않은 권리 전부 — 아직 시작 안 한 상점 구매분 포함(관리 화면). */
+    List<Entitlement> selectHeldEntitlements(@Param("userId") String userId,
+                                              @Param("now") LocalDateTime now);
+
+    /** 상점 구매분 한 행(시작·끝을 호출부가 정한다 — 프라임 중이면 프라임이 끝난 때부터). */
+    void putStoreEntitlement(@Param("userId") String userId,
+                              @Param("kind") String kind,
+                              @Param("startedAt") LocalDateTime startedAt,
+                              @Param("expiresAt") LocalDateTime expiresAt);
+
+    /** 흐르던 상점 구매분을 [resumeAt]까지 멈춘다(남은 시간은 그대로). */
+    int pauseStoreEntitlements(@Param("userId") String userId,
+                                @Param("now") LocalDateTime now,
+                                @Param("resumeAt") LocalDateTime resumeAt);
+
     /**
      * 이 권리를 지금 가진 사람들. 한 명씩 묻지 않으려고 한 번에 읽는다 —
      * 피드 한 페이지가 열 장이면 질의도 열 번 나가던 자리다(부스트와 같은 방식).
@@ -54,10 +74,18 @@ public interface StoreMapper {
 
     // ── 부스트 ──
     void addBoostStock(@Param("userId") String userId, @Param("kind") String kind,
-                        @Param("quantity") int quantity);
+                        @Param("source") String source, @Param("quantity") int quantity);
+
+    /** 수량을 맞춘다(프라임 구독분 — 매달 10개로). */
+    void setBoostStock(@Param("userId") String userId, @Param("kind") String kind,
+                        @Param("source") String source, @Param("quantity") int quantity);
 
     /** 재고 차감. 남은 수량이 모자라면 0행이 갱신되므로 호출부가 실패로 처리한다. */
-    int consumeBoostStock(@Param("userId") String userId, @Param("kind") String kind);
+    int consumeBoostStock(@Param("userId") String userId, @Param("kind") String kind,
+                           @Param("source") String source);
+
+    /** 구독이 끝난 사람의 프라임 구독분 부스트를 치운다. */
+    int deleteOrphanPrimeBoostStock(@Param("now") LocalDateTime now);
 
     List<BoostStock> selectBoostStocks(@Param("userId") String userId);
 

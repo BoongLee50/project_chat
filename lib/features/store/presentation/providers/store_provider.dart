@@ -33,9 +33,6 @@ class StoreActions {
 
   final Ref _ref;
 
-  Future<ApiException?> purchaseWithLuna(String productId) =>
-      _run(() => _ref.read(storeApiProvider).purchaseWithLuna(productId));
-
   Future<ApiException?> useBoost(String kind) =>
       _run(() => _ref.read(storeApiProvider).useBoost(kind));
 

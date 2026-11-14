@@ -16,7 +16,7 @@
 | `/friend` | 친구 | **7장** 친구관리 + **5-1** 친구 신청 | `Scene_Friend` |
 | `/profile` | 프로필 | **8장** 프로필 | `Scene_Profile` |
 | `/word` | 🏮 달빛 한마디 | **9장** 달빛 한마디 이벤트(261011: 9-1 작성 · 9-2 답글 목록·상세) | `Scene_Word`(2026-10-11~) — 입구 버튼은 `Scene_Garden` |
-| `/shop` | 👑 유료 상점 | **10장**(10-1 프라임 · 10-2 루나 상점: 부스트 · 앨범 패스 · 자동 번역) | `Scene_Shop`(2026-10-25~ `PrimeSub`, 10-31~ `Luna*` 넷) |
+| `/shop` | 👑 유료 상점 | **10장**(10-1 프라임 · 10-2 루나 상점: 부스트 · 앨범 패스 · 자동 번역) | `Scene_Shop(New)`(2026-11-14~ — 상품별 구매·관리·구매 확인 팝업 + 프라임). 옛 `Scene_Shop`은 대체됨 |
 | (명령 없음) | **그 외** | 1·2장 로그인·온보딩 · 공용 위젯 · 하단 주메뉴 · 문서 정리 · 환경 | — |
 
 > 📌 260919판까지는 프로필·달빛 한마디가 **7·8장**이었다(`7.`이 두 번). 261002판에서 8·9장으로, 261011판에서 상점이 **10장**으로 바로잡혔다 — 옛 문서의 장 번호를 볼 때 판을 확인할 것.
@@ -25,10 +25,13 @@
 **"주로 볼 UI"는 출발점이지 울타리가 아니다.** 화면은 다른 콘텐츠의 그림을 빌려 쓴다:
 
 - **하단 주메뉴 그림은 전부 `Scene_Garden`에 있다**(`menu_*`, `main_menu_icon_friend_*`) — 모든 탭 화면이 쓴다
-- **상단 `Prime`·`루나` 버튼**(`button_prime`·`button_luna`)도 `Scene_Garden`에 있다 — 공용 `ArtTopBar`
+- **상단 `Prime` 버튼**(`button_prime`)도 `Scene_Garden`에 있다 — 공용 `ArtTopBar`. 🗑 `루나` 버튼은 2026-11-14 없어졌다(기획서 261111 — 루나 폐지)
 - **친구 `[받은 신청]` 탭은 `Scene_Talk`의 그림을 쓴다**(바이트까지 같아 한 벌만 들였다)
 - 국기·`ON` 같은 작은 그림은 콘텐츠마다 비슷한 것이 따로 오기도 한다 — 이름이 같아도 **규격을 확인**할 것
-- 각 폴더의 `Example/`은 **시안**이다(실제 리소스가 아니다)
+- 🚨 **시안(예시·좌표값 이미지)은 2026-11부터 `Example/` 폴더에 따로 오지 않는다**(사용자 2026-11-14, 프로젝트 전체).
+  리소스와 **섞여서** 온다 — **파일명이 한글**(`…_좌표값.png`·`…_참고화면.png` 등)이고 **UI 한 조각이 아니라 화면 전체가 완성된 모습**(대개 1080×2640)이면 **시안**이다.
+  시안은 앱에 넣지 않고 좌표·배치 참고로만 본다. 영문 이름(`button_*`·`frame_*`·`icon_*`·`title_*`·`back_*`)은 실제 리소스 — `back_*`처럼 1080×2640 배경도 있으니 크기만으로 판단하지 말 것.
+  (예전 전달본의 `Example/` 폴더도 시안이다)
 
 ## 2. 시작할 때 (명령을 받으면 이 순서로)
 
@@ -59,7 +62,7 @@
    | `lib/shared/widgets/*`(`design_canvas.dart`·`art_top_bar.dart`·`main_bottom_nav.dart` 등), `lib/core/*` | 전부 |
    | `lib/features/chat/presentation/widgets/talk_cell.dart`·`request_popup.dart` | **대화방·친구**(셀 · 팝업 세 개가 한 벌) |
    | `lib/features/chat/` 의 `chat_provider` · `chat_api` · `chat_models` · 서버 `chat/` | **대화방·채팅창**(목록·신청 ↔ 메시지·소켓) |
-   | `shared/widgets/art_top_bar.dart`([Prime]·[루나] 문) · `shared/widgets/translate_pass_button.dart`([번역 패스] 문) | 전부 ↔ **상점** |
+   | `shared/widgets/art_top_bar.dart`([Prime] 문) · `shared/widgets/translate_pass_button.dart`([번역] 문) | 전부 ↔ **상점** |
    | `lib/features/chat/presentation/widgets/chat_request_dialog.dart` | 대화방·가든(4-3 대화 신청) |
    | `lib/features/garden/presentation/widgets/comments_sheet.dart` · 서버 `comment/` | **가든·달빛 한마디**(포스트 댓글과 한마디 댓글이 한 벌) |
    | `lib/features/postinfo/*`(`profile_view_screen.dart`·`post_info_provider.dart`) | 가든·대화방·친구·프로필 |

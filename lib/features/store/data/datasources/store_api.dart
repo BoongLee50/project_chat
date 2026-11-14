@@ -17,22 +17,13 @@ class StoreApi {
     return Wallet.fromJson(Map<String, dynamic>.from(data as Map));
   }
 
-  /// 루나로 개별 상품 구매(부스트 매수·패스). 인앱결제가 아니다.
-  Future<Wallet> purchaseWithLuna(String productId) async {
-    final data = await _client.post(
-      '/store/luna:purchase',
-      body: {'productId': productId},
-    );
-    return Wallet.fromJson(Map<String, dynamic>.from(data as Map));
-  }
-
   /// 보유 부스트 1매 사용 → 1시간 활성.
   Future<Wallet> useBoost(String kind) async {
     final data = await _client.post('/boosts:use', body: {'kind': kind});
     return Wallet.fromJson(Map<String, dynamic>.from(data as Map));
   }
 
-  /// 인앱결제 영수증 검증 → 루나 지급 또는 구독 활성화.
+  /// 인앱결제 영수증 검증 → 상점 상품(부스트·포스트 앨범·자동 번역) 지급 또는 구독 활성화.
   ///
   /// 실제 결제창(in_app_purchase)은 스토어 계정이 생긴 뒤에 붙는다. 그 전까지는
   /// 개발용 검증기가 `dev-`로 시작하는 토큰만 통과시킨다(서버 `MockReceiptVerifier`).

@@ -479,23 +479,23 @@ Image.asset(..., fit: BoxFit.cover, alignment: Alignment.topCenter)
 
 - 폰트가 그리는 것: 섹션 제목 셋(`요금제 선택하기`·`구독 정보`·`PRIME 혜택` — 그림이 안 왔다) · 혜택 다섯 줄 · 가격·날짜 · 아래 안내 두 줄 · 팝업 제목·본문.
 
-### 3-1. 🌟 `Scene_Shop/Luna*` — 루나 상점·충전·상품 관리·구매 완료 97장 **반영**(2026-10-31)
+### 3-1. 🛍 `Scene_Shop(New)` — 상품별 구매·관리·구매 완료 + 프라임 구매 완료 **반영**(2026-11-14)
 
-`assets/images/scene_shop/{luna_shop,luna_charge,luna_buy_prev,luna_buy_after}/` + 각 `ja/`(31장, `DesignCanvas.localizedAssets`).
-**규격이 다른 일본어판 넷** — `title_lunashop`(393 → 475) · `title_lunacharge`(390 → 415) · `title_album`(338 → 360) · `button_lunacharge`(371×90 → 378×95).
+기획서 261111 10장(루나 상점 폐지 — 부스트·포스트 앨범·자동 번역을 하나씩 산다). 폴더마다 **같은 그림이 겹쳐 와서**(바이트까지 같다) `assets/images/scene_shop/item/` 한 벌로 모았다 — 62장(일본어판 18장).
+프라임 구매·관리 그림은 `prime_sub`와 바이트가 같아 들이지 않았다. **시안(한글 이름 + 완성형 화면)은 들이지 않았다**(content-sessions §1).
+🗑 옛 `luna_shop`·`luna_charge`·`luna_buy_prev`·`luna_buy_after`(97장)는 지웠다.
 
-| 폴더 | 그림 | 쓰는 곳 |
-|---|---|---|
-| `luna_shop` | `title_lunashop` · `banner_luna`(보유량 틀) · `button_lunacharge` · `frame_lunashopinfo` · 카드별 `icon_*`·`title_*`·`icon_*_descrbe` · 옵션 `button_{5boost,10boost,7day,30day}{color,normal}` · `icon_discount`(빨간 알약 — 글자 없음) · `button_lunashopbuy`·`…use`·`…using` · `button_primeexit` | 루나 상점 |
-| `luna_charge` | `title_lunacharge` · `banner_luna` · `button_golunashop` · `frame_lunacharge` · 병 `icon_chargeitem1~5` · `button_chargeprice`(글자 없음) · `icon_discountmark`(`할인`만 구워짐) · 리본 `icon_popular`·`icon_discount`(최고 할인) | 루나 충전 |
-| `luna_buy_prev` | `frame_itempopup`(패스) · `frame_boostpopup` · `icon_*_image` · `frame_albumsubinfo`(사용 시작·종료 예정·남은 기간) · `frame_boostubinfo`(종료 예정·남은 시간) · `frame_boostamount`(보유량) · `frame_iteminfo` · `icon_primeuse` · `button_boostuse`(사용하기 (1개)) · `button_popupexit` | 상품 관리 팝업 |
-| `luna_buy_after` | `frame_lunapopup` · `icon_notice` · `frame_itemname` · `frame_iteminfo` · `button_checkitem`(보유 상품 확인) · `button_popupexit` | 구매 완료 팝업 |
+| 쓰는 곳 | 그림 |
+|---|---|
+| 배경(구매·관리 공통) | `back_shop`(1080×2640, 보라 그라데이션 + 빛 띠) |
+| 구매 화면 | 타이틀 `icon_*_l`·`title_*shop` · `button_shopexit` · 가운데 `icon_*_image` · 상품 줄 `frame_shoplist`·`icon_*_s`·`button_shopprice`(글자 없음)·`icon_discountmark`(`할인`만) · `button_prime_{boost,album,trans}`(배너, 글자 구워짐) · 혜택 `frame_shopinfo`·`icon_wcheck` |
+| 관리 화면 | `title_reserves`(보유량)·`title_retention`(보유기간) · `frame_primeboost`·`frame_shopboost`·`frame_primealbum`·`frame_shopalbum`(자동 번역도 앨범 칸) · `icon_primeuse` · `frame_useinfo` · `frame_itemexplan` · `button_boostuse`·`button_popupexit` |
+| 구매 완료 팝업 | `frame_buypopup`(982×1820 — 지난번 짧던 틀이 맞게 왔다) · `icon_notice` · `frame_itemname` · `frame_iteminfo` · `icon_primecheck` · 아이콘 `icon_boost_l`·`icon_postalbum_l`·`icon_trans` · `button_checkitem`·`button_popupexit` |
+| 프라임 구매 완료 팝업 | `frame_primebuypopup`(982×2105) · `frame_primeiteminfo` · `icon_prime_l` |
 
-- ⚠️ **이름이 뜻과 엇갈린다** — `button_lunashopuse` = **`사용 중 ›`**, `button_lunashopusing` = **`사용하기 ›`**.
-- ⚠️ 같은 이름 다른 그림 — `luna_shop/icon_discount`(빨간 알약) ≠ `luna_charge/icon_discount`(보라 리본 `최고 할인`). 폴더가 달라 부딪히지 않는다.
-- ⚠️ **`frame_lunapopup`(982×1650)이 시안 틀(1816)보다 짧다** — 그대로 그리면 [나가기]가 틀 밖으로 나간다. 모서리는 두고 가운데만 늘려 그린다(`ShopPopup.frameSize`). 맞는 그림을 받을지 10 §0-6.
-- 옵션 그림에 `5개`·`10개`·`7일`·`30일`이 구워져 있다 — **이 구성만 그린다**. 설정에 다른 구성이 생기면 그림부터.
-- 폰트가 그리는 것: 타이틀 밑 한 줄 · 보유량 숫자 · 카드 설명 네 줄 · 옵션 금액 · `20% 할인` · 충전 카드의 `루나 ○개`·한 줄·금액·`○%` · 팝업의 상품 이름·날짜·남은 시간·혜택 세 줄.
+- ⚠️ 전달 이름 `frame_primealbum_kr copy.png` → `frame_primealbum.png`로 들였다(이름의 ` copy`만 떼었다).
+- ⚠️ 일본어 타이틀 그림이 「投稿ブースト」「投稿アルバム」인데 프라임 배너 그림은 「ポストブースト」 — 폰트 상품 이름은 타이틀에 맞췄다(10 §0-7).
+- 🚧 **부스트 사용 확인 팝업 그림이 없다** — 프라임 해지 팝업 틀·느낌표 + [사용하기 (1개)]·[아니요] 그림을 빌렸다(`확인` 그림 없음).
 
 #### 아래 표는 옛 목록(지금은 위 두 절로 대체 — 프로필·피드의 프라임 배지만 아직 없다)
 

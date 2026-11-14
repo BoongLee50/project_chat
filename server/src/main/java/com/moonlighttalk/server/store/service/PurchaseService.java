@@ -28,8 +28,8 @@ import java.util.UUID;
  * 인앱결제 처리 — <b>클라가 "샀다"고 말하는 것을 믿지 않는다</b>(01 §1.8).
  * 영수증을 스토어에 직접 물어 검증한 뒤에만 지급하고, purchaseToken을 저장해 중복 지급을 막는다.
  *
- * <p>IAP 대상은 <b>루나 충전과 프라임 구독뿐</b>이다. 루나로 사는 개별 상품(부스트·패스)은
- * 앱 내부 재화 소비라 스토어를 거치지 않는다({@link StoreService#purchaseWithLuna}).
+ * <p>IAP 대상: <b>프라임 구독 · 상점 상품(부스트·포스트 앨범·자동 번역)</b>(기획서 261111 — 루나 상점 폐지).
+ * 루나 충전 패키지 경로는 서버 루나가 남아 있어 그대로 두었다(화면은 없다).
  */
 @Service
 public class PurchaseService {
@@ -67,6 +67,12 @@ public class PurchaseService {
                     "결제 정보를 확인할 수 없어요.");
         }
 
+        // 상점 상품은 "보유 중엔 다시 못 산다" — 결제를 기록하기 전에 막는다.
+        StoreProperties.ShopProduct shopProduct = storeService.shopProduct(productId);
+        if (shopProduct != null) {
+            storeService.assertCanBuy(userId, shopProduct);
+        }
+
         String tokenHash = sha256(purchaseToken);
         if (storeMapper.existsPurchase(platform, tokenHash)) {
             // 이미 처리한 결제 — 재시도/중복 호출이므로 조용히 현재 상태만 돌려준다.
@@ -87,8 +93,14 @@ public class PurchaseService {
         return storeService.wallet(userId);
     }
 
-    /** 상품 종류에 따라 루나를 넣거나 구독을 켠다. */
+    /** 상품 종류에 따라 상점 상품을 넣거나 구독을 켠다(루나 충전은 서버에만 남아 있다). */
     private void grant(String userId, String productId, String purchaseToken) {
+        StoreProperties.ShopProduct shopProduct = storeService.shopProduct(productId);
+        if (shopProduct != null) {
+            storeService.grantShopProduct(userId, shopProduct);
+            return;
+        }
+
         StoreProperties.LunaPack pack = properties.getLunaPacks().get(productId);
         if (pack != null) {
             lunaService.grant(userId, pack.total(), "CHARGE", productId);
@@ -119,6 +131,7 @@ public class PurchaseService {
         subscription.setStatus("ACTIVE");
         subscription.setStartedAt(now);
         subscription.setExpiresAt(now.plusDays(plan.getDurationDays()));
+        subscription.setBoostGrantedAt(now);
         subscription.setAutoRenew(true);
         subscription.setStoreTxn(purchaseToken);
         try {
@@ -132,8 +145,11 @@ public class PurchaseService {
         for (String kind : plan.getEntitlements()) {
             storeMapper.upsertEntitlement(userId, kind, "PRIME", now, plan.getDurationDays());
         }
+        // 프라임 구독분을 먼저 쓴다 — 흐르던 상점 구매분 패스는 프라임이 끝날 때까지 멈춘다(사용자 2026-11-14).
+        storeMapper.pauseStoreEntitlements(userId, now, subscription.getExpiresAt());
+        // 프라임 부스트는 더하지 않고 맞춘다(매달 10개로, 배치가 30일마다 다시 채운다).
         plan.getBoosts().forEach((kind, quantity) ->
-                storeMapper.addBoostStock(userId, kind, quantity));
+                storeMapper.setBoostStock(userId, kind, "PRIME", quantity));
         if (plan.getLuna() > 0) {
             lunaService.grant(userId, plan.getLuna(), "CHARGE", plan.getProduct());
         }

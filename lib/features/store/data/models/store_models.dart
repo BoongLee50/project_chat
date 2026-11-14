@@ -6,9 +6,9 @@
 import '../../../../core/util/server_time.dart';
 import '../../../../l10n/app_localizations.dart';
 
-/// 루나로 사는 상품 하나. 부스트면 [quantity], 패스면 [durationDays]를 쓴다.
-class LunaProduct {
-  const LunaProduct({
+/// 상점 상품 하나(인앱결제 — 기획서 261111 10-2~10-4). 부스트면 [quantity], 패스면 [durationDays]를 쓴다.
+class ShopProduct {
+  const ShopProduct({
     required this.id,
     required this.type,
     required this.kind,
@@ -26,6 +26,7 @@ class LunaProduct {
   /// POST_BOOST | ALBUM_PASS | TRANSLATE_PASS
   final String kind;
 
+  /// 표시용 기준가(원). 실제 청구액은 스토어가 정한다 — 결제창이 붙으면 스토어 SDK 현지 가격으로 바꾼다.
   final int price;
   final int quantity;
   final int durationDays;
@@ -43,7 +44,7 @@ class LunaProduct {
       ? l10n.storeOptionBoost(quantity)
       : l10n.storeOptionDays(durationDays);
 
-  factory LunaProduct.fromJson(Map<String, dynamic> json) => LunaProduct(
+  factory ShopProduct.fromJson(Map<String, dynamic> json) => ShopProduct(
     id: json['id'] as String,
     type: json['type'] as String? ?? '',
     kind: json['kind'] as String? ?? '',
@@ -51,43 +52,6 @@ class LunaProduct {
     quantity: json['quantity'] as int? ?? 0,
     durationDays: json['durationDays'] as int? ?? 0,
     discount: json['discount'] as int? ?? 0,
-  );
-}
-
-/// 루나 충전 패키지(인앱결제).
-class LunaPack {
-  const LunaPack({
-    required this.productId,
-    required this.luna,
-    required this.bonus,
-    required this.total,
-    this.price = 0,
-    this.badge,
-  });
-
-  final String productId;
-  final int luna;
-  final int bonus;
-  final int total;
-
-  /// 표시용 기준가(원). 실제 청구액은 스토어가 정한다 — 결제창이 붙으면 스토어 SDK 현지 가격으로 바꾼다.
-  final int price;
-
-  /// 카드 리본 — `POPULAR`(인기 상품) · `BEST`(최고 할인) · 없으면 null.
-  final String? badge;
-
-  bool get hasBonus => bonus > 0;
-
-  /// 덤으로 얹어 준 몫 = 할인율(`○% 할인` 표시).
-  int get discountPercent => total == 0 ? 0 : (bonus * 100 / total).round();
-
-  factory LunaPack.fromJson(Map<String, dynamic> json) => LunaPack(
-    productId: json['productId'] as String,
-    luna: json['luna'] as int? ?? 0,
-    bonus: json['bonus'] as int? ?? 0,
-    total: json['total'] as int? ?? 0,
-    price: json['price'] as int? ?? 0,
-    badge: json['badge'] as String?,
   );
 }
 
@@ -132,15 +96,13 @@ class PrimePlan {
 
 class ProductCatalog {
   const ProductCatalog({
-    required this.lunaProducts,
-    required this.lunaPacks,
+    required this.shopProducts,
     required this.primePlans,
     this.maxPhotosFree = 0,
     this.maxPhotosPass = 0,
   });
 
-  final List<LunaProduct> lunaProducts;
-  final List<LunaPack> lunaPacks;
+  final List<ShopProduct> shopProducts;
   final List<PrimePlan> primePlans;
 
   /// BM 화면의 혜택 문구가 말하는 사진 장수(기획 화면 26·29).
@@ -152,18 +114,15 @@ class ProductCatalog {
   final int maxPhotosPass;
 
   /// 같은 kind의 옵션들(예: 포스트 부스트 5매/10매)을 가격 오름차순으로.
-  List<LunaProduct> optionsOf(String kind) =>
-      lunaProducts.where((p) => p.kind == kind).toList()
+  List<ShopProduct> optionsOf(String kind) =>
+      shopProducts.where((p) => p.kind == kind).toList()
         ..sort((a, b) => a.price.compareTo(b.price));
 
   factory ProductCatalog.fromJson(Map<String, dynamic> json) => ProductCatalog(
     maxPhotosFree: json['maxPhotosFree'] as int? ?? 0,
     maxPhotosPass: json['maxPhotosPass'] as int? ?? 0,
-    lunaProducts: (json['lunaProducts'] as List? ?? const [])
-        .map((e) => LunaProduct.fromJson(Map<String, dynamic>.from(e as Map)))
-        .toList(),
-    lunaPacks: (json['lunaPacks'] as List? ?? const [])
-        .map((e) => LunaPack.fromJson(Map<String, dynamic>.from(e as Map)))
+    shopProducts: (json['shopProducts'] as List? ?? const [])
+        .map((e) => ShopProduct.fromJson(Map<String, dynamic>.from(e as Map)))
         .toList(),
     primePlans: (json['primePlans'] as List? ?? const [])
         .map((e) => PrimePlan.fromJson(Map<String, dynamic>.from(e as Map)))
@@ -180,6 +139,8 @@ class Wallet {
     required this.entitlements,
     this.entitlementStartedAt = const {},
     required this.boostInventory,
+    this.boosts = const {},
+    this.passes = const {},
     required this.activeBoosts,
     this.subscriptionProduct,
     this.subscriptionStartedAt,
@@ -202,10 +163,24 @@ class Wallet {
   /// kind → 보유 매수.
   final Map<String, int> boostInventory;
 
+  /// kind → 프라임 구독분 / 상점 구매분 매수(기획서 261111 10-2 관리 화면).
+  final Map<String, BoostHolding> boosts;
+
+  /// kind → 프라임 구독분 / 상점 구매분 기간(기획서 261111 10-3·10-4 관리 화면).
+  final Map<String, PassHolding> passes;
+
   /// 지금 켜져 있는 부스트.
   final List<ActiveBoost> activeBoosts;
 
   bool has(String kind) => entitlements.containsKey(kind);
+
+  BoostHolding boostOf(String kind) => boosts[kind] ?? BoostHolding.none;
+
+  PassHolding passOf(String kind) => passes[kind] ?? PassHolding.none;
+
+  /// 그 상품의 관리 화면으로 갈지(아니면 구매 화면) — 기획서 261111 10-2~10-4 "미 사용 보유량이 존재할 경우".
+  bool owns(String kind) =>
+      kind == StoreKind.postBoost ? boostOf(kind).owned : passOf(kind).owned;
 
   DateTime? expiresAt(String kind) => entitlements[kind];
 
@@ -258,17 +233,129 @@ class Wallet {
     boostInventory: (json['boostInventory'] as Map? ?? const {}).map(
       (key, value) => MapEntry(key as String, value as int),
     ),
+    boosts: (json['boosts'] as Map? ?? const {}).map(
+      (key, value) => MapEntry(
+        key as String,
+        BoostHolding.fromJson(Map<String, dynamic>.from(value as Map)),
+      ),
+    ),
+    passes: (json['passes'] as Map? ?? const {}).map(
+      (key, value) => MapEntry(
+        key as String,
+        PassHolding.fromJson(Map<String, dynamic>.from(value as Map)),
+      ),
+    ),
     activeBoosts: (json['activeBoosts'] as List? ?? const [])
         .map((e) => ActiveBoost.fromJson(Map<String, dynamic>.from(e as Map)))
         .toList(),
   );
 }
 
+DateTime? _time(Object? v) => v == null ? null : parseServerTime(v);
+
+/// 부스트 보유 — 프라임 구독분과 상점 구매분(기획서 261111 10-2).
+class BoostHolding {
+  const BoostHolding({
+    this.prime = 0,
+    this.store = 0,
+    this.activeSource,
+    this.activeStartedAt,
+    this.activeExpiresAt,
+  });
+
+  final int prime;
+  final int store;
+
+  /// 지금 켜진 부스트가 나간 쪽(`PRIME`·`STORE`, 없으면 null) — 그 칸에 `이용 중`.
+  final String? activeSource;
+  final DateTime? activeStartedAt;
+  final DateTime? activeExpiresAt;
+
+  int get total => prime + store;
+  bool get active => activeExpiresAt != null && activeExpiresAt!.isAfter(DateTime.now());
+
+  /// 관리 화면에 갈 만큼 갖고 있나 — 남은 매수가 있거나 쓰는 중.
+  bool get owned => total > 0 || active;
+
+  static const none = BoostHolding();
+
+  factory BoostHolding.fromJson(Map<String, dynamic> json) => BoostHolding(
+    prime: json['prime'] as int? ?? 0,
+    store: json['store'] as int? ?? 0,
+    activeSource: json['activeSource'] as String?,
+    activeStartedAt: _time(json['activeStartedAt']),
+    activeExpiresAt: _time(json['activeExpiresAt']),
+  );
+}
+
+/// 패스 보유 — 프라임 구독분과 상점 구매분 기간(기획서 261111 10-3·10-4).
+///
+/// 상점 구매분은 **프라임이 끝난 뒤부터** 흐른다(사용자 2026-11-14) — [storeStartedAt]이 미래일 수 있다.
+class PassHolding {
+  const PassHolding({
+    this.primeStartedAt,
+    this.primeExpiresAt,
+    this.storeStartedAt,
+    this.storeExpiresAt,
+  });
+
+  final DateTime? primeStartedAt;
+  final DateTime? primeExpiresAt;
+  final DateTime? storeStartedAt;
+  final DateTime? storeExpiresAt;
+
+  /// 남은 일수(올림) — 프라임 구독분.
+  int get primeDays => _daysLeft(DateTime.now(), primeExpiresAt);
+
+  /// 남은 일수(올림) — 상점 구매분. 아직 시작 전이면 산 기간 전부.
+  int get storeDays {
+    final now = DateTime.now();
+    final start = storeStartedAt;
+    return _daysLeft(start != null && start.isAfter(now) ? start : now, storeExpiresAt);
+  }
+
+  int get totalDays => primeDays + storeDays;
+  bool get owned => primeDays > 0 || storeDays > 0;
+
+  /// 지금 흐르는 쪽 — 프라임이 먼저(`PRIME`·`STORE`·null).
+  String? get runningSource {
+    final now = DateTime.now();
+    bool on(DateTime? s, DateTime? e) =>
+        s != null && e != null && !s.isAfter(now) && e.isAfter(now);
+    if (on(primeStartedAt, primeExpiresAt)) return 'PRIME';
+    if (on(storeStartedAt, storeExpiresAt)) return 'STORE';
+    return null;
+  }
+
+  DateTime? get runningStartedAt =>
+      runningSource == 'PRIME' ? primeStartedAt : runningSource == 'STORE' ? storeStartedAt : null;
+  DateTime? get runningExpiresAt =>
+      runningSource == 'PRIME' ? primeExpiresAt : runningSource == 'STORE' ? storeExpiresAt : null;
+
+  static int _daysLeft(DateTime from, DateTime? to) {
+    if (to == null || !to.isAfter(from)) return 0;
+    final hours = to.difference(from).inHours;
+    return hours ~/ 24 + (hours % 24 > 0 ? 1 : 0);
+  }
+
+  static const none = PassHolding();
+
+  factory PassHolding.fromJson(Map<String, dynamic> json) => PassHolding(
+    primeStartedAt: _time(json['primeStartedAt']),
+    primeExpiresAt: _time(json['primeExpiresAt']),
+    storeStartedAt: _time(json['storeStartedAt']),
+    storeExpiresAt: _time(json['storeExpiresAt']),
+  );
+}
+
 class ActiveBoost {
-  const ActiveBoost({required this.kind, required this.expiresAt});
+  const ActiveBoost({required this.kind, required this.expiresAt, this.source});
 
   final String kind;
   final DateTime expiresAt;
+
+  /// 나간 쪽(`PRIME`·`STORE`).
+  final String? source;
 
   Duration get remaining {
     final diff = expiresAt.difference(DateTime.now());
@@ -278,6 +365,7 @@ class ActiveBoost {
   factory ActiveBoost.fromJson(Map<String, dynamic> json) => ActiveBoost(
     kind: json['kind'] as String? ?? '',
     expiresAt: parseServerTimeOr(json['expiresAt']),
+    source: json['source'] as String?,
   );
 }
 

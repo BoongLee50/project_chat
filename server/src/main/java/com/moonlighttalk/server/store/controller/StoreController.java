@@ -31,13 +31,6 @@ public class StoreController {
         return storeService.wallet(userId);
     }
 
-    /** 루나로 개별 상품 구매(부스트 매수·패스). 인앱결제 아님. */
-    @PostMapping("/store/luna:purchase")
-    public WalletDto purchaseWithLuna(@CurrentUserId String userId,
-                                       @Valid @RequestBody LunaPurchaseRequest request) {
-        return storeService.purchaseWithLuna(userId, request.productId());
-    }
-
     /** 보유 부스트 사용 → 1시간 활성. */
     @PostMapping("/boosts:use")
     public WalletDto useBoost(@CurrentUserId String userId,
@@ -45,7 +38,7 @@ public class StoreController {
         return storeService.useBoost(userId, request.kind());
     }
 
-    /** 인앱결제 영수증 검증 → 루나 지급 또는 구독 활성화. */
+    /** 인앱결제 영수증 검증 → 상점 상품(부스트·포스트 앨범·자동 번역) 지급 또는 구독 활성화. */
     @PostMapping("/store/purchases:verify")
     public WalletDto verifyPurchase(@CurrentUserId String userId,
                                      @Valid @RequestBody VerifyPurchaseRequest request) {

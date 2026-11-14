@@ -1615,36 +1615,6 @@ abstract class L10n {
   /// **'{days}일'**
   String storeOptionDays(int days);
 
-  /// No description provided for @lunaStoreTitle.
-  ///
-  /// In ko, this message translates to:
-  /// **'루나상점'**
-  String get lunaStoreTitle;
-
-  /// No description provided for @lunaStoreSubtitle.
-  ///
-  /// In ko, this message translates to:
-  /// **'루나로 더 편리하고 특별한 경험을 누려 보세요.'**
-  String get lunaStoreSubtitle;
-
-  /// No description provided for @lunaShopDescBoost.
-  ///
-  /// In ko, this message translates to:
-  /// **'포스트에 추천 마크를 붙이고\n1시간 동안 우선 노출해요.\n더 많은 관심과 매칭 기회를\n만나 보세요.'**
-  String get lunaShopDescBoost;
-
-  /// No description provided for @lunaShopDescAlbum.
-  ///
-  /// In ko, this message translates to:
-  /// **'포스트 사진을 최대 {count}장까지\n등록하고 무지개빛 테두리로\n꾸며 보세요. 모든 포스트를\n제한없이 감상해 보세요.'**
-  String lunaShopDescAlbum(int count);
-
-  /// No description provided for @lunaShopDescTrans.
-  ///
-  /// In ko, this message translates to:
-  /// **'언어 걱정 없이 대화와\n댓글을 자동으로 번역해요.\n정해진 기간 동안\n편리하게 이용해 보세요.'**
-  String get lunaShopDescTrans;
-
   /// No description provided for @lunaItemBoost.
   ///
   /// In ko, this message translates to:
@@ -1654,7 +1624,7 @@ abstract class L10n {
   /// No description provided for @lunaItemAlbum.
   ///
   /// In ko, this message translates to:
-  /// **'포스트 앨범 패스'**
+  /// **'포스트 앨범'**
   String get lunaItemAlbum;
 
   /// No description provided for @lunaItemTrans.
@@ -1681,6 +1651,96 @@ abstract class L10n {
   /// **'구매가 완료되었어요!'**
   String get lunaPurchasedTitle;
 
+  /// No description provided for @shopDescBoost.
+  ///
+  /// In ko, this message translates to:
+  /// **'포스트에 추천 마크를 붙이고 1시간 동안 우선 노출해요.\n더 많은 관심과 매칭 기회를 만나 보세요.'**
+  String get shopDescBoost;
+
+  /// No description provided for @shopDescAlbum.
+  ///
+  /// In ko, this message translates to:
+  /// **'포스트를 최대 {count}장까지 등록하고, 무지개빛 테두리로\n꾸며 보세요. 모든 포스트를 제한 없이 감상하세요.'**
+  String shopDescAlbum(int count);
+
+  /// No description provided for @shopDescTrans.
+  ///
+  /// In ko, this message translates to:
+  /// **'언어 걱정 없이 대화와 댓글을 자동으로 번역해요.\n정해진 기간 동안 편리하게 이용해 보세요.'**
+  String get shopDescTrans;
+
+  /// No description provided for @shopTagFirst.
+  ///
+  /// In ko, this message translates to:
+  /// **'부담 없이 이용하기'**
+  String get shopTagFirst;
+
+  /// No description provided for @shopTagSecond.
+  ///
+  /// In ko, this message translates to:
+  /// **'가성비 최고!'**
+  String get shopTagSecond;
+
+  /// No description provided for @shopUnitCount.
+  ///
+  /// In ko, this message translates to:
+  /// **'개'**
+  String get shopUnitCount;
+
+  /// No description provided for @shopUnitDays.
+  ///
+  /// In ko, this message translates to:
+  /// **'일'**
+  String get shopUnitDays;
+
+  /// No description provided for @shopPrice.
+  ///
+  /// In ko, this message translates to:
+  /// **'₩{price}'**
+  String shopPrice(String price);
+
+  /// No description provided for @shopDiscountPercent.
+  ///
+  /// In ko, this message translates to:
+  /// **'{percent}%'**
+  String shopDiscountPercent(int percent);
+
+  /// No description provided for @shopOr.
+  ///
+  /// In ko, this message translates to:
+  /// **'또는'**
+  String get shopOr;
+
+  /// No description provided for @shopUseInfo.
+  ///
+  /// In ko, this message translates to:
+  /// **'사용 정보'**
+  String get shopUseInfo;
+
+  /// No description provided for @shopBoostUseTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'포스트 부스트 1개를 사용합니다.'**
+  String get shopBoostUseTitle;
+
+  /// No description provided for @shopBoostUseBody.
+  ///
+  /// In ko, this message translates to:
+  /// **'해당 포스트 사진들이 1시간 동안\n더 많은 사람에게 우선 노출됩니다.'**
+  String get shopBoostUseBody;
+
+  /// No description provided for @primePurchasedName.
+  ///
+  /// In ko, this message translates to:
+  /// **'프라임 멤버십 {months}개월'**
+  String primePurchasedName(int months);
+
+  /// No description provided for @primePurchasedHead.
+  ///
+  /// In ko, this message translates to:
+  /// **'프라임 멤버십 혜택'**
+  String get primePurchasedHead;
+
   /// No description provided for @lunaRemainDays.
   ///
   /// In ko, this message translates to:
@@ -1702,7 +1762,7 @@ abstract class L10n {
   /// No description provided for @lunaBenefitHeadAlbum.
   ///
   /// In ko, this message translates to:
-  /// **'포스트 앨범 패스 혜택'**
+  /// **'포스트 앨범 혜택'**
   String get lunaBenefitHeadAlbum;
 
   /// No description provided for @lunaBenefitHeadTrans.
@@ -1819,83 +1879,17 @@ abstract class L10n {
   /// **'번역 기능으로 한국어와 일본어 대화를\n더 편리하고 자연스럽게 이어가 보세요.'**
   String get lunaTransBenefit3Desc;
 
-  /// No description provided for @chargeTag1.
-  ///
-  /// In ko, this message translates to:
-  /// **'부담 없이 루나를 시작해 보세요'**
-  String get chargeTag1;
-
-  /// No description provided for @chargeTag2.
-  ///
-  /// In ko, this message translates to:
-  /// **'대화의 즐거움을 한층 더 풍성하게!'**
-  String get chargeTag2;
-
-  /// No description provided for @chargeTag3.
-  ///
-  /// In ko, this message translates to:
-  /// **'가장 많이 선택하는 인기 충전 상품'**
-  String get chargeTag3;
-
-  /// No description provided for @chargeTag4.
-  ///
-  /// In ko, this message translates to:
-  /// **'자주 이용할수록 더욱 실속 있는 선택!'**
-  String get chargeTag4;
-
-  /// No description provided for @chargeTag5.
-  ///
-  /// In ko, this message translates to:
-  /// **'루나를 가장 실속 있게 충전하는 방법!'**
-  String get chargeTag5;
-
-  /// No description provided for @chargePrice.
-  ///
-  /// In ko, this message translates to:
-  /// **'₩{price}'**
-  String chargePrice(String price);
-
-  /// No description provided for @chargeDiscountPercent.
-  ///
-  /// In ko, this message translates to:
-  /// **'{percent}%'**
-  String chargeDiscountPercent(int percent);
-
   /// No description provided for @storeLoadFailed.
   ///
   /// In ko, this message translates to:
   /// **'상품을 불러오지 못했어요.'**
   String get storeLoadFailed;
 
-  /// No description provided for @storeDiscount.
-  ///
-  /// In ko, this message translates to:
-  /// **'{percent}% 할인'**
-  String storeDiscount(int percent);
-
   /// No description provided for @boostStock.
   ///
   /// In ko, this message translates to:
   /// **'보유 {count}매'**
   String boostStock(int count);
-
-  /// No description provided for @boostEffectTitle.
-  ///
-  /// In ko, this message translates to:
-  /// **'예상 효과'**
-  String get boostEffectTitle;
-
-  /// No description provided for @boostUsed.
-  ///
-  /// In ko, this message translates to:
-  /// **'부스트를 사용했어요. 1시간 동안 우선 노출됩니다!'**
-  String get boostUsed;
-
-  /// No description provided for @passPeriodSection.
-  ///
-  /// In ko, this message translates to:
-  /// **'기간 선택'**
-  String get passPeriodSection;
 
   /// No description provided for @passDays.
   ///
@@ -1908,12 +1902,6 @@ abstract class L10n {
   /// In ko, this message translates to:
   /// **'요금제 선택하기'**
   String get primePlanSection;
-
-  /// No description provided for @primeStarted.
-  ///
-  /// In ko, this message translates to:
-  /// **'PRIME 멤버십이 시작됐어요!'**
-  String get primeStarted;
 
   /// No description provided for @primeCancelDone.
   ///
@@ -2044,7 +2032,7 @@ abstract class L10n {
   /// No description provided for @primeBenefitChat.
   ///
   /// In ko, this message translates to:
-  /// **'대화 신청 무제한'**
+  /// **'대화 신청 및 음성 메시지 무제한'**
   String get primeBenefitChat;
 
   /// No description provided for @primeBenefitChatDesc.
@@ -2076,36 +2064,6 @@ abstract class L10n {
   /// In ko, this message translates to:
   /// **'앱 이용 중 표시되는 광고가 제거돼요.'**
   String get primeBenefitNoAdsDesc;
-
-  /// No description provided for @chargeTitle.
-  ///
-  /// In ko, this message translates to:
-  /// **'루나 충전'**
-  String get chargeTitle;
-
-  /// No description provided for @chargeSubtitle.
-  ///
-  /// In ko, this message translates to:
-  /// **'루나를 충전하고, 풍성한 혜택과 특별한 경험을 만나 보세요.'**
-  String get chargeSubtitle;
-
-  /// No description provided for @chargeLunaPrefix.
-  ///
-  /// In ko, this message translates to:
-  /// **'루나 '**
-  String get chargeLunaPrefix;
-
-  /// No description provided for @chargeLunaSuffix.
-  ///
-  /// In ko, this message translates to:
-  /// **'개'**
-  String get chargeLunaSuffix;
-
-  /// No description provided for @chargeDone.
-  ///
-  /// In ko, this message translates to:
-  /// **'루나 {total}개가 충전됐어요.'**
-  String chargeDone(int total);
 
   /// No description provided for @navPost.
   ///
@@ -3010,7 +2968,7 @@ abstract class L10n {
   /// No description provided for @errorStoreAlreadyOwned.
   ///
   /// In ko, this message translates to:
-  /// **'이미 이용 중인 상품이에요.'**
+  /// **'이미 보유 중인 상품이에요.'**
   String get errorStoreAlreadyOwned;
 
   /// No description provided for @errorStoreReceiptInvalid.

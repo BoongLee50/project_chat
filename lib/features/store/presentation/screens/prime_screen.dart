@@ -9,6 +9,7 @@ import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/design_canvas.dart';
 import '../../data/models/store_models.dart';
 import '../providers/store_provider.dart';
+import '../widgets/shop_popups.dart';
 
 /// 프라임 멤버십 (기획서 261011 10-1 · `Scene_Shop/PrimeSub`).
 ///
@@ -69,7 +70,12 @@ class _PrimeScreenState extends ConsumerState<PrimeScreen> {
     );
     if (!mounted) return;
     setState(() => _busy = false);
-    _toast(error == null ? l10n.primeStarted : errorMessage(l10n, error));
+    if (error != null) {
+      _toast(errorMessage(l10n, error));
+      return;
+    }
+    // 구매 완료 팝업(기획서 261111 10-1). [보유 상품 확인]이면 관리 화면 — 지갑이 바뀌어 이 화면이 이미 관리 모습이다.
+    await showPrimePurchasedPopup(context, plan);
   }
 
   /// [구독 관리] → 해지 팝업(`SubEnd`). [구독 해지]를 누르면 자동 갱신만 끈다 — 기간 끝까지 혜택은 그대로.
