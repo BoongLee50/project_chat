@@ -119,16 +119,17 @@ void main() {
     expect(errorMessage(ja, e), 'すでに友だちです。');
   });
 
-  test('친구 한도는 서버가 준 숫자로 조립된다', () {
-    // 일본어는 어순이 달라 문자열 이어붙이기로는 성립하지 않는다.
+  test('친구 한도 안내는 기획서 문구 그대로 — 서버가 준 숫자는 쓰지 않는다', () {
+    // 기획서 261111 7-1: "친구 목록이 가득 차서 더 이상 추가할 수 없습니다." — 숫자 자리가 없다.
+    // 서버는 field에 한도(100)를 계속 싣지만 문장에 끼워 넣지 않는다(설정이 바뀌어도 문구는 그대로).
     const e = ApiException(
-      message: '친구는 최대 30명까지예요.',
+      message: '친구는 최대 100명까지예요.',
       code: 'FRIEND_LIMIT_EXCEEDED',
-      field: '30',
+      field: '100',
     );
-    expect(errorMessage(ko, e), contains('30'));
-    expect(errorMessage(ja, e), contains('30'));
-    expect(errorMessage(ja, e), contains('友だち'));
+    expect(errorMessage(ko, e), '친구 목록이 가득 차서 더 이상 추가할 수 없습니다.');
+    expect(errorMessage(ja, e), '友だちリストがいっぱいのため、これ以上追加できません。');
+    expect(errorMessage(ko, e), isNot(contains('100')));
   });
 }
 
