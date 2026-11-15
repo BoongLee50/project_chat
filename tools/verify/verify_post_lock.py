@@ -43,12 +43,12 @@ def album_pass(user_id, on):
     sql("DELETE FROM user_entitlements WHERE user_id = '%s' AND kind = 'ALBUM_PASS'" % user_id)
     if on:
         sql("INSERT INTO user_entitlements (user_id, kind, source, started_at, expires_at) "
-            "VALUES ('%s','ALBUM_PASS','LUNA_PURCHASE', NOW() - INTERVAL 1 DAY, NOW() + INTERVAL 1 DAY)"
+            "VALUES ('%s','ALBUM_PASS','STORE', NOW() - INTERVAL 1 DAY, NOW() + INTERVAL 1 DAY)"
             % user_id)
     else:
         # 만료 = 기간이 지난 행(구매 이력은 남는 실제 상황과 같게)
         sql("INSERT INTO user_entitlements (user_id, kind, source, started_at, expires_at) "
-            "VALUES ('%s','ALBUM_PASS','LUNA_PURCHASE', NOW() - INTERVAL 2 DAY, NOW() - INTERVAL 1 MINUTE)"
+            "VALUES ('%s','ALBUM_PASS','STORE', NOW() - INTERVAL 2 DAY, NOW() - INTERVAL 1 MINUTE)"
             % user_id)
 
 

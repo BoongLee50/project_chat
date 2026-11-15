@@ -446,6 +446,12 @@ adb shell cmd locale set-app-locales com.example.project_chat --locales ko-KR
 > 다음에 할 일은 [09 인수인계](09-next-task-handoff.md) §2의 **막힌 것 3건**에서 고른다(A·B가 해소됐다).
 > 다음 "싱크용 문서" 요청은 **그 이후 작업부터** 정리하면 된다.
 
+### 2026-11-15 [포스트] — `verify_post_lock.py` 복구(V31 권리 출처)
+
+가든 세션이 09 포스트 줄에 남긴 기록대로였다 — V31이 `user_entitlements.source`를 `enum('PRIME','STORE')`로 좁혔는데
+스크립트는 앨범 패스를 `LUNA_PURCHASE`로 넣고 있었다. 두 곳을 `STORE`(상점 구매 — V31이 옛 루나 구매를 옮긴 값)로 바꿨다.
+이 PC 8080에서 **17/17 통과**. 서버·앱 코드는 그대로(스크립트만). `tools/`에 `LUNA_PURCHASE`는 더 없다.
+
 ### 2026-11-15 [그 외] — 들어오는 문서 넷을 지금 상태로 · 여러 기기·여러 계정 규칙(공통 규칙 §6)
 
 사용자: *"여기서도 각 세션을 나눠서 작업하고, 필요에 따라 다른 계정으로도 접근한다 — 서로 상충하거나 빠지는 것 없게."*
