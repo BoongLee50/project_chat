@@ -165,6 +165,7 @@
   "translateProviderNotReady": "翻訳機能はまだ準備中です。",
   "voiceQuotaExhausted": "無料の音声メッセージをすべて使いました。\nプライムメンバーシップなら音声メッセージを使い続けられます。",
   "chatFriendRequestSent": "友だちリクエストを送りました。相手が承認すると友だちになります。",
+  "chatFriendAccepted": "{nickname}さんと友だちになりました。",
   "chatReportDone": "通報を受け付けました。会話は終了します。",
   "chatBlockDone": "{nickname}さんをブロックしました。",
   "friendsTitle": "友だち",

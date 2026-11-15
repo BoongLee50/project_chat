@@ -550,6 +550,11 @@ class L10nKo extends L10n {
   String get chatFriendRequestSent => '친구 요청을 보냈어요. 상대가 수락하면 친구가 돼요.';
 
   @override
+  String chatFriendAccepted(String nickname) {
+    return '$nickname님과 친구가 됐어요.';
+  }
+
+  @override
   String get chatReportDone => '신고가 접수됐어요. 대화가 종료됩니다.';
 
   @override

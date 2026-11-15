@@ -332,6 +332,14 @@
   "translateProviderNotReady": "번역 기능은 아직 준비 중이에요.",
   "voiceQuotaExhausted": "무료 음성 메시지를 모두 사용했어요.\n프라임 멤버십 구독 시 음성 메시지를 계속 이용할 수 있어요.",
   "chatFriendRequestSent": "친구 요청을 보냈어요. 상대가 수락하면 친구가 돼요.",
+  "chatFriendAccepted": "{nickname}님과 친구가 됐어요.",
+  "@chatFriendAccepted": {
+    "placeholders": {
+      "nickname": {
+        "type": "String"
+      }
+    }
+  },
   "chatReportDone": "신고가 접수됐어요. 대화가 종료됩니다.",
   "chatBlockDone": "{nickname}님을 차단했어요.",
   "@chatBlockDone": {

@@ -413,7 +413,7 @@ API를 직접 부르는 것으로 뚫린다. 응답에 `photoLocked`(잠김 여�
 | C→S | `CHAT_READ` | `{ roomId, lastMessageId }` | 읽음 처리 |
 | S→C | `CHAT_READ_RECEIPT` | `{ roomId, readerId, lastMessageId }` | 읽음 수신 |
 | S→C | `CHAT_REQ_INCOMING` | `{ requestId, fromUser }` | 새 대화 신청 도착 |
-| S→C | `FRIEND_REQ_INCOMING` | `{ friendshipId, fromUserId, fromNickname }` | 새 친구 요청 도착 |
+| S→C | `FRIEND_REQ_INCOMING` | `{ friendshipId, fromUserId, fromNickname }` | 새 친구 요청 도착. 받는 이가 **보낸 이와의 채팅창**에 있으면 앱이 [받은 친구 신청] 팝업을 그 위에 바로 띄운다(기획 5-1) |
 | S→C | `FRIEND_STATE` | `{ friendshipId, state: accepted\|rejected\|cancelled\|removed, roomId? }` | 친구 관계 변화 |
 | S→C | `ROOM_STATE` | `{ roomId, state: accepted\|rejected\|ended }` | 대화방 상태 변화 |
 | S→C | `PRESENCE_UPDATE` | `{ userId, online }` | 상대 온/오프라인 |

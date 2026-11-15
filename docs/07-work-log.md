@@ -453,6 +453,17 @@ adb shell cmd locale set-app-locales com.example.project_chat --locales ko-KR
 - **기획서 261011 → 261111 6장 diff**: 6-1·6-2 본문 **한 글자도 같다**. 10-1의 "프라임 대화 신청은 받은 신청 1일 최상단"도 그대로(`ChatRequestEntity.priorityUntil`, 24시간 — 이미 구현).
 - ⚠️ `flutter analyze`: 내 파일은 깨끗. `chat_screen.dart`의 `chatFriendAccepted` 오류 하나는 `/chat` 세션이 ARB를 고치는 중이라 생긴 것(손대지 않음). 그래서 실기기 눈 확인은 미룸.
 
+### 2026-11-15 [채팅창] — 채팅창 안 친구 신청 팝업 둘(5장 [친구 신청] 안내 팝업 · 5-1 같은 방 받은 신청)
+- **나눔 확인(사용자 2026-11-15)**: 친구 신청 *규칙*(저장·100자·받은 신청 목록·빨간 점·수락/거절)은 `/friend`, **채팅창 위에 뜨는 팝업 둘은 `/chat`**. 친구 세션 09 줄에 없던 일이라 여기서 했다.
+- **[⋯] › [친구 신청]**: 예전엔 누르자마자 보내고 토스트만 → 이제 [프로필 보기]와 **같은 팝업**(`friend_request_dialog.dart`의 `showFriendRequestDialog`, 한마디 선택·100자)을 거쳐 보낸다.
+- **5-1 같은 방 받은 신청**: 서버는 친구 신청마다 받는 사람에게 `FRIEND_REQ_INCOMING`을 **원래 보내고 있었다** → 서버 변경 없음. 채팅창이 소켓을 듣다가 `fromUserId == 이 방 상대`면
+  `showIncomingFriendRequestDialog`(이미 있었지만 쓰는 곳이 없던 5-1 img13 우측)를 바로 띄운다. [친구 수락] → `accept` + 토스트 `chatFriendAccepted`(새 ARB) · [거절] → `reject` · [✕] → 답 안 함(받은 신청 목록에 남는다). 같은 팝업이 겹쳐 뜨지 않게 한 번에 하나.
+- 팝업 머리(사진·이름·접속)는 `postInfoProvider(상대)`로 읽는다 — 못 읽으면 오류 문구 토스트.
+- ✅ 에뮬(Nari ↔ 건우 `temp-10` MATCH 방): 건우가 API로 신청 → 채팅창 위에 즉시 팝업 · [거절] → 행 삭제 · [⋯]›[친구 신청] → 팝업 → 보내기 → 토스트 + `PENDING` 행. 시험 행은 건우 쪽 거절로 지웠다(데모 데이터 원상태).
+  ⚠️ [친구 수락]은 방이 FRIEND로 승격돼 데모 데이터가 바뀌어 **눌러 보지 않았다**(친구 화면과 같은 `friendActions.accept`).
+  🔧 temp 데모 계정은 목 로그인 uid(`mock-…`)가 아니라 API로 못 부른다 — `provider_uid`를 잠깐 `mock-<tag>`로 바꿔 로그인하고 바로 되돌렸다.
+- 공용: `friend/…/friend_request_dialog.dart`(친구 세션 파일)는 **가져다 쓰기만** 했다 · ARB 키 하나 추가(ko·ja).
+
 ### 2026-11-15 [채팅창] — `그래픽 소스/채팅창` · 기획서 261111 5장 대조 → 문구 두 줄만
 - **그래픽**: `compare_ui_delivery.py "D:/Plan_Chat/그래픽 소스"` — 채팅창 19장 **전부 같음**(시안 3장 건너뜀). 할 것 없음.
   (이 PC 콘솔이 cp949라 도구가 이모지 출력에서 죽는다 → `PYTHONIOENCODING=utf-8`로 돌릴 것)

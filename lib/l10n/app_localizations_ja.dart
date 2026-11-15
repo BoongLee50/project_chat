@@ -550,6 +550,11 @@ class L10nJa extends L10n {
   String get chatFriendRequestSent => '友だちリクエストを送りました。相手が承認すると友だちになります。';
 
   @override
+  String chatFriendAccepted(String nickname) {
+    return '$nicknameさんと友だちになりました。';
+  }
+
+  @override
   String get chatReportDone => '通報を受け付けました。会話は終了します。';
 
   @override

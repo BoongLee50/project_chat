@@ -1087,6 +1087,12 @@ abstract class L10n {
   /// **'친구 요청을 보냈어요. 상대가 수락하면 친구가 돼요.'**
   String get chatFriendRequestSent;
 
+  /// No description provided for @chatFriendAccepted.
+  ///
+  /// In ko, this message translates to:
+  /// **'{nickname}님과 친구가 됐어요.'**
+  String chatFriendAccepted(String nickname);
+
   /// No description provided for @chatReportDone.
   ///
   /// In ko, this message translates to:

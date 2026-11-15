@@ -13,10 +13,14 @@ import '../../../../shared/widgets/confirm_dialog.dart';
 import '../../../../shared/widgets/design_canvas.dart';
 import '../../../../shared/widgets/translate_pass_button.dart';
 import '../../../auth/presentation/providers/session_provider.dart';
+import '../../../../core/network/packet.dart';
 import '../../../friend/presentation/providers/friend_provider.dart';
+import '../../../friend/presentation/widgets/friend_request_dialog.dart';
 import '../../../garden/data/models/translate_access.dart';
 import '../../../moderation/presentation/widgets/block_dialog.dart';
 import '../../../moderation/presentation/widgets/report_dialog.dart';
+import '../../../postinfo/data/models/post_info.dart';
+import '../../../postinfo/presentation/providers/post_info_provider.dart';
 import '../../../postinfo/presentation/screens/profile_view_screen.dart';
 import '../../../store/data/models/store_models.dart';
 import '../../../store/presentation/screens/pass_screen.dart';
@@ -199,14 +203,64 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     });
   }
 
-  /// [친구 신청] — 상대가 수락하면 친구가 된다.
+  /// [친구 신청] — 기획서 5장 *"친구 신청 안내 팝업 출력"*. 팝업은 [프로필 보기]의 것과 한 벌이다
+  /// (5-1 — 한마디는 선택, 100자). 상대가 수락하면 친구가 된다.
   Future<void> _requestFriend() async {
     final l10n = L10n.of(context);
+    final info = await _partnerInfo();
+    if (info == null || !mounted) return;
+
+    final message = await showFriendRequestDialog(context, info: info);
+    if (message == null || !mounted) return;
+
     final error = await ref
         .read(friendActionsProvider)
-        .request(widget.room.partnerId);
+        .request(widget.room.partnerId, message: message.isEmpty ? null : message);
     if (!mounted) return;
     _toast(error == null ? l10n.chatFriendRequestSent : errorMessage(l10n, error));
+  }
+
+  /// 같은 채팅창에서 상대가 친구 신청을 보냈다 — 기획서 5-1 *"신청자와 수신자가 동일한 곳에서 채팅 중일 경우에는
+  /// [받은 친구 신청] 팝업을 채팅창 위에 바로 출력"*.
+  ///
+  /// 서버는 친구 신청마다 받는 사람에게 `FRIEND_REQ_INCOMING`을 이미 보낸다 — 채팅창은 **보낸 이가 이 방 상대일 때만** 듣는다.
+  /// [✕]로 닫으면 아무 답도 하지 않는다 — 신청은 [친구] › [받은 신청]에 그대로 남는다.
+  bool _incomingOpen = false;
+
+  Future<void> _showIncomingFriendRequest(String friendshipId) async {
+    if (_incomingOpen) return;
+    _incomingOpen = true;
+    try {
+      final info = await _partnerInfo();
+      if (info == null || !mounted) return;
+
+      final accept = await showIncomingFriendRequestDialog(context, info: info);
+      if (accept == null || !mounted) return;
+
+      final actions = ref.read(friendActionsProvider);
+      final error = accept
+          ? await actions.accept(friendshipId)
+          : await actions.reject(friendshipId);
+      if (!mounted) return;
+      final l10n = L10n.of(context);
+      if (error != null) {
+        _toast(errorMessage(l10n, error));
+      } else if (accept) {
+        _toast(l10n.chatFriendAccepted(widget.room.partnerNickname));
+      }
+    } finally {
+      _incomingOpen = false;
+    }
+  }
+
+  /// 친구 팝업 머리(사진·이름·지역·접속)에 쓸 상대 [포스트 정보]. 못 읽으면 이유를 말하고 null.
+  Future<PostInfo?> _partnerInfo() async {
+    try {
+      return await ref.read(postInfoProvider(widget.room.partnerId).future);
+    } on ApiException catch (e) {
+      if (mounted) _toast(errorMessage(L10n.of(context), e));
+      return null;
+    }
   }
 
   /// 신고·차단은 서버가 대화방을 종료시키므로, 성공하면 화면을 닫고 목록으로 돌아간다.
@@ -261,6 +315,14 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     // 새 메시지가 오면 아래로 스크롤.
     ref.listen(chatMessagesProvider(widget.room.roomId), (_, _) {
       _scrollToBottom();
+    });
+    // 5-1 — 이 방 상대가 보낸 친구 신청은 채팅창 위에 바로 띄운다.
+    ref.listen(socketPacketProvider, (_, next) {
+      final packet = next.valueOrNull;
+      if (packet?.op != Op.friendReqIncoming) return;
+      if (packet!.data['fromUserId'] != widget.room.partnerId) return;
+      final friendshipId = packet.data['friendshipId'] as String?;
+      if (friendshipId != null) _showIncomingFriendRequest(friendshipId);
     });
     final keyboard = MediaQuery.viewInsetsOf(context).bottom;
     if (keyboard > _keyboard) _scrollToBottom();
