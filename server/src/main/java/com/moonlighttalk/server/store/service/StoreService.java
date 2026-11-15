@@ -31,7 +31,8 @@ import java.util.UUID;
  *
  * <p><b>프라임 구독분 / 상점 구매분</b>(V31, 사용자 2026-11-14):
  * <ul>
- *   <li>부스트 — 출처별 매수. 쓸 때 <b>프라임 구독분부터</b>. 프라임 구독분은 30일마다 10개로 다시 채우고 구독이 끝나면 사라진다.</li>
+ *   <li>부스트 — 출처별 매수. 쓸 때 <b>프라임 구독분부터</b>. 프라임 구독분은 30일마다 <b>10개씩 더해진다</b>(안 쓰면 계속 쌓인다,
+ *       사용자 2026-11-15). 구독이 끝나면 사라진다.</li>
  *   <li>패스 — 출처별 한 행. 상점 구매분은 <b>프라임이 끝난 뒤부터</b> 흐른다(구독 중엔 멈춰 있다).</li>
  *   <li>상점에서 다시 사기 — 상점 구매분이 남아 있으면 안 된다(기획서 "미 사용량이 모두 소진될 경우 구매 가능").</li>
  * </ul>
@@ -210,8 +211,8 @@ public class StoreService {
     }
 
     /**
-     * 프라임 부스트 다시 채우기 + 끝난 구독의 프라임 구독분 치우기(배치, 10분마다).
-     * 매달 10개로 <b>맞춘다</b> — 남은 건 사라진다(사용자 2026-11-14).
+     * 프라임 부스트 지급 + 끝난 구독의 프라임 구독분 치우기(배치, 10분마다).
+     * 30일마다 <b>10개씩 더한다</b> — 안 쓰면 계속 쌓인다(사용자 2026-11-15, 11-14의 "10개로 맞춤"을 바꿈).
      */
     @Transactional
     public int refreshPrimeBoosts() {
@@ -221,11 +222,16 @@ public class StoreService {
             StoreProperties.PrimePlan plan = properties.getPrimePlans().values().stream()
                     .filter(p -> p.getProduct().equals(sub.getProduct())).findFirst().orElse(null);
             if (plan == null) continue;
-            plan.getBoosts().forEach((kind, quantity) ->
-                    storeMapper.setBoostStock(sub.getUserId(), kind, "PRIME", quantity));
-            // 밀린 달이 여러 번이어도 한 번만 채우고, 다음 채울 때는 지금부터 센다.
+            // 배치가 멈춰 있던 동안 지난 달도 빠짐없이 — 지난 30일 묶음 수만큼 더한다.
             LocalDateTime next = sub.getBoostGrantedAt();
-            while (!next.plusDays(30).isAfter(now)) next = next.plusDays(30);
+            int months = 0;
+            while (!next.plusDays(30).isAfter(now)) {
+                next = next.plusDays(30);
+                months++;
+            }
+            final int times = months;
+            plan.getBoosts().forEach((kind, quantity) ->
+                    storeMapper.addBoostStock(sub.getUserId(), kind, "PRIME", quantity * times));
             storeMapper.updateBoostGrantedAt(sub.getId(), next);
             refilled++;
         }

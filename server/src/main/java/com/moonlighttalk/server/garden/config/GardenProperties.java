@@ -87,14 +87,14 @@ public class GardenProperties {
     }
 
     /**
-     * 일반 풀과 부스트 풀을 섞는 비율(기본 6:4).
+     * 일반 풀과 부스트 풀을 섞는 비율(기본 5:5 — 기획서 261111 4-1, 그 전 판은 6:4).
      *
      * <p>부스트 풀이 일반 풀보다 크거나 같으면 <b>비율을 뒤집는다</b> — 그래야 소수인 쪽이
      * 항상 더 자주 나온다. 부스트가 팔리지 않은 날 일반 사용자가 되레 밀리는 것을 막는 규칙이다.
      */
     public static class Mix {
-        private int normal = 6;
-        private int boost = 4;
+        private int normal = 5;
+        private int boost = 5;
 
         public int getNormal() { return normal; }
         public void setNormal(int v) { this.normal = v; }
@@ -105,7 +105,7 @@ public class GardenProperties {
     /**
      * 부스트를 <b>사용한 직후</b> 주어지는 최우선권. (기획 답변 2026-09-06)
      *
-     * <p>부스트 풀 안에서 갓 사용한 사람을 앞줄에 세운다. 6:4 믹싱은 건드리지 않는다 —
+     * <p>부스트 풀 안에서 갓 사용한 사람을 앞줄에 세운다. 풀 믹싱 비율은 건드리지 않는다 —
      * 우선권은 <b>부스트 사용자끼리 겨룰 때</b>만 작동한다.
      *
      * <p>⚠️ <b>단위가 "노출 횟수"가 아니라 "본 사람 수"다.</b> 한 사람이 세 번 봐도 1로 센다.

@@ -270,7 +270,7 @@ subscriptions              -- 프라임 멤버십(구독, 8-1)
   status      enum(ACTIVE, CANCELLED, EXPIRED)   -- CANCELLED=자동갱신만 해지(만료까지 유효)
   started_at  timestamptz
   expires_at  timestamptz
-  boost_granted_at timestamptz null              -- V31: 프라임 부스트를 마지막으로 채운 때(30일마다 10개로)
+  boost_granted_at timestamptz null              -- V31: 프라임 부스트를 마지막으로 준 때(30일마다 +10, 쌓인다)
   auto_renew  bool default true
   store_txn   text null                          -- 인앱결제 참조
   created_at  timestamptz
@@ -374,7 +374,7 @@ store_purchases            -- 인앱결제 영수증(V6 추가 — 01 §1.8의 "
   (`status='ENDED'` + `active_pair_key=NULL` + 양쪽에 `ROOM_STATE(ended)`). 순서가 있다 — §1.5 참고.
 - **5분** presence 만료 항목 청소(Redis 비활성 시. Redis면 TTL이 처리).
 - **10분** 만료된 `subscriptions`(→EXPIRED, `active_user_id` 해제) · `user_entitlements` · `boost_activations` 정리. 부스트가 1시간짜리라 주기를 짧게 뒀다.
-  + (V31) 프라임 부스트 **30일마다 10개로 다시 채우기**(`boost_granted_at`) · 끝난 구독의 **프라임 구독분 부스트 치우기**.
+  + (V31) 프라임 부스트 **30일마다 +10개**(`boost_granted_at`, 안 쓰면 쌓인다 — 배치가 멈춰 있던 달도 빠짐없이) · 끝난 구독의 **프라임 구독분 부스트 치우기**.
 - **미구현** 구독 자동 갱신(스토어 웹훅 서명 검증이 있어야 가능).
 - ⚠️ `ended_at+30분`은 **목록 표시 규칙**이지 삭제 작업이 아니다(§1.5). `chat_messages`가 `chat_rooms`에 `ON DELETE CASCADE`라 방을 지우면 메시지까지 사라져 보관 정책과 충돌하므로, 배치로 방을 지우지 않는다.
 - **구독**: `subscriptions` 만료 시 `auto_renew=true`면 자동 갱신(결제 연동), `CANCELLED`이면 `EXPIRED` 처리 + 연동 엔티틀먼트 만료.

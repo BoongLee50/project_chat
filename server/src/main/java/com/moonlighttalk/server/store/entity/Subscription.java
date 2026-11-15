@@ -11,7 +11,7 @@ public class Subscription {
     private String status;
     private LocalDateTime startedAt;
     private LocalDateTime expiresAt;
-    /** 프라임 부스트를 마지막으로 채운 때(30일마다 10개로). */
+    /** 프라임 부스트를 마지막으로 준 때(30일마다 10개씩 더한다). */
     private LocalDateTime boostGrantedAt;
     private Boolean autoRenew;
     private String storeTxn;

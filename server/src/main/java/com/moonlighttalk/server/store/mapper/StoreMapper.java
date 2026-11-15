@@ -24,7 +24,7 @@ public interface StoreMapper {
 
     void resumeAutoRenew(@Param("id") String id);
 
-    /** 프라임 부스트를 다시 채울 때가 된(마지막으로 채운 지 30일) 살아 있는 구독. */
+    /** 프라임 부스트를 줄 때가 된(마지막으로 준 지 30일) 살아 있는 구독. */
     List<Subscription> selectSubscriptionsDueForBoost(@Param("now") LocalDateTime now);
 
     void updateBoostGrantedAt(@Param("id") String id, @Param("at") LocalDateTime at);
@@ -74,10 +74,6 @@ public interface StoreMapper {
 
     // ── 부스트 ──
     void addBoostStock(@Param("userId") String userId, @Param("kind") String kind,
-                        @Param("source") String source, @Param("quantity") int quantity);
-
-    /** 수량을 맞춘다(프라임 구독분 — 매달 10개로). */
-    void setBoostStock(@Param("userId") String userId, @Param("kind") String kind,
                         @Param("source") String source, @Param("quantity") int quantity);
 
     /** 재고 차감. 남은 수량이 모자라면 0행이 갱신되므로 호출부가 실패로 처리한다. */

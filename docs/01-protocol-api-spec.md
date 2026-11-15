@@ -116,7 +116,7 @@ Engage  : {(좋아요×1)+(댓글×2)+(대화신청×4)} / 총 노출 × 100
           * 총 노출 20회 미만이면 0
 ```
 🚨 **Pick Point(부스트 가점)는 폐지됐다.** 부스트는 점수가 아니라 **풀을 나눈다** —
-일반 풀과 부스트 풀을 각각 정렬해 **6:4로 섞어** 내보낸다(부스트 풀이 더 크면 비율이 뒤집힌다).
+일반 풀과 부스트 풀을 각각 정렬해 **5:5로 섞어** 내보낸다(기획서 261111 4-1 — 그 전 판은 6:4, 설정 `app.garden.mix`. 비율이 다르면 부스트 풀이 더 클 때 뒤집힌다).
 응답의 `pick`은 PICK 마크 **표시용**이지 가점이 아니다. 광고의 "10배"는 이론상 최대 배수다.
 
 **노출 순서는 진입할 때 한 번만 정한다**(`FeedSessionStore`, 기본 30분 유지).
@@ -372,7 +372,7 @@ API를 직접 부르는 것으로 뚫린다. 응답에 `photoLocked`(잠김 여�
   `GET /store/products`의 `primePlans[].price` — **표시용 기준가(원)**, 설정 `app.store.prime-plans.*.price`(1개월 12,900 · 6개월 61,900). 실제 청구액은 스토어가 정하므로 **결제창이 붙으면 스토어 SDK 현지 가격으로 바꾼다**(막힌 것 E).
 - 📌 **상점 화면이 쓰는 값**(2026-11-14 `Scene_Shop(New)`, 기획서 261111 10장): 카탈로그 `shopProducts[]`(`id·type·kind·price(원, 표시용 기준가)·quantity·durationDays·discount(○% 할인 표시값)`, 설정 `app.store.shop-products`) ·
   `GET /me/wallet`의 `boosts.POST_BOOST`(`prime`·`store` 매수, `activeSource`·`activeStartedAt`·`activeExpiresAt`) · `passes.{ALBUM_PASS,TRANSLATE_PASS}`(`primeStartedAt/ExpiresAt`·`storeStartedAt/ExpiresAt`) · `activeBoosts[].source·startedAt`.
-  규칙(사용자 2026-11-14): **프라임 구독분을 먼저 쓴다**(부스트) · 프라임 부스트는 **30일마다 10개로 다시 채우고** 구독이 끝나면 사라진다 · 상점 패스는 **프라임이 끝난 뒤부터** 흐른다(구독 중엔 멈춤, 산 뒤 프라임을 시작해도 남은 시간을 들고 멈춘다).
+  규칙(사용자 2026-11-14): **프라임 구독분을 먼저 쓴다**(부스트) · 프라임 부스트는 **30일마다 10개씩 더해지고**(안 쓰면 계속 쌓인다, 사용자 2026-11-15) 구독이 끝나면 사라진다 · 상점 패스는 **프라임이 끝난 뒤부터** 흐른다(구독 중엔 멈춤, 산 뒤 프라임을 시작해도 남은 시간을 들고 멈춘다).
   `lunaPacks`는 서버 루나가 남아 있어 카탈로그에 그대로 나오지만 **화면은 없다**.
 - LINE은 **로그인 provider일 뿐 결제 수단이 아님**(디지털 재화는 스토어 결제 강제).
 - 광고 제거 혜택 → 광고 SDK(AdMob 등) 연동 필요.

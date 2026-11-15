@@ -147,9 +147,9 @@ public class PurchaseService {
         }
         // 프라임 구독분을 먼저 쓴다 — 흐르던 상점 구매분 패스는 프라임이 끝날 때까지 멈춘다(사용자 2026-11-14).
         storeMapper.pauseStoreEntitlements(userId, now, subscription.getExpiresAt());
-        // 프라임 부스트는 더하지 않고 맞춘다(매달 10개로, 배치가 30일마다 다시 채운다).
+        // 프라임 부스트 첫 달 몫 — 이후 배치가 30일마다 10개씩 더한다(안 쓰면 쌓인다, 사용자 2026-11-15).
         plan.getBoosts().forEach((kind, quantity) ->
-                storeMapper.setBoostStock(userId, kind, "PRIME", quantity));
+                storeMapper.addBoostStock(userId, kind, "PRIME", quantity));
         if (plan.getLuna() > 0) {
             lunaService.grant(userId, plan.getLuna(), "CHARGE", plan.getProduct());
         }

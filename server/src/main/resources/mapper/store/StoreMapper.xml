@@ -67,7 +67,7 @@
         UPDATE subscriptions SET status = 'ACTIVE', auto_renew = 1 WHERE id = #{id}
     </update>
 
-    <!-- 프라임 부스트를 다시 채울 때가 된 구독(마지막으로 채운 지 30일). -->
+    <!-- 프라임 부스트를 줄 때가 된 구독(마지막으로 준 지 30일). 주면 10개씩 더한다. -->
     <select id="selectSubscriptionsDueForBoost" resultMap="SubscriptionResultMap">
         SELECT * FROM subscriptions
         WHERE status IN ('ACTIVE','CANCELLED')
@@ -150,13 +150,6 @@
         INSERT INTO boost_inventory (user_id, kind, source, quantity)
         VALUES (#{userId}, #{kind}, #{source}, #{quantity})
         ON DUPLICATE KEY UPDATE quantity = quantity + VALUES(quantity)
-    </insert>
-
-    <!-- 프라임 구독분은 **더하지 않고 맞춘다** — 매달 10개로 다시 채움(남은 건 사라짐, 사용자 2026-11-14). -->
-    <insert id="setBoostStock">
-        INSERT INTO boost_inventory (user_id, kind, source, quantity)
-        VALUES (#{userId}, #{kind}, #{source}, #{quantity})
-        ON DUPLICATE KEY UPDATE quantity = VALUES(quantity)
     </insert>
 
     <!-- quantity > 0 조건을 WHERE에 두어 음수가 되지 않게 한다(경합에도 안전). -->
