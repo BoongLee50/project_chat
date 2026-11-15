@@ -12,6 +12,8 @@
   "loginWithLine": "LINEでログイン",
   "loginWithKakao": "カカオトークでログイン",
   "loginWithGoogle": "Googleでログイン",
+  "loginWithApple": "Appleでサインイン",
+  "loginProviderUnavailable": "このログイン方法はまだ準備中です。別の方法でログインしてください。",
   "loginTermsNotice": "ログインすると、利用規約およびプライバシーポリシーに同意したものとみなされます。",
   "nicknameTitle": "ニックネーム設定",
   "nicknameSubtitle": "月光トークで使うニックネームを入力してください。",

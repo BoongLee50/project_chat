@@ -22,7 +22,7 @@
 ### 1.1 인증 / 게이트
 | Method | Path | 설명 | 화면 |
 |--------|------|------|------|
-| POST | `/auth/social` | 소셜 로그인(provider, providerToken) → JWT 발급 + 회원상태 | 1,2 |
+| POST | `/auth/social` | 소셜 로그인(provider = `LINE`·`KAKAO`·`GOOGLE`·**`APPLE`**, providerToken) → JWT 발급 + 회원상태 | 1,2 |
 | POST | `/auth/refresh` | accessToken 재발급(refreshToken) | - |
 
 > 🗑️ **`GET /system/gate`는 삭제됐다**(Plan_3 ①단계, 게이트 폐지). 서버에 그 경로가 없다.
@@ -36,6 +36,18 @@
   "user": { "id": "...", "nickname": null } }
 ```
 - `BANNED` → 클라는 [MSG NUM1] 출력 후 로그인 종료.
+- 🆕 **로그인 수단 넷**(2026-11-15 — 애플 추가, V32). 앱스토어 규칙상 제3자 로그인이 있으면 Sign in with Apple이 필수다.
+- **providerToken이 무엇인가**와 서버 검사(2026-11-15 보강):
+
+  | provider | 앱이 보내는 것 | 서버가 보는 것 |
+  |---|---|---|
+  | `GOOGLE` | ID 토큰 | tokeninfo → **aud가 우리 클라이언트 ID 중 하나**(안드로이드·iOS·웹, `client-ids`) · iss가 구글 |
+  | `APPLE` | identity token(JWT) | 애플 공개키(JWKS)로 **서명** · iss `https://appleid.apple.com` · **aud = 번들 ID 또는 Services ID** · exp |
+  | `LINE` | ID 토큰 | LINE verify(client_id 함께) |
+  | `KAKAO` | 액세스 토큰 | `/v1/user/access_token_info` → 🚨 **`app_id`가 우리 앱인지**(예전엔 안 봐서 다른 앱의 카카오 토큰으로도 로그인됐다) |
+
+- 🚨 **토큰 검증 실패는 401**(`UNAUTHORIZED`, *"소셜 로그인 확인에 실패했어요."*) — 위조·만료·다른 앱 토큰·공급자 쪽 401 모두. 예전엔 500으로 새 나갔다.
+  어느 검사에서 걸렸는지는 서버 로그에만 남긴다.
 - provider별 client-id/secret/검증 URL과 사용 여부(`app.auth.social.{provider}.enabled`)는 서버 설정 파일로 관리. 키가 아직 없는 provider는 `enabled: false`로 꺼두고, 발급되는 대로 설정만 켜서 순차 오픈. [05 서버구조 §9.1](05-server-structure.md#91-소셜-로그인-실-구현-설정-파일-기반) 참고.
 
 ### 1.2 온보딩 / 프로필

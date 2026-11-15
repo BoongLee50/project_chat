@@ -13,7 +13,7 @@
 ```
 users
   id            uuid  PK
-  provider      enum(LINE, KAKAO, GOOGLE)
+  provider      enum(LINE, KAKAO, GOOGLE, APPLE)   -- APPLE은 V32(2026-11-15)
   provider_uid  text                      -- 소셜 고유 ID
   nickname      varchar(10) unique
   birth_year    int                       -- 만 18세 이상 검증

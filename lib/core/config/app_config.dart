@@ -27,9 +27,12 @@ class AppConfig {
   );
 
   /// 개발용 목 로그인 사용 여부(서버 local 프로필의 mock provider와 짝).
-  /// 실제 소셜 SDK 연동 전까지 로그인 흐름을 테스트하기 위한 임시 스위치.
+  ///
+  /// 기본값: **개발(debug·profile) 빌드는 목, 릴리스 빌드는 실제 소셜 SDK**(2026-11-15).
+  /// 예전엔 언제나 목이었다 — 릴리스에서 `--dart-define`을 잊으면 목 토큰이 운영 서버로 가서
+  /// (운영 서버는 mock이 꺼져 있으므로) 아무도 로그인하지 못한다. 강제로 바꾸려면 `--dart-define=USE_MOCK_LOGIN=false|true`.
   static const bool useMockLogin = bool.fromEnvironment(
     'USE_MOCK_LOGIN',
-    defaultValue: true,
+    defaultValue: !bool.fromEnvironment('dart.vm.product'),
   );
 }

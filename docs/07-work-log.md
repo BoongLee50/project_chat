@@ -120,6 +120,7 @@
 | **V29** | 달빛 한마디 답변글 100 → **200자**(261011 9-1) |
 | **V30** | 댓글 하나에 답글 하나 — `UNIQUE uk_comments_parent(parent_id)`, 409 `COMMENT_ALREADY_REPLIED` |
 | **V31** | 상점 — 프라임 구독분 / 상점 구매분 나눠 담기(261111 10장). `boost_inventory`·`user_entitlements` 출처(PRIME/STORE)별 행 · `boost_activations.source` · `subscriptions.boost_granted_at` |
+| **V32** | 로그인 수단에 **APPLE** — `users.provider` ENUM 넓힘(2026-11-15) |
 
 > 🚨 **새 번호는 만들기 직전에** `ls server/src/main/resources/db/migration | sort -V | tail -3`로 확인하고 **바로 커밋·푸시**(공통 규칙 §4-3). 이 표도 정본은 그 폴더다.
 
@@ -445,6 +446,29 @@ adb shell cmd locale set-app-locales com.example.project_chat --locales ko-KR
 > 📌 **여기까지가 다른 기기와 싱크된 범위다**(2026-09-19, 대화방 UI 개편 + V26 + 확인창·팝업 스크롤 제거 + **친구 화면 개편 V27**).
 > 다음에 할 일은 [09 인수인계](09-next-task-handoff.md) §2의 **막힌 것 3건**에서 고른다(A·B가 해소됐다).
 > 다음 "싱크용 문서" 요청은 **그 이후 작업부터** 정리하면 된다.
+
+### 2026-11-15 [그 외] — 소셜 로그인 1단계: 애플 추가(**V32**) · 카카오·구글 검사 보강 · 앱 로그인 두 단계로
+
+사용자: 구글·애플·라인·카카오 넷 중 하나로 연동한다(애플 추가). 키 없이 할 수 있는 것부터(1단계).
+⚠️ 기획서 261111 2장은 아직 *"LINE, KAKAO, GOOGLE 중 선택"* — 대화 중 결정이 우선(신뢰 순서). 기획서 갱신은 사용자 몫.
+
+| 어디 | 한 것 |
+|---|---|
+| **V32** | `users.provider`에 `APPLE` |
+| 서버 `AppleAuthProvider`(새) | identity token을 **애플 JWKS로 직접 서명 검증** · iss · aud(번들 ID/Services ID, 여럿) · exp. 모르는 `kid`면 키 목록 다시 받기(1분 1회) |
+| 서버 `KakaoAuthProvider` | 🚨 `/v2/user/me` → **`/v1/user/access_token_info` + `app_id` 대조** — 예전엔 **다른 앱이 받은 카카오 토큰으로도 로그인됐다**. 켜면서 `KAKAO_APP_ID`를 비우면 서버가 안 뜬다 |
+| 서버 `GoogleAuthProvider` | 클라이언트 ID **여럿**(안드로이드·iOS·웹, `GOOGLE_CLIENT_IDS`) · iss 확인 |
+| 서버 `AuthService` | 토큰 검증 실패가 **500으로 새던 것 → 401** *"소셜 로그인 확인에 실패했어요."*(이유는 로그에만) |
+| 앱 `social_sign_in.dart`(새) | 로그인 = ① 공급자 토큰(`SocialSignIn`) → ② 서버. 개발 빌드 `MockSocialSignIn`, 릴리스 `SdkSocialSignIn`(🚧 2단계 전까지 *"아직 준비 중"* 안내 — 죽은 버튼 금지) |
+| 앱 `AppConfig.useMockLogin` | 기본값 **개발=목 · 릴리스=SDK**(예전엔 언제나 목 — 릴리스에서 잊으면 아무도 로그인 못 함) |
+| 앱 로그인 화면 | **[Apple로 로그인]** 버튼(검정 + 흰 테두리, 애플 가이드). **아이폰에서만**, 개발 빌드는 어디서나. ARB ko·ja `loginWithApple` · `loginProviderUnavailable` |
+
+- 확인: 서버 테스트 `SocialAuthProvidersTest` **13/13**(진짜 키 없이 가짜 공급자 서버를 띄워 애플 서명·aud·iss·만료·남의 키, 카카오 다른 앱 토큰, 구글 여러 ID·iss) · 서버 전체 22/22 ·
+  `analyze` 깨끗 · 앱 테스트 새 3건 통과 · **에뮬에서 [Apple로 로그인] → 새 APPLE 계정 → 닉네임 설정 화면**까지 실제로 이어짐(V32 적용).
+- ⚠️ `flutter test` 전체는 **1건 실패** — 친구 세션의 `ee7888b`(100명 문구에서 숫자 뺌)를 `l10n_test` "친구 한도"가 못 따라온 것. 남의 범위라 09 친구 줄에 미반영으로.
+- ⚠️ 에뮬 앱 데이터를 지웠다(`pm clear`, 로그인 화면을 보려고) — 에뮬에서 쓰던 계정은 다시 로그인해야 한다.
+- 다음: **2단계**(키 받으면 SDK 넷 연결 — 패키지와 필요한 값은 `SdkSocialSignIn` 주석) · 3단계(Mac). **사용자 할 일 목록은 09 §2-2 F**.
+  덤으로 필요해진 것: **앱 안 계정 삭제**(애플 심사 필수 — 지금 없다).
 
 ### 2026-11-15 [그 외] — 두 Claude 계정 번갈아 쓰기: 넘기는 쪽 · 받는 쪽 절차(공통 규칙 §6-1)
 

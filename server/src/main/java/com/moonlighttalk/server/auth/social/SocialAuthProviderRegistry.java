@@ -16,11 +16,13 @@ public class SocialAuthProviderRegistry {
             Optional<LineAuthProvider> line,
             Optional<KakaoAuthProvider> kakao,
             Optional<GoogleAuthProvider> google,
+            Optional<AppleAuthProvider> apple,
             Optional<MockAuthProvider> mock
     ) {
         line.ifPresent(p -> providers.put(SocialProvider.LINE, p));
         kakao.ifPresent(p -> providers.put(SocialProvider.KAKAO, p));
         google.ifPresent(p -> providers.put(SocialProvider.GOOGLE, p));
+        apple.ifPresent(p -> providers.put(SocialProvider.APPLE, p));
 
         // 개발용: mock이 활성(app.auth.social.mock.enabled=true, 로컬 전용)이면
         // 실제 키가 없어 비활성인 provider 자리를 mock으로 대체한다.

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../l10n/app_localizations.dart';
@@ -6,15 +7,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimens.dart';
 import '../../../../shared/widgets/design_canvas.dart';
+import '../../../../core/config/app_config.dart';
 import '../../data/models/auth_models.dart';
+import '../../data/social/social_sign_in.dart';
 import '../providers/session_provider.dart';
 
 /// 로그인 화면.
 ///
-/// 배경은 시안의 밤하늘 이미지(상단), 하단은 시간 배지 + 소셜 로그인 버튼 3종.
-/// 버튼을 누르면 `POST /auth/social`로 로그인한다. 실제 소셜 SDK 연동 전까지는
-/// 개발용 목 토큰을 보내고 서버의 mock provider가 이를 받아준다
-/// (docs/01 §1.1 · 서버 `app.auth.social.mock.enabled`).
+/// 배경은 시안의 밤하늘 이미지(상단), 하단은 소셜 로그인 버튼 — **라인 · 카카오 · 구글 · 애플**(애플은 2026-11-15 추가).
+/// 버튼을 누르면 ① 공급자 토큰을 받고([SocialSignIn]) ② `POST /auth/social`로 우리 계정에 로그인한다.
+/// 개발 빌드는 목 토큰을 보내고 서버의 mock provider가 받아 준다(docs/01 §1.1 · 서버 `app.auth.social.mock.enabled`).
+///
+/// ⚠️ 버튼은 아직 **코드로 그린 자리 표시**다 — 로그인 화면 그림(버튼 4 · 배경, 한·일)이 오면 바꾼다.
 class LoginScreen extends ConsumerWidget {
   const LoginScreen({super.key});
 
@@ -78,17 +82,31 @@ class _SocialButtons extends ConsumerWidget {
     final l10n = L10n.of(context);
     final busy = ref.watch(sessionProvider).busy;
 
-    // 개발용: 소셜 SDK 대신 provider별 목 토큰을 서버에 보낸다.
-    // 토큰 문자열이 곧 테스트 계정 식별자라, provider마다 다른 계정이 된다.
-    void signIn(SocialProvider provider) {
+    // ① 공급자 토큰(개발 빌드는 목) → ② 서버 로그인. 창을 닫으면 아무 일도 없던 것으로,
+    // 아직 연결 안 된 공급자면 이유를 말한다(버튼을 죽이지 않는다).
+    Future<void> signIn(SocialProvider provider) async {
       if (busy) return;
-      ref
+      final String token;
+      try {
+        token = await ref.read(socialSignInProvider).obtainToken(provider);
+      } on SocialSignInCancelled {
+        return;
+      } on SocialSignInUnavailable {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(SnackBar(content: Text(l10n.loginProviderUnavailable)));
+        }
+        return;
+      }
+      await ref
           .read(sessionProvider.notifier)
-          .signIn(
-            provider: provider,
-            providerToken: 'dev-${provider.wireName.toLowerCase()}',
-          );
+          .signIn(provider: provider, providerToken: token);
     }
+
+    // 애플은 **아이폰에서만** 보인다(안드로이드는 웹 방식이라 서버 설정이 더 든다 — 사용자에게 확인 대기).
+    // 개발(목) 빌드는 어디서든 보여서 안드로이드 에뮬에서도 흐름을 시험할 수 있다.
+    final showApple = defaultTargetPlatform == TargetPlatform.iOS || AppConfig.useMockLogin;
 
     return Column(
       children: [
@@ -139,6 +157,21 @@ class _SocialButtons extends ConsumerWidget {
             ),
           ),
         ),
+        if (showApple) ...[
+          const SizedBox(height: AppDimens.gapMd),
+          _SocialButton(
+            label: l10n.loginWithApple,
+            background: AppColors.apple,
+            foreground: AppColors.appleText,
+            // 검은 버튼이 어두운 배경에 묻히지 않게 흰 테두리 — 애플 가이드의 "흰 테두리 검은 버튼" 형태.
+            borderColor: AppColors.appleText,
+            onPressed: () => signIn(SocialProvider.apple),
+            leading: _badge(
+              bg: AppColors.appleText,
+              child: const Icon(Icons.apple, size: 18, color: AppColors.apple),
+            ),
+          ),
+        ],
       ],
     );
   }
@@ -161,6 +194,7 @@ class _SocialButton extends StatelessWidget {
     required this.foreground,
     required this.leading,
     required this.onPressed,
+    this.borderColor,
   });
 
   final String label;
@@ -168,6 +202,7 @@ class _SocialButton extends StatelessWidget {
   final Color foreground;
   final Widget leading;
   final VoidCallback onPressed;
+  final Color? borderColor;
 
   @override
   Widget build(BuildContext context) {
@@ -176,7 +211,10 @@ class _SocialButton extends StatelessWidget {
       width: double.infinity,
       child: Material(
         color: background,
-        borderRadius: BorderRadius.circular(AppDimens.radiusMd),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppDimens.radiusMd),
+          side: borderColor == null ? BorderSide.none : BorderSide(color: borderColor!),
+        ),
         child: InkWell(
           borderRadius: BorderRadius.circular(AppDimens.radiusMd),
           onTap: onPressed,

@@ -30,6 +30,9 @@ class AppColors {
   static const Color kakaoText = Color(0xFF191600);
   static const Color google = Color(0xFFFFFFFF);
   static const Color googleText = Color(0xFF1F1F1F);
+  // Sign in with Apple — 애플 가이드 색(검정 바탕 · 흰 글자·로고)
+  static const Color apple = Color(0xFF000000);
+  static const Color appleText = Color(0xFFFFFFFF);
 
   // 상태
   static const Color danger = Color(0xFFE2504A);

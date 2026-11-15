@@ -18,6 +18,8 @@
   "loginWithLine": "LINE으로 로그인",
   "loginWithKakao": "카카오톡으로 로그인",
   "loginWithGoogle": "Google로 로그인",
+  "loginWithApple": "Apple로 로그인",
+  "loginProviderUnavailable": "아직 준비 중인 로그인이에요. 다른 방법으로 로그인해 주세요.",
   "loginTermsNotice": "로그인하면 서비스 이용약관 및 개인정보처리방침에 동의하게 됩니다.",
   "nicknameTitle": "닉네임 설정",
   "nicknameSubtitle": "달빛톡에서 사용할 닉네임을 입력해주세요.",

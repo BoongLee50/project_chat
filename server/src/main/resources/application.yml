@@ -201,12 +201,22 @@ app:
         enabled: false
         client-id: ${KAKAO_CLIENT_ID:}
         client-secret: ${KAKAO_CLIENT_SECRET:}
-        verify-url: https://kapi.kakao.com/v2/user/me
+        # 🚨 토큰이 **우리 앱** 것인지 app_id로 대조한다(2026-11-15). 켜면서 비워 두면 서버가 아예 안 뜬다.
+        app-id: ${KAKAO_APP_ID:}
+        verify-url: https://kapi.kakao.com/v1/user/access_token_info
       google:
         enabled: false
         client-id: ${GOOGLE_CLIENT_ID:}
+        # 안드로이드·iOS·웹 클라이언트 ID가 각각 다르다 — 앱이 받는 토큰의 aud가 셋 중 무엇이든 받아들인다(쉼표로).
+        client-ids: ${GOOGLE_CLIENT_IDS:}
         client-secret: ${GOOGLE_CLIENT_SECRET:}
         verify-url: https://www.googleapis.com/oauth2/v3/tokeninfo
+      apple:
+        enabled: false
+        # identity token의 aud — 아이폰 앱은 **번들 ID**, 웹·안드로이드는 **Services ID**. 둘 다 쓰면 쉼표로.
+        client-id: ${APPLE_CLIENT_ID:}
+        client-ids: ${APPLE_CLIENT_IDS:}
+        jwks-url: https://appleid.apple.com/auth/keys
   translate:
     # 공급자. none이면 원문을 그대로 돌려준다 —
     # 🚨 이 상태에서는 **무료 자리를 쓰지 않는다**(번역도 안 되는데 횟수만 깎을 수 없다).

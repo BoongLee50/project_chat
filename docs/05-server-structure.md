@@ -24,7 +24,7 @@ project_chat/                   (레포 루트)
    │  │  ├─ response/           # ApiResponse 래퍼, ErrorCode
    │  │  └─ storage/            # FileStorageService(S3/로컬 디스크 추상화) — §8
    │  ├─ auth/                  # 소셜 로그인, 토큰 발급/갱신, 시간 게이트
-   │  │  └─ social/             # SocialAuthProvider 구현(LINE/KAKAO/GOOGLE, 설정 기반 enabled) — §9.1
+   │  │  └─ social/             # SocialAuthProvider 구현(LINE/KAKAO/GOOGLE/APPLE, 설정 기반 enabled) — §9.1
    │  ├─ profile/                # 온보딩/프로필(닉네임·관심사·지역·소개)
    │  ├─ post/                   # 오늘의 포스트(사진·하루 한마디)
    │  ├─ garden/                 # 달빛가든 피드/댓글/번역/Post Score
@@ -218,7 +218,10 @@ common/storage/
 
 ### 9.1 소셜 로그인 (실 구현, 설정 파일 기반)
 
-LINE/KAKAO/GOOGLE 각각을 **실제로 구현**한다. Provider별로 필요한 정보(client-id/secret, 검증 API URL 등)와 **사용 여부(enabled)** 를 모두 `application.yml`에서 설정으로 관리 — 코드 변경 없이 provider를 켜고 끌 수 있게 한다.
+LINE/KAKAO/GOOGLE/**APPLE**(2026-11-15 추가) 각각을 **실제로 구현**한다.
+> 🆕 2026-11-15: 애플은 identity token을 **JWKS로 직접 서명 검증** · 카카오는 **`app_id` 대조**(`KAKAO_APP_ID`, 비우고 켜면 서버가 안 뜬다) ·
+> 구글은 **클라이언트 ID 여럿**(`GOOGLE_CLIENT_IDS`). 키 없이 규칙만 보는 단위 테스트 `SocialAuthProvidersTest`(가짜 공급자 서버, 13건).
+> 실제 설정 키 이름은 `application.yml`이 정본이다(아래 예는 옛 모양). Provider별로 필요한 정보(client-id/secret, 검증 API URL 등)와 **사용 여부(enabled)** 를 모두 `application.yml`에서 설정으로 관리 — 코드 변경 없이 provider를 켜고 끌 수 있게 한다.
 
 ```
 auth/social/

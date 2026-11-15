@@ -33,7 +33,9 @@ enum AuthStatus {
 enum SocialProvider {
   line('LINE'),
   kakao('KAKAO'),
-  google('GOOGLE');
+  google('GOOGLE'),
+  // 애플 앱스토어 규칙: 제3자 로그인을 쓰면 Sign in with Apple도 반드시(2026-11-15 추가, 서버 V32).
+  apple('APPLE');
 
   const SocialProvider(this.wireName);
 

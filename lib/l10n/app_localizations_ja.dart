@@ -45,6 +45,12 @@ class L10nJa extends L10n {
   String get loginWithGoogle => 'Googleでログイン';
 
   @override
+  String get loginWithApple => 'Appleでサインイン';
+
+  @override
+  String get loginProviderUnavailable => 'このログイン方法はまだ準備中です。別の方法でログインしてください。';
+
+  @override
   String get loginTermsNotice => 'ログインすると、利用規約およびプライバシーポリシーに同意したものとみなされます。';
 
   @override

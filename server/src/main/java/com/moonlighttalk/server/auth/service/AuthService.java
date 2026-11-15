@@ -13,12 +13,14 @@ import com.moonlighttalk.server.common.exception.ApiException;
 import com.moonlighttalk.server.common.exception.UnauthorizedException;
 import com.moonlighttalk.server.common.response.ErrorCode;
 import com.moonlighttalk.server.common.security.JwtProvider;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
+@Slf4j
 @Service
 public class AuthService {
 
@@ -40,7 +42,17 @@ public class AuthService {
                 .orElseThrow(() -> new ApiException(ErrorCode.PROVIDER_DISABLED, HttpStatus.CONFLICT,
                         provider + " 로그인은 현재 비활성화되어 있습니다."));
 
-        SocialUserInfo socialUserInfo = authProvider.verify(providerToken);
+        SocialUserInfo socialUserInfo;
+        try {
+            socialUserInfo = authProvider.verify(providerToken);
+        } catch (ApiException e) {
+            throw e;
+        } catch (RuntimeException e) {
+            // 위조·만료·다른 앱의 토큰, 공급자 쪽 401 — 모두 **로그인 실패(401)**다. 예전엔 500으로 새 나갔다(2026-11-15).
+            // 이유는 서버 로그에만 남기고 앱에는 알리지 않는다(어느 검사에서 걸렸는지가 공격자에게 힌트가 된다).
+            log.warn("{} 소셜 토큰 검증 실패: {}", provider, e.toString());
+            throw new UnauthorizedException("소셜 로그인 확인에 실패했어요.");
+        }
 
         User user = userMapper.findByProvider(provider.name(), socialUserInfo.providerUid());
         boolean isNew = (user == null);

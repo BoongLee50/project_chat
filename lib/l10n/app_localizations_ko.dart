@@ -45,6 +45,12 @@ class L10nKo extends L10n {
   String get loginWithGoogle => 'Google로 로그인';
 
   @override
+  String get loginWithApple => 'Apple로 로그인';
+
+  @override
+  String get loginProviderUnavailable => '아직 준비 중인 로그인이에요. 다른 방법으로 로그인해 주세요.';
+
+  @override
   String get loginTermsNotice => '로그인하면 서비스 이용약관 및 개인정보처리방침에 동의하게 됩니다.';
 
   @override

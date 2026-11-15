@@ -169,6 +169,18 @@ abstract class L10n {
   /// **'Google로 로그인'**
   String get loginWithGoogle;
 
+  /// No description provided for @loginWithApple.
+  ///
+  /// In ko, this message translates to:
+  /// **'Apple로 로그인'**
+  String get loginWithApple;
+
+  /// No description provided for @loginProviderUnavailable.
+  ///
+  /// In ko, this message translates to:
+  /// **'아직 준비 중인 로그인이에요. 다른 방법으로 로그인해 주세요.'**
+  String get loginProviderUnavailable;
+
   /// No description provided for @loginTermsNotice.
   ///
   /// In ko, this message translates to:
