@@ -45,8 +45,8 @@
 | 13 | `scene_talk/talk_list/button_list_normal.png` | 대화 목록 | 484×98 |
 | 14 | `scene_talk/talk_list/button_receive_color.png` | 받은 신청 | 484×98 |
 | 15 | `scene_talk/talk_list/button_receive_normal.png` | 받은 신청 | 484×98 |
-| 16 | `scene_talk/application_received/button_view_trans.png` | 원문보기 | 209×73 |
-| 17 | `scene_talk/application_received/button_profile.png` | 프로필 | 256×78 |
+| 16 | `scene_talk/application_received/button_view_trans.png` | 원문보기 | 248×72 (11-15 교체, 옛 209×73) |
+| 17 | `scene_talk/application_received/button_profile.png` | 프로필 | 252×77 (11-15 교체, 옛 256×78) |
 | 18 | `scene_friend/friend_list/title_friends.png` | 친구 | 147×71 |
 | 19 | `scene_friend/friend_list/button_friends_color.png` | 친구 목록 | 484×98 |
 | 20 | `scene_friend/friend_list/button_friends_normal.png` | 친구 목록 | 484×98 |

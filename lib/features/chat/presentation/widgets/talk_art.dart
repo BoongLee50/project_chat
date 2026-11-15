@@ -116,7 +116,9 @@ class TalkArt {
   static const double messageLeft = 72 - 24;
 
   static const String viewOriginal = '$_recv/button_view_trans.png';
-  static const Size viewOriginalSize = Size(209, 73);
+  /// 2026-11-15 `그래픽 소스`에서 209×73 → **248×72**(글자가 커졌다). 자리 `211`은 그대로.
+  /// 📌 프로필 미리보기 `_ViewOriginalButton`도 이 그림·크기를 같이 쓴다.
+  static const Size viewOriginalSize = Size(248, 72);
   static const double viewOriginalLeft = 211 - 24;
 
   /// 같은 나라 사람이라 `[원문보기]`를 못 누를 때의 알파(2026-10-04 사용자 결정).
@@ -124,8 +126,10 @@ class TalkArt {
   static const double viewOriginalDisabledOpacity = 0.35;
 
   static const String profile = '$_recv/button_profile.png';
-  static const Size profileSize = Size(256, 78);
-  static const double profileLeft = 770 - 24;
+  /// 2026-11-15 `그래픽 소스`에서 256×78 → **252×77**, 자리 `770` → **`756`**(대화방 좌표 시안).
+  /// 친구 요청 상세도 이 값을 같이 쓴다(친구 좌표 시안은 아직 옛 `770`이지만 그림이 대화방 것이다).
+  static const Size profileSize = Size(252, 77);
+  static const double profileLeft = 756 - 24;
 
   static const double panelRowTop = 1526 - 1487;
 

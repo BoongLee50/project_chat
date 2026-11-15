@@ -446,6 +446,13 @@ adb shell cmd locale set-app-locales com.example.project_chat --locales ko-KR
 > 다음에 할 일은 [09 인수인계](09-next-task-handoff.md) §2의 **막힌 것 3건**에서 고른다(A·B가 해소됐다).
 > 다음 "싱크용 문서" 요청은 **그 이후 작업부터** 정리하면 된다.
 
+### 2026-11-15 [대화방] — `그래픽 소스/대화방 화면` 반영(받은 신청 버튼 둘) · 기획서 261111 6장 대조 → 바뀐 것 없음
+- **그래픽**: 대조 도구에서 대화방은 🔴 둘만 — 받은 신청 `button_profile` 256×78 → **252×77**, `button_view trans` 209×73 → **248×72**(글자가 커졌다). `icon_next`는 원래 안 들인다.
+  좌표 시안(`대화방_받은신청_팝업창 좌표.png`)대로 `TalkArt.profileLeft` 770 → **756**, `viewOriginalLeft` 211 그대로.
+  🔗 **공용**: 친구 요청 상세(`friend_request_screen.dart`)와 프로필 미리보기 `[원문보기]`도 `TalkArt` 값을 써서 함께 바뀐다 — 친구 좌표 시안은 아직 옛 770이다. 두 세션 09 §0 줄에 기록.
+- **기획서 261011 → 261111 6장 diff**: 6-1·6-2 본문 **한 글자도 같다**. 10-1의 "프라임 대화 신청은 받은 신청 1일 최상단"도 그대로(`ChatRequestEntity.priorityUntil`, 24시간 — 이미 구현).
+- ⚠️ `flutter analyze`: 내 파일은 깨끗. `chat_screen.dart`의 `chatFriendAccepted` 오류 하나는 `/chat` 세션이 ARB를 고치는 중이라 생긴 것(손대지 않음). 그래서 실기기 눈 확인은 미룸.
+
 ### 2026-11-15 [채팅창] — `그래픽 소스/채팅창` · 기획서 261111 5장 대조 → 문구 두 줄만
 - **그래픽**: `compare_ui_delivery.py "D:/Plan_Chat/그래픽 소스"` — 채팅창 19장 **전부 같음**(시안 3장 건너뜀). 할 것 없음.
   (이 PC 콘솔이 cp949라 도구가 이모지 출력에서 죽는다 → `PYTHONIOENCODING=utf-8`로 돌릴 것)
