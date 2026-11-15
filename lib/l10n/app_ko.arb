@@ -947,13 +947,9 @@
   "errorFriendAcceptNotReceiver": "내가 받은 요청만 수락할 수 있어요.",
   "errorFriendRejectNotReceiver": "내가 받은 요청만 거절할 수 있어요.",
   "errorFriendCancelNotSender": "내가 보낸 요청만 취소할 수 있어요.",
-  "errorFriendLimitExceeded": "친구는 최대 {limit}명까지예요.",
+  "errorFriendLimitExceeded": "친구 목록이 가득 차서 더 이상 추가할 수 없습니다.",
   "@errorFriendLimitExceeded": {
-    "placeholders": {
-      "limit": {
-        "type": "int"
-      }
-    }
+    "description": "기획서 7-1 안내 메시지 그대로(숫자 없음). 한도 100은 서버 app.friend.max-count"
   },
   "errorFriendNoTodayPost": "친구가 아직 오늘의 포스트를 공유하지 않았어요.",
   "errorStoreProductNotFound": "존재하지 않는 상품이에요.",

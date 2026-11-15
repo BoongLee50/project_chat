@@ -28,7 +28,7 @@ String errorMessage(L10n l10n, ApiException e) {
     'POST_PHOTO_NOT_FOUND' => l10n.errorPostPhotoNotFound,
     'POST_PHOTO_NOT_MINE' => l10n.errorPostPhotoNotMine,
     // 장수·횟수는 설정값이라 언제든 바뀐다 — 서버가 field에 실어 보내고 ARB가 조립한다
-    // (`FRIEND_LIMIT_EXCEEDED`와 같은 방식). 문구에 숫자를 굳히면 설정만 바꿔도 거짓말이 된다.
+    // (`COMMENT_TOO_LONG`과 같은 방식). 문구에 숫자를 굳히면 설정만 바꿔도 거짓말이 된다.
     'POST_PHOTO_LIMIT' => l10n.errorPostPhotoLimit(_count(e)),
     'POST_PHOTO_LOCKED' => l10n.errorPostPhotoLocked,
     'POST_REPLACE_LIMIT' => l10n.errorPostReplaceLimit(_count(e)),
@@ -92,10 +92,9 @@ String errorMessage(L10n l10n, ApiException e) {
     'FRIEND_ACCEPT_NOT_RECEIVER' => l10n.errorFriendAcceptNotReceiver,
     'FRIEND_REJECT_NOT_RECEIVER' => l10n.errorFriendRejectNotReceiver,
     'FRIEND_CANCEL_NOT_SENDER' => l10n.errorFriendCancelNotSender,
-    // 한도 숫자는 서버가 field에 실어 보낸다 — 문장 조립은 ARB가 한다.
-    'FRIEND_LIMIT_EXCEEDED' => l10n.errorFriendLimitExceeded(
-      int.tryParse(e.field ?? '') ?? 0,
-    ),
+    // 기획서 7-1 안내 문구가 숫자 없이 정해져 있다("친구 목록이 가득 차서…") — 서버가 field에
+    // 한도를 싣긴 하지만 문장엔 쓰지 않는다.
+    'FRIEND_LIMIT_EXCEEDED' => l10n.errorFriendLimitExceeded,
     'FRIEND_NO_TODAY_POST' => l10n.errorFriendNoTodayPost,
 
     // ── store ────────────────────────────────────────

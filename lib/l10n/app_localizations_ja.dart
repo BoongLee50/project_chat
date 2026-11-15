@@ -1559,9 +1559,7 @@ class L10nJa extends L10n {
   String get errorFriendCancelNotSender => '自分が送った申請のみ取り消せます。';
 
   @override
-  String errorFriendLimitExceeded(int limit) {
-    return '友だちは最大$limit人までです。';
-  }
+  String get errorFriendLimitExceeded => '友だちリストがいっぱいのため、これ以上追加できません。';
 
   @override
   String get errorFriendNoTodayPost => '友だちはまだ今日のポストを共有していません。';

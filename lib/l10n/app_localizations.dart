@@ -2911,11 +2911,11 @@ abstract class L10n {
   /// **'내가 보낸 요청만 취소할 수 있어요.'**
   String get errorFriendCancelNotSender;
 
-  /// No description provided for @errorFriendLimitExceeded.
+  /// 기획서 7-1 안내 메시지 그대로(숫자 없음). 한도 100은 서버 app.friend.max-count
   ///
   /// In ko, this message translates to:
-  /// **'친구는 최대 {limit}명까지예요.'**
-  String errorFriendLimitExceeded(int limit);
+  /// **'친구 목록이 가득 차서 더 이상 추가할 수 없습니다.'**
+  String get errorFriendLimitExceeded;
 
   /// No description provided for @errorFriendNoTodayPost.
   ///

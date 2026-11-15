@@ -64,8 +64,9 @@ public class FriendService {
     private final PostPhotoVisibility postPhotoVisibility;
 
     /**
-     * 최대 친구 수. 기획서에 20과 30이 함께 적혀 있어(보완 문서 대기) 설정으로 뺐다.
-     * 프리미엄이 더 많이 가질 수 있다는 해석으로 기본값을 잡아 두었다.
+     * 최대 친구 수 — 기획서 7-1 "친구 등록 가능 최대수는 100명"(과금과 무관). 예전 판의 20·30이
+     * 다시 갈릴 수 있어 키는 둘 다 남겨 두었다(application.yml). 넘으면 {@code FRIEND_LIMIT_EXCEEDED} —
+     * 앱 문구는 기획서 그대로 "친구 목록이 가득 차서 더 이상 추가할 수 없습니다."
      */
     private final int maxFriends;
     private final int maxFriendsPremium;

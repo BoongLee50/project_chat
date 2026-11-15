@@ -469,13 +469,9 @@
   "errorFriendAcceptNotReceiver": "自分が受け取った申請のみ承認できます。",
   "errorFriendRejectNotReceiver": "自分が受け取った申請のみ辞退できます。",
   "errorFriendCancelNotSender": "自分が送った申請のみ取り消せます。",
-  "errorFriendLimitExceeded": "友だちは最大{limit}人までです。",
+  "errorFriendLimitExceeded": "友だちリストがいっぱいのため、これ以上追加できません。",
   "@errorFriendLimitExceeded": {
-    "placeholders": {
-      "limit": {
-        "type": "int"
-      }
-    }
+    "description": "企画書 7-1 の案内文(数字なし)。上限 100 はサーバー app.friend.max-count"
   },
   "errorFriendNoTodayPost": "友だちはまだ今日のポストを共有していません。",
   "errorStoreProductNotFound": "存在しない商品です。",

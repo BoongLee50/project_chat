@@ -1569,9 +1569,7 @@ class L10nKo extends L10n {
   String get errorFriendCancelNotSender => '내가 보낸 요청만 취소할 수 있어요.';
 
   @override
-  String errorFriendLimitExceeded(int limit) {
-    return '친구는 최대 $limit명까지예요.';
-  }
+  String get errorFriendLimitExceeded => '친구 목록이 가득 차서 더 이상 추가할 수 없습니다.';
 
   @override
   String get errorFriendNoTodayPost => '친구가 아직 오늘의 포스트를 공유하지 않았어요.';
