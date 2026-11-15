@@ -557,15 +557,17 @@ class _FeedPagerState extends ConsumerState<_FeedPager> {
                     Positioned(
                       top: 16,
                       left: 16,
-                      right: 16,
+                      // 장수 표기(카드 위에 따로 그린다)와 겹치지 않게 그 자리까지 비운다.
+                      right: _pageCount(item) > 1
+                          ? cardBox.maxWidth -
+                                GardenArt.pageCountAt.dx *
+                                    DesignCanvas.scaleOf(context)
+                          : 16,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Row(
                             children: [
-                              // ⚠️ 이름 쪽을 **Expanded 한 덩어리**로 묶어야 장수 표기가 오른쪽 끝에 붙는다.
-                              // 전에는 `Flexible(이름) … Spacer() … 1/8`이었는데 Flexible과 Spacer가
-                              // 남는 폭을 **반씩 나눠 가져** 장수가 가운데쯤에 떠 있었다.
                               Expanded(
                                 child: Row(
                                   children: [
@@ -616,29 +618,6 @@ class _FeedPagerState extends ConsumerState<_FeedPager> {
                                   ],
                                 ),
                               ),
-                              // 시안(4-1)은 눈금이 아니라 **`1/8` 같은 숫자 표기**다 — 지금 몇 장째 / 전체.
-                              //
-                              // **잠겨 있어도 전체 장수는 알린다** — 몇 장이 더 있는지 보여야
-                              // 눌러 볼 마음이 생기고, 그게 사진 등록을 유도하는 장치다.
-                              //
-                              // 📌 크기는 **대화방 [프로필] 팝업의 장수 표기와 같다**(`request_popup.dart`
-                              // 58 × 배율, 사용자 2026-11-15 — 12dp 알약은 너무 작았다). 둘을 함께 맞출 것.
-                              if (_pageCount(item) > 1)
-                                Text(
-                                  '${_page + 1}/${_pageCount(item)}',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: GardenArt.pageCountFontSize *
-                                        DesignCanvas.scaleOf(context),
-                                    fontWeight: FontWeight.w700,
-                                    shadows: const [
-                                      Shadow(
-                                        blurRadius: 6,
-                                        color: Colors.black54,
-                                      ),
-                                    ],
-                                  ),
-                                ),
                             ],
                           ),
                           // 활동 지역(기획 §2-5) — 있는 사람만. 코드는 서버가, 문구는 여기서.
@@ -737,6 +716,31 @@ class _FeedPagerState extends ConsumerState<_FeedPager> {
             // 카드 외곽선 — 클립 **바깥**에 얹어야 모서리가 안 깎인다.
             // 앨범 패스·프라임을 가진 사람의 포스트는 **무지개빛**이다(기획 화면 26·29).
             CardFrame(decorated: item.decorated),
+
+            // 몇 장째인지(`1/9`) — **포스트 카드와 같은 크기·자리**(사용자 2026-11-15, `PostArt.countAt`·`countFontSize`).
+            // 두 카드는 자리·폭이 같아(23, 475 ~ 1055) 카드 기준 좌표를 그대로 쓴다. 함께 맞출 것.
+            //
+            // **잠겨 있어도 전체 장수는 알린다** — 몇 장이 더 있는지 보여야
+            // 눌러 볼 마음이 생기고, 그게 사진 등록을 유도하는 장치다.
+            // 글자는 탭을 사진으로 흘려보낸다(눌러도 다음 장).
+            if (_pageCount(item) > 1)
+              Positioned(
+                left: GardenArt.pageCountAt.dx * DesignCanvas.scaleOf(context),
+                top: GardenArt.pageCountAt.dy * DesignCanvas.scaleOf(context),
+                child: IgnorePointer(
+                  child: Text(
+                    '${_page + 1}/${_pageCount(item)}',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize:
+                          GardenArt.pageCountFontSize *
+                          DesignCanvas.scaleOf(context),
+                      fontWeight: FontWeight.w800,
+                      height: 1.0,
+                    ),
+                  ),
+                ),
+              ),
           ],
         ),
       ),
