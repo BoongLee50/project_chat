@@ -117,6 +117,9 @@ class L10nJa extends L10n {
   String get homeTitle => '今日のポスト';
 
   @override
+  String get homeSubtitle => '今日の日常を写真でシェアしてみましょう。';
+
+  @override
   String get homeTodayMoon => '今日の月';
 
   @override

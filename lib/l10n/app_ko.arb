@@ -42,6 +42,7 @@
   "commonEdit": "수정",
   "commonEmptyValue": "—",
   "homeTitle": "오늘의 포스트",
+  "homeSubtitle": "오늘의 일상을 사진으로 공유해 보세요.",
   "homeTodayMoon": "오늘의 달",
   "homeMoonCrescent": "초승달",
   "homeLoadFailed": "포스트를 불러오지 못했어요.",

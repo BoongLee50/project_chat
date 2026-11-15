@@ -186,9 +186,8 @@ class _PostBody extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const _TopBar(),
-            // 머리글 줄 높이는 **Prime 버튼**이 정한다(타이틀보다 크다) — 간격도 거기 기준.
-            SizedBox(height: DesignCanvas.headerToRow * s),
+            // 머리글(제목·안내 문구·Prime) + 아래 간격을 **한 칸**으로 — 높이는 가든과 같다.
+            const _Header(),
             const _PassBoostRow(),
             SizedBox(height: PostArt.buttonsToCard * s),
             SizedBox(
@@ -211,30 +210,68 @@ class _PostBody extends ConsumerWidget {
 ///
 /// 달빛가든 머리글과 **같은 자리·같은 그림**을 쓴다(시안에서 두 화면의 상단이 동일하다) —
 /// Prime·루나 버튼은 달빛가든 폴더로 전달됐고 양쪽이 그 자리를 함께 가리킨다.
-class _TopBar extends ConsumerWidget {
-  const _TopBar();
+///
+/// 🆕 2026-11-15 시안: 루나 버튼이 빠져 **Prime 혼자 오른쪽**(277×92)이고, 제목 아래 **안내 문구**가 생겼다.
+///
+/// 🚨 **칸 높이는 가든과 똑같이 둔다** — 머리글 줄(102~185) + 버튼 줄까지 간격(185~356).
+/// 이 높이가 `DesignCanvas.aboveCard()`(가든과 공용)에 들어가 카드 크기를 정하기 때문이다.
+/// 그 안에서 제목·문구·Prime은 **시안 좌표 그대로** 얹는다(Prime은 칸보다 위로 8 넘친다).
+/// Row로 두던 때는 제목이 본문 왼쪽 끝(23)에 붙어 시안(47)보다 24 왼쪽이었다.
+class _Header extends StatelessWidget {
+  const _Header();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        ArtImage(
-          PostArt.title,
-          width: PostArt.titleSize.width,
-          height: PostArt.titleSize.height,
-        ),
-        const Spacer(),
-        GestureDetector(
-          onTap: () => Navigator.of(context).push(PrimeScreen.route()),
-          child: ArtImage(
-            PostArt.btnPrime,
-            width: PostArt.btnPrimeSize.width,
-            height: PostArt.btnPrimeSize.height,
+  Widget build(BuildContext context) {
+    final s = DesignCanvas.scaleOf(context);
+    // 칸 원점 = 시안 (contentLeft, headerTop). 좌표를 그 기준으로 옮긴다.
+    double x(double v) => (v - DesignCanvas.contentLeft) * s;
+    double y(double v) => (v - DesignCanvas.headerTop) * s;
+
+    return SizedBox(
+      width: double.infinity,
+      height: (DesignCanvas.headerHeight + DesignCanvas.headerToRow) * s,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Positioned(
+            left: x(PostArt.titleAt.dx),
+            top: y(PostArt.titleAt.dy),
+            child: ArtImage(
+              PostArt.title,
+              width: PostArt.titleSize.width,
+              height: PostArt.titleSize.height,
+            ),
           ),
-        ),
-        // 🗑 루나상점 버튼은 없어졌다(기획서 261111 — 루나 폐지, 사용자 2026-11-14). Prime이 오른쪽 끝으로 간다.
-      ],
+          // 안내 문구 — 그림으로 오지 않아 폰트로 그린다(언어는 ARB가 바꾼다).
+          Positioned(
+            left: x(PostArt.subtitleAt.dx),
+            top: y(PostArt.subtitleAt.dy),
+            child: Text(
+              L10n.of(context).homeSubtitle,
+              maxLines: 1,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: PostArt.subtitleFontSize * s,
+                fontWeight: FontWeight.w500,
+                height: 1.0,
+              ),
+            ),
+          ),
+          Positioned(
+            left: x(PostArt.btnPrimeAt.dx),
+            top: y(PostArt.btnPrimeAt.dy),
+            child: GestureDetector(
+              onTap: () => Navigator.of(context).push(PrimeScreen.route()),
+              child: ArtImage(
+                PostArt.btnPrime,
+                width: PostArt.btnPrimeSize.width,
+                height: PostArt.btnPrimeSize.height,
+              ),
+            ),
+          ),
+          // 🗑 루나상점 버튼은 없어졌다(기획서 261111 — 루나 폐지, 사용자 2026-11-14).
+        ],
+      ),
     );
   }
 }
@@ -520,23 +557,20 @@ class _PostPhotoCardState extends ConsumerState<_PostPhotoCard> {
             ),
           ),
 
-        // 몇 장째인지 — 휴지통 **왼쪽**에 둔다.
-        // 시안에는 없지만 사람마다·순간마다 달라지는 **상태**라 폰트가 맡는 자리다(14 §3).
+        // 몇 장째인지 — 2026-11-15 시안에서 **휴지통 바로 위, 크게**(903, 527)로 자리가 생겼다.
+        // 사람마다·순간마다 달라지는 **상태**라 폰트가 맡는다(14 §3).
         if (hasPhoto)
           Positioned(
-            right:
-                (PostArt.deleteRight + PostArt.btnDeleteSize.width + 12) *
-                    cardScale,
-            top:
-                (PostArt.deleteTop + PostArt.btnDeleteSize.height / 2 - 10) *
-                    cardScale,
+            left: PostArt.countAt.dx * cardScale,
+            top: PostArt.countAt.dy * cardScale,
             child: Text(
               // 무료로 돌아와 한도(2)보다 많이 남아 있으면 `3/2`가 되므로 큰 쪽을 분모로.
               '${index + 1}/${_photos.length > widget.post.maxPhotos ? _photos.length : widget.post.maxPhotos}',
-              style: const TextStyle(
+              style: TextStyle(
                 color: Colors.white,
-                fontSize: 13,
-                fontWeight: FontWeight.w700,
+                fontSize: PostArt.countFontSize * cardScale,
+                fontWeight: FontWeight.w800,
+                height: 1.0,
               ),
             ),
           ),

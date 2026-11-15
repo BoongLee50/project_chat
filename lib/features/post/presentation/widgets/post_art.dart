@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 /// 줄여 그리기 때문이다 — **일본어판 이미지로 교체할 때 같은 규격이면 코드를 안 고쳐도 된다.**
 ///
 /// 좌표는 `오늘의 포스트 좌표값.png`의 1080 캔버스 픽셀값이다(Plan_4부터 단위 변환이 없다).
+/// 🆕 2026-11-15 전달본(`그래픽 소스/포스트 화면`) 기준 — 루나 버튼이 빠지고 Prime이 혼자 커졌다,
+/// 제목 아래 안내 문구가 생겼다, 장수(`1/9`)가 휴지통 위로 올라갔다, 앨범·부스트 그림 규격이 바뀌었다.
 class PostArt {
   const PostArt._();
 
@@ -25,36 +27,40 @@ class PostArt {
 
   static const String title = '$_dir/title_post.png';
   static const Size titleSize = Size(232, 66);
-  static const Offset titleAt = Offset(47, 106);
+  /// 참고화면 실측 104(좌표값 표기는 106). 머리글 칸은 [DesignCanvas.headerTop](102)에서 시작한다.
+  static const Offset titleAt = Offset(47, 104);
 
-  // 상단 우측 두 버튼 — 달빛가든과 같은 자리·같은 그림이라 common에 둔다.
-  static const String btnPrime = '$_garden/button_prime.png';
-  static const Size btnPrimeSize = Size(248, 83);
-  static const Offset btnPrimeAt = Offset(577, 102);
+  /// 제목 아래 안내 문구 `오늘의 일상을 사진으로 공유해 보세요.`(2026-11-15 시안) —
+  /// **그림으로 오지 않아 폰트로 그린다**(ARB `homeSubtitle`). 참고화면 실측 글자 48~599 · 198~230.
+  static const Offset subtitleAt = Offset(47, 195);
+  static const double subtitleFontSize = 34;
 
-  static const String btnLuna = '$_garden/button_luna.png';
-  static const Size btnLunaSize = Size(216, 83);
-  static const Offset btnLunaAt = Offset(838, 102);
+  /// 🚨 **포스트 전용 Prime**(277×92, 2026-11-15) — 루나 버튼이 빠지며 혼자 커졌다.
+  /// 달빛가든 머리글은 아직 옛 그림(248×83, `scene_garden`)이다 — 가든 전달본이 바뀌면 가든 세션이 맞춘다.
+  /// 머리글 칸(102~185)보다 위아래로 조금 넘친다(94~186) — 칸 높이는 가든과 같게 두고 그림만 넘치게 한다.
+  static const String btnPrime = '$_dir/button_prime.png';
+  static const Size btnPrimeSize = Size(277, 92);
+  static const Offset btnPrimeAt = Offset(777, 94);
 
-  // 카드 위 두 버튼.
+  // 카드 위 두 버튼(2026-11-15 규격 변경: 601→571 · 407→430, 부스트 시작 645→622).
   static const String btnAlbumPass = '$_dir/button_postalbum.png';
-  static const Size btnAlbumPassSize = Size(601, 96);
+  static const Size btnAlbumPassSize = Size(571, 96);
   static const Offset btnAlbumPassAt = Offset(23, 356);
 
   static const String btnBoost = '$_dir/button_boost.png';
-  static const Size btnBoostSize = Size(407, 96);
-  static const Offset btnBoostAt = Offset(645, 356);
+  static const Size btnBoostSize = Size(430, 96);
+  static const Offset btnBoostAt = Offset(622, 356);
 
   /// 두 버튼의 그림에는 `포스트 앨범 |` · `부스트 |` 까지만 있다.
   /// **막대 오른쪽은 비어 있고** 거기에 상태(남은 일수·남은 분·구매)를 얹는다 —
   /// 사람마다 다른 값이라 그림에 구울 수 없다.
   ///
   /// 상태값은 **막대(`|`) 오른쪽 끝 ~ 테두리 안쪽** 사이의 **가운데**에 놓는다(기획 2026-10-04).
-  /// 그림 실측: 앨범 막대 343~347·테두리 안쪽 597 / 부스트 막대 239~243·테두리 안쪽 404.
-  static const double btnAlbumPassStatusLeft = 348;
-  static const double btnAlbumPassStatusRight = 4; // 601 - 597
+  /// 그림 실측(2026-11-15판): 앨범 막대 342~346·테두리 안쪽 567 / 부스트 막대 239~243·테두리 안쪽 427.
+  static const double btnAlbumPassStatusLeft = 347;
+  static const double btnAlbumPassStatusRight = 4; // 571 - 567
   static const double btnBoostStatusLeft = 244;
-  static const double btnBoostStatusRight = 3; // 407 - 404
+  static const double btnBoostStatusRight = 3; // 430 - 427
 
   // 카드 안에 얹히는 것들.
   //
@@ -112,9 +118,13 @@ class PostArt {
   /// `[TOP]` — 시안 `64, 527`.
   static Offset get topChipAt => _fromCardTopLeft(const Offset(64, 527));
 
-  /// 잠금 마크 — `[TOP]`(64~308)과 PICK(414~) **사이 106의 가운데**, 세로는 [TOP]과 같은 줄
-  /// (높이도 84로 같다). 기획서 261011 3-1 그림에서 그 빈칸에 들어가 있다.
-  static Offset get lockAt => _fromCardTopLeft(const Offset(326, 527));
+  /// 잠금 마크 — 시안 `330, 527`(2026-11-15 좌표값). `[TOP]`(64~308)과 PICK(414~) 사이, 세로는 [TOP]과 같은 줄.
+  static Offset get lockAt => _fromCardTopLeft(const Offset(330, 527));
+
+  /// 몇 장째(`1/9`) — 시안 `903, 527`. **휴지통(903, 631) 바로 위**, 크게(2026-11-15).
+  /// 참고화면 실측 글자 907~988 · 529~578(숫자 높이 49).
+  static Offset get countAt => _fromCardTopLeft(const Offset(903, 524));
+  static const double countFontSize = 64;
 
   /// `PICK` — 시안 `414, 527`. **[TOP] 바로 옆이 아니다**(사이가 106 벌어져 있다).
   static Offset get pickAt => _fromCardTopLeft(const Offset(414, 527));
@@ -134,12 +144,12 @@ class PostArt {
   /// 하트·말풍선의 **아랫변**(둘 다 시안에서 2204에 끝난다).
   static const double bottomIconsBottom = _cardBottom - 2204;
 
-  /// `[포스트 공유하기]` — 시안 `577, 2099`. 오른쪽에서 잰다.
-  static double get shareRight => _cardRight - (577 + btnShareSize.width);
+  /// `[포스트 공유하기]` — 시안 `576, 2099`. 오른쪽에서 잰다.
+  static double get shareRight => _cardRight - (576 + btnShareSize.width);
   static double get shareBottom => _cardBottom - (2099 + btnShareSize.height);
 
-  /// 촬영 버튼 윗변(시안 `441, 1838`).
-  static const double _cameraTop = 1838;
+  /// 촬영 버튼 윗변(시안 `440, 1839`).
+  static const double _cameraTop = 1839;
 
   /// 촬영 버튼 아랫변 — **그림 높이에서 계산한다.**
   /// 예전엔 코드로 그리던 지름(164)을 더해 굳혀 뒀는데, 그림(188)으로 오면서 값이 어긋났다.

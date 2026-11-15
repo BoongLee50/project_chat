@@ -117,6 +117,9 @@ class L10nKo extends L10n {
   String get homeTitle => '오늘의 포스트';
 
   @override
+  String get homeSubtitle => '오늘의 일상을 사진으로 공유해 보세요.';
+
+  @override
   String get homeTodayMoon => '오늘의 달';
 
   @override

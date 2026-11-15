@@ -313,6 +313,12 @@ abstract class L10n {
   /// **'오늘의 포스트'**
   String get homeTitle;
 
+  /// No description provided for @homeSubtitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'오늘의 일상을 사진으로 공유해 보세요.'**
+  String get homeSubtitle;
+
   /// No description provided for @homeTodayMoon.
   ///
   /// In ko, this message translates to:
