@@ -1131,32 +1131,29 @@ class _InputBar extends StatelessWidget {
       padding: EdgeInsets.fromLTRB(24 * s, 20 * s, 24 * s, 30 * s + bottom),
       child: Row(
         children: [
-          // 🚧 [사진] 버튼 그림이 안 왔다 — 보내기와 같은 노란 원에 아이콘으로 자리만 채운다.
+          // [사진] — `button_addphoto_m`(노란 원 + 사진 아이콘). 올리는 중에는 그림 위에 도는 표시를 얹는다.
           Semantics(
             button: true,
             label: l10n.commentsAttachImage,
             child: GestureDetector(
               onTap: onPickImage,
-              child: Container(
+              child: SizedBox(
                 width: WordArt.photoButtonSize * s,
                 height: WordArt.photoButtonSize * s,
-                decoration: const BoxDecoration(
-                  color: WordArt.yellow,
-                  shape: BoxShape.circle,
-                ),
-                child: uploading
-                    ? Padding(
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    Image.asset(WordArt.photoButton, fit: BoxFit.fill),
+                    if (uploading)
+                      Padding(
                         padding: EdgeInsets.all(34 * s),
                         child: const CircularProgressIndicator(
                           strokeWidth: 2,
                           color: WordArt.ink,
                         ),
-                      )
-                    : Icon(
-                        Icons.add_photo_alternate_outlined,
-                        color: const Color(0xFF3A3A44),
-                        size: 64 * s,
                       ),
+                  ],
+                ),
               ),
             ),
           ),

@@ -236,9 +236,9 @@ class WordArt {
   static const String sendOff = '$_detail/button_message_normal.png';
   static const Size sendSize = Size(119, 118);
 
-  /// 🚧 **[사진] 버튼 그림은 안 왔다** — 노란 원(보내기와 같은 색)에 아이콘을 얹어 자리만 채운다.
+  /// [사진] 버튼(`button_addphoto_m`, 120×120 — 노란 원 + 사진 아이콘). 2026-11-15 `그래픽 소스`로 왔다.
+  static const String photoButton = '$_detail/button_addphoto_m.png';
   static const double photoButtonSize = 120;
-  static const Color yellow = Color(0xFFFDC302);
 
   /// 배경 미색(시안 실측 253,243,230).
   static const Color paper = Color(0xFFFDF3E6);

@@ -446,6 +446,17 @@ adb shell cmd locale set-app-locales com.example.project_chat --locales ko-KR
 > 다음에 할 일은 [09 인수인계](09-next-task-handoff.md) §2의 **막힌 것 3건**에서 고른다(A·B가 해소됐다).
 > 다음 "싱크용 문서" 요청은 **그 이후 작업부터** 정리하면 된다.
 
+### 2026-11-15 [달빛 한마디] — `그래픽 소스/달빛 한마디 화면` 반영(타이틀 배경 · [사진] 버튼) · 기획서 261111 9장 대조 → 앱은 그대로
+- 이 PC에서 달빛 한마디 세션 시작. 대조 결과 한마디 몫은 세 장.
+- 타이틀 `back_friends_kr/jp` — 제목 옆 **풍등이 사진+하트 아이콘으로** 바뀌었다(714,210~873,357만). 가든 `button_Moonlight` 새 그림과 같은 모양이다.
+  `title/back_friends.png`·`title/ja/back_friends.png` 갈아끼움(글자 자리 그대로라 코드는 안 바뀜).
+- 🆕 답글 상세 `button_addphoto_m`(120×120, 노란 원 + 사진 아이콘) — 그동안 노란 원 + `Icons.add_photo_alternate_outlined`로 채웠던 입력줄 [사진] 버튼 자리.
+  `reply_detail/button_addphoto_m.png` · `WordArt.photoButton` · 올리는 중엔 그림 위에 도는 표시(안 쓰게 된 `WordArt.yellow` 지움).
+- 기획서 **261011 → 261111 9장 diff: 두 줄** — [번역] 버튼이 "[자동번역 패스] 관리 화면" → **"[자동 번역 구매] 화면"**, "[Prime 구독]과 [자동번역 패스]" → "[프라임 멤버십 구독]과 [자동 번역]".
+  [번역]이 여는 `PassScreen.route`는 상점 세션이 이미 [자동 번역 구매/관리] 화면(`ShopItemScreen`)으로 돌려 놓았다 → **앱은 고칠 것 없음**.
+  소진 문구("…자동 번역 패스를 이용해 주세요")는 261111 본문도 그대로라 `translateCommentExhausted`도 그대로.
+- 에뮬(Pixel_10) 눈 확인: 새 타이틀 · 답글 상세 입력줄 [사진] 그림 · 누르면 사진 첨부 시트. 데이터는 `seed_word.py --me`.
+
 ### 2026-11-15 [프로필] — `그래픽 소스/프로필 화면` 반영: [프로필 보기] 하단 버튼을 그림으로
 - 이 PC에서 프로필 세션 시작. 대조 결과 프로필 몫은 미리보기의 새 그림 두 장뿐(`button_talk` 대화하기 · `button_friend` 친구 신청, 1542×305).
 - `assets/images/scene_profile/preview/`에 들이고 `profile_view_screen.dart`의 `_Action`을 `FilledButton.icon` → `ArtImage`로.
