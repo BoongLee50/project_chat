@@ -462,7 +462,9 @@ adb shell cmd locale set-app-locales com.example.project_chat --locales ko-KR
 - `assets/images/scene_profile/preview/`에 들이고 `profile_view_screen.dart`의 `_Action`을 `FilledButton.icon` → `ArtImage`로.
   시안 197,2461 → 가운데 686×136. 화면 아래 고정은 그대로(본문만 스크롤). `신청 대기`는 `button_friend` 흐리게(`TalkArt.viewOriginalDisabledOpacity`)
   + 누르면 `errorFriendRequestPending`(막힌 버튼은 이유를 말한다).
-- 🔴 두 장 모두 x=1285에 **투명 1px 세로 줄**(조각 이음매) — 에뮬(대화방 → 민서 → 프로필)에서 옅은 실선으로 보인다. 그림을 고쳐 다시 받을 것(08 §0-3).
+- 두 장 모두 x=1285에 **투명 1px 세로 줄**(조각 이음매)이 있어 에뮬(대화방 → 민서 → 프로필)에서 옅은 실선으로 보였다 →
+  사용자가 같은 날 14:17 **고친 판으로 교체** → 저장소도 교체, 에뮬에서 줄 없음 확인(08 §0-3).
+- 대화방 세션 기록(09 §0 내 줄): 미리보기 `[원문보기]` 248×72 — `TalkArt`에서 빌려 써서 이미 바뀌었고, `profile_preview_view.dart` 주석만 고쳤다.
 - 🇯🇵 일본어판 없음 — 글자가 구워져 있어 일본어에서도 한국어 그림이 나온다(08 §0-3 표).
 - 공용 파일: `postinfo/.../profile_view_screen.dart`(가든·대화방·친구·달빛 한마디가 여는 [프로필 보기]) — 하단 버튼 모양이 모두 함께 바뀐다.
 

@@ -215,7 +215,7 @@ class _Body extends StatelessWidget {
   }
 }
 
-/// `[원문보기]` — 그림은 대화방 것을 같이 쓴다(`button_view_trans.png`, 209×73).
+/// `[원문보기]` — 그림은 대화방 것을 같이 쓴다(`button_view_trans.png`, 크기는 `TalkArt.viewOriginalSize` — 2026-11-15 248×72).
 ///
 /// 🚧 **지금은 자리만 있다** — 번역 기능이 아직 없어 눌러도 하는 일이 없다(2026-10-05 사용자 결정).
 /// 번역이 붙으면 자기소개를 원문 ↔ 번역문으로 바꾸는 일을 여기서 한다.
