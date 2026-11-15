@@ -171,17 +171,21 @@ class WordArt {
   // ── [답글 상세] (`Reply Detail`, 2026-10-11 두 번째 전달) ─────────────
 
   static const String _detail = 'assets/images/scene_word/reply_detail';
+  // 같은 그림은 한 벌만(2026-11-15) — 먼저 들어온 곳을 가리킨다: 국기·하트 → 가든, 뒤로 → 프로필 미리보기,
+  // 얼굴 틀·작은 국기 → 답글 목록.
+  static const String _garden = 'assets/images/scene_garden';
+  static const String _profilePreview = 'assets/images/scene_profile/preview';
 
   /// 머리(고정) — `<` · 얼굴 · 이름 나이 · 국기. 아래 `frame_titledividing`부터 스크롤이다.
-  static const String detailBack = '$_detail/button_previewback.png';
+  static const String detailBack = '$_profilePreview/button_previewback.png';
   static const Size detailBackSize = Size(60, 101);
   static const Offset detailBackAt = Offset(43, 138);
-  static const String detailAvatar = '$_detail/frame_userprofile.png';
+  static const String detailAvatar = '$_list/frame_userprofile.png';
   static const Size detailAvatarSize = Size(161, 161);
   static const Offset detailAvatarAt = Offset(177, 115);
   static const double detailNameLeft = 393;
-  static const String detailFlagKr = '$_detail/icon_flag_kor.png';
-  static const String detailFlagJp = '$_detail/icon_flag_jap.png';
+  static const String detailFlagKr = '$_garden/icon_flag_kor.png';
+  static const String detailFlagJp = '$_garden/icon_flag_jap.png';
   static const Size detailFlagSize = Size(70, 70);
   static const double detailHeaderHeight = 284;
   static const String titleDivider = '$_detail/frame_titledividing.png';
@@ -194,7 +198,7 @@ class WordArt {
   static const double detailPhotoLeft = 25;
 
   /// 좋아요·댓글 줄(`61 / 330, 1605`) · [번역](`758, 1595`, 292×83).
-  static const String detailHeart = '$_detail/button_heart.png';
+  static const String detailHeart = '$_garden/button_heart.png';
   static const Size detailHeartSize = Size(72, 67);
   static const String detailComment = '$_detail/icon_comment.png';
   static const Size detailCommentSize = Size(70, 67);
@@ -219,8 +223,8 @@ class WordArt {
   static const String link = '$_detail/icon_link.png';
   static const Size linkSize = Size(29, 59);
   static const List<double> linkLeft = [0, 128, 211];
-  static const String commentFlagKr = '$_detail/icon_mmflag_kor.png';
-  static const String commentFlagJp = '$_detail/icon_mmflag_jap.png';
+  static const String commentFlagKr = '$_list/icon_mmflag_kor.png';
+  static const String commentFlagJp = '$_list/icon_mmflag_jap.png';
 
   /// 댓글 사진(`326, 2064` 실측 ≈ 185×169).
   static const Size commentPhotoSize = Size(185, 169);

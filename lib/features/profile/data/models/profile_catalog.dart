@@ -63,7 +63,7 @@ abstract final class ProfileCatalog {
   /// 관심사 칩 **그림**(아이콘과 이름이 한 장에 구워져 있다, 204×89).
   /// 지금은 `영화` 한 장뿐이다 — 없는 코드는 [ProfileTagChip]이 같은 모양의 자리 칩을 그린다(08 §0-2).
   static const interestArt = <String, String>{
-    'MOVIE': '$_artDir/Interest_movie.png',
+    'MOVIE': 'assets/images/scene_garden/Interest_movie.png', // 같은 그림은 한 벌만(2026-11-15) — 가든 것
   };
 
   /// 활동 지역 칩 **그림**(이름이 구워져 있다, 210×88). 지금은 `서울` 한 장뿐이다.

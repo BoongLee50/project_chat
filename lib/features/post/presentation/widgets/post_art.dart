@@ -70,7 +70,7 @@ class PostArt {
   static const String iconLock = '$_dir/icon_lock.png';
   static const Size iconLockSize = Size(70, 84);
 
-  static const String badgePick = '$_dir/icon_pick.png';
+  static const String badgePick = '$_garden/button_Pick.png'; // = 전달 `icon_pick`, 같은 그림은 한 벌만(2026-11-15)
   static const Size badgePickSize = Size(144, 71);
 
   static const String btnDelete = '$_dir/button_delete.png';

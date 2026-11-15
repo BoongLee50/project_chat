@@ -79,7 +79,7 @@ class _ItemPurchased extends ConsumerWidget {
       size: const Size(982, 1820),
       origin: const Offset(50, 359),
       children: (x, y) => [
-        _centered('$itemDir/icon_notice.png', const Size(164, 164), y(407)),
+        _centered('$shopDir/prime_sub/sub_end/icon_notice.png', const Size(164, 164), y(407)), // 같은 그림은 한 벌만
         _centeredText(l10n.lunaPurchasedTitle, _titleStyle, y(623)),
         Positioned(
           left: x(88),
@@ -150,7 +150,7 @@ class _PrimePurchased extends StatelessWidget {
       size: const Size(982, 2105),
       origin: const Offset(50, 261),
       children: (x, y) => [
-        _centered('$itemDir/icon_notice.png', const Size(164, 164), y(315)),
+        _centered('$shopDir/prime_sub/sub_end/icon_notice.png', const Size(164, 164), y(315)),
         _centeredText(l10n.lunaPurchasedTitle, _titleStyle, y(529)),
         Positioned(
           left: x(89),

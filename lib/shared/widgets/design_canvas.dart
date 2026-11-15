@@ -158,7 +158,6 @@ class DesignCanvas {
     'assets/images/scene_shop/item/frame_shopboost.png': null,
     'assets/images/scene_shop/item/frame_useinfo.png': null,
     'assets/images/scene_shop/item/icon_discountmark.png': null,
-    'assets/images/scene_shop/item/icon_primeuse.png': null,
     'assets/images/scene_shop/item/title_albumshop.png': Size(441, 80),
     'assets/images/scene_shop/item/title_boostshop.png': Size(418, 79),
     'assets/images/scene_shop/item/title_reserves.png': Size(282, 90),

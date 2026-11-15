@@ -137,15 +137,66 @@ def describe_change(src, dst):
     return '픽셀 동일(다시 저장만 됨)' if box is None else '바뀐 영역 %s' % (box,)
 
 
+# 🚨 **같은 그림은 한 벌만**(사용자 결정 2026-11-15) — 여러 화면 폴더에 **바이트까지 같은** 그림이 오면
+# **먼저 들어온 곳 한 벌만** 저장소에 두고 나머지 화면은 그것을 가리킨다. 이 표는
+# "전달본의 이 자리(저장소 경로로 옮긴 것) → 실제로 쓰는 한 벌"이다.
+# - 전달본이 그 자리에 **같은 그림**을 계속 보내면 `같음`으로 센다(군더더기를 다시 들이지 않는다).
+# - **그 폴더 판만 바뀌어 오면** `🟠 공용 그림 다름`으로 따로 알린다 — 고치면 그 한 벌을 쓰는 화면이 **전부** 바뀐다.
+#   두 화면이 같이 바뀌어도 되는지 보고, 안 되면 그때 따로 들여 가른다(그리고 이 표에서 그 줄을 지운다).
+SHARED = {
+    'scene_chat/icon_flag_jap.png': 'scene_garden/icon_flag_jap.png',
+    'scene_chat/icon_flag_kor.png': 'scene_garden/icon_flag_kor.png',
+    'scene_word/reply_detail/icon_flag_jap.png': 'scene_garden/icon_flag_jap.png',
+    'scene_word/reply_detail/icon_flag_kor.png': 'scene_garden/icon_flag_kor.png',
+    'scene_chat/button_infotrans.png': 'scene_word/reply_detail/button_infotrans.png',
+    'scene_chat/button_message_color.png': 'scene_word/reply_detail/button_message_color.png',
+    'scene_chat/button_message_normal.png': 'scene_word/reply_detail/button_message_normal.png',
+    'scene_chat/frame_chat_profile.png': 'scene_word/reply_detail/frame_commentprofile.png',
+    'scene_profile/preview/icon_mflag_jap.png': 'scene_friend/friend_list/icon_mflag_jap.png',
+    'scene_profile/preview/icon_mflag_kor.png': 'scene_friend/friend_list/icon_mflag_kor.png',
+    'scene_word/reply_detail/button_heart.png': 'scene_garden/button_heart.png',
+    'scene_post/icon_pick.png': 'scene_garden/button_Pick.png',
+    'scene_profile/create/Interest_movie.png': 'scene_garden/Interest_movie.png',
+    'scene_word/reply_detail/button_previewback.png': 'scene_profile/preview/button_previewback.png',
+    'scene_shop/item/icon_notice.png': 'scene_shop/prime_sub/sub_end/icon_notice.png',
+    'scene_shop/item/icon_primecheck.png': 'scene_shop/prime_sub/sub_start/icon_primecheck.png',
+    'scene_shop/item/icon_primeuse.png': 'scene_shop/prime_sub/sub_manage/icon_primeuse.png',
+    'scene_shop/item/ja/icon_primeuse.png': 'scene_shop/prime_sub/sub_manage/ja/icon_primeuse.png',
+    'scene_word/reply_detail/frame_userprofile.png': 'scene_word/reply_list/frame_userprofile.png',
+    'scene_word/reply_detail/icon_mmflag_jap.png': 'scene_word/reply_list/icon_mmflag_jap.png',
+    'scene_word/reply_detail/icon_mmflag_kor.png': 'scene_word/reply_list/icon_mmflag_kor.png',
+    # 친구 [받은 신청] 탭 = 대화방 그림(2026-09-19부터 한 벌)
+    'scene_friend/friend_list/button_receive_color.png': 'scene_talk/talk_list/button_receive_color.png',
+    'scene_friend/friend_list/button_receive_normal.png': 'scene_talk/talk_list/button_receive_normal.png',
+    # 화면 폴더마다 따라오는 상단 [Prime] — 공용은 가든 것 하나(ArtTopBar)
+    'scene_post/button_prime.png': 'scene_garden/button_prime.png',
+    'scene_talk/talk_list/button_prime.png': 'scene_garden/button_prime.png',
+    'scene_talk/application_received/button_prime.png': 'scene_garden/button_prime.png',
+    'scene_friend/friend_list/button_prime.png': 'scene_garden/button_prime.png',
+    'scene_friend/application_received/button_prime.png': 'scene_garden/button_prime.png',
+}
+
+
+def asset_hashes():
+    """저장소 에셋 전부의 해시 → 경로. 새 그림이 **이미 다른 이름·폴더로 있는지** 알려 주려고."""
+    out = {}
+    for dp, _, files in os.walk(ASSETS):
+        for f in files:
+            p = os.path.join(dp, f)
+            out.setdefault(md5(p), os.path.relpath(p, ASSETS).replace(os.sep, '/'))
+    return out
+
+
 def main(ui_root):
     if not os.path.isdir(ui_root):
         print('전달본 폴더가 없다: %s' % ui_root)
         return 2
 
     seen_targets = set()
-    counts = {'same': 0, 'changed': 0, 'new': 0, 'mockup': 0}
+    counts = {'same': 0, 'changed': 0, 'new': 0, 'mockup': 0, 'shared_changed': 0}
     report = []
     unmapped = set()
+    by_hash = asset_hashes()
 
     for dp, dirs, files in os.walk(ui_root):
         dirs[:] = [d for d in dirs if d != 'Example']
@@ -164,11 +215,25 @@ def main(ui_root):
                 continue
             src = os.path.join(dp, name)
             rel = target_rel(rel_dir, name)
+            if rel in SHARED:  # 공용 한 벌과 맞대 본다
+                shared = SHARED[rel]
+                seen_targets.add(shared)
+                dst = os.path.join(ASSETS, shared.replace('/', os.sep))
+                if md5(src) == md5(dst):
+                    counts['same'] += 1
+                else:
+                    counts['shared_changed'] += 1
+                    report.append(('🟠 공용 그림 다름', rel_dir + '/' + name,
+                                   '공용 %s · %s — 고치면 쓰는 화면 전부 바뀐다'
+                                   % (shared, describe_change(src, dst))))
+                continue
             dst = os.path.join(ASSETS, rel.replace('/', os.sep))
             seen_targets.add(rel)
             if not os.path.exists(dst):
                 counts['new'] += 1
-                report.append(('🆕 저장소에 없음', rel_dir + '/' + name, ''))
+                twin = by_hash.get(md5(src))
+                report.append(('🆕 저장소에 없음', rel_dir + '/' + name,
+                               ('⚠️ 같은 그림이 이미 있다: %s → 들이지 말고 SHARED에 한 줄' % twin) if twin else ''))
             elif md5(src) == md5(dst):
                 counts['same'] += 1
             else:
@@ -184,8 +249,9 @@ def main(ui_root):
                 only_repo.append(rel)
 
     print('전달본: %s' % ui_root)
-    print('같음 %d · 🔴 이름 같고 다름 %d · 🆕 새 그림 %d · 저장소에만 %d  (시안 %d장은 건너뜀)\n'
-          % (counts['same'], counts['changed'], counts['new'], len(only_repo), counts['mockup']))
+    print('같음 %d · 🔴 이름 같고 다름 %d · 🟠 공용 그림 다름 %d · 🆕 새 그림 %d · 저장소에만 %d  (시안 %d장은 건너뜀)\n'
+          % (counts['same'], counts['changed'], counts['shared_changed'], counts['new'],
+             len(only_repo), counts['mockup']))
     for d in sorted(unmapped):
         print('  ⚠️ 짝 없음(KOREAN_DIRS에 한 줄 넣을 것): %s' % d)
     for kind, path, note in report:

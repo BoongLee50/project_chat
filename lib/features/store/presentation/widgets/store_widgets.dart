@@ -259,7 +259,7 @@ class ShopBenefitList extends StatelessWidget {
   Widget build(BuildContext context) {
     final title = onPurple ? Colors.white : Colors.black;
     final desc = onPurple ? ShopColors.lavender : ShopColors.soft;
-    final check = onPurple ? '$itemDir/icon_wcheck.png' : '$itemDir/icon_primecheck.png';
+    final check = onPurple ? '$itemDir/icon_wcheck.png' : '$shopDir/prime_sub/sub_start/icon_primecheck.png';
     return SizedBox(
       width: size.width,
       height: size.height,

@@ -393,7 +393,7 @@ class _ShopItemScreenState extends ConsumerState<ShopItemScreen> {
         ..._column(_kind.primeColumn, 53, y(700), prime),
         ..._column(_kind.storeColumn, 557, y(700), store),
         if (running != null)
-          shopArt('$itemDir/icon_primeuse.png', running == 'PRIME' ? 89 : 593, y(665), 233, 74),
+          shopArt('$shopDir/prime_sub/sub_manage/icon_primeuse.png', running == 'PRIME' ? 89 : 593, y(665), 233, 74),
         shopText(l10n.shopUseInfo, 100, y(1055), _head),
         shopArt('$itemDir/frame_useinfo.png', 84, y(1132), 914, 414),
         _infoValue(shopDateTime(startedAt), y(1217)),

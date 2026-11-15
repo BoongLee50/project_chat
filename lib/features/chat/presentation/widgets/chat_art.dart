@@ -6,13 +6,16 @@ import 'package:flutter/material.dart';
 /// `Example/채팅창 참고 화면.png`을 실측했다(좌표값 그림과 참고 화면은 세로로 15px쯤 어긋나 있다 —
 /// 좌표가 적힌 자리는 좌표값을, 안 적힌 자리는 참고 화면을 따랐다).
 ///
-/// 📌 다섯 장은 달빛 한마디(`scene_word/reply_detail`)에 **바이트까지 같은 그림**이 이미 있다
-/// (`button_infotrans` · `button_message_*` · `icon_flag_*`). 그래도 이 폴더에 따로 들였다 —
-/// 전달 폴더가 다르면 다음 전달본에서 한쪽만 바뀔 수 있다.
+/// 📌 **같은 그림은 한 벌만**(사용자 결정 2026-11-15) — 다른 화면에 **바이트까지 같은 그림**이 먼저 들어와 있으면
+/// 그것을 가리킨다: 국기 `icon_flag_*` → 가든 · `button_infotrans`·`button_message_*`·`frame_chat_profile`(= 한마디
+/// `frame_commentprofile`) → 달빛 한마디 답글 상세. 전달본에서 **한쪽만** 바뀌어 오면 대조 도구가 따로 알려 준다
+/// (`tools/spec/compare_ui_delivery.py`의 `SHARED`) — 그때 두 화면이 같이 바뀌어도 되는지 보고, 안 되면 그때 가른다.
 class ChatArt {
   const ChatArt._();
 
   static const String _dir = 'assets/images/scene_chat';
+  static const String _garden = 'assets/images/scene_garden';
+  static const String _wordDetail = 'assets/images/scene_word/reply_detail';
 
   /// 화면 바탕(1080×2640, 단색 `#FFFEFB`). 그림으로 깔아 두면 바탕이 바뀌어 와도 코드는 그대로다.
   static const String background = '$_dir/back_chat.png';
@@ -33,7 +36,7 @@ class ChatArt {
   static const Size backSize = Size(32, 54);
   static const double backLeft = 52;
 
-  static const String profileRing = '$_dir/frame_chat_profile.png';
+  static const String profileRing = '$_wordDetail/frame_commentprofile.png';
   static const double profileSize = 124;
   static const double profileLeft = 155;
 
@@ -43,8 +46,8 @@ class ChatArt {
   static const Color nameInk = Color(0xFF141413);
 
   /// 국기는 나이 글자 끝에서 `32` 띄운다(실측 506 → 538).
-  static const String flagKr = '$_dir/icon_flag_kor.png';
-  static const String flagJp = '$_dir/icon_flag_jap.png';
+  static const String flagKr = '$_garden/icon_flag_kor.png';
+  static const String flagJp = '$_garden/icon_flag_jap.png';
   static const double flagSize = 70;
   static const double flagGap = 32;
 
@@ -73,7 +76,7 @@ class ChatArt {
   static const double sloganFont = 42;
   static const Color sloganInk = Color(0xFFAE804D);
 
-  static const String infoTrans = '$_dir/button_infotrans.png';
+  static const String infoTrans = '$_wordDetail/button_infotrans.png';
   static const Size infoTransSize = Size(292, 83);
   static const double infoTransLeft = 757;
 
@@ -149,8 +152,8 @@ class ChatArt {
   static const String gif = '$_dir/button_chat_gif.png';
   static const String record = '$_dir/button_chat_recording.png';
   static const String delete = '$_dir/button_chat_delete.png';
-  static const String sendOn = '$_dir/button_message_color.png';
-  static const String sendOff = '$_dir/button_message_normal.png';
+  static const String sendOn = '$_wordDetail/button_message_color.png';
+  static const String sendOff = '$_wordDetail/button_message_normal.png';
   static const double roundButton = 120;
 
   static const String inputFrame = '$_dir/frame_chatmessage.png';

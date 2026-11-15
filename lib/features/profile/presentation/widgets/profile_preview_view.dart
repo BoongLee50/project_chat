@@ -258,8 +258,9 @@ class _Head extends StatelessWidget {
         ? ProfileCatalog.regionLabel(l10n, region)
         : (country == null ? null : ProfileCatalog.countryLabel(l10n, country));
     final flag = switch (country) {
-      'KR' => '${ProfilePreviewView._dir}/icon_mflag_kor.png',
-      'JP' => '${ProfilePreviewView._dir}/icon_mflag_jap.png',
+      // 같은 그림은 한 벌만(2026-11-15) — 국기는 친구 목록 것을 쓴다.
+      'KR' => 'assets/images/scene_friend/friend_list/icon_mflag_kor.png',
+      'JP' => 'assets/images/scene_friend/friend_list/icon_mflag_jap.png',
       _ => null,
     };
 
