@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 
+import '../../../garden/presentation/widgets/garden_art.dart';
+
 /// 오늘의 포스트 화면 리소스(Plan_4). 경로와 **시안 원본 규격**만 모아 둔다.
 ///
 /// 규격을 상수로 들고 있는 이유는 [ArtImage]가 원본 크기를 받아 화면 폭에 맞춰
 /// 줄여 그리기 때문이다 — **일본어판 이미지로 교체할 때 같은 규격이면 코드를 안 고쳐도 된다.**
 ///
 /// 좌표는 `오늘의 포스트 좌표값.png`의 1080 캔버스 픽셀값이다(Plan_4부터 단위 변환이 없다).
-/// 🆕 2026-11-15 전달본(`그래픽 소스/포스트 화면`) 기준 — 루나 버튼이 빠지고 Prime이 혼자 커졌다,
+/// 🆕 2026-11-15 전달본(`그래픽 소스/포스트 화면`) 기준 — 루나 버튼이 빠지고 Prime이 오른쪽에 혼자 남았다,
 /// 제목 아래 안내 문구가 생겼다, 장수(`1/9`)가 휴지통 위로 올라갔다, 앨범·부스트 그림 규격이 바뀌었다.
 class PostArt {
   const PostArt._();
@@ -35,12 +37,20 @@ class PostArt {
   static const Offset subtitleAt = Offset(47, 195);
   static const double subtitleFontSize = 34;
 
-  /// 🚨 **포스트 전용 Prime**(277×92, 2026-11-15) — 루나 버튼이 빠지며 혼자 커졌다.
-  /// 달빛가든 머리글은 아직 옛 그림(248×83, `scene_garden`)이다 — 가든 전달본이 바뀌면 가든 세션이 맞춘다.
-  /// 머리글 칸(102~185)보다 위아래로 조금 넘친다(94~186) — 칸 높이는 가든과 같게 두고 그림만 넘치게 한다.
-  static const String btnPrime = '$_dir/button_prime.png';
-  static const Size btnPrimeSize = Size(277, 92);
-  static const Offset btnPrimeAt = Offset(777, 94);
+  /// 🚨 **Prime은 공용 그림이다** — 가든·대화방·친구·포스트가 `scene_garden/button_prime.png` 한 벌을 쓴다.
+  /// 그림·크기는 [GardenArt]를 그대로 따른다(포스트에 따로 두지 않는다 — 사용자 2026-11-15).
+  ///
+  /// 2026-11-15 전달본은 **여섯 폴더 모두 277×92**(같은 그림)인데 앱의 공용 그림은 아직 248×83이다
+  /// → 교체는 가든 세션 몫(09 §0 가든 줄 "미반영"). 그래서 자리는 **시안의 오른쪽 아래 모서리(1054, 186)**에
+  /// 붙여 계산한다 — 공용 그림이 바뀌면 포스트는 코드 수정 없이 시안 자리(777, 94)로 간다.
+  static const String btnPrime = GardenArt.btnPrime;
+  static const Size btnPrimeSize = GardenArt.btnPrimeSize;
+  static const double _primeRight = 1054;
+  static const double _primeBottom = 186;
+  static Offset get btnPrimeAt => Offset(
+    _primeRight - btnPrimeSize.width,
+    _primeBottom - btnPrimeSize.height,
+  );
 
   // 카드 위 두 버튼(2026-11-15 규격 변경: 601→571 · 407→430, 부스트 시작 645→622).
   static const String btnAlbumPass = '$_dir/button_postalbum.png';

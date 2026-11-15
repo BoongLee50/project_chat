@@ -169,7 +169,7 @@ SHARED = {
     'scene_friend/friend_list/button_receive_color.png': 'scene_talk/talk_list/button_receive_color.png',
     'scene_friend/friend_list/button_receive_normal.png': 'scene_talk/talk_list/button_receive_normal.png',
     # 화면 폴더마다 따라오는 상단 [Prime] — 공용은 가든 것 하나(ArtTopBar)
-    # (포스트는 2026-11-15부터 자기 Prime(277×92)을 따로 쓴다 — 루나가 빠지며 커졌다. 공용 표에서 뺐다)
+    'scene_post/button_prime.png': 'scene_garden/button_prime.png',
     'scene_talk/talk_list/button_prime.png': 'scene_garden/button_prime.png',
     'scene_talk/application_received/button_prime.png': 'scene_garden/button_prime.png',
     'scene_friend/friend_list/button_prime.png': 'scene_garden/button_prime.png',
