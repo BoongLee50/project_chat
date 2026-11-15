@@ -35,7 +35,8 @@ class GardenArt {
   static const String btnPrime = '$_dir/button_prime.png';
   static const Size btnPrimeSize = Size(277, 92);
   static const Offset btnPrimeAt = Offset(777, 94);
-  // 🗑 루나 버튼(`button_luna`)은 없어졌다(기획서 261111 — 루나 폐지).
+  // 🗑 루나 버튼(`button_luna`)은 없어졌다(기획서 261111 — 루나 폐지). 그림도 지웠고, 전달본에 계속 와도
+  //    대조 도구가 건너뛴다(`compare_ui_delivery.py`의 `SKIP_FILES`).
 
   // ── 필터 줄 — 네 칸이다(성별·나이·국가 + 달빛 한마디) ─────────────
   //

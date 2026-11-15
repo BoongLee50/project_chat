@@ -486,7 +486,8 @@ adb shell cmd locale set-app-locales com.example.project_chat --locales ko-KR
 - 필터 칸 자리 251 · 488 · 705(간격을 상수가 아니라 좌표에서 계산)
 - **제목 아래 안내 문구가 돌아왔다**(47, 197) — ARB `gardenSubtitle`(Plan_4에서 빠졌을 때 남겨 둔 키). 시안에 ✨가 없어 ko·ja 둘 다 뺐다
 - 머리글을 Row → **고정 높이 칸 + 시안 좌표**로(포스트와 같은 방식). Row는 가장 큰 그림이 줄 높이를 정해 Prime이 커지면 카드가 9 밀린다
-- 🗑 `GardenArt.btnLuna*` 상수 제거(루나 폐지). 그림 `scene_garden/button_luna.png`는 아직 저장소에 남아 있다(안 씀)
+- 🗑 `GardenArt.btnLuna*` 상수 제거(루나 폐지). 그림 `scene_garden/button_luna.png`도 **같은 날 뒤에 지웠다** — 전달본엔 계속 오므로
+  대조 도구에 `SKIP_FILES`(그림 한 장씩 안 들이는 목록)를 새로 두고 거기 올렸다(대조 같음 375 → 374, 새 그림으로 안 뜸)
 
 **대화 신청 규칙**(기획서 261111 4-3 — 상점 세션이 11-15에 기록해 둔 것)
 - 하루 **2회** 무료(10 → 2) · **KST 18시 초기화**(영업일 셈이라 원래 그렇다) · 프라임 무제한 · **루나 없음**

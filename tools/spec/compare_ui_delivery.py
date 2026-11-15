@@ -63,6 +63,9 @@ KOREAN_DIRS = {
 }
 # 들이지 않는 폴더 — 구버전 상점은 루나 상점이 폐지되며 신버전으로 대체됐다(기획서 261111).
 SKIP_DIRS = ('상점 화면 (구버전)',)
+# 들이지 않는 그림 한 장씩 — 전달본엔 계속 오지만 앱이 안 쓴다.
+# `달빛가든 화면/button_luna.png`: 루나 폐지(기획서 261111)로 상단 [루나] 버튼이 없어져 저장소에서 지웠다(2026-11-15 가든).
+SKIP_FILES = ('달빛가든 화면/button_luna.png',)
 # 상점(신버전)의 짝 없는 하위 폴더는 모두 `scene_shop/item`으로 모은다(위 주석).
 FLATTEN_PREFIX = {'상점 화면 (신버전)': 'scene_shop/item'}
 
@@ -209,6 +212,8 @@ def main(ui_root):
             unmapped.add(rel_dir)
         for name in sorted(files):
             if not name.lower().endswith('.png'):
+                continue
+            if rel_dir + '/' + name in SKIP_FILES:
                 continue
             if is_mockup(name):
                 counts['mockup'] += 1  # 시안 — 에셋이 아니다
