@@ -72,18 +72,8 @@ class GardenScreen extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // 타이틀은 시안에서 x=47이라 본문선(23)보다 24만큼 안쪽이다.
-                Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal:
-                        (GardenArt.titleAt.dx - DesignCanvas.contentLeft) *
-                        scale,
-                  ),
-                  child: const _GardenHeader(),
-                ),
-                // 머리글 줄 높이는 **Prime 버튼**이 정한다(타이틀보다 크다) — 간격도 거기 기준.
-                // 포스트 화면과 **같은 상수**를 써야 두 카드의 시작 위치가 맞는다.
-                SizedBox(height: DesignCanvas.headerToRow * scale),
+                // 머리글(제목·안내 문구·Prime) + 필터 줄까지 간격을 **한 칸**으로 — 높이는 포스트와 같다.
+                const _GardenHeader(),
                 const _FilterBar(),
                 SizedBox(height: GardenArt.filtersToCard * scale),
                 Expanded(
@@ -130,37 +120,69 @@ class GardenScreen extends ConsumerWidget {
 }
 
 // ── 헤더 ─────────────────────────────────────────────────
+/// 제목 · 안내 문구 · Prime(2026-11-15 시안 — 루나 버튼이 빠져 **Prime 혼자 오른쪽**, 제목 아래 **안내 문구**가 돌아왔다).
+///
+/// 🚨 **칸 높이는 포스트와 똑같이 둔다** — 머리글 줄(102~185) + 필터 줄까지 간격(185~356).
+/// 이 높이가 두 화면 카드의 시작 위치를 정한다(`DesignCanvas.aboveCard`). 그 안에서 제목·문구·Prime은
+/// **시안 좌표 그대로** 얹는다(Prime은 칸보다 위로 8 넘친다). 예전 Row 배치는 줄 높이를 가장 큰 그림이 정해
+/// Prime이 83 → 92로 커지면 카드가 9만큼 밀렸다.
 class _GardenHeader extends StatelessWidget {
   const _GardenHeader();
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        // 타이틀은 **이미지**다(글자가 구워져 있음). 일본어판은 이미지를 교체한다.
-        //
-        // ⚠️ **Plan_4에서 부제가 빠졌다.** Plan_3 참고용에는 "달빛 아래, 우리의 하루를
-        // 나누는 공간"이 있었지만 Plan_4 좌표 시안에는 없다. 실제로 두 줄로 접히면서
-        // Prime 버튼 뒤로 넘어가 깨져 보였다. ARB 키(`gardenSubtitle`)는 남겨 둔다 —
-        // 기획이 다시 넣자고 하면 자리만 되살리면 된다.
-        ArtImage(
-          GardenArt.title,
-          width: GardenArt.titleSize.width,
-          height: GardenArt.titleSize.height,
-        ),
-        const Spacer(),
-        // Prime · 루나상점 진입(시안 577,102 / 838,102)
-        GestureDetector(
-          onTap: () => Navigator.of(context).push(PrimeScreen.route()),
-          child: ArtImage(
-            GardenArt.btnPrime,
-            width: GardenArt.btnPrimeSize.width,
-            height: GardenArt.btnPrimeSize.height,
+    final s = DesignCanvas.scaleOf(context);
+    // 칸 원점 = 시안 (contentLeft, headerTop). 좌표를 그 기준으로 옮긴다.
+    double x(double v) => (v - DesignCanvas.contentLeft) * s;
+    double y(double v) => (v - DesignCanvas.headerTop) * s;
+
+    return SizedBox(
+      width: double.infinity,
+      height: (DesignCanvas.headerHeight + DesignCanvas.headerToRow) * s,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          // 타이틀은 **이미지**다(글자가 구워져 있음). 일본어판은 이미지를 교체한다.
+          Positioned(
+            left: x(GardenArt.titleAt.dx),
+            top: y(GardenArt.titleAt.dy),
+            child: ArtImage(
+              GardenArt.title,
+              width: GardenArt.titleSize.width,
+              height: GardenArt.titleSize.height,
+            ),
           ),
-        ),
-        // 🗑 루나상점 버튼은 없어졌다(기획서 261111 — 루나 폐지, 사용자 2026-11-14). Prime이 오른쪽 끝으로 간다.
-      ],
+          // 안내 문구 — 그림으로 오지 않아 폰트로 그린다(언어는 ARB가 바꾼다).
+          // (Plan_4에서 빠졌다가 2026-11-15 시안에서 돌아왔다. 이번엔 Prime이 혼자라 문구와 겹치지 않는다)
+          Positioned(
+            left: x(GardenArt.subtitleAt.dx),
+            top: y(GardenArt.subtitleAt.dy),
+            child: Text(
+              L10n.of(context).gardenSubtitle,
+              maxLines: 1,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: GardenArt.subtitleFontSize * s,
+                fontWeight: FontWeight.w500,
+                height: 1.0,
+              ),
+            ),
+          ),
+          Positioned(
+            left: x(GardenArt.btnPrimeAt.dx),
+            top: y(GardenArt.btnPrimeAt.dy),
+            child: GestureDetector(
+              onTap: () => Navigator.of(context).push(PrimeScreen.route()),
+              child: ArtImage(
+                GardenArt.btnPrime,
+                width: GardenArt.btnPrimeSize.width,
+                height: GardenArt.btnPrimeSize.height,
+              ),
+            ),
+          ),
+          // 🗑 루나상점 버튼은 없어졌다(기획서 261111 — 루나 폐지, 사용자 2026-11-14).
+        ],
+      ),
     );
   }
 }
@@ -181,10 +203,19 @@ class _FilterBar extends ConsumerWidget {
     // 폰트로 덮어 그리던 방식을 걷어냈다 — 아이콘까지 값에 맞게 바뀌어야 하기 때문이다.
     return LayoutBuilder(
       builder: (context, constraints) {
-        // 간격은 시안 좌표에서 나온다(칩 끝 → 다음 칩 시작).
-        const gGenderAge = 17.0; // 240 → 257
-        const gAgeCountry = 10.0; // 484 → 494
-        const gCountryDaily = 13.0; // 711 → 724
+        // 간격은 시안 좌표에서 나온다(칩 끝 → 다음 칩 시작, 2026-11-15 시안).
+        final gGenderAge =
+            GardenArt.filterAgeAt.dx -
+            (GardenArt.filterGenderAt.dx +
+                GardenArt.filterGenderSize.width); // 240 → 251
+        final gAgeCountry =
+            GardenArt.filterCountryAt.dx -
+            (GardenArt.filterAgeAt.dx +
+                GardenArt.filterAgeSize.width); // 478 → 488
+        final gCountryDaily =
+            GardenArt.btnDailyQuestionAt.dx -
+            (GardenArt.filterCountryAt.dx +
+                GardenArt.filterCountrySize.width); // 705 → 705
 
         // 🚨 **줄 폭을 상수로 굳히지 말 것.** 예전엔 시안의 1031을 박아 뒀는데,
         // `달빛 한마디` 그림이 330 → 335로 커진 전달본에서 **줄이 1.9px 넘쳐 잘렸다.**
@@ -251,13 +282,33 @@ class _FilterBar extends ConsumerWidget {
             ),
             SizedBox(width: gapCountryDaily),
             // 네 번째 칸 — 드롭다운이 아니라 화면을 바꾸는 버튼이다(기획 4-1 "데일리 참여 이벤트").
-            GestureDetector(
-              onTap: () => Navigator.of(context).push(DailyIntroScreen.route()),
-              child: ArtImage(
-                GardenArt.btnDailyQuestion,
-                width: GardenArt.btnDailyQuestionSize.width,
-                height: GardenArt.btnDailyQuestionSize.height,
-                scale: s,
+            //
+            // 2026-11-15 그림은 **칩들보다 크다**(121 vs 92~94) — 시안에서 24 위(332)에서 시작해 위로 삐져나온다.
+            // 줄 높이는 칩이 정하게 두고 이 그림만 위로 넘치게 그린다 — 줄이 커지면 카드가 밀린다.
+            SizedBox(
+              width: GardenArt.btnDailyQuestionSize.width * s,
+              height: GardenArt.filterAgeSize.height * s,
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Positioned(
+                    left: 0,
+                    top:
+                        (GardenArt.btnDailyQuestionAt.dy -
+                            GardenArt.filterGenderAt.dy) *
+                        s,
+                    child: GestureDetector(
+                      onTap: () =>
+                          Navigator.of(context).push(DailyIntroScreen.route()),
+                      child: ArtImage(
+                        GardenArt.btnDailyQuestion,
+                        width: GardenArt.btnDailyQuestionSize.width,
+                        height: GardenArt.btnDailyQuestionSize.height,
+                        scale: s,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
@@ -361,10 +412,9 @@ class _FeedPagerState extends ConsumerState<_FeedPager> {
   String? _pageOwner;
 
   /// 넘길 수 있는 장수 — **잠긴 장도 센다**(2번째부터 흐린 안내 장이 된다).
-  int _pageCount(FeedItem item) =>
-      item.totalPhotos > item.photoUrls.length
-          ? item.totalPhotos
-          : item.photoUrls.length;
+  int _pageCount(FeedItem item) => item.totalPhotos > item.photoUrls.length
+      ? item.totalPhotos
+      : item.photoUrls.length;
 
   /// 사진 넘기기(기획 4-1 "우측 영역 탭은 다음 사진, 좌측 탭은 이전 사진").
   ///

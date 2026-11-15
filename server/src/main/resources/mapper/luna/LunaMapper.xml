@@ -6,11 +6,6 @@
         INSERT IGNORE INTO luna_wallets (user_id, balance) VALUES (#{userId}, 0)
     </insert>
 
-    <!-- 트랜잭션 안에서만 의미가 있다(호출부 @Transactional 필수) -->
-    <select id="selectBalanceForUpdate" resultType="java.lang.Integer">
-        SELECT balance FROM luna_wallets WHERE user_id = #{userId} FOR UPDATE
-    </select>
-
     <select id="selectBalance" resultType="java.lang.Integer">
         SELECT balance FROM luna_wallets WHERE user_id = #{userId}
     </select>

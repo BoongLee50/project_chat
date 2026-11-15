@@ -255,14 +255,20 @@ API를 직접 부르는 것으로 뚫린다. 응답에 `photoLocked`(잠김 여�
 ### 1.5 대화 신청 (하이브리드: 생성=REST, 도착알림=소켓)
 | Method | Path | 설명 | 화면 |
 |--------|------|------|------|
-| POST | `/chat-requests` | 대화 신청(targetUserId, message ≤100자) — **루나 5 차감 트랜잭션** | 10 |
+| POST | `/chat-requests` | 대화 신청(targetUserId, message ≤100자) — **하루 무료 2회**(프라임 무제한) | 10 |
+| GET | `/chat-requests/quota` | 신청 전 안내 `{ freeRemaining, freePerDay, maxLength, unlimited }` — 판정이 아니라 안내 | 10 |
 
 **한마디 100자**(기획사항 2026-09-19 — **친구 신청과 통일**, V26). *"공백, 이모지, 특수문자까지 모두 문구로
 취급. 줄바꾸기는 불가."* → 서버는 **코드포인트**로 세고(앞뒤 공백은 다듬은 뒤), 줄바꿈은 **공백으로 바꿔**
 저장한다(거절하지 않는다). 넘치면 `VALIDATION_FAILED`(400) + `field`에 **한도 숫자**. 친구 신청도 같다.
 
-**하루 무료 10회** 후 건당 루나 5 차감. 프리미엄(프라임 구독)은 무제한·무차감.
-실패: 루나 부족 [MSG NUM1] / 차단·신고 대상 [MSG NUM2].
+**하루 무료 2회 · KST 18시(영업일) 초기화 · 프라임 무제한 — 루나는 없다**(기획서 261111 4-3, 2026-11-15 반영).
+무료분을 다 쓰면 **409 `CHAT_REQUEST_FREE_EXHAUSTED`**(`field` = 하루 횟수) — 문구는 [MSG NUM2]
+*"오늘의 무료 대화 신청을 모두 사용했어요. 프라임 멤버십 회원은 대화 신청을 제한 없이 자유롭게 이용할 수 있어요."*
+앱은 안내에서 `freeRemaining = 0`이면 **버튼을 죽이지 않고** 누를 때 같은 문장을 띄운다(한마디를 쓰기 전에).
+차단·신고 대상·거절 1일은 [MSG NUM1](`CHAT_TARGET_BLOCKED` · `CHAT_REQUEST_REJECTED_COOLDOWN`).
+🗑 예전 규칙(하루 10회 + 이후 루나 5, `LUNA_INSUFFICIENT`)은 없앴다 — `chat_requests.luna_cost` 칼럼은 지난 기록 때문에 남고 이제 늘 0.
+검증 `tools/verify/verify_chat_request_free.py`(17건).
 성공 시 서버가 상대에게 `CHAT_REQ_INCOMING` 소켓 푸시 + 내 [보낸신청] 목록 생성.
 
 ### 1.6 대화방 (초기 로드=REST, 갱신=소켓)

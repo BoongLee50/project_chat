@@ -61,7 +61,9 @@ class ChatRoomSummary {
         partnerCountry: json['partnerCountry'] as String?,
         partnerPhotoUrl: json['partnerPhotoUrl'] as String?,
         lastMessage: json['lastMessage'] as String?,
-        lastMessageType: ChatMessageType.parse(json['lastMessageType'] as String?),
+        lastMessageType: ChatMessageType.parse(
+          json['lastMessageType'] as String?,
+        ),
         lastMessageAt: json['lastMessageAt'] == null
             ? null
             : parseServerTime(json['lastMessageAt']),
@@ -82,25 +84,22 @@ class ChatRequestQuota {
   const ChatRequestQuota({
     required this.freeRemaining,
     required this.freePerDay,
-    required this.lunaCost,
     required this.maxLength,
     required this.unlimited,
   });
 
   final int freeRemaining;
   final int freePerDay;
-  final int lunaCost;
   final int maxLength;
   final bool unlimited;
 
-  /// 지금 보내면 루나가 나가는가.
-  bool get costsLuna => !unlimited && freeRemaining <= 0;
+  /// 오늘 무료분을 다 써서 **더 못 보내는가**(기획서 261111 4-3 — 하루 2회, 루나로 더 사는 길은 없다).
+  bool get exhausted => !unlimited && freeRemaining <= 0;
 
   factory ChatRequestQuota.fromJson(Map<String, dynamic> json) =>
       ChatRequestQuota(
         freeRemaining: json['freeRemaining'] as int? ?? 0,
         freePerDay: json['freePerDay'] as int? ?? 0,
-        lunaCost: json['lunaCost'] as int? ?? 0,
         // 서버가 못 주면 입력칸이 아예 막히지 않도록 넉넉히 둔다 —
         // 진짜 한도는 어차피 서버가 잰다.
         maxLength: json['maxLength'] as int? ?? 100,

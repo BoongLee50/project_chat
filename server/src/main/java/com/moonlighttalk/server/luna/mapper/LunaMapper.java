@@ -11,9 +11,6 @@ public interface LunaMapper {
     /** 지갑이 없으면 만든다(잔액 0). */
     void ensureWallet(@Param("userId") String userId);
 
-    /** 비관적 락(FOR UPDATE) — 동시 차감으로 잔액이 음수가 되는 것을 막는다(05 문서 §3). */
-    Integer selectBalanceForUpdate(@Param("userId") String userId);
-
     Integer selectBalance(@Param("userId") String userId);
 
     void addBalance(@Param("userId") String userId, @Param("delta") int delta);

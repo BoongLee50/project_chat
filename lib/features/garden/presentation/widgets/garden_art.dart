@@ -21,16 +21,21 @@ class GardenArt {
 
   static const String title = '$_dir/title_garden.png';
   static const Size titleSize = Size(278, 71);
-  static const Offset titleAt = Offset(47, 106);
+  static const Offset titleAt = Offset(47, 103);
 
-  // 상단 우측 두 버튼 — 오늘의 포스트와 같은 자리·같은 그림이다.
+  /// 제목 아래 안내 문구 `달빛 아래, 우리의 하루를 나누는 공간`(2026-11-15 시안 `47, 197`) —
+  /// 그림으로 오지 않아 **폰트로 그린다**(ARB `gardenSubtitle`). 크기는 포스트 화면 안내 문구와 같다.
+  static const Offset subtitleAt = Offset(47, 197);
+  static const double subtitleFontSize = 34;
+
+  /// 상단 오른쪽 **Prime 혼자**(2026-11-15 — 루나 버튼이 빠졌다). 오른쪽 아래 모서리가 (1054, 186).
+  ///
+  /// 🚨 **공용 그림이다** — 포스트(`PostArt`)와 대화방·친구 머리글(`art_top_bar.dart`)이 이 경로·규격을 함께 쓴다.
+  /// 전달본 여섯 폴더에 같은 그림이 와서 한 벌만 둔다(`compare_ui_delivery.py`의 `SHARED`).
   static const String btnPrime = '$_dir/button_prime.png';
-  static const Size btnPrimeSize = Size(248, 83);
-  static const Offset btnPrimeAt = Offset(577, 102);
-
-  static const String btnLuna = '$_dir/button_luna.png';
-  static const Size btnLunaSize = Size(216, 83);
-  static const Offset btnLunaAt = Offset(838, 102);
+  static const Size btnPrimeSize = Size(277, 92);
+  static const Offset btnPrimeAt = Offset(777, 94);
+  // 🗑 루나 버튼(`button_luna`)은 없어졌다(기획서 261111 — 루나 폐지).
 
   // ── 필터 줄 — 네 칸이다(성별·나이·국가 + 달빛 한마디) ─────────────
   //
@@ -53,7 +58,7 @@ class GardenArt {
 
   static const String filterAge = '$_dir/filtering_age.png';
   static const Size filterAgeSize = Size(227, 94);
-  static const Offset filterAgeAt = Offset(257, 355);
+  static const Offset filterAgeAt = Offset(251, 356);
 
   /// 나이대 값 → 칩 그림.
   static const Map<int, String> filterAgeByValue = {
@@ -65,7 +70,7 @@ class GardenArt {
 
   static const String filterCountry = '$_dir/filtering_nation.png';
   static const Size filterCountrySize = Size(217, 94);
-  static const Offset filterCountryAt = Offset(494, 356);
+  static const Offset filterCountryAt = Offset(488, 356);
 
   /// 국가 값 → 칩 그림.
   ///
@@ -76,9 +81,11 @@ class GardenArt {
     'JP': '$_dir/filtering_nation_jap.png',
   };
 
+  /// [달빛 한마디] 입구(2026-11-15 — 351×121로 커지고 **칩들보다 24 위**에서 시작한다).
+  /// 글자가 구워져 있어 일본어판은 `ja/`에(전달 이름 `_kr`/`_jp`).
   static const String btnDailyQuestion = '$_dir/button_Moonlight.png';
-  static const Size btnDailyQuestionSize = Size(335, 96);
-  static const Offset btnDailyQuestionAt = Offset(724, 356);
+  static const Size btnDailyQuestionSize = Size(351, 121);
+  static const Offset btnDailyQuestionAt = Offset(705, 332);
 
   /// 카드 윗변(시안 `23, 475`의 y) — **포스트 화면과 같은 값**이다.
   /// 두 화면의 카드가 같은 자리·같은 폭이라 하단 주메뉴와도 선이 맞는다.

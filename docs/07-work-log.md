@@ -416,6 +416,35 @@ adb shell cmd locale set-app-locales com.example.project_chat --locales ko-KR
 > 다음에 할 일은 [09 인수인계](09-next-task-handoff.md) §2의 **막힌 것 3건**에서 고른다(A·B가 해소됐다).
 > 다음 "싱크용 문서" 요청은 **그 이후 작업부터** 정리하면 된다.
 
+### 2026-11-15 [가든] — 그래픽 소스 11-15 반영(머리글 · Prime · 달빛 한마디 버튼) · 기획서 261111 4-3 대화 신청 **하루 2회 무료**
+
+09 가든 줄에 기록돼 있던 두 건(사용자 지시 "이 세션 작업 목록을 찾아서 작업").
+
+**그래픽** (`그래픽 소스/달빛가든 화면`, 시안 `달빛가든_좌표값.png`)
+- `button_prime` 248×83 → **277×92**, 자리 (777, 94) — **Prime 혼자 오른쪽**. 🚨 **공용 그림**이라 가든·포스트·대화방·친구 머리글이 함께 바뀌었다
+  (전달본 여섯 폴더가 같은 그림이라 그대로 갈아끼움). 에뮬에서 네 화면 다 확인
+- `button_Moonlight` 335×96 → **351×121**, 칩들보다 24 위(332)에서 시작 — 줄 높이는 칩이 정하고 이 그림만 위로 넘치게 그린다(줄이 커지면 카드가 밀린다).
+  **일본어판** `ja/button_Moonlight.png` 🆕 + 공용 `design_canvas.dart` `localizedAssets`에 한 줄
+- 필터 칸 자리 251 · 488 · 705(간격을 상수가 아니라 좌표에서 계산)
+- **제목 아래 안내 문구가 돌아왔다**(47, 197) — ARB `gardenSubtitle`(Plan_4에서 빠졌을 때 남겨 둔 키). 시안에 ✨가 없어 ko·ja 둘 다 뺐다
+- 머리글을 Row → **고정 높이 칸 + 시안 좌표**로(포스트와 같은 방식). Row는 가장 큰 그림이 줄 높이를 정해 Prime이 커지면 카드가 9 밀린다
+- 🗑 `GardenArt.btnLuna*` 상수 제거(루나 폐지). 그림 `scene_garden/button_luna.png`는 아직 저장소에 남아 있다(안 씀)
+
+**대화 신청 규칙**(기획서 261111 4-3 — 상점 세션이 11-15에 기록해 둔 것)
+- 하루 **2회** 무료(10 → 2) · **KST 18시 초기화**(영업일 셈이라 원래 그렇다) · 프라임 무제한 · **루나 없음**
+- 다 쓰면 409 **`CHAT_REQUEST_FREE_EXHAUSTED`**(field = 2) — 문구 [MSG NUM2]. 앱은 남은 0이면 **버튼을 죽이지 않고** 누를 때 같은 문장 팝업(한마디를 쓰기 전에)
+- 안내 상자: `하루 2회까지 무료…` · `무료 횟수는 매일 18시에 다시 채워져요` · Prime 줄. 루나 줄 · `(루나 N)` 버튼 문구 삭제
+- 🗑 루나 정리: `app.chat.request-luna-cost` · `LunaService.deduct` · `LunaMapper.selectBalanceForUpdate` · `ErrorCode.LUNA_INSUFFICIENT` · ARB `errorLunaInsufficient`·`gardenChatRequestCost(Notice)` ·
+  쿼터 응답의 `lunaCost`. 지급·잔액(`grant`·`balance`)은 상점 몫이라 그대로. `chat_requests.luna_cost` 칼럼은 남김(늘 0)
+- 공용 파일: 서버 `chat/`(대화방·채팅창과 공용) · `chat_request_dialog.dart`·`chat_models.dart`(대화방과 공용) · `common/ErrorCode` · `application.yml` · `error_messages.dart` · ARB
+- 받은 신청 쪽은 바뀌는 것 없음(보내는 쪽 규칙이다)
+- `tools/verify/_common.py` `clear_ties`가 **오늘의 대화 신청 셈도 지운다** — 안 그러면 검증이 셋째 신청부터 막힌다
+
+검증: 8080은 남의 것이라 **8081에 새 서버**를 띄워 — 🆕 `verify_chat_request_free.py` **17/17** · `verify_talk_room` 23/23 · `verify_moderation` 22/22 ·
+`verify_comment_once` 17/17 · `verify_feed_block_page2` 4/4 · 서버 `gradlew test` 통과 · `flutter analyze lib` 깨끗 · `localized_assets_test` 통과.
+에뮬: 가든 머리글 시안과 일치 · 남은 0회 → 버튼 → [MSG NUM2] 팝업. (Nari 계정의 무제한 권리를 잠깐 껐다 되돌렸다 — 만료 처리 중 배치가 행을 지워 백업 값으로 다시 넣었다)
+`seed_users.py`(옵션 없음)로 오늘 포스트를 채웠다. ⚠️ **8080은 옛 코드**다 — 서버 재기동 전까지 8080에서는 예전 규칙(10회+루나)이 돈다.
+
 ### 2026-11-15 [포스트] — `그래픽 소스/포스트 화면` 반영: 머리글 개편 · 버튼 규격 · 장수 자리
 
 09 §0에 적혀 있던 미반영(`button_boost` 407→430 · `button_postalbum` 601→571)부터 시작했는데,

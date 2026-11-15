@@ -134,7 +134,7 @@
     }
   },
   "gardenTitle": "달빛가든",
-  "gardenSubtitle": "달빛 아래, 우리의 하루를 나누는 공간 ✨",
+  "gardenSubtitle": "달빛 아래, 우리의 하루를 나누는 공간",
   "gardenLoadFailed": "피드를 불러오지 못했어요.",
   "gardenEmptyTitle": "지금은 보여줄 포스트가 없어요.",
   "gardenEmptyDetail": "필터를 바꾸거나 잠시 후 다시 확인해 주세요.",
@@ -166,15 +166,7 @@
       }
     }
   },
-  "gardenChatRequestCost": "대화 신청 (루나 {luna})",
-  "@gardenChatRequestCost": {
-    "placeholders": {
-      "luna": {
-        "type": "int"
-      }
-    }
-  },
-  "gardenChatRequestFreeNotice": "처음 {count}회까지는 무료로 대화 신청 가능해요.",
+  "gardenChatRequestFreeNotice": "하루 {count}회까지 무료로 대화 신청할 수 있어요.",
   "@gardenChatRequestFreeNotice": {
     "placeholders": {
       "count": {
@@ -182,14 +174,7 @@
       }
     }
   },
-  "gardenChatRequestCostNotice": "이후 대화는 {luna} 루나가 필요해요. ✨",
-  "@gardenChatRequestCostNotice": {
-    "placeholders": {
-      "luna": {
-        "type": "int"
-      }
-    }
-  },
+  "gardenChatRequestResetNotice": "무료 횟수는 매일 18시에 다시 채워져요. ✨",
   "gardenChatRequestPrimeNotice": "Prime 구독 시 대화 신청 무제한!",
   "gardenChatRequestUnlimited": "대화 신청을 무제한으로 보낼 수 있어요.",
   "gardenChatRequestSentTitle": "대화 신청을 보냈어요! ✨",
@@ -925,6 +910,7 @@
   "errorChatSelf": "자신에게는 대화를 신청할 수 없어요.",
   "errorChatTargetBlocked": "지금은 이 사용자에게 대화를 신청할 수 없어요.",
   "errorChatRequestPending": "이미 대화를 신청했어요. 상대의 응답을 기다려 주세요.",
+  "errorChatRequestFreeExhausted": "오늘의 무료 대화 신청을 모두 사용했어요. 프라임 멤버십 회원은 대화 신청을 제한 없이 자유롭게 이용할 수 있어요.",
   "errorChatRequestRejectedCooldown": "거절된 상대예요. {hours}시간 뒤에 다시 신청할 수 있어요.",
   "@errorChatRequestRejectedCooldown": {
     "description": "거절 후 재신청 차단. hours는 서버 설정값(app.chat.rejection-cooldown-hours)",
@@ -962,7 +948,6 @@
     }
   },
   "errorFriendNoTodayPost": "친구가 아직 오늘의 포스트를 공유하지 않았어요.",
-  "errorLunaInsufficient": "루나가 부족해요.",
   "errorStoreProductNotFound": "존재하지 않는 상품이에요.",
   "errorStoreProductInvalid": "상품 구성이 잘못됐어요.",
   "errorStoreBoostNone": "보유한 부스트가 없어요.",

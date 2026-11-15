@@ -224,7 +224,7 @@ class L10nKo extends L10n {
   String get gardenTitle => '달빛가든';
 
   @override
-  String get gardenSubtitle => '달빛 아래, 우리의 하루를 나누는 공간 ✨';
+  String get gardenSubtitle => '달빛 아래, 우리의 하루를 나누는 공간';
 
   @override
   String get gardenLoadFailed => '피드를 불러오지 못했어요.';
@@ -260,19 +260,12 @@ class L10nKo extends L10n {
   }
 
   @override
-  String gardenChatRequestCost(int luna) {
-    return '대화 신청 (루나 $luna)';
-  }
-
-  @override
   String gardenChatRequestFreeNotice(int count) {
-    return '처음 $count회까지는 무료로 대화 신청 가능해요.';
+    return '하루 $count회까지 무료로 대화 신청할 수 있어요.';
   }
 
   @override
-  String gardenChatRequestCostNotice(int luna) {
-    return '이후 대화는 $luna 루나가 필요해요. ✨';
-  }
+  String get gardenChatRequestResetNotice => '무료 횟수는 매일 18시에 다시 채워져요. ✨';
 
   @override
   String get gardenChatRequestPrimeNotice => 'Prime 구독 시 대화 신청 무제한!';
@@ -1505,6 +1498,10 @@ class L10nKo extends L10n {
   String get errorChatRequestPending => '이미 대화를 신청했어요. 상대의 응답을 기다려 주세요.';
 
   @override
+  String get errorChatRequestFreeExhausted =>
+      '오늘의 무료 대화 신청을 모두 사용했어요. 프라임 멤버십 회원은 대화 신청을 제한 없이 자유롭게 이용할 수 있어요.';
+
+  @override
   String errorChatRequestRejectedCooldown(int hours) {
     return '거절된 상대예요. $hours시간 뒤에 다시 신청할 수 있어요.';
   }
@@ -1573,9 +1570,6 @@ class L10nKo extends L10n {
 
   @override
   String get errorFriendNoTodayPost => '친구가 아직 오늘의 포스트를 공유하지 않았어요.';
-
-  @override
-  String get errorLunaInsufficient => '루나가 부족해요.';
 
   @override
   String get errorStoreProductNotFound => '존재하지 않는 상품이에요.';

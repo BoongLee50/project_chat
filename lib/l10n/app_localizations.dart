@@ -502,7 +502,7 @@ abstract class L10n {
   /// No description provided for @gardenSubtitle.
   ///
   /// In ko, this message translates to:
-  /// **'달빛 아래, 우리의 하루를 나누는 공간 ✨'**
+  /// **'달빛 아래, 우리의 하루를 나누는 공간'**
   String get gardenSubtitle;
 
   /// No description provided for @gardenLoadFailed.
@@ -559,23 +559,17 @@ abstract class L10n {
   /// **'대화 신청 (무료 {count}회)'**
   String gardenChatRequestFree(int count);
 
-  /// No description provided for @gardenChatRequestCost.
-  ///
-  /// In ko, this message translates to:
-  /// **'대화 신청 (루나 {luna})'**
-  String gardenChatRequestCost(int luna);
-
   /// No description provided for @gardenChatRequestFreeNotice.
   ///
   /// In ko, this message translates to:
-  /// **'처음 {count}회까지는 무료로 대화 신청 가능해요.'**
+  /// **'하루 {count}회까지 무료로 대화 신청할 수 있어요.'**
   String gardenChatRequestFreeNotice(int count);
 
-  /// No description provided for @gardenChatRequestCostNotice.
+  /// No description provided for @gardenChatRequestResetNotice.
   ///
   /// In ko, this message translates to:
-  /// **'이후 대화는 {luna} 루나가 필요해요. ✨'**
-  String gardenChatRequestCostNotice(int luna);
+  /// **'무료 횟수는 매일 18시에 다시 채워져요. ✨'**
+  String get gardenChatRequestResetNotice;
 
   /// No description provided for @gardenChatRequestPrimeNotice.
   ///
@@ -2785,6 +2779,12 @@ abstract class L10n {
   /// **'이미 대화를 신청했어요. 상대의 응답을 기다려 주세요.'**
   String get errorChatRequestPending;
 
+  /// No description provided for @errorChatRequestFreeExhausted.
+  ///
+  /// In ko, this message translates to:
+  /// **'오늘의 무료 대화 신청을 모두 사용했어요. 프라임 멤버십 회원은 대화 신청을 제한 없이 자유롭게 이용할 수 있어요.'**
+  String get errorChatRequestFreeExhausted;
+
   /// 거절 후 재신청 차단. hours는 서버 설정값(app.chat.rejection-cooldown-hours)
   ///
   /// In ko, this message translates to:
@@ -2916,12 +2916,6 @@ abstract class L10n {
   /// In ko, this message translates to:
   /// **'친구가 아직 오늘의 포스트를 공유하지 않았어요.'**
   String get errorFriendNoTodayPost;
-
-  /// No description provided for @errorLunaInsufficient.
-  ///
-  /// In ko, this message translates to:
-  /// **'루나가 부족해요.'**
-  String get errorLunaInsufficient;
 
   /// No description provided for @errorStoreProductNotFound.
   ///

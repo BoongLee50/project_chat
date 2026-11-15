@@ -132,6 +132,8 @@ def clear_ties(user_ids):
     sql("DELETE FROM friendships WHERE requester_id IN (%s) OR addressee_id IN (%s)" % (ids, ids))
     sql("DELETE FROM blocks  WHERE blocker_id  IN (%s) OR blocked_id IN (%s)" % (ids, ids))
     sql("DELETE FROM reports WHERE reporter_id IN (%s) OR target_id  IN (%s)" % (ids, ids))
+    # 대화 신청은 **하루 무료 2회**다(기획서 261111 4-3) — 검증이 여러 번 보내면 셋째부터 막히므로 센 것을 지운다.
+    sql("DELETE FROM daily_usage WHERE user_id IN (%s) AND kind = 'CHAT_REQUEST'" % ids)
 
 
 class Checks:

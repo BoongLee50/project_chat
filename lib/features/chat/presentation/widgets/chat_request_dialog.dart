@@ -15,7 +15,7 @@ import '../providers/chat_provider.dart';
 ///
 /// 달빛가든 카드 · [포스트 정보] · [프로필 보기]가 같은 팝업을 띄운다.
 ///
-/// 🚨 **숫자를 코드에 굳히지 않는다.** "무료 몇 회 남았는지", "루나 몇 개인지",
+/// 🚨 **숫자를 코드에 굳히지 않는다.** "무료 몇 회 남았는지", "하루 몇 회인지",
 /// "몇 자까지인지"는 전부 서버 설정(`app.chat.*`)이고 사람마다 다르다 —
 /// 팝업이 열릴 때 물어서(`chatRequestQuotaProvider`) 그 값으로 문장을 만든다.
 ///
@@ -360,7 +360,11 @@ class _ChatRequestDialogState extends ConsumerState<_ChatRequestDialog> {
                   Expanded(
                     flex: 2,
                     child: FilledButton(
-                      onPressed: _controller.text.trim().isEmpty
+                      // 오늘 무료분을 다 썼으면 **죽이지 않고 이유를 말한다**(기획서 261111 4-3 [MSG NUM2]) —
+                      // 한마디를 다 쓰고 나서야 거절당하지 않게, 글을 안 써도 눌린다.
+                      onPressed: quota?.exhausted == true
+                          ? () => _showFreeExhausted(context)
+                          : _controller.text.trim().isEmpty
                           ? null
                           : () =>
                                 Navigator.pop(context, _controller.text.trim()),
@@ -381,9 +385,10 @@ class _ChatRequestDialogState extends ConsumerState<_ChatRequestDialog> {
     );
   }
 
-  /// `대화 신청 (무료 2회)` / `대화 신청 (★ 5)` / `대화 신청`.
+  /// `대화 신청 (무료 2회)` / `대화 신청`.
   ///
-  /// 무엇이 나갈지를 **누르기 전에** 알려 준다 — 루나가 빠지고 나서 아는 것과는 다르다.
+  /// 남은 무료 횟수를 **누르기 전에** 알려 준다. 다 썼거나 무제한이면 숫자 없이 `대화 신청`
+  /// (다 쓴 경우는 누르면 [MSG NUM2]가 뜬다 — 루나로 더 보내는 길은 없어졌다, 기획서 261111).
   /// 한도 — 서버가 준 값(쿼터 응답의 `maxLength`)을 쓰고, 아직 못 받았으면 기본 100.
   static int _max(ChatRequestQuota? quota) =>
       quota?.maxLength ?? RequestMessageInput.defaultMax;
@@ -393,11 +398,36 @@ class _ChatRequestDialogState extends ConsumerState<_ChatRequestDialog> {
     if (quota.freeRemaining > 0) {
       return l10n.gardenChatRequestFree(quota.freeRemaining);
     }
-    return l10n.gardenChatRequestCost(quota.lunaCost);
+    return l10n.gardenChatRequestShort;
+  }
+
+  /// [MSG NUM2] — 오늘의 무료 대화 신청을 다 썼다(서버 `CHAT_REQUEST_FREE_EXHAUSTED`와 같은 문장).
+  static Future<void> _showFreeExhausted(BuildContext context) {
+    final l10n = L10n.of(context);
+    return showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.surface,
+        content: Text(
+          l10n.errorChatRequestFreeExhausted,
+          style: const TextStyle(
+            color: AppColors.textPrimary,
+            fontSize: 14,
+            height: 1.5,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(l10n.commonConfirm),
+          ),
+        ],
+      ),
+    );
   }
 }
 
-/// 무료 횟수·루나·프라임 안내 상자(시안의 달 아이콘 상자).
+/// 무료 횟수·초기화·프라임 안내 상자(시안의 달 아이콘 상자).
 class _QuotaNotice extends StatelessWidget {
   const _QuotaNotice({required this.quota});
 
@@ -416,11 +446,7 @@ class _QuotaNotice extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(
-            Icons.nightlight_round,
-            color: AppColors.gold,
-            size: 16,
-          ),
+          const Icon(Icons.nightlight_round, color: AppColors.gold, size: 16),
           const SizedBox(width: 10),
           Expanded(
             child: Column(
@@ -438,7 +464,7 @@ class _QuotaNotice extends StatelessWidget {
                 ),
                 if (!quota.unlimited) ...[
                   Text(
-                    l10n.gardenChatRequestCostNotice(quota.lunaCost),
+                    l10n.gardenChatRequestResetNotice,
                     style: const TextStyle(
                       color: AppColors.textSecondary,
                       fontSize: 11,

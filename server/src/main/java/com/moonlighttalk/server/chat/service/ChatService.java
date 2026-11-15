@@ -60,10 +60,11 @@ public class ChatService {
     private final FriendMapper friendMapper;
     private final PresenceService presenceService;
 
-    /** 무료 횟수를 다 쓴 뒤 대화 신청 1건당 차감할 루나. */
-    private final int lunaCost;
-
-    /** 하루에 공짜로 보낼 수 있는 대화 신청 수. */
+    /**
+     * 하루에 공짜로 보낼 수 있는 대화 신청 수 — 기획서 261111 4-3 *"하루에 2회까지 무료.
+     * 하루 무료분은 사용여부와 상관없이 KST기준 18시 초기화"*. 영업일(`currentSessionDate`)로 세므로
+     * 18시에 저절로 0이 된다. 다 쓰면 <b>더 보낼 수 없다</b>(루나 폐지 — 예전엔 루나 5를 뺐다).
+     */
     private final int freeRequestsPerDay;
 
     /** 음성 메시지 최대 길이(ms). 클라도 이 값에서 자동 정지한다. */
@@ -101,8 +102,7 @@ public class ChatService {
                         EntitlementService entitlementService,
                         FriendMapper friendMapper,
                         PresenceService presenceService,
-                        @Value("${app.chat.request-luna-cost:5}") int lunaCost,
-                        @Value("${app.chat.free-requests-per-day:10}") int freeRequestsPerDay,
+                        @Value("${app.chat.free-requests-per-day:2}") int freeRequestsPerDay,
                         @Value("${app.chat.voice-max-duration-ms:30000}") int voiceMaxDurationMs,
                         @Value("${app.chat.rejection-cooldown-hours:24}")
                         int rejectionCooldownHours,
@@ -121,7 +121,6 @@ public class ChatService {
         this.socketRegistry = socketRegistry;
         this.fileStorageService = fileStorageService;
         this.entitlementService = entitlementService;
-        this.lunaCost = lunaCost;
         this.freeRequestsPerDay = freeRequestsPerDay;
         this.voiceMaxDurationMs = voiceMaxDurationMs;
         this.rejectionCooldownHours = rejectionCooldownHours;
@@ -132,7 +131,7 @@ public class ChatService {
 
     // ── 대화 신청 ───────────────────────────────────────────
 
-    /** 대화 신청 생성 — 무료 2회 소진 후 루나 5 차감. 성공 시 상대에게 소켓 알림. */
+    /** 대화 신청 생성 — 하루 무료 2회(프라임 무제한), 다 쓰면 거절. 성공 시 상대에게 소켓 알림. */
     @Transactional
     public void createRequest(String userId, String targetUserId, String rawMessage) {
         // 줄바꿈 불가 · 공백/이모지/특수문자도 한 글자(기획사항 2026-09-19). 친구 신청과 같은 규칙.
@@ -167,20 +166,16 @@ public class ChatService {
         User me = getUserOrThrow(userId);
         // 무제한 대화신청 권리(프라임 번들 또는 개별 구매) — 02 §1.7
         boolean premium = entitlementService.hasUnlimitedChatRequests(userId);
-        int cost = 0;
 
-        if (!premium) {
-            int used = lunaService.dailyUsed(userId, sessionTime.currentSessionDate(), USAGE_CHAT_REQUEST);
-            if (used >= freeRequestsPerDay) {
-                cost = lunaCost;
-            }
+        // 무료분을 다 썼으면 여기서 끝 — 루나로 더 사는 길은 없어졌다(기획서 261111 4-3 [MSG NUM2]).
+        if (!premium && lunaService.dailyUsed(userId, sessionTime.currentSessionDate(),
+                USAGE_CHAT_REQUEST) >= freeRequestsPerDay) {
+            throw new ApiException(ErrorCode.CHAT_REQUEST_FREE_EXHAUSTED, HttpStatus.CONFLICT,
+                    "오늘의 무료 대화 신청을 모두 사용했어요.",
+                    String.valueOf(freeRequestsPerDay));
         }
 
         String requestId = UUID.randomUUID().toString();
-        if (cost > 0) {
-            lunaService.deduct(userId, cost, USAGE_CHAT_REQUEST, requestId,
-                    "대화 신청에 필요한 루나가 부족해요.");
-        }
         if (!premium) {
             lunaService.useDaily(userId, sessionTime.currentSessionDate(), USAGE_CHAT_REQUEST);
         }
@@ -191,7 +186,8 @@ public class ChatService {
         request.setToUser(targetUserId);
         request.setMessage(message);
         request.setStatus("PENDING");
-        request.setLunaCost(cost);
+        // 칼럼(`chat_requests.luna_cost`)은 지난 기록 때문에 남긴다 — 이제 늘 0이다.
+        request.setLunaCost(0);
         // 프라임의 신청은 상대 목록에서 1일간 최상단(기획 9-1 화면 26).
         // 지금 찍어 두는 이유: 구독이 끝났다고 이미 보낸 신청이 아래로 떨어지면 안 된다.
         //
@@ -227,7 +223,6 @@ public class ChatService {
         return new ChatRequestQuotaDto(
                 Math.max(0, freeRequestsPerDay - used),
                 freeRequestsPerDay,
-                lunaCost,
                 requestMessageMaxLength,
                 unlimited);
     }

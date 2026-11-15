@@ -35,7 +35,7 @@
 | 3 | `scene_garden/filtering_gender.png` | 성별 | 217×92 |
 | 4 | `scene_garden/filtering_age.png` | 나이 | 227×94 |
 | 5 | `scene_garden/filtering_nation.png` | 국가 | 217×94 |
-| 6 | `scene_garden/button_Moonlight.png` | 달빛 한마디 | 335×96 |
+| 6 | `scene_garden/button_Moonlight.png` | 달빛 한마디 | ~~335×96~~ → **351×121**(2026-11-15) — ✅ **일본어판 받음**(`ja/`, 같은 규격) |
 | 7 | `scene_post/button_postalbum.png` | 포스트 앨범 | ~~601×96~~ → **571×96**(2026-11-15) |
 | 8 | `scene_post/button_boost.png` | 부스트 | ~~407×96~~ → **430×96**(2026-11-15) |
 | 9 | `scene_post/button_postmake.png` | 포스트 공유하기 | 418×103 |

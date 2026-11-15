@@ -118,6 +118,8 @@ class DesignCanvas {
     'assets/images/scene_garden/menu_profile_text_color.png': Size(234, 38),
     'assets/images/scene_garden/menu_profile_text_normal.png': Size(234, 38),
 
+    // 달빛가든 [달빛 한마디] 입구 — `달빛 한마디` 글자가 구워져 있다(2026-11-15, 같은 규격).
+    'assets/images/scene_garden/button_Moonlight.png': null,
     // 프로필 [작성하기] 머리 사진 — 「プロフィール」 문구가 구워져 있다.
     // 일본어판은 **틀이 다르다**(1080×771 vs 1426×1103) — 폭에 맞춰 위에서부터 그린다.
     'assets/images/scene_profile/create/back_profile.png': Size(1426, 1103),

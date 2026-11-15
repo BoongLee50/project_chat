@@ -86,6 +86,8 @@ public enum ErrorCode {
     CHAT_REQUEST_PENDING,
     /** 거절당한 지 얼마 안 된 상대 — field에 남은 시간(시) 단위를 싣는다. */
     CHAT_REQUEST_REJECTED_COOLDOWN,
+    /** 오늘의 무료 대화 신청(하루 2회)을 다 썼다 — 기획서 261111 4-3 [MSG NUM2]. 프라임은 걸리지 않는다. */
+    CHAT_REQUEST_FREE_EXHAUSTED,
     CHAT_REQUEST_NOT_FOUND,
     CHAT_REQUEST_ALREADY_HANDLED,
     CHAT_ACCEPT_NOT_RECEIVER,
@@ -111,7 +113,6 @@ public enum ErrorCode {
     FRIEND_NO_TODAY_POST,
 
     // ── store ──────────────────────────────────────────
-    LUNA_INSUFFICIENT,
     STORE_PRODUCT_NOT_FOUND,
     STORE_PRODUCT_INVALID,
     STORE_BOOST_NONE,
