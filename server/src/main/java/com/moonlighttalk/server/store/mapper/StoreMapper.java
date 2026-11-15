@@ -80,9 +80,6 @@ public interface StoreMapper {
     int consumeBoostStock(@Param("userId") String userId, @Param("kind") String kind,
                            @Param("source") String source);
 
-    /** 구독이 끝난 사람의 프라임 구독분 부스트를 치운다. */
-    int deleteOrphanPrimeBoostStock(@Param("now") LocalDateTime now);
-
     List<BoostStock> selectBoostStocks(@Param("userId") String userId);
 
     void insertBoostActivation(BoostActivation activation);

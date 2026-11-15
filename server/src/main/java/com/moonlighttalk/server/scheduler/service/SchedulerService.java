@@ -157,7 +157,7 @@ public class SchedulerService {
         int subscriptions = storeMapper.expireSubscriptions(now);
         int entitlements = storeMapper.deleteExpiredEntitlements(now);
         int boosts = storeMapper.deleteExpiredBoostActivations(now);
-        // 프라임 부스트 30일마다 +10(쌓인다, 사용자 2026-11-15) + 끝난 구독의 프라임 구독분 치우기(V31).
+        // 프라임 부스트 30일마다 +10(쌓이고, 구독이 끝나도 남는다 — 사용자 2026-11-15, V31).
         int refilled = storeService.refreshPrimeBoosts();
         log.info("[배치] BM 만료 정리 구독 {} · 권리 {} · 부스트 {} · 프라임 부스트 채움 {}",
                 subscriptions, entitlements, boosts, refilled);

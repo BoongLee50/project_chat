@@ -158,15 +158,6 @@
         WHERE user_id = #{userId} AND kind = #{kind} AND source = #{source} AND quantity &gt; 0
     </update>
 
-    <!-- 구독이 끝난 사람의 프라임 구독분을 치운다(구독이 끝나면 사라진다, 사용자 2026-11-14). -->
-    <delete id="deleteOrphanPrimeBoostStock">
-        DELETE FROM boost_inventory
-        WHERE source = 'PRIME'
-          AND NOT EXISTS (SELECT 1 FROM subscriptions s
-                          WHERE s.user_id = boost_inventory.user_id
-                            AND s.status IN ('ACTIVE','CANCELLED') AND s.expires_at &gt; #{now})
-    </delete>
-
     <select id="selectBoostStocks" resultMap="BoostStockResultMap">
         SELECT * FROM boost_inventory WHERE user_id = #{userId}
     </select>
