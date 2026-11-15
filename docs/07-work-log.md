@@ -460,7 +460,11 @@ adb shell cmd locale set-app-locales com.example.project_chat --locales ko-KR
   `showIncomingFriendRequestDialog`(이미 있었지만 쓰는 곳이 없던 5-1 img13 우측)를 바로 띄운다. [친구 수락] → `accept` + 토스트 `chatFriendAccepted`(새 ARB) · [거절] → `reject` · [✕] → 답 안 함(받은 신청 목록에 남는다). 같은 팝업이 겹쳐 뜨지 않게 한 번에 하나.
 - 팝업 머리(사진·이름·접속)는 `postInfoProvider(상대)`로 읽는다 — 못 읽으면 오류 문구 토스트.
 - ✅ 에뮬(Nari ↔ 건우 `temp-10` MATCH 방): 건우가 API로 신청 → 채팅창 위에 즉시 팝업 · [거절] → 행 삭제 · [⋯]›[친구 신청] → 팝업 → 보내기 → 토스트 + `PENDING` 행. 시험 행은 건우 쪽 거절로 지웠다(데모 데이터 원상태).
-  ⚠️ [친구 수락]은 방이 FRIEND로 승격돼 데모 데이터가 바뀌어 **눌러 보지 않았다**(친구 화면과 같은 `friendActions.accept`).
+  ✅ [친구 수락]도 사용자 허락을 받아 눌러 봤다 — 토스트 `건우님과 친구가 됐어요.` · `friendships` ACCEPTED · 방 `207d6198…` MATCH → **FRIEND 승격**(서버 `ensureFriendRoom`).
+  🐛 **찾은 버그 → 고침**: 친구가 된 뒤에도 [⋯]에 [친구 신청]이 남았다 — 메뉴가 들어올 때의 `widget.room.type`만 봤다.
+  이제 화면 상태 `_isFriend`(들어올 때 FRIEND · 내가 수락 · 상대가 수락 = `FRIEND_STATE` accepted에 roomId가 이 방)로 숨긴다. 두 방향 다 에뮬 확인.
+  ↩️ 시험 뒤 되돌림(SQL): `friendships` 행 삭제 + 방 `type='MATCH'`. ⚠️ 친구 해제 API로는 못 되돌린다 — `remove`는 친구 방을 **닫는다**(MATCH로 안 돌아감).
+  DB만 되돌리면 앱의 대화 목록은 FRIEND로 남아 있으니 앱을 다시 띄울 것.
   🔧 temp 데모 계정은 목 로그인 uid(`mock-…`)가 아니라 API로 못 부른다 — `provider_uid`를 잠깐 `mock-<tag>`로 바꿔 로그인하고 바로 되돌렸다.
 - 공용: `friend/…/friend_request_dialog.dart`(친구 세션 파일)는 **가져다 쓰기만** 했다 · ARB 키 하나 추가(ko·ja).
 

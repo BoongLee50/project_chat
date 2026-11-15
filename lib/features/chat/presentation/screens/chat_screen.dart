@@ -59,6 +59,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   /// **방에 들어올 때 한 번** 자리를 잡는다. 이미 연 방이면 자리를 더 쓰지 않는다.
   TranslateAccess? _translate;
 
+  /// 이미 친구인가 — 들어올 때는 방 종류(FRIEND)로, 채팅창 안에서 친구가 되면 그 자리에서 true.
+  /// 친구가 되면 [⋯]의 [친구 신청]을 숨긴다(방 종류는 서버가 FRIEND로 바꾸지만 [widget.room]은 들어올 때 값이다).
+  late bool _isFriend = widget.room.type == 'FRIEND';
+
   /// 지난 프레임의 키보드 높이. 키보드가 올라오면 목록이 줄어 마지막 메시지가 가려지므로 아래로 내린다.
   double _keyboard = 0;
 
@@ -246,6 +250,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       if (error != null) {
         _toast(errorMessage(l10n, error));
       } else if (accept) {
+        setState(() => _isFriend = true);
         _toast(l10n.chatFriendAccepted(widget.room.partnerNickname));
       }
     } finally {
@@ -317,12 +322,19 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       _scrollToBottom();
     });
     // 5-1 — 이 방 상대가 보낸 친구 신청은 채팅창 위에 바로 띄운다.
+    // 내가 보낸 신청을 상대가 받아 주면 이 방이 친구 방이 된다(`FRIEND_STATE` accepted · roomId = 이 방).
     ref.listen(socketPacketProvider, (_, next) {
       final packet = next.valueOrNull;
-      if (packet?.op != Op.friendReqIncoming) return;
-      if (packet!.data['fromUserId'] != widget.room.partnerId) return;
-      final friendshipId = packet.data['friendshipId'] as String?;
-      if (friendshipId != null) _showIncomingFriendRequest(friendshipId);
+      if (packet == null) return;
+      if (packet.op == Op.friendReqIncoming &&
+          packet.data['fromUserId'] == widget.room.partnerId) {
+        final friendshipId = packet.data['friendshipId'] as String?;
+        if (friendshipId != null) _showIncomingFriendRequest(friendshipId);
+      } else if (packet.op == Op.friendState &&
+          packet.data['state'] == 'accepted' &&
+          packet.data['roomId'] == widget.room.roomId) {
+        setState(() => _isFriend = true);
+      }
     });
     final keyboard = MediaQuery.viewInsetsOf(context).bottom;
     if (keyboard > _keyboard) _scrollToBottom();
@@ -345,7 +357,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               _Header(
                 room: widget.room,
                 onLeave: _leave,
-                onRequestFriend: _requestFriend,
+                // 이미 친구면 null — 메뉴에서 [친구 신청]이 빠진다.
+                onRequestFriend: _isFriend ? null : _requestFriend,
                 onReport: _report,
                 onBlock: _block,
               ),
@@ -472,7 +485,7 @@ class _Header extends StatelessWidget {
 
   final ChatRoomSummary room;
   final VoidCallback onLeave;
-  final VoidCallback onRequestFriend;
+  final VoidCallback? onRequestFriend;
   final VoidCallback onReport;
   final VoidCallback onBlock;
 
@@ -614,7 +627,7 @@ class _ManageMenu extends StatelessWidget {
 
   final ChatRoomSummary room;
   final VoidCallback onLeave;
-  final VoidCallback onRequestFriend;
+  final VoidCallback? onRequestFriend;
   final VoidCallback onReport;
   final VoidCallback onBlock;
 
@@ -636,7 +649,7 @@ class _ManageMenu extends StatelessWidget {
       position: PopupMenuPosition.under,
       onSelected: (value) {
         if (value == 'leave') onLeave();
-        if (value == 'friend') onRequestFriend();
+        if (value == 'friend') onRequestFriend?.call();
         if (value == 'report') onReport();
         if (value == 'block') onBlock();
         if (value == 'profile') showProfileView(context, room.partnerId);
@@ -646,8 +659,8 @@ class _ManageMenu extends StatelessWidget {
         item('profile', l10n.chatMenuProfile),
         item('report', l10n.chatMenuReport),
         item('block', l10n.chatMenuBlock),
-        // 이미 친구인 방(FRIEND)에서는 신청 항목을 숨긴다.
-        if (room.type != 'FRIEND') item('friend', l10n.chatMenuFriendRequest),
+        // 이미 친구면(들어올 때 FRIEND 방 · 채팅창 안에서 친구가 됨) 부르는 쪽이 null을 넘긴다.
+        if (onRequestFriend != null) item('friend', l10n.chatMenuFriendRequest),
         item('leave', l10n.chatMenuLeave),
       ],
       child: Padding(
