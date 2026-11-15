@@ -446,6 +446,13 @@ adb shell cmd locale set-app-locales com.example.project_chat --locales ko-KR
 > 다음에 할 일은 [09 인수인계](09-next-task-handoff.md) §2의 **막힌 것 3건**에서 고른다(A·B가 해소됐다).
 > 다음 "싱크용 문서" 요청은 **그 이후 작업부터** 정리하면 된다.
 
+### 2026-11-15 [채팅창] — `그래픽 소스/채팅창` · 기획서 261111 5장 대조 → 문구 두 줄만
+- **그래픽**: `compare_ui_delivery.py "D:/Plan_Chat/그래픽 소스"` — 채팅창 19장 **전부 같음**(시안 3장 건너뜀). 할 것 없음.
+  (이 PC 콘솔이 cp949라 도구가 이모지 출력에서 죽는다 → `PYTHONIOENCODING=utf-8`로 돌릴 것)
+- **기획서 261011 → 261111 5장 diff**: 규칙은 그대로, 바뀐 것은 문구뿐 — "PRIME 구독" → **"프라임 멤버십 구독"**, "[자동번역 패스]" → "[자동 번역]"(루나 폐지·상점 개편과 같은 이름 정리).
+  → ARB `translateRoomExhausted`·`voiceQuotaExhausted`(ko·ja)를 본문 문장 그대로로. 번역 쪽은 Plan_3 때의 *"무료 번역 **대화방**을"* 도 본문대로 *"무료 번역을"* + 줄바꿈.
+  ja는 가든 `errorChatRequestFreeExhausted`와 맞춰 `プライムメンバーシップ`. 서버 쪽 같은 문구 없음.
+
 ### 2026-11-15 [포스트] — `verify_post_lock.py` 복구(V31 권리 출처)
 
 가든 세션이 09 포스트 줄에 남긴 기록대로였다 — V31이 `user_entitlements.source`를 `enum('PRIME','STORE')`로 좁혔는데

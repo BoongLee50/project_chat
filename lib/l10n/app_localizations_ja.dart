@@ -537,14 +537,14 @@ class L10nJa extends L10n {
 
   @override
   String get translateRoomExhausted =>
-      '無料翻訳のチャットルームをすべて使いました。プライムならすべての会話で自動翻訳を使えます。';
+      '無料翻訳をすべて使いました。\nプライムメンバーシップならすべての会話で自動翻訳を使えます。';
 
   @override
   String get translateProviderNotReady => '翻訳機能はまだ準備中です。';
 
   @override
   String get voiceQuotaExhausted =>
-      '無料の音声メッセージをすべて使いました。\nプライムなら音声メッセージを使い続けられます。';
+      '無料の音声メッセージをすべて使いました。\nプライムメンバーシップなら音声メッセージを使い続けられます。';
 
   @override
   String get chatFriendRequestSent => '友だちリクエストを送りました。相手が承認すると友だちになります。';

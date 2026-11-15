@@ -537,14 +537,14 @@ class L10nKo extends L10n {
 
   @override
   String get translateRoomExhausted =>
-      '무료 번역 대화방을 모두 사용했어요. PRIME 구독 시 모든 대화에서 자동 번역을 이용할 수 있어요.';
+      '무료 번역을 모두 사용했어요.\n프라임 멤버십 구독 시 모든 대화에서 자동 번역을 이용할 수 있어요.';
 
   @override
   String get translateProviderNotReady => '번역 기능은 아직 준비 중이에요.';
 
   @override
   String get voiceQuotaExhausted =>
-      '무료 음성 메시지를 모두 사용했어요.\nPRIME 구독 시 음성 메시지를 계속 이용할 수 있어요.';
+      '무료 음성 메시지를 모두 사용했어요.\n프라임 멤버십 구독 시 음성 메시지를 계속 이용할 수 있어요.';
 
   @override
   String get chatFriendRequestSent => '친구 요청을 보냈어요. 상대가 수락하면 친구가 돼요.';

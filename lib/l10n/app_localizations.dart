@@ -1066,7 +1066,7 @@ abstract class L10n {
   /// No description provided for @translateRoomExhausted.
   ///
   /// In ko, this message translates to:
-  /// **'무료 번역 대화방을 모두 사용했어요. PRIME 구독 시 모든 대화에서 자동 번역을 이용할 수 있어요.'**
+  /// **'무료 번역을 모두 사용했어요.\n프라임 멤버십 구독 시 모든 대화에서 자동 번역을 이용할 수 있어요.'**
   String get translateRoomExhausted;
 
   /// No description provided for @translateProviderNotReady.
@@ -1078,7 +1078,7 @@ abstract class L10n {
   /// No description provided for @voiceQuotaExhausted.
   ///
   /// In ko, this message translates to:
-  /// **'무료 음성 메시지를 모두 사용했어요.\nPRIME 구독 시 음성 메시지를 계속 이용할 수 있어요.'**
+  /// **'무료 음성 메시지를 모두 사용했어요.\n프라임 멤버십 구독 시 음성 메시지를 계속 이용할 수 있어요.'**
   String get voiceQuotaExhausted;
 
   /// No description provided for @chatFriendRequestSent.
