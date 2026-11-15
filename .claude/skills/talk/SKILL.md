@@ -1,6 +1,6 @@
 ---
 name: talk
-description: 이 세션을 달빛톡 '대화방' 콘텐츠 전담으로 설정한다 — 기획서 6장(대화 목록·받은 신청), D:\Plan_Chat\UI\Scene_Talk 위주. 사용자가 /talk를 입력할 때만 쓴다.
+description: 이 세션을 달빛톡 '대화방' 콘텐츠 전담으로 설정한다 — 기획서 6장(대화 목록·받은 신청), D:\Plan_Chat\그래픽 소스\대화방 화면 위주. 사용자가 /talk를 입력할 때만 쓴다.
 disable-model-invocation: true
 ---
 
@@ -18,7 +18,7 @@ disable-model-invocation: true
 | | 어디 |
 |---|---|
 | 기획서 | **6장**(6-1 대화 목록 · 6-2 받은 신청). 5장 채팅창은 `/chat`(`Scene_Chat`, 2026-10-25 전달) |
-| UI | **`D:\Plan_Chat\UI\Scene_Talk\`** — `Talk List/` · `Application Received/` (+ `Example/`) |
+| UI | **`D:\Plan_Chat\UI\Scene_Talk\`** — `Talk List/` · `Application Received/` (+ `Example/`) · 🚨 **2026-11-15부터 그래픽은 `D:\Plan_Chat\그래픽 소스\대화방 화면\`**(옛 `UI\Scene_Talk`와 같은 것, 폴더 이름만 한글). **시안은 `Example/` 없이 섞여 온다 — 파일명이 한글이고 완성된 화면이면 참고 화면이지 리소스가 아니다.** 옛 이름 대조표는 `.claude/content-sessions.md` §1 |
 | 에셋 | `assets/images/scene_talk/talk_list/` · `application_received/` |
 | 클라 | `lib/features/chat/` — 목록 `chat_rooms_screen.dart` · 받은 신청 `received_request_screen.dart` · 좌표 `talk_art.dart`. ⚠️ 같은 폴더의 채팅창(`chat_screen.dart` · 음성 · 이모지)은 `/chat` 몫, `chat_provider`·`chat_api`·`chat_models`와 서버 `chat/`은 **둘이 같이 쓴다** |
 | 서버 | `server/.../chat/`(+`socket/` WebSocket) |

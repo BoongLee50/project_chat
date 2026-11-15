@@ -1,6 +1,6 @@
 ---
 name: garden
-description: 이 세션을 달빛톡 '달빛가든' 콘텐츠 전담으로 설정한다 — 기획서 4장(피드·댓글·대화 신청), D:\Plan_Chat\UI\Scene_Garden 위주. 사용자가 /garden을 입력할 때만 쓴다.
+description: 이 세션을 달빛톡 '달빛가든' 콘텐츠 전담으로 설정한다 — 기획서 4장(피드·댓글·대화 신청), D:\Plan_Chat\그래픽 소스\달빛가든 화면 위주. 사용자가 /garden을 입력할 때만 쓴다.
 disable-model-invocation: true
 ---
 
@@ -18,7 +18,7 @@ disable-model-invocation: true
 | | 어디 |
 |---|---|
 | 기획서 | **4장**(4-1 피드창 · 4-2 포스트 댓글 · 4-3 대화 신청). 🏮 **달빛 한마디(261002 9장)는 `/word` 세션 몫**(2026-10-11 분리) — 입구 버튼 `button_Moonlight`만 가든에 있다 |
-| UI | **`D:\Plan_Chat\UI\Scene_Garden\`** (+ `Example/`). ⚠️ 이 폴더에는 **하단 주메뉴·Prime·루나 그림**도 들어 있다 — 그건 모든 탭이 쓰는 공용이다 |
+| UI | **`D:\Plan_Chat\UI\Scene_Garden\`** (+ `Example/`). ⚠️ 이 폴더에는 **하단 주메뉴·Prime·루나 그림**도 들어 있다 — 그건 모든 탭이 쓰는 공용이다 · 🚨 **2026-11-15부터 그래픽은 `D:\Plan_Chat\그래픽 소스\달빛가든 화면\`**(옛 `UI\Scene_Garden`와 같은 것, 폴더 이름만 한글). **시안은 `Example/` 없이 섞여 온다 — 파일명이 한글이고 완성된 화면이면 참고 화면이지 리소스가 아니다.** 옛 이름 대조표는 `.claude/content-sessions.md` §1 |
 | 에셋 | `assets/images/scene_garden/` (+ `ja/`) |
 | 클라 | `lib/features/garden/`(피드 `garden_screen.dart` · 댓글 `comments_sheet.dart` · `garden_art.dart`) |
 | 서버 | `server/.../garden/`(+`translate/`) · `comment/`(🏮 달빛 한마디 댓글과 공용 — `CommentTarget.DAILY_ANSWER`) |

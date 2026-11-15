@@ -1,6 +1,6 @@
 ---
 name: friend
-description: 이 세션을 달빛톡 '친구' 콘텐츠 전담으로 설정한다 — 기획서 7장 친구관리(친구 목록·받은 친구 신청)와 5-1 친구 신청, D:\Plan_Chat\UI\Scene_Friend 위주. 사용자가 /friend를 입력할 때만 쓴다.
+description: 이 세션을 달빛톡 '친구' 콘텐츠 전담으로 설정한다 — 기획서 7장 친구관리(친구 목록·받은 친구 신청)와 5-1 친구 신청, D:\Plan_Chat\그래픽 소스\친구방 화면 위주. 사용자가 /friend를 입력할 때만 쓴다.
 disable-model-invocation: true
 ---
 
@@ -18,7 +18,7 @@ disable-model-invocation: true
 | | 어디 |
 |---|---|
 | 기획서 | **7장 친구관리**(7-1 친구 목록 · 7-2 받은 친구 신청) + **5-1** 친구 신청(채팅창에서 거는 규칙) |
-| UI | **`D:\Plan_Chat\UI\Scene_Friend\`** — `Friend List/` · `Application Received/`. ⚠️ `[받은 신청]` 탭 그림은 **`Scene_Talk`의 것**을 쓴다 |
+| UI | **`D:\Plan_Chat\UI\Scene_Friend\`** — `Friend List/` · `Application Received/`. ⚠️ `[받은 신청]` 탭 그림은 **`Scene_Talk`의 것**을 쓴다 · 🚨 **2026-11-15부터 그래픽은 `D:\Plan_Chat\그래픽 소스\친구방 화면\`**(옛 `UI\Scene_Friend`와 같은 것, 폴더 이름만 한글). **시안은 `Example/` 없이 섞여 온다 — 파일명이 한글이고 완성된 화면이면 참고 화면이지 리소스가 아니다.** 옛 이름 대조표는 `.claude/content-sessions.md` §1 |
 | 에셋 | `assets/images/scene_friend/friend_list/` · `application_received/` |
 | 클라 | `lib/features/friend/` — 목록 `friends_screen.dart` · `friend_post_screen.dart`([친구 포스트 정보]) · `friend_request_screen.dart`([친구 요청 상세]) · 좌표 `friend_art.dart` · 신청 창 `friend_request_dialog.dart` |
 | 서버 | `server/.../friend/` — 순서 `FriendService.FRIEND_ORDER` · `db/migration` V27 |

@@ -18,7 +18,7 @@ disable-model-invocation: true
 | | 어디 |
 |---|---|
 | 기획서 | **261011 9장 달빛 한마디 이벤트** — 9-1 **작성**(타이틀 · [내 한마디 등록]) · 9-2 **[답글 목록]·[답글 상세]**. 유료 상점은 **갱신판(15:37)부터 10장**이다(그 전엔 `9.`로 겹쳤다). 261002에는 9-2·9-3이 `8-2`·`8-3`으로 잘못 붙어 있었고, 260919까지는 **8장**이었다 |
-| UI | **`D:\Plan_Chat\UI\Scene_Word`**(2026-10-11) — `Title` · `Reply Register` · `Reply List` · **`Reply Detail`**(같은 날 두 번째 전달 + 목록 `button_view trans_m`) |
+| UI | **`D:\Plan_Chat\UI\Scene_Word`**(2026-10-11) — `Title` · `Reply Register` · `Reply List` · **`Reply Detail`**(같은 날 두 번째 전달 + 목록 `button_view trans_m`) · 🚨 **2026-11-15부터 그래픽은 `D:\Plan_Chat\그래픽 소스\달빛 한마디 화면\`**(옛 `UI\Scene_Word`와 같은 것, 폴더 이름만 한글). **시안은 `Example/` 없이 섞여 온다 — 파일명이 한글이고 완성된 화면이면 참고 화면이지 리소스가 아니다.** 옛 이름 대조표는 `.claude/content-sessions.md` §1 |
 | 입구 | `[달빛 한마디]` 버튼 그림 `button_Moonlight`은 **`Scene_Garden`에 있고 가든 세션 몫**(가든 필터 줄 네 번째 칸, `garden_screen.dart`가 `DailyIntroScreen.route()`를 연다) |
 | 에셋 | `assets/images/scene_word/{title, reply_register, reply_list}/`(+ 각 `ja/`) · 상수 `WordArt`(`widgets/word_art.dart`) · 일본어판 등록은 `DesignCanvas.localizedAssets`. 새 폴더는 **`pubspec.yaml`에 줄 + 완전 재빌드** |
 | 클라 | `lib/features/daily/` — 타이틀 `daily_intro_screen.dart`(등록 시트를 이 안에서 올린다) · 등록 `widgets/daily_write_sheet.dart` · 목록 `daily_list_screen.dart` · 상세 `daily_detail_screen.dart`(전체 화면, 댓글이 본문 아래) · `daily_provider.dart` · `daily_api.dart` |

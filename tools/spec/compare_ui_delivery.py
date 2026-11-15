@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
-"""UI 전달본(Plan_Chat/UI)과 저장소 에셋을 **같은 이름끼리** 맞대 본다.
+"""그래픽 전달본(Plan_Chat/그래픽 소스 — 2026-11-14까지는 Plan_Chat/UI)과 저장소 에셋을 **같은 이름끼리** 맞대 본다.
 
 🚨 "그 해시가 에셋 어딘가에 있나"로는 부족하다. 기획은 **같은 이름으로 내용만 살짝 바꿔**
 다시 보내기도 한다 — 그럴 때는 **그 이름의 파일이 같은가**를 봐야 잡힌다.
 
 사용법:
     python tools/spec/compare_ui_delivery.py                 # 기본 경로
-    python tools/spec/compare_ui_delivery.py "<UI 폴더>"      # 다른 기기(D:/Plan_Chat/UI 등)
+    python tools/spec/compare_ui_delivery.py "D:/Plan_Chat/그래픽 소스"   # 이 PC(기본값은 다른 기기 경로)
 
 전달본 → 저장소 이름 규칙(docs/08 §0, docs/14 §2):
   - 폴더:  Scene_Post → scene_post,  "Talk List" → talk_list  (소문자 · 공백은 밑줄)
@@ -14,7 +14,7 @@
            · 파일명의 공백은 밑줄(`frame_post_album Pass.png` → `frame_post_album_pass.png`)
   - ⚠️ `icon_flag_kor/jap`·`filtering_nation_kor/jap`·`icon_sflag_*`·`icon_mflag_*`·`icon_mmflag_*`(달빛 한마디)은
     **언어가 아니라 나라**라서 이름 그대로 둔다(둘 다 항상 필요하다).
-  - `Example/` 폴더(좌표·참고 그림)는 에셋이 아니라서 보지 않는다.
+  - 시안(좌표·참고 그림)은 에셋이 아니라서 보지 않는다 — 예전엔 `Example/` 폴더, 2026-11부터는 **한글 파일명**(is_mockup).
 
 결과 네 가지:
   같음            — 그대로 적용돼 있다
@@ -34,7 +34,56 @@ except ImportError:  # 픽셀 비교 없이도 해시 대조는 된다
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 ASSETS = os.path.join(ROOT, 'assets', 'images')
-DEFAULT_UI = 'D:/MyProject/Plan_Chat/UI'
+DEFAULT_UI = 'D:/MyProject/Plan_Chat/그래픽 소스'
+
+# 🚨 2026-11-15부터 전달 폴더가 `Plan_Chat/그래픽 소스/`로 바뀌었다 — 폴더 이름이 **한글**이다.
+# 한글은 소문자·밑줄 규칙으로 저장소 경로가 안 나오므로 **여기서 짝을 지어 준다**(저장소 쪽은 예전 `scene_*` 그대로).
+# 표에 없는 폴더는 예전 규칙(소문자·공백→밑줄)으로 떨어지고 `⚠️ 짝 없음`으로 표시된다 — 새 폴더가 오면 여기에 한 줄.
+KOREAN_DIRS = {
+    '포스트 화면': 'scene_post',
+    '달빛가든 화면': 'scene_garden',
+    '대화방 화면': 'scene_talk', '대화방 화면/대화 목록': 'scene_talk/talk_list',
+    '대화방 화면/받은 신청': 'scene_talk/application_received',
+    '채팅창': 'scene_chat',
+    '친구방 화면': 'scene_friend', '친구방 화면/친구목록': 'scene_friend/friend_list',
+    '친구방 화면/받은 신청': 'scene_friend/application_received',
+    '프로필 화면': 'scene_profile', '프로필 화면/작성하기': 'scene_profile/create',
+    '프로필 화면/미리보기': 'scene_profile/preview',
+    '달빛 한마디 화면': 'scene_word', '달빛 한마디 화면/타이틀': 'scene_word/title',
+    '달빛 한마디 화면/질문 답글 화면': 'scene_word/reply_register',
+    '달빛 한마디 화면/답글 목록 화면': 'scene_word/reply_list',
+    '달빛 한마디 화면/답글 상세 화면': 'scene_word/reply_detail',
+    # 상점(신버전)은 상점 세션이 **상품 화면 그림을 한 벌로 모아** `scene_shop/item`에 들였다(폴더마다 겹쳐 와서).
+    # 프라임 구독 관리 쪽만 `prime_sub/` 아래 화면별로 나뉜다.
+    '상점 화면 (신버전)': 'scene_shop/item',
+    '상점 화면 (신버전)/상품별 관리 화면/프라임 구독 관리 화면/프라임 구독 관리': 'scene_shop/prime_sub/sub_manage',
+    '상점 화면 (신버전)/상품별 관리 화면/프라임 구독 관리 화면/프라임 구독 해지': 'scene_shop/prime_sub/sub_end',
+    '상점 화면 (신버전)/상품별 관리 화면/프라임 구독 관리 화면/프라임 구독 해지 취소': 'scene_shop/prime_sub/sub_end_cancel',
+    '상점 화면 (신버전)/상품별 구매 화면/프라임 구독 구매': 'scene_shop/prime_sub/sub_start',
+}
+# 들이지 않는 폴더 — 구버전 상점은 루나 상점이 폐지되며 신버전으로 대체됐다(기획서 261111).
+SKIP_DIRS = ('상점 화면 (구버전)',)
+# 상점(신버전)의 짝 없는 하위 폴더는 모두 `scene_shop/item`으로 모은다(위 주석).
+FLATTEN_PREFIX = {'상점 화면 (신버전)': 'scene_shop/item'}
+
+
+def map_korean_dir(rel_dir):
+    """한글 전달 폴더 → 저장소 폴더. 짝이 없으면 None."""
+    if rel_dir in KOREAN_DIRS:
+        return KOREAN_DIRS[rel_dir]
+    for prefix, target in FLATTEN_PREFIX.items():
+        if rel_dir.startswith(prefix + '/'):
+            return target
+    return None
+
+
+def is_mockup(name):
+    """시안(좌표값·참고화면)인가 — 2026-11부터 `Example/` 없이 리소스와 섞여 온다.
+
+    **파일명에 한글이 있으면 시안**이다(`…_좌표값.png` · `… 참고화면.png` · `화면 확인 샘플.png`).
+    실제 리소스는 영문 이름(`button_*` · `frame_*` · `icon_*` · `title_*` · `back_*`)이다.
+    """
+    return any('\uac00' <= ch <= '\ud7a3' for ch in name)
 
 # 언어가 아니라 **나라**를 뜻하는 접미사 — ja/로 옮기지 않는다.
 COUNTRY_PREFIXES = ('icon_flag_', 'filtering_nation_', 'icon_sflag_', 'icon_mflag_',
@@ -55,7 +104,7 @@ def file_name(name):
 
 def target_rel(rel_dir, name):
     """전달 파일(상대 폴더, 이름) → 저장소 상대 경로."""
-    folder = '/'.join(dir_name(p) for p in rel_dir.split('/') if p)
+    folder = map_korean_dir(rel_dir) or '/'.join(dir_name(p) for p in rel_dir.split('/') if p)
     is_country = name.startswith(COUNTRY_PREFIXES)
     # 프로필(Scene_Profile)부터는 접미사가 `_jp`·`_kr`로도 온다 — 뜻은 같다.
     for suffix in ('_jap.png', '_jp.png'):
@@ -94,16 +143,24 @@ def main(ui_root):
         return 2
 
     seen_targets = set()
-    counts = {'same': 0, 'changed': 0, 'new': 0}
+    counts = {'same': 0, 'changed': 0, 'new': 0, 'mockup': 0}
     report = []
+    unmapped = set()
 
     for dp, dirs, files in os.walk(ui_root):
         dirs[:] = [d for d in dirs if d != 'Example']
         rel_dir = os.path.relpath(dp, ui_root).replace(os.sep, '/')
         if rel_dir == '.':
             continue
+        if rel_dir.startswith(SKIP_DIRS):
+            continue
+        if is_mockup(rel_dir.split('/')[0]) and map_korean_dir(rel_dir) is None:
+            unmapped.add(rel_dir)
         for name in sorted(files):
             if not name.lower().endswith('.png'):
+                continue
+            if is_mockup(name):
+                counts['mockup'] += 1  # 시안 — 에셋이 아니다
                 continue
             src = os.path.join(dp, name)
             rel = target_rel(rel_dir, name)
@@ -127,8 +184,10 @@ def main(ui_root):
                 only_repo.append(rel)
 
     print('전달본: %s' % ui_root)
-    print('같음 %d · 🔴 이름 같고 다름 %d · 🆕 새 그림 %d · 저장소에만 %d\n'
-          % (counts['same'], counts['changed'], counts['new'], len(only_repo)))
+    print('같음 %d · 🔴 이름 같고 다름 %d · 🆕 새 그림 %d · 저장소에만 %d  (시안 %d장은 건너뜀)\n'
+          % (counts['same'], counts['changed'], counts['new'], len(only_repo), counts['mockup']))
+    for d in sorted(unmapped):
+        print('  ⚠️ 짝 없음(KOREAN_DIRS에 한 줄 넣을 것): %s' % d)
     for kind, path, note in report:
         print('  %-16s %-58s %s' % (kind, path, note))
     for rel in sorted(only_repo):

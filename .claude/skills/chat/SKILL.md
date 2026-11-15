@@ -1,6 +1,6 @@
 ---
 name: chat
-description: 이 세션을 달빛톡 '채팅창' 콘텐츠 전담으로 설정한다 — 기획서 261011 5장 채팅창(메시지·이모지·GIF·음성·채팅 관리 패널), D:\Plan_Chat\UI\Scene_Chat 위주. 사용자가 /chat을 입력할 때만 쓴다.
+description: 이 세션을 달빛톡 '채팅창' 콘텐츠 전담으로 설정한다 — 기획서 261011 5장 채팅창(메시지·이모지·GIF·음성·채팅 관리 패널), D:\Plan_Chat\그래픽 소스\채팅창 위주. 사용자가 /chat을 입력할 때만 쓴다.
 disable-model-invocation: true
 ---
 
@@ -18,7 +18,7 @@ disable-model-invocation: true
 | | 어디 |
 |---|---|
 | 기획서 | 261011 **5장 채팅창**. ⚠️ 이 기획서는 **완전 최신이 아닐 수 있다**(사용자 2026-10-25) — 대화 중 결정이 더 우선. 5-1 친구 신청은 **규칙은 `/friend`, 채팅창 안 버튼·팝업 자리는 여기** |
-| UI | **`D:\Plan_Chat\UI\Scene_Chat\`** (그림 19장 + `Example/` 3장, 2026-10-25 첫 전달 — ✅ 반영) — 좌표는 `Example/채팅창 좌표값.png`, 시안 `Example/채팅창 참고 화면.png`·`참고화면.png` |
+| UI | **`D:\Plan_Chat\UI\Scene_Chat\`** (그림 19장 + `Example/` 3장, 2026-10-25 첫 전달 — ✅ 반영) — 좌표는 `Example/채팅창 좌표값.png`, 시안 `Example/채팅창 참고 화면.png`·`참고화면.png` · 🚨 **2026-11-15부터 그래픽은 `D:\Plan_Chat\그래픽 소스\채팅창\`**(옛 `UI\Scene_Chat`와 같은 것, 폴더 이름만 한글). **시안은 `Example/` 없이 섞여 온다 — 파일명이 한글이고 완성된 화면이면 참고 화면이지 리소스가 아니다.** 옛 이름 대조표는 `.claude/content-sessions.md` §1 |
 | 에셋 | `assets/images/scene_chat/`(19장, `pubspec.yaml` 한 줄) · 상수 **`ChatArt`**(`widgets/chat_art.dart`) · 현황 `08` §0-5. 새 전달본은 먼저 `python tools/spec/compare_ui_delivery.py "D:/Plan_Chat/UI"` |
 | 클라 | `lib/features/chat/` 중 **채팅창 쪽** — `screens/chat_screen.dart` · `widgets/chat_art.dart` · `widgets/voice_message.dart` · `providers/voice_recorder.dart`·`voice_player.dart` |
 | 서버 | `server/.../chat/` 중 **메시지 쪽** — `socket/`(WebSocket) · 메시지·음성 업로드·읽음 · 번역 자리 `translate_rooms` |

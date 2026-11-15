@@ -18,7 +18,7 @@ disable-model-invocation: true
 | | 어디 |
 |---|---|
 | 기획서 | **261111 10장 유료 상점**(261101과 충돌하면 261111) — 10-1 프라임 멤버십 · 10-2 포스트 부스트 · 10-3 포스트 앨범 · 10-4 자동 번역. **루나는 없다**(2026-11-14). ⚠️ 대화 중 결정이 더 우선 |
-| UI | **`D:\Plan_Chat\UI\Scene_Shop(New)\`** — `상품별 구매 화면` · `상품별 관리 화면`(프라임 구독 관리 포함) · `상품별 구매 확인 팝업`. 🚨 **시안은 폴더 없이 섞여 온다** — 한글 이름 + 화면 전체 완성형이면 시안(content-sessions §1). 옛 `Scene_Shop`(PrimeSub·Luna*)은 대체됨 |
+| UI | **`D:\Plan_Chat\UI\Scene_Shop(New)\`** — `상품별 구매 화면` · `상품별 관리 화면`(프라임 구독 관리 포함) · `상품별 구매 확인 팝업`. 🚨 **시안은 폴더 없이 섞여 온다** — 한글 이름 + 화면 전체 완성형이면 시안(content-sessions §1). 옛 `Scene_Shop`(PrimeSub·Luna*)은 대체됨 · 🚨 **2026-11-15부터 그래픽은 `D:\Plan_Chat\그래픽 소스\상점 화면 (신버전)\`**(옛 `UI\Scene_Shop(New)`와 같은 것, 폴더 이름만 한글). **시안은 `Example/` 없이 섞여 온다 — 파일명이 한글이고 완성된 화면이면 참고 화면이지 리소스가 아니다.** 옛 이름 대조표는 `.claude/content-sessions.md` §1 |
 | 에셋 | `assets/images/scene_shop/prime_sub/…`(프라임) · `assets/images/scene_shop/item/`(상품 구매·관리·구매 완료 — 폴더마다 겹쳐 와서 한 벌) + 각 `ja/`. 새 폴더면 **`pubspec.yaml`에 줄 + 완전 재빌드**. 🚨 전달 이름의 **`_kr`/`_jp`는 언어 변형** → 접미사를 떼고 `_kr`은 제자리, `_jp`는 `ja/` |
 | 클라 | `lib/features/store/` — `prime_screen.dart` · `shop_item_screen.dart`(상품 구매/관리 한 화면) · `widgets/shop_popups.dart`(구매 완료 · 프라임 구매 완료 · 부스트 사용 확인) · `widgets/store_widgets.dart`(`ShopCanvas`·`ShopPopup`·`ShopKind`) · `store_provider.dart`. `boost_screen.dart`·`pass_screen.dart`는 **문만**. |
 | 서버 | `server/.../store/`(`StoreService` · `PurchaseService` · `EntitlementService` · 영수증 검증 `verifier/` Apple·Google·Mock · 웹훅) · `server/.../luna/`(`LunaService`) |

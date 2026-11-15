@@ -51,14 +51,18 @@ python tools/verify/verify_friend.py
 ## spec/ — 전달본 리소스 비교
 
 ```bash
-python tools/spec/compare_ui_delivery.py                  # 기본: D:/MyProject/Plan_Chat/UI
-python tools/spec/compare_ui_delivery.py "D:/Plan_Chat/UI" # 다른 기기
+python tools/spec/compare_ui_delivery.py                           # 기본: D:/MyProject/Plan_Chat/그래픽 소스(다른 기기)
+python tools/spec/compare_ui_delivery.py "D:/Plan_Chat/그래픽 소스"  # 이 PC
 ```
 
 🚨 **기획은 같은 이름으로 내용만 살짝 바꿔 보내기도 한다.** "그 해시가 에셋 어딘가에 있나"로는
 못 잡는다 — 이 도구는 **같은 이름끼리** 맞대서 `같음` / `🔴 이름 같고 다름`(규격·바뀐 영역) /
 `🆕 새 그림` / `저장소에만`으로 나눈다. 이름 규칙(`_jap`→`ja/`, `_kor`→원문, 공백→밑줄)은
 09-14 들여오기와 같다. 새 전달본을 받으면 **들이기 전에 먼저** 돌릴 것.
+
+🚨 **2026-11-15부터 전달 폴더는 `그래픽 소스`이고 폴더 이름이 한글이다** — 한글 폴더는 소문자·밑줄 규칙으로 저장소 경로가 안 나오므로
+도구 안의 **`KOREAN_DIRS`** 표가 짝을 지어 준다(저장소는 옛 `scene_*` 그대로). 짝이 없는 새 폴더는 `⚠️ 짝 없음`으로 나온다 → 표에 한 줄.
+**시안(한글 파일명 — 좌표값·참고화면·샘플)은 도구가 건너뛴다**(`is_mockup`). `상점 화면 (구버전)`은 통째로 건너뛴다(`SKIP_DIRS`).
 
 ⚠️ 픽셀 비교는 `getbbox(alpha_only=False)`로 한다 — 기본값은 RGBA에서 **알파만** 봐서
 색만 바뀐 그림을 "픽셀 동일"로 잘못 말한다(만들다가 실제로 걸렸다).
@@ -81,7 +85,7 @@ python tools/spec/diff_docx_text.py "<기획서.docx>" --dump out.txt
 6-1·6-2에 조용히 늘어난 다섯 줄(**받은 신청 14일 만료**, 신고·차단 시 목록 삭제)을 놓쳤다.
 이 도구면 몇 초다. 정본은 **`D:\Plan_Chat\기획서\`에서 가장 최근 `.docx`** + 같은 날의
 **`YYYY-MM-DD 기획사항.txt`**(기획서보다 우선)다. 파일명이 계속 바뀐다 —
-`수정2` → `260906` → `260919`. 리소스 전달본은 `D:\Plan_Chat\UI\`.
+`수정2` → `260906` → `260919`. 리소스 전달본은 **`D:\Plan_Chat\그래픽 소스\`**(2026-11-15부터 — 그 전엔 `UI\Scene_*`).
 ⚠️ `기획사항.txt`는 **CP949(윈도우 한글)** 로 온다 — `iconv -f cp949 -t utf-8`로 읽을 것.
 
 ## demo/ — 화면을 눈으로 보기 위한 데이터

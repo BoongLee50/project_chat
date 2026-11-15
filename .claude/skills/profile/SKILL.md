@@ -1,6 +1,6 @@
 ---
 name: profile
-description: 이 세션을 달빛톡 '프로필' 콘텐츠 전담으로 설정한다 — 기획서 8장 프로필([작성하기]·[미리 보기]), D:\Plan_Chat\UI\Scene_Profile 위주. 사용자가 /profile을 입력할 때만 쓴다.
+description: 이 세션을 달빛톡 '프로필' 콘텐츠 전담으로 설정한다 — 기획서 8장 프로필([작성하기]·[미리 보기]), D:\Plan_Chat\그래픽 소스\프로필 화면 위주. 사용자가 /profile을 입력할 때만 쓴다.
 disable-model-invocation: true
 ---
 
@@ -18,7 +18,7 @@ disable-model-invocation: true
 | | 어디 |
 |---|---|
 | 기획서 | **8장 프로필 · 8-1 작성하기**(261002판부터 번호가 바로잡혔다 — 260919까지는 두 번째 `7.`) |
-| UI | **`D:\Plan_Chat\UI\Scene_Profile\`** `Create/`(작성하기) · `Preview/`(미리 보기) — 좌표는 각 `Example/`의 `*좌표.png` |
+| UI | **`D:\Plan_Chat\UI\Scene_Profile\`** `Create/`(작성하기) · `Preview/`(미리 보기) — 좌표는 각 `Example/`의 `*좌표.png` · 🚨 **2026-11-15부터 그래픽은 `D:\Plan_Chat\그래픽 소스\프로필 화면\`**(옛 `UI\Scene_Profile`와 같은 것, 폴더 이름만 한글). **시안은 `Example/` 없이 섞여 온다 — 파일명이 한글이고 완성된 화면이면 참고 화면이지 리소스가 아니다.** 옛 이름 대조표는 `.claude/content-sessions.md` §1 |
 | 에셋 | `assets/images/scene_profile/{create,preview}/` + `create/ja/` — 새 폴더면 **`pubspec.yaml`에 줄을 넣고 완전 재빌드**(폴더 선언은 재귀가 아니다). 전달 이름의 `_kr`/`_jp`는 떼고 넣는다(08 §0-3) |
 | 클라 | `lib/features/profile/` — `profile_screen.dart`([작성하기]) · `profile_preview_screen.dart` · 위젯 `profile_preview_view.dart`(**남도 보는 창**) · `profile_tag_chip.dart` · `profile_notice_dialog.dart` · 시트 `interests_edit_sheet.dart`·`regions_edit_sheet.dart` · 목록·한도·칩 그림 `profile_catalog.dart` |
 | 서버 | `server/.../profile/` (V28) |

@@ -1,6 +1,6 @@
 ---
 name: post
-description: 이 세션을 달빛톡 '포스트' 콘텐츠 전담으로 설정한다 — 기획서 3장, D:\Plan_Chat\UI\Scene_Post 위주. 사용자가 /post를 입력할 때만 쓴다.
+description: 이 세션을 달빛톡 '포스트' 콘텐츠 전담으로 설정한다 — 기획서 3장, D:\Plan_Chat\그래픽 소스\포스트 화면 위주. 사용자가 /post를 입력할 때만 쓴다.
 disable-model-invocation: true
 ---
 
@@ -18,7 +18,7 @@ disable-model-invocation: true
 | | 어디 |
 |---|---|
 | 기획서 | **3장** 포스트 등록(3-1 오늘의 포스트 등록창 · 3-2 등록 프로세스) |
-| UI | **`D:\Plan_Chat\UI\Scene_Post\`** (+ `Example/` 시안). 하단 주메뉴·상단 버튼은 `Scene_Garden` |
+| UI | **`D:\Plan_Chat\UI\Scene_Post\`** (+ `Example/` 시안). 하단 주메뉴·상단 버튼은 `Scene_Garden` · 🚨 **2026-11-15부터 그래픽은 `D:\Plan_Chat\그래픽 소스\포스트 화면\`**(옛 `UI\Scene_Post`와 같은 것, 폴더 이름만 한글). **시안은 `Example/` 없이 섞여 온다 — 파일명이 한글이고 완성된 화면이면 참고 화면이지 리소스가 아니다.** 옛 이름 대조표는 `.claude/content-sessions.md` §1 |
 | 에셋 | `assets/images/scene_post/` (+ `ja/`) |
 | 클라 | `lib/features/post/` — 화면은 **`home_screen.dart`**(이름이 home이다), 그림 좌표 `post_art.dart` |
 | 서버 | `server/.../post/` · `db/migration` V11(메인 사진·9장·삭제 3회) |

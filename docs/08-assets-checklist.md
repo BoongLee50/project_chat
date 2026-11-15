@@ -207,6 +207,8 @@
 
 > 📁 **에셋 폴더는 전달 폴더를 그대로 따른다**(2026-09-14부터).
 > `Plan_Chat/UI/Scene_Post` → `assets/images/scene_post/` · `Scene_Garden` → `scene_garden/`.
+> 🚨 **2026-11-15부터 전달 폴더는 `Plan_Chat/그래픽 소스/`**(폴더 이름 한글 — `포스트 화면` → `scene_post/` 등, 짝은 `.claude/content-sessions.md` §1 표 ·
+> 대조 도구 `KOREAN_DIRS`). **한글 파일명 = 시안**(좌표값·참고화면)이라 에셋으로 들이지 않는다.
 > **파일 이름도 전달본 그대로** 둔다 — 다음 전달본을 그대로 떨어뜨리면 되도록.
 > 🆕 2026-10-11 `Scene_Post/icon_lock.png`(70×84, 사진 잠금 마크 · 글자 없음 → 일본어판 불필요) 적용 —
 > 기획서 261011 3-1 그림대로 `[TOP]`과 PICK **사이 빈칸**(시안 326, 527).
