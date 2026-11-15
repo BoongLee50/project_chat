@@ -28,6 +28,9 @@ class GardenArt {
   static const Offset subtitleAt = Offset(47, 197);
   static const double subtitleFontSize = 34;
 
+  /// 카드 오른쪽 위 `1/9` 장수 표기 — 대화방 [프로필] 팝업(`request_popup.dart`)과 같은 58(사용자 2026-11-15).
+  static const double pageCountFontSize = 58;
+
   /// 상단 오른쪽 **Prime 혼자**(2026-11-15 — 루나 버튼이 빠졌다). 오른쪽 아래 모서리가 (1054, 186).
   ///
   /// 🚨 **공용 그림이다** — 포스트(`PostArt`)와 대화방·친구 머리글(`art_top_bar.dart`)이 이 경로·규격을 함께 쓴다.

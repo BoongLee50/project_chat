@@ -416,14 +416,15 @@ class _FeedPagerState extends ConsumerState<_FeedPager> {
       ? item.totalPhotos
       : item.photoUrls.length;
 
-  /// 사진 넘기기(기획 4-1 "우측 영역 탭은 다음 사진, 좌측 탭은 이전 사진").
+  /// 사진 넘기기 — **사진 어디를 눌러도 다음 장**, 마지막 장 다음은 **처음 장**으로 돈다.
   ///
-  /// 📌 2026-10-04부터 **팝업 없이 카드에서 바로** 넘긴다. 끝에서 더 누르면 그 자리에 머문다
-  /// (돌아 처음으로 가면 몇 장째인지 헷갈린다 — `1/8` 표기가 그대로 위치를 알려 준다).
-  void _turnPage(FeedItem item, {required bool forward}) {
-    final next = _page + (forward ? 1 : -1);
-    if (next < 0 || next >= _pageCount(item)) return;
-    setState(() => _page = next);
+  /// 📌 사용자 결정 2026-11-15: 기획 4-1의 "우측 탭은 다음, 좌측 탭은 이전"을 바꿨다 — 좌우를 가려 누르기 번거롭다.
+  /// 이전 장으로 가는 길은 없다(한 바퀴 돌면 된다). 잠긴 장(2번째부터)도 똑같이 한 장으로 센다.
+  /// 2026-10-04부터 팝업 없이 **카드에서 바로** 넘긴다.
+  void _nextPage(FeedItem item) {
+    final count = _pageCount(item);
+    if (count < 2) return;
+    setState(() => _page = (_page + 1) % count);
   }
 
   /// 볼 수 있는 사진을 미리 받아 둔다 — 누를 때마다 빈 칸이 번쩍이지 않게.
@@ -515,14 +516,11 @@ class _FeedPagerState extends ConsumerState<_FeedPager> {
                         // deferToChild이고 Image는 자기 자신을 히트테스트하지 않아, 사진 위를 눌러도
                         // 아무 일이 일어나지 않는다(함정 #38).
                         behavior: HitTestBehavior.opaque,
-                        // **누르고 뗐을 때만** 사진을 넘긴다(`onTapUp` = tap-up). 오른쪽 반은 다음, 왼쪽 반은 이전.
+                        // **누르고 뗐을 때만** 사진을 넘긴다(`onTapUp` = tap-up). 어디를 눌러도 다음 장([_nextPage]).
                         // 이 카드의 좌우 스와이프는 **사람을 넘기는 동작**이라, 손가락이 닿자마자
                         // 넘기면 스와이프하려던 손짓이 사진을 넘겨 버린다. 탭 인식기는 손가락이
                         // 조금이라도 밀리면 스스로 물러나므로 두 제스처가 부딪히지 않는다.
-                        onTapUp: (d) => _turnPage(
-                          item,
-                          forward: d.localPosition.dx > cardBox.maxWidth / 2,
-                        ),
+                        onTapUp: (_) => _nextPage(item),
                         child: locked
                             ? PhotoLockBackdrop(mainPhotoUrl: photos.first)
                             : AuthedImage(url: photos[_page]),
@@ -622,23 +620,23 @@ class _FeedPagerState extends ConsumerState<_FeedPager> {
                               //
                               // **잠겨 있어도 전체 장수는 알린다** — 몇 장이 더 있는지 보여야
                               // 눌러 볼 마음이 생기고, 그게 사진 등록을 유도하는 장치다.
+                              //
+                              // 📌 크기는 **대화방 [프로필] 팝업의 장수 표기와 같다**(`request_popup.dart`
+                              // 58 × 배율, 사용자 2026-11-15 — 12dp 알약은 너무 작았다). 둘을 함께 맞출 것.
                               if (_pageCount(item) > 1)
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                    vertical: 3,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: Colors.black.withValues(alpha: 0.45),
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  child: Text(
-                                    '${_page + 1}/${_pageCount(item)}',
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w700,
-                                    ),
+                                Text(
+                                  '${_page + 1}/${_pageCount(item)}',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: GardenArt.pageCountFontSize *
+                                        DesignCanvas.scaleOf(context),
+                                    fontWeight: FontWeight.w700,
+                                    shadows: const [
+                                      Shadow(
+                                        blurRadius: 6,
+                                        color: Colors.black54,
+                                      ),
+                                    ],
                                   ),
                                 ),
                             ],

@@ -44,7 +44,7 @@ class PhotoLockBackdrop extends StatelessWidget {
 
 /// 잠긴 장 위에 얹는 안내 문구 + [새 사진 등록하기].
 ///
-/// 문구는 글자를 지나 아래 사진의 탭(좌우 넘기기)으로 흘려보낸다 — 버튼만 손가락을 받는다.
+/// 문구는 글자를 지나 아래 사진의 탭(다음 장 넘기기)으로 흘려보낸다 — 버튼만 손가락을 받는다.
 class PhotoLockGuide extends ConsumerWidget {
   const PhotoLockGuide({super.key});
 
