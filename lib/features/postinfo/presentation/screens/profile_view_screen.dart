@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/theme/app_colors.dart';
-import '../../../../app/theme/app_dimens.dart';
 import '../../../../core/error/error_messages.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../../shared/widgets/design_canvas.dart';
 import '../../../auth/presentation/providers/session_provider.dart';
 import '../../../chat/presentation/providers/chat_provider.dart';
 import '../../../chat/presentation/widgets/chat_request_dialog.dart';
+import '../../../chat/presentation/widgets/talk_art.dart';
 import '../../../friend/presentation/providers/friend_provider.dart';
 import '../../../friend/presentation/widgets/friend_request_dialog.dart';
 import '../../../profile/presentation/widgets/profile_preview_view.dart';
@@ -202,6 +203,10 @@ ProfileViewAction profileViewActionOf(PostInfo info, {String? myUserId}) {
 }
 
 /// 하단 버튼 한 칸 — 무엇을 둘지는 [profileViewActionOf]가 정한다.
+///
+/// 그림은 `그래픽 소스/프로필 화면/미리보기`의 `button_talk`(대화하기)·`button_friend`(친구 신청),
+/// 원본 1542×305 — 시안(`프로필_미리보기 화면 좌표.png`)에선 **왼쪽 197**에서 가운데로 놓여
+/// 686×136으로 그려진다. 🇯🇵 일본어판은 아직 없다(글자가 구워져 있다 — 08 §0-3).
 class _Action extends StatelessWidget {
   const _Action({
     required this.action,
@@ -213,43 +218,52 @@ class _Action extends StatelessWidget {
   final VoidCallback onRequestChat;
   final VoidCallback onRequestFriend;
 
+  static const _dir = 'assets/images/scene_profile/preview';
+
+  /// 시안 폭 1080 − 197×2 = 686, 높이는 원본 비율(1542:305)대로.
+  static const double _width = 686;
+  static const double _height = 686 * 305 / 1542;
+
   @override
   Widget build(BuildContext context) {
     final l10n = L10n.of(context);
+    final s = DesignCanvas.scaleOf(context);
     final chat = action == ProfileViewAction.requestChat;
 
     return SafeArea(
       top: false,
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(
-          AppDimens.gapMd,
-          AppDimens.gapSm,
-          AppDimens.gapMd,
-          AppDimens.gapSm,
-        ),
-        child: SizedBox(
-          width: double.infinity,
-          child: FilledButton.icon(
-            onPressed: switch (action) {
-              ProfileViewAction.requestChat => onRequestChat,
-              ProfileViewAction.requestFriend => onRequestFriend,
-              _ => null,
-            },
-            icon: Icon(
-              chat
-                  ? Icons.chat_bubble_outline_rounded
-                  : Icons.person_add_alt_1_outlined,
-              size: 18,
-            ),
-            label: Text(switch (action) {
+        padding: EdgeInsets.symmetric(vertical: 24 * s),
+        child: Center(
+          child: Semantics(
+            button: true,
+            label: switch (action) {
               ProfileViewAction.friendPending => l10n.postInfoFriendPending,
               ProfileViewAction.requestFriend => l10n.postInfoFriendAdd,
               _ => l10n.postInfoRequestChat,
-            }),
-            style: FilledButton.styleFrom(
-              backgroundColor: AppColors.moonlightDeep,
-              disabledBackgroundColor: AppColors.surfaceHigh,
-              disabledForegroundColor: AppColors.textMuted,
+            },
+            excludeSemantics: true,
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: switch (action) {
+                ProfileViewAction.requestChat => onRequestChat,
+                ProfileViewAction.requestFriend => onRequestFriend,
+                // 막힌 버튼은 죽이지 않고 이유를 말한다 — 서버가 같은 경우에 쓰는 문구.
+                _ => () => ScaffoldMessenger.of(context)
+                  ..hideCurrentSnackBar()
+                  ..showSnackBar(
+                    SnackBar(content: Text(l10n.errorFriendRequestPending)),
+                  ),
+              },
+              child: ArtImage(
+                chat ? '$_dir/button_talk.png' : '$_dir/button_friend.png',
+                width: _width,
+                height: _height,
+                // `신청 대기`는 흐리게 — 대화방 `[원문보기]`와 같은 값(회색 그림이 오면 그걸로).
+                opacity: action == ProfileViewAction.friendPending
+                    ? TalkArt.viewOriginalDisabledOpacity
+                    : 1,
+              ),
             ),
           ),
         ),

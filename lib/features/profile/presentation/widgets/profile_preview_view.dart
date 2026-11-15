@@ -46,7 +46,8 @@ class ProfilePreviewData {
 /// 남이 보는 것이 달라진다.
 ///
 /// 좌표는 시안 `프로필_미리보기 화면 좌표.png`(1080 캔버스). 아래가 길어 **스크롤한다**(기획 2026-10-04).
-/// [bottom]은 남의 프로필일 때만 들어가는 하단 버튼 자리다(시안에는 없다).
+/// [bottom]은 남의 프로필일 때만 들어가는 하단 버튼 자리다(시안 197,2461 — `button_talk`/`button_friend`,
+/// 2026-11-15 전달). 본문이 스크롤해도 버튼은 화면 아래에 붙어 있다.
 class ProfilePreviewView extends StatefulWidget {
   const ProfilePreviewView({
     super.key,
