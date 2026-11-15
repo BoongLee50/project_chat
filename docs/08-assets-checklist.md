@@ -36,8 +36,8 @@
 | 4 | `scene_garden/filtering_age.png` | 나이 | 227×94 |
 | 5 | `scene_garden/filtering_nation.png` | 국가 | 217×94 |
 | 6 | `scene_garden/button_Moonlight.png` | 달빛 한마디 | 335×96 |
-| 7 | `scene_post/button_postalbum.png` | 포스트 앨범 | 601×96 |
-| 8 | `scene_post/button_boost.png` | 부스트 | 407×96 |
+| 7 | `scene_post/button_postalbum.png` | 포스트 앨범 | ~~601×96~~ → **571×96**(2026-11-15) |
+| 8 | `scene_post/button_boost.png` | 부스트 | ~~407×96~~ → **430×96**(2026-11-15) |
 | 9 | `scene_post/button_postmake.png` | 포스트 공유하기 | 418×103 |
 | 10 | `scene_garden/button_addpost.png` | 새 사진 등록하기 | 499×116 |
 | 11 | `scene_talk/talk_list/title_room.png` | 대화방 | 221×72 |
