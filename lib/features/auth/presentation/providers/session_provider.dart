@@ -60,6 +60,11 @@ class SessionController extends Notifier<SessionState> {
     return const SessionState(status: SessionStatus.loading);
   }
 
+  /// 이미 로그인한 사람이 앱을 켜면 타이틀 화면 [자동 로그인](버튼 없이 앱 이름만 가운데)을
+  /// **최소 이만큼** 보여 준 뒤 들어간다(사용자 2026-11-21 — "1~2초 보여 주다가 바로 포스트로").
+  /// 서버가 늦으면 그만큼 더 머문다. 처음 쓰는 사람(토큰 없음)은 기다리지 않고 바로 로그인 버튼이다.
+  static const autoLoginHold = Duration(milliseconds: 1500);
+
   /// 앱 시작 시: 저장된 토큰이 있으면 /me로 프로필을 확인해 단계를 결정한다.
   Future<void> restore() async {
     final token = await ref.read(tokenStorageProvider).readAccessToken();
@@ -67,7 +72,9 @@ class SessionController extends Notifier<SessionState> {
       state = const SessionState(status: SessionStatus.unauthenticated);
       return;
     }
-    await _loadProfile();
+    // 프로필 확인은 바로 시작하고, 결과를 반영(= 화면 전환)하기 전에 최소 표시 시간을 채운다.
+    // 반영되면 라우터가 메인(첫 탭 = 포스트)으로 보낸다.
+    await _loadProfile(holdUntil: Future<void>.delayed(autoLoginHold));
   }
 
   /// 소셜 로그인. [providerToken]은 소셜 SDK 토큰(개발 중에는 목 문자열).
@@ -118,9 +125,11 @@ class SessionController extends Notifier<SessionState> {
     state = const SessionState(status: SessionStatus.unauthenticated);
   }
 
-  Future<void> _loadProfile() async {
+  /// [holdUntil]이 있으면 결과를 상태에 반영하기 **전에** 그것을 기다린다(앱 시작의 최소 타이틀 시간).
+  Future<void> _loadProfile({Future<void>? holdUntil}) async {
     try {
       final profile = await ref.read(profileApiProvider).me();
+      await holdUntil;
       final authenticated = profile.isComplete;
       state = SessionState(
         status: authenticated
@@ -133,6 +142,7 @@ class SessionController extends Notifier<SessionState> {
         unawaited(ref.read(socketClientProvider).connect());
       }
     } on ApiException catch (e) {
+      await holdUntil;
       if (e.isUnauthorized) {
         await ref.read(tokenStorageProvider).clear();
         state = const SessionState(status: SessionStatus.unauthenticated);
