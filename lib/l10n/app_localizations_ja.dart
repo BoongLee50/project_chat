@@ -78,7 +78,7 @@ class L10nJa extends L10n {
   String get onboardingGenderQuestion => '性別を選択してください';
 
   @override
-  String get onboardingGenderNote => 'プロフィールはいつでも編集できます';
+  String get onboardingGenderNote => '登録した性別は変更できません';
 
   @override
   String get onboardingBirthQuestion => '生年月日を入力してください';

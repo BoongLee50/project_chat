@@ -84,6 +84,7 @@ class OnboardingFrame extends StatelessWidget {
     required this.content,
     required this.onBack,
     required this.onNext,
+    this.keyboardLimit,
   });
 
   /// 1~7.
@@ -101,13 +102,34 @@ class OnboardingFrame extends StatelessWidget {
   /// 이 단계만의 조각들 — 시안 좌표로 `Positioned`를 돌려준다(배율 s를 받는다).
   final List<Widget> Function(double s) content;
 
-  final VoidCallback onBack;
+  /// 뒤로. `null`이면 `<` 버튼이 없다 — STEP 1은 로그인 직후라 되돌아갈 곳이 없다(사용자 2026-11-21).
+  final VoidCallback? onBack;
+
+  /// 자판이 올라와도 **이 시안 y보다 위는 가리지 않는다**(생년월일 STEP 2 — `AGE` 윗선, 사용자 2026-11-21).
+  ///
+  /// 기기마다 자판 높이가 다르므로 고정 값으로 옮기지 않고, 지금 자판 높이(`viewInsets.bottom`)를 재서
+  /// 자판 윗변이 이 선보다 위로 오는 만큼만 **위쪽 판을 통째로 밀어 올린다**(자판이 오르내리는 동안 따라 움직인다).
+  /// 자판이 낮은 기기에서는 하나도 안 움직인다. `null`이면 자판을 신경 쓰지 않는다.
+  final double? keyboardLimit;
 
   /// 다음으로 — 못 넘어가면 이유 문구를, 넘어가면 null을 돌려준다.
   final Future<String?> Function() onNext;
 
   /// 안내 문구 아래 여백까지가 위쪽 판의 높이다.
   double get _topHeight => noteTop + 100;
+
+  /// 자판 때문에 위쪽 판을 얼마나 올릴까(논리px) — [keyboardLimit] 설명대로. 테스트가 직접 부른다.
+  @visibleForTesting
+  static double keyboardLiftFor({
+    required double? limit,
+    required double scale,
+    required double keyboard,
+    required double keyboardTop,
+  }) {
+    if (limit == null || keyboard == 0) return 0;
+    final over = limit * scale - keyboardTop;
+    return over > 0 ? over : 0;
+  }
 
   Future<void> _next(BuildContext context) async {
     final reason = await onNext();
@@ -128,6 +150,15 @@ class OnboardingFrame extends StatelessWidget {
       safeBottom + 12,
       double.infinity,
     );
+    // 자판 윗변(화면 좌표)이 지켜야 할 선보다 위로 올라온 만큼 위쪽 판을 올린다.
+    final keyboard = MediaQuery.viewInsetsOf(context).bottom;
+    final keyboardTop = MediaQuery.sizeOf(context).height - keyboard;
+    final lift = keyboardLiftFor(
+      limit: keyboardLimit,
+      scale: s,
+      keyboard: keyboard,
+      keyboardTop: keyboardTop,
+    );
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light,
@@ -140,113 +171,116 @@ class OnboardingFrame extends StatelessWidget {
           onTap: () => FocusScope.of(context).unfocus(),
           child: Column(
             children: [
-              SizedBox(
-                height: _topHeight * s,
-                child: Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    const DesignPositioned(
-                      left: 0,
-                      top: 0,
-                      child: ArtImage(
-                        OnboardingArt.headerBack,
-                        width: 1080,
-                        height: 728,
-                      ),
-                    ),
-                    DesignPositioned(
-                      left: illustrationAt.dx,
-                      top: illustrationAt.dy,
-                      child: ArtImage(
-                        illustration,
-                        width: illustrationSize.width,
-                        height: illustrationSize.height,
-                      ),
-                    ),
-                    // `프로필`·설명은 그림 왼쪽(81 ~ 그림 시작) 폭 안에 — 일본어처럼 길면 줄여서 그림 밑으로 숨지 않게.
-                    Positioned(
-                      left: 81 * s,
-                      top: 330 * s,
-                      width: (illustrationAt.dx - 81 - 8) * s,
-                      child: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        alignment: Alignment.topLeft,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              l10n.onboardingHeaderTitle,
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 64 * s,
-                                fontWeight: FontWeight.w800,
-                                height: 1.2,
-                              ),
-                            ),
-                            SizedBox(height: 6 * s),
-                            Text(
-                              l10n.onboardingHeaderDesc,
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 38 * s,
-                                height: 1.6,
-                              ),
-                            ),
-                          ],
+              Transform.translate(
+                offset: Offset(0, -lift),
+                child: SizedBox(
+                  height: _topHeight * s,
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      const DesignPositioned(
+                        left: 0,
+                        top: 0,
+                        child: ArtImage(
+                          OnboardingArt.headerBack,
+                          width: 1080,
+                          height: 728,
                         ),
                       ),
-                    ),
-                    const DesignPositioned(
-                      left: -1,
-                      top: 629,
-                      child: ArtImage(
-                        OnboardingArt.cardTop,
-                        width: 1083,
-                        height: 365,
+                      DesignPositioned(
+                        left: illustrationAt.dx,
+                        top: illustrationAt.dy,
+                        child: ArtImage(
+                          illustration,
+                          width: illustrationSize.width,
+                          height: illustrationSize.height,
+                        ),
                       ),
-                    ),
-                    ..._progress(s),
-                    DesignPositioned(
-                      left: 419,
-                      top: 839,
-                      child: ArtImage(
-                        OnboardingArt.stepBadge(step),
-                        width: 239,
-                        height: 104,
+                      // `프로필`·설명은 그림 왼쪽(81 ~ 그림 시작) 폭 안에 — 일본어처럼 길면 줄여서 그림 밑으로 숨지 않게.
+                      Positioned(
+                        left: 81 * s,
+                        top: 330 * s,
+                        width: (illustrationAt.dx - 81 - 8) * s,
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.topLeft,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                l10n.onboardingHeaderTitle,
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 64 * s,
+                                  fontWeight: FontWeight.w800,
+                                  height: 1.2,
+                                ),
+                              ),
+                              SizedBox(height: 6 * s),
+                              Text(
+                                l10n.onboardingHeaderDesc,
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 38 * s,
+                                  height: 1.6,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
-                    ),
-                    _centered(
-                      s,
-                      top: questionTop,
-                      // 한 줄로 — 일본어처럼 길면 줄여서 아래 칸을 밀어내지 않게.
-                      child: FittedBox(
-                        fit: BoxFit.scaleDown,
+                      const DesignPositioned(
+                        left: -1,
+                        top: 629,
+                        child: ArtImage(
+                          OnboardingArt.cardTop,
+                          width: 1083,
+                          height: 365,
+                        ),
+                      ),
+                      ..._progress(s),
+                      DesignPositioned(
+                        left: 419,
+                        top: 839,
+                        child: ArtImage(
+                          OnboardingArt.stepBadge(step),
+                          width: 239,
+                          height: 104,
+                        ),
+                      ),
+                      _centered(
+                        s,
+                        top: questionTop,
+                        // 한 줄로 — 일본어처럼 길면 줄여서 아래 칸을 밀어내지 않게.
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            question,
+                            maxLines: 1,
+                            style: TextStyle(
+                              color: OnboardingArt.ink,
+                              fontSize: 64 * s,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                      ...content(s),
+                      _centered(
+                        s,
+                        top: noteTop,
                         child: Text(
-                          question,
-                          maxLines: 1,
+                          note,
+                          textAlign: TextAlign.center,
                           style: TextStyle(
-                            color: OnboardingArt.ink,
-                            fontSize: 64 * s,
+                            color: OnboardingArt.gray,
+                            fontSize: 40 * s,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
                       ),
-                    ),
-                    ...content(s),
-                    _centered(
-                      s,
-                      top: noteTop,
-                      child: Text(
-                        note,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: OnboardingArt.gray,
-                          fontSize: 40 * s,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
               const Spacer(),
@@ -259,14 +293,15 @@ class OnboardingFrame extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
-                    GestureDetector(
-                      onTap: onBack,
-                      child: const ArtImage(
-                        OnboardingArt.back,
-                        width: 172,
-                        height: 171,
+                    if (onBack != null)
+                      GestureDetector(
+                        onTap: onBack,
+                        child: const ArtImage(
+                          OnboardingArt.back,
+                          width: 172,
+                          height: 171,
+                        ),
                       ),
-                    ),
                     const Spacer(),
                     GestureDetector(
                       onTap: () => _next(context),

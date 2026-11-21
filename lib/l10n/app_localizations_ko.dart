@@ -78,7 +78,7 @@ class L10nKo extends L10n {
   String get onboardingGenderQuestion => '성별을 선택해 주세요';
 
   @override
-  String get onboardingGenderNote => '작성한 프로필은 언제든 수정할 수 있어요';
+  String get onboardingGenderNote => '등록한 성별은 변경할 수 없어요';
 
   @override
   String get onboardingBirthQuestion => '생년월일을 입력해 주세요';

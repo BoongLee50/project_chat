@@ -29,7 +29,7 @@
   "onboardingHeaderTitle": "프로필",
   "onboardingHeaderDesc": "나를 가장 잘 보여주는\n프로필을 만들어보세요.",
   "onboardingGenderQuestion": "성별을 선택해 주세요",
-  "onboardingGenderNote": "작성한 프로필은 언제든 수정할 수 있어요",
+  "onboardingGenderNote": "등록한 성별은 변경할 수 없어요",
   "onboardingBirthQuestion": "생년월일을 입력해 주세요",
   "onboardingBirthNote": "등록된 생년월일은 변경할 수 없어요",
   "onboardingBirthInvalid": "생년월일을 정확히 입력해 주세요",

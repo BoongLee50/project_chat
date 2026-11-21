@@ -23,7 +23,7 @@
   "onboardingHeaderTitle": "プロフィール",
   "onboardingHeaderDesc": "あなたらしさが伝わる\nプロフィールを作りましょう。",
   "onboardingGenderQuestion": "性別を選択してください",
-  "onboardingGenderNote": "プロフィールはいつでも編集できます",
+  "onboardingGenderNote": "登録した性別は変更できません",
   "onboardingBirthQuestion": "生年月日を入力してください",
   "onboardingBirthNote": "登録した生年月日は変更できません",
   "onboardingBirthInvalid": "生年月日を正しく入力してください",

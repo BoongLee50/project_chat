@@ -43,7 +43,11 @@ disable-model-invocation: true
 **지금 상태**: 타이틀([로그인 선택] · [자동 로그인]) · STEP 1~3 끝. STEP 4·5·7은 그림 대기라 **건너뛰고**, STEP 6은 **옛 닉네임 화면이 임시로 마지막**(통과하면 가입).
 코드: 타이틀 `auth/presentation/screens/login_screen.dart` + `widgets/title_art.dart` · 온보딩 판 `onboarding/presentation/widgets/onboarding_frame.dart` · 단계 `screens/{gender,birth_date,residence}_step_screen.dart` · 값 `onboarding_provider.dart`.
 서버: **V33 `users.birth_date`** — `POST /profile`이 `birthDate`로 만 18세 검사 + `birth_year` 채움. 거주 지역은 프로필 **활동 지역 1곳**으로 저장(같은 코드).
-🚧 남은 것: STEP 4~7 그림 · 약관 화면 · 거주 지역 목록(시안은 `서울특별시` = 광역, 우리 목록은 도시) · 세부 지역 목록 · 판단으로 채운 6건(07 §4 11-21).
+- STEP 1에는 **`<`가 없다**(로그인 직후라 되돌아갈 곳이 없다) · STEP 1 안내는 **"등록한 성별은 변경할 수 없어요"**
+- STEP 2 자판은 **`AGE`부터만 가린다** — 자판 높이를 재서 위쪽 판을 올린다(`keyboardLimit` 1650). 기기마다 다르니 고정 값으로 바꾸지 말 것
+- 📌 거주 지역 · 세부 지역 선택은 나중에 **화면을 가리는 팝업**으로 바뀐다(지금 아래 목록은 임시 — 사용자 2026-11-21)
+
+🚧 남은 것: STEP 4~7 그림 · 약관 화면 · 거주 지역·세부 지역 **선택 팝업**(그림 대기) · 거주 지역 목록(시안은 `서울특별시` = 광역, 우리 목록은 도시) · 세부 지역 목록 · 판단으로 채운 6건(07 §4 11-21).
 ⚠️ 에뮬 기기 언어가 영어면 이제 **일본어로 뜬다** — 한국어로 보려면 `adb shell cmd locale set-app-locales com.example.project_chat --locales ko-KR`.
 
 ## 타이틀 화면 — 소셜 로그인 (2026-11-21 이 세션으로)

@@ -49,6 +49,18 @@ class _BirthDateStepScreenState extends ConsumerState<BirthDateStepScreen> {
     });
   }
 
+  /// 숫자 칸을 누르면 자판을 연다.
+  ///
+  /// ⚠️ 안드로이드 뒤로 키는 자판만 내리고 **포커스는 남긴다**(함정 #88) — 그 상태에서 `requestFocus()`는
+  /// 아무 일도 안 해서 다시 눌러도 자판이 안 올라왔다(실기 확인). 포커스가 있으면 자판만 다시 띄운다.
+  void _openKeyboard() {
+    if (_focus.hasFocus) {
+      SystemChannels.textInput.invokeMethod<void>('TextInput.show');
+    } else {
+      _focus.requestFocus();
+    }
+  }
+
   @override
   void dispose() {
     _digits.dispose();
@@ -105,7 +117,7 @@ class _BirthDateStepScreenState extends ConsumerState<BirthDateStepScreen> {
           height: 200 * s,
           child: GestureDetector(
             behavior: HitTestBehavior.opaque,
-            onTap: () => _focus.requestFocus(),
+            onTap: _openKeyboard,
           ),
         ),
         for (var i = 0; i < _slots.length; i++) ...[
@@ -191,6 +203,8 @@ class _BirthDateStepScreenState extends ConsumerState<BirthDateStepScreen> {
         ),
       ],
       onBack: () => context.go(Routes.onboardingGender),
+      // 자판은 `AGE`(1670)부터만 가린다 — 숫자 칸·안내 문구는 늘 보이게(사용자 2026-11-21).
+      keyboardLimit: 1650,
       onNext: () async {
         if (date == null) return l10n.onboardingBirthInvalid;
         if (age! < _minAge) return l10n.errorAgeRestricted;

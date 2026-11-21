@@ -238,7 +238,7 @@ abstract class L10n {
   /// No description provided for @onboardingGenderNote.
   ///
   /// In ko, this message translates to:
-  /// **'작성한 프로필은 언제든 수정할 수 있어요'**
+  /// **'등록한 성별은 변경할 수 없어요'**
   String get onboardingGenderNote;
 
   /// No description provided for @onboardingBirthQuestion.
