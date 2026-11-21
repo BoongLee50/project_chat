@@ -448,6 +448,38 @@ adb shell cmd locale set-app-locales com.example.project_chat --locales ko-KR
 > 다음에 할 일은 [09 인수인계](09-next-task-handoff.md) §2의 **막힌 것 3건**에서 고른다(A·B가 해소됐다).
 > 다음 "싱크용 문서" 요청은 **그 이후 작업부터** 정리하면 된다.
 
+### 2026-11-21 [그 외] — 🔤 폰트를 언어별로: 한국어 Noto Sans KR · 일본어 Noto Sans JP (Pretendard와 비교 후 사용자 결정)
+
+그때까지 앱에 넣은 폰트가 없어 **기기 기본 폰트**로 그렸다 — 기기마다 모양이 달랐다(삼성은 사용자가 바꾼 글꼴까지 따라감).
+사용자가 두 후보를 **실제 빌드로 비교**해 보고 Noto Sans를 골랐다.
+
+**비교 방법**(별도 worktree `D:\pc_font`, main은 안 건드림): 폰트만 다른 두 벌을 빌드 — ① Pretendard + Pretendard JP ② Noto Sans KR + Noto Sans JP.
+둘 다 굵기 조절형(variable) 한 파일씩. 패키지 이름을 `…fpre`·`…fnoto`로 바꿔 원래 앱 옆에 깔고 한·일 × 포스트·가든·대화방·상점(부스트·프라임)·프로필을 찍었다.
+
+| 빌드(출시 arm64 APK) | 크기 | 폰트 없음 대비 | 폰트 파일(원본 → APK 안 압축) |
+|---|---|---|---|
+| 폰트 없음 | 58.6 MB | — | — |
+| ① Pretendard | 68.5 MB | +9.8 MB | KR 6.7 → 3.0 · JP 13.1 → 6.9 |
+| ② **Noto Sans** ✅ | 69.8 MB | **+11.2 MB** | KR 10.4 → 5.3 · JP 9.6 → 5.9 |
+
+- 차이: Noto가 글자 폭이 조금 넓고 둥글다. **일본어 포스트 머리 안내 문구**가 Noto에서 더 길게 나가 배경 그림(카메라)에 걸친다 — 포스트 몫, 09 §0에 기록.
+- 확인: Flutter 3.44에서 variable 폰트의 굵기 축이 `FontWeight`를 따라간다(400/800 폭이 다르게 측정됨 · 스샷에서도 진짜 굵기).
+- 비교 이미지: `build/font_compare/`(저장소 밖 · `flutter clean`이면 지워진다).
+
+**적용**(공용 파일 — 모든 화면 글자가 바뀐다)
+
+| 파일 | 내용 |
+|---|---|
+| `assets/fonts/NotoSansKR.ttf` · `NotoSansJP.ttf` · `OFL.txt` | Google Fonts 저장소(ofl/notosanskr · notosansjp)의 variable 판. 라이선스 OFL |
+| `pubspec.yaml` | `fonts:` 가족 둘 — `AppKo` · `AppJa` |
+| `lib/app/theme/app_theme.dart` | `darkFor(languageCode)` — ko: `AppKo`(대신 `AppJa`) · ja: `AppJa`(대신 `AppKo`). `dark`는 `darkFor('ko')` |
+| `lib/app/app.dart` | `builder`에서 지금 언어로 `Theme`을 다시 씌움 |
+| `lib/main.dart` | `LicenseRegistry`에 OFL 등록(폰트와 함께 배포해야 하는 조건) |
+
+- 코드의 `TextStyle` 243곳 중 `fontFamily`를 직접 쓴 곳이 **0**이라 위 한 군데로 전부 바뀐다. 앞으로도 직접 쓰지 말 것(공통 규칙 §5 · 14 §3).
+- 확인: `analyze` 깨끗 · `flutter test` 37/37. ⚠️ **main 빌드를 기기에서 눈으로는 안 봤다**(비교 빌드에서 같은 방식으로 확인) — 각 콘텐츠 세션은 다음 확인 때 **글자 넘침**을 볼 것.
+- ⚠️ 작업 중 **공용 에뮬(Pixel_10)이 13:07~13:14 사이에 꺼졌다** — 둘째 에뮬을 띄우려다 실패한 때·빌드 중과 겹친다(원인 미확인). 다시 켜고 원래 앱을 앞에 띄워 두었다.
+
 ### 2026-11-21 [프로필] — 온보딩 STEP 4 관심사 (그래픽 소스 `로그인 화면. 관심사 등록 화면`, 12:39 추가 전달)
 
 **받은 것**: 그림 다섯(그림 · 칩 틀 둘 · 묶음 아이콘 둘) + 시안 둘(좌표값 · 참고화면). `STEP 4` 배지는 없다.
