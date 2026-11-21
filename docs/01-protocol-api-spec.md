@@ -54,7 +54,7 @@
 | Method | Path | 설명 | 화면 |
 |--------|------|------|------|
 | GET | `/profile/nickname:check?value=` | 닉네임 검증(특수문자/10자/중복/금지어) | 3 |
-| POST | `/profile` | 프로필 생성(nickname, birthYear, gender, country) | 3,4,5 |
+| POST | `/profile` | 프로필 생성(nickname, **birthDate** `yyyy-MM-dd`, gender, country) — 온보딩 마지막. 나이는 **생년월일로 만 나이**를 본다(18세 미만 400 `AGE_RESTRICTED`, 미래 날짜 400). 서버가 `birth_year`도 채운다(V33). 옛 앱의 `birthYear`만 오는 요청도 받는다(연 단위 검사) | 온보딩 |
 | GET | `/me` | 내 프로필 조회 | 20 |
 | POST | `/me/profile-photo:upload-url` | 프로필 사진 업로드 URL 발급 — **두 칸이 함께 쓴다** | 8-1 |
 | PUT | `/me/profile-photo` | **얼굴 사진** 등록(storageKey) — 생략(null) 시 제거. 목록·셀이 쓰는 사진 | 8-1 |

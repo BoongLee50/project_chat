@@ -29,7 +29,24 @@ disable-model-invocation: true
 | 🆕 온보딩 | **가입 정보 입력 = 타이틀 다음 화면들**(2026-11-21 이 세션으로) — 기획서 **2-1 프로필 생성 · 2-2 회원 생성 프로세스**. 닉네임(10자 · 특수문자·이모지 금지 · 중복 · 금지어 → [MSG NUM2]) → 출생년도(만 18세 미만 → [MSG NUM3]) → 성별·국가. 클라 `lib/features/onboarding/`(`nickname_screen` · `birth_year_screen` · `gender_country_screen` · `onboarding_scaffold` · `onboarding_provider`) · 서버 `GET /profile/nickname:check` · `POST /profile`(`server/.../profile/` — 닉네임 검사 `NicknameValidator`, 테스트 있음) · 로그인 응답 `status`(NEW · PROFILE_REQUIRED → 온보딩으로) · 배경 `onboarding_1~3.jpg` · 문서 `01` §1.2 |
 | 인접 | Prime·루나는 이제 프로필에 없다(상단 버튼·포스트 화면이 연다) |
 
-## 타이틀 화면 (2026-11-21 이 세션으로)
+## 🔑 타이틀 화면 · 온보딩 — 2026-11-21 그림 반영 (07 §4 그날 [프로필])
+
+그래픽 **`D:\Plan_Chat\그래픽 소스\로그인 화면\`** → 에셋 `assets/images/scene_login/{title,step1,step2,step3}/`(+ `title/ja/`). 리소스 표는 `08` §0-4.
+
+**사용자 결정(2026-11-21, 되돌리지 말 것)**:
+- 🚨 **기기 언어 = 나라** — 한국어면 카카오 · 애플 · 구글 + 한국어 그림·글자, **그 밖은 전부 일본**(라인 · 애플 · 구글 + 일본어). 지원 안 하는 언어의 **기본값은 일본어**(`app.dart`). 거주 국가(`users.country`)와는 다른 것 — 공통 규칙 §5
+- 일본어 앱 이름은 **月あかりトーク**(새 타이틀 그림)
+- 흐름: 타이틀 → **약관**(🚧 미구현, 시안 대기 — 지금은 바로 STEP 1) → 온보딩 **일곱 단계**(1 성별 · 2 생년월일 · 3 거주 지역 · 4 관심사 · 5 자기소개 · 6 닉네임 · 7 프로필 사진). 프로필 탭이 아니라 가입의 첫 단계다
+- 온보딩 시안 왼쪽 위 `<`는 **그림 실수 — 없다**
+- 기존 프로필 화면은 나중에 통째로 바뀐다 — `그래픽 소스\프로필 화면` 폴더가 없어졌다(새 시안 대기). 저장소 `scene_profile/`는 지금 화면이 써서 둔다
+
+**지금 상태**: 타이틀([로그인 선택] · [자동 로그인]) · STEP 1~3 끝. STEP 4·5·7은 그림 대기라 **건너뛰고**, STEP 6은 **옛 닉네임 화면이 임시로 마지막**(통과하면 가입).
+코드: 타이틀 `auth/presentation/screens/login_screen.dart` + `widgets/title_art.dart` · 온보딩 판 `onboarding/presentation/widgets/onboarding_frame.dart` · 단계 `screens/{gender,birth_date,residence}_step_screen.dart` · 값 `onboarding_provider.dart`.
+서버: **V33 `users.birth_date`** — `POST /profile`이 `birthDate`로 만 18세 검사 + `birth_year` 채움. 거주 지역은 프로필 **활동 지역 1곳**으로 저장(같은 코드).
+🚧 남은 것: STEP 4~7 그림 · 약관 화면 · 거주 지역 목록(시안은 `서울특별시` = 광역, 우리 목록은 도시) · 세부 지역 목록 · 판단으로 채운 6건(07 §4 11-21).
+⚠️ 에뮬 기기 언어가 영어면 이제 **일본어로 뜬다** — 한국어로 보려면 `adb shell cmd locale set-app-locales com.example.project_chat --locales ko-KR`.
+
+## 타이틀 화면 — 소셜 로그인 (2026-11-21 이 세션으로)
 
 **지금 상태**("그 외" 세션이 2026-11-15에 소셜 로그인 1단계까지 해 두었다 — 07 §4 그날 · 09 §2-2 F):
 - 버튼 넷 **라인 · 카카오 · 구글 · 애플**(애플 추가 V32). 애플은 **아이폰에서만**, 개발(목) 빌드는 어디서나 — 안드로이드에도 둘지 **사용자 결정 대기**
@@ -39,7 +56,7 @@ disable-model-invocation: true
 - 🚧 **3단계**: Mac에서 iOS·애플 로그인
 
 **기다리는 것**(사용자 몫 — 09 §2-2 F 목록): 최종 앱 ID · 네 곳 개발자 콘솔 키 · Mac · 기획서 2장에 애플 추가(261111은 아직 *"LINE, KAKAO, GOOGLE"*) ·
-🎨 **타이틀 화면 그림**(버튼 4 · 배경, 한·일 — 지금 버튼은 **코드로 그린 자리 표시**, 배경 `login_bg.jpg`에는 폐지된 *"밤에만 만나는 대화"* 가 박혀 있다 = 막힌 것 C) ·
+✅ ~~타이틀 화면 그림~~(2026-11-21 받아 반영 — 막힌 것 C `login_bg.jpg` 해소) ·
 **앱 안 계정 삭제**(애플 심사 필수, 지금 없다).
 
 ⚠️ 타이틀 화면은 **고정 화면**이다 — 스크롤하지 않는다(공통 규칙 §5). 버튼이 넷이 되며 짧은 폰에서 넘치지 않는지 볼 것.

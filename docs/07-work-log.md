@@ -438,6 +438,7 @@ adb shell cmd locale set-app-locales com.example.project_chat --locales ko-KR
 | 92 | **`Row`에 `Flexible`과 `Spacer`를 같이 두면 남는 폭을 반씩 나눈다** | 목록 셀 이름 줄을 `Flexible(이름) … Spacer() [원문보기] >`로 짰더니 **`>`가 셀마다 다른 자리**에 섰다 — 둘 다 flex 1이라 남는 폭을 나눠 가진다. 📌 왼쪽 묶음을 `Expanded(Row(...))`로 감싸고 `Spacer`를 빼면 오른쪽 버튼이 늘 끝에 붙는다(`daily_list_screen.dart`) |
 | 93 | 🚨 **`autoDispose`인데도 화면을 다시 열면 옛 값이 나온다** | 달빛 한마디의 "오늘 이미 답했나"를 `FutureProvider.autoDispose`로 두고 화면을 닫았다 다시 열었더니, 서버에선 답이 지워졌는데 **옛 값("답함")으로 타이틀을 건너뛰었다**(실기 확인 — 앱을 껐다 켜야 맞았다). Riverpod은 버릴 provider를 **다음 프레임에** 치우는데, 뒤 화면(가든)이 가만히 있으면 그 다음 프레임이 곧 **새 화면이 같은 provider를 다시 구독하는 프레임**이라 버려지지 않는다. 📌 들어올 때 반드시 새로 읽어야 하는 값은 **첫 `didChangeDependencies`에서 `ref.invalidate`** 할 것(`initState`에서는 `ref`를 못 쓴다 — `dependOnInheritedWidgetOfExactType … before initState() completed`로 빨간 화면). `daily_intro_screen.dart` |
 | 94 | **`centerSlice` + `scale`은 늘이기 전에 단언부터 깨진다** | 채팅창 말풍선을 `DecorationImage(centerSlice:, scale: 1/s, fit: fill)`로 깔았더니 `centerSlice was used with a BoxFit that does not guarantee that the image is fully visible`로 빨간 화면 — 내부에서 `원본/배율×배율 == 원본`을 **부동소수로 비교**한다(#90과 같은 뿌리). 📌 9조각은 **`CustomPainter`에서 `canvas.scale(s)` 후 그림 원본 픽셀 좌표로 `drawImageNine`** 을 부를 것 — 모서리가 배율대로 줄고 단언도 없다(`chat_screen.dart` `_SlicedBubble`) |
+| 95 | **에셋 파일 이름을 바꾸면 `flutter test`가 옛 이름을 찾는다** | `button_kakao.png` → `button_kakao_kr.png`로 옮겼더니 위젯 테스트가 *"Unable to load asset"* 으로 실패했다 — 파일도 `pubspec.yaml` 선언도 맞는데, 테스트용 에셋 묶음 `build/unit_test_assets/`가 **옮기기 전 그대로** 남아 있었다. 📌 에셋을 옮기거나 지운 뒤 테스트가 이상하면 `build/unit_test_assets`만 지우고 다시 돌린다(`flutter clean`까지는 필요 없다 — 다른 세션의 빌드도 날아간다) |
 
 ---
 
@@ -446,6 +447,47 @@ adb shell cmd locale set-app-locales com.example.project_chat --locales ko-KR
 > 📌 **여기까지가 다른 기기와 싱크된 범위다**(2026-09-19, 대화방 UI 개편 + V26 + 확인창·팝업 스크롤 제거 + **친구 화면 개편 V27**).
 > 다음에 할 일은 [09 인수인계](09-next-task-handoff.md) §2의 **막힌 것 3건**에서 고른다(A·B가 해소됐다).
 > 다음 "싱크용 문서" 요청은 **그 이후 작업부터** 정리하면 된다.
+
+### 2026-11-21 [프로필] — 타이틀 화면 · 온보딩 STEP 1~3 (그래픽 소스 `로그인 화면` · **V33**)
+
+**받은 것**: `그래픽 소스\로그인 화면`(첫 전달) — 타이틀 화면 + 온보딩 일곱 폴더(그림은 STEP 1~3만, 4~7은 빈 폴더). 기획서는 이번에 없다.
+**대화 중 결정(사용자 2026-11-21)** — 기획서보다 우선:
+1. 타이틀(앱 이름 그림)이 바뀌었다 — 일본어 앱 이름은 **月あかりトーク**(ARB `appTitle` 등 두 곳도 바꿨다. 한국어 `달빛톡` 그대로)
+2. 🚨 **기기 언어가 곧 나라다** — 한국어면 카카오 · 애플 · 구글 + 모든 그림·글자 한국어, 그 밖은 라인 · 애플 · 구글 + 일본어.
+   **지원하지 않는 기기 언어(영어 등)의 기본값은 일본어**(예전엔 한국어). 사용자가 나중에 고르는 거주 국가와는 다른 것 → 공통 규칙 §5
+3. 타이틀에서 로그인 → **약관 화면**(🚧 미구현, 시안 없음 — 지금은 바로 STEP 1) → 온보딩 일곱 단계(프로필 탭이 아니라 가입의 첫 단계다)
+4. 온보딩 시안 왼쪽 위 `<`는 그림 실수 — 없다
+5. 기존 프로필 화면은 나중에 통째로 바뀐다 — `그래픽 소스\프로필 화면` 폴더가 사라졌다(저장소 `scene_profile/`는 지금 화면이 써서 둔다)
+
+**만든 것**:
+
+| | |
+|---|---|
+| 타이틀 | `login_screen.dart` 다시 씀 — 시안 1080×2640을 `cover`로 깔고 좌표 그대로(`title_art.dart` `TitleFrame`·`TitlePlace`). 버튼 셋은 그림, 아래 *"로그인 방법을 선택해 주세요"* 는 글자. **[자동 로그인]**(저장된 토큰 확인 중 = 스플래시)은 버튼 없이 앱 이름만 가운데(`TitleSplashScreen`) |
+| 언어 | `app.dart` 기본값 ko → **ja** |
+| 온보딩 판 | `onboarding_frame.dart` — 머리(그라데이션 + `프로필`·설명은 글자) · 흰 판 · 진행 표시 7칸(지난 ✓ · 지금 ◎ · 남은 ○, x = 292 + 83·i 실측) · `STEP n` · 질문 · 회색 안내 · `<` `>`. 위는 시안 좌표, `<` `>`는 화면 아래에 붙인다(고정 화면, 스크롤 없음). `>`가 막히면 이유를 말한다 |
+| STEP 1 | 성별 — 그림 버튼 둘. `<`는 타이틀로(로그아웃) |
+| STEP 2 | 생년월일 **연·월·일** 여덟 칸 — 숫자는 글자, 보이지 않는 숫자 입력칸이 자판을 받는다. 다 채우면 자판을 내리고 `AGE nn`(만 나이). 없는 날짜·미래·18세 미만은 넘어가지 않는다 |
+| STEP 3 | 거주 국가 · 거주 지역 · 세부 지역 — 국가는 **앱 언어의 나라로 미리 골라 둔다**. 지역은 프로필 활동 지역과 같은 목록·코드라 **활동 지역 1곳으로 저장**. 🚧 세부 지역은 목록이 없어 *"준비 중"* 안내 |
+| STEP 4·5·7 | 🚧 그림 대기 — 건너뛴다(관심사·자기소개·사진은 프로필에서 채운다) |
+| STEP 6 | 🚧 **옛 닉네임 화면이 임시로 마지막 단계** — 통과하면 바로 가입(`POST /profile` → `PUT /me/regions` → 세션 전환) |
+| 서버 | **V33** `users.birth_date` · `POST /profile`이 `birthDate`를 받아 **만 18세를 날짜로** 검사, `birth_year`도 채운다(옛 `birthYear` 요청도 받는다) |
+| 지움 | 옛 `birth_year_screen` · `gender_country_screen` · `login_bg.jpg`(막힌 것 C 해소) · `onboarding_2·3.jpg` · 안 쓰는 문구 11개(`loginWith*` 넷 · `loginTermsNotice` · `onboardingPrivateNotice` · `birthYearSubtitle` · `genderCountry*` 둘 · `genderSectionTitle` · `countrySectionTitle`) |
+| 도구 | 대조 도구 `KOREAN_DIRS`에 `로그인 화면` 짝 · `COUNTRY_PREFIXES`에 `button_kakao_`·`button_line_`(나라별 버튼) |
+
+**판단으로 정한 것**(정해 주면 바로 고친다):
+- 좌표 시안의 한국어 앱 이름 *"29, 796"* 은 **295**의 오타로 봤다(자동 로그인 시안이 295)
+- 진행 표시: 시안 STEP 1이 ✓ ◎로 그려져 있는데(STEP 2와 같은 그림) **지난 단계 ✓ · 지금 ◎** 규칙으로 했다 → STEP 1은 ◎ ○ ○ …
+- 안내 문구: STEP 1 좌표 시안 *"등록된 프로필은 나중에…"* 와 참고 화면 *"작성한 프로필은 언제든…"* 이 달라 **참고 화면**을 따랐다
+- 회색 안내는 시안(145,145,152) 대신 프로필 때 정한 지정값 **RGB 178,178,183**
+- 시안의 `서울특별시`(광역 이름)와 우리 목록 `서울`(도시 이름)이 다르다 — 거주 지역 목록(광역 17 · 도도부현 47?)과 세부 지역 목록은 정해지면 넣는다
+- 애플 버튼은 여전히 **아이폰(또는 개발 빌드)에서만** — 안드로이드 릴리스는 두 칸(사용자 결정 대기, 09 §2-2 F)
+
+**검증**: `analyze` 깨끗 · `flutter test` 32/32(스모크 테스트를 "영어 기기 → 일본어 · 라인 버튼"으로 바꿈) · 서버 `gradlew test` 통과 ·
+에뮬(Pixel_10, 이 PC): 영어 기기 → 일본 타이틀 · 앱 언어 ko → 한국 타이틀 · 자동 로그인 화면 · 애플 목 계정으로 STEP 1 → 2 → 3 → 임시 닉네임 → 가입 끝(DB: `birth_date 1999-03-15` · `MALE` · `JP` · `JP_TOKYO`) · 한국어 STEP 3.
+⚠️ 에뮬의 앱 언어를 **ko로 설정해 둔 채**다(`adb shell cmd locale set-app-locales com.example.project_chat --locales ko-KR`) — 에뮬 기기 언어가 영어라 그대로면 이제 일본어로 뜬다.
+⚠️ `mock-dev-apple` 계정은 **가입 전 상태로 되돌려 두었다**(온보딩 시험용). 서버(8080)·DB·에뮬은 켜 둔 채 — 8080은 이 세션이 V33을 적용하며 띄운 것.
+함정 **#95**(에셋 이름을 바꾸면 테스트가 옛 이름을 찾는다).
 
 ### 2026-11-21 [그 외] — 타이틀(로그인) 화면 · 온보딩을 `/profile` 세션으로
 

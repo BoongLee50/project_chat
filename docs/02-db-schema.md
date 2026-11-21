@@ -16,7 +16,8 @@ users
   provider      enum(LINE, KAKAO, GOOGLE, APPLE)   -- APPLE은 V32(2026-11-15)
   provider_uid  text                      -- 소셜 고유 ID
   nickname      varchar(10) unique
-  birth_year    int                       -- 만 18세 이상 검증
+  birth_year    int                       -- 나이 표시(가든·포스트 정보·친구)는 이 칸으로 센다
+  birth_date    date null                 -- 생년월일(V33, 온보딩 STEP 2). 가입 때 받으면 birth_year도 같은 해로 채운다. 그 전 가입자는 NULL
   gender        enum(MALE, FEMALE)
   country       enum(KR, JP)
   status        enum(ACTIVE, SUSPENDED, BANNED) default ACTIVE
