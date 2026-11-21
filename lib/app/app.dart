@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../l10n/app_localizations.dart';
+import '../shared/widgets/portrait_frame.dart';
 import 'router.dart';
 import 'theme/app_theme.dart';
 
@@ -37,9 +38,10 @@ class DalbittokApp extends ConsumerWidget {
         return const Locale('ja');
       },
       // 폰트는 언어마다 다르다(AppTheme.darkFor) — 여기서 지금 언어로 테마를 다시 씌운다.
+      // 넓은 창(태블릿·펼친 폴드·가로)에서는 세로 화면을 가운데 상자로(PortraitFrame) — 폰은 그대로.
       builder: (context, child) => Theme(
         data: AppTheme.darkFor(Localizations.localeOf(context).languageCode),
-        child: child!,
+        child: PortraitFrame(child: child!),
       ),
       routerConfig: ref.watch(routerProvider),
     );
