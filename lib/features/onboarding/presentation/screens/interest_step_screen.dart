@@ -19,8 +19,8 @@ import '../widgets/onboarding_frame.dart';
 /// - 시안의 묶음(여행 · 문화, 예술)과 항목(해외여행 · 국내여행 …)은 **그림 예시**라 따르지 않는다 —
 ///   모양과 좌표만 가져온다: 묶음 아이콘 95 · 이름 251 · 칩 265×114가 한 줄에 셋(95 / 409 / 722), 줄 간격 147.
 /// - 칩은 **틀 그림(`frame_interest_*`) + 이름 글자**다. 고른 칩은 보라 틀·흰 글자.
-/// - 묶음 아이콘은 두 장만 왔다 — 취미 ← `icon_interest_trip`(여행 가방) · 문화 ← `icon_interest_art`(카메라).
-///   라이프스타일·스포츠는 🚧 `Icons.*` 자리 표시(08 §0-4).
+/// - 묶음 아이콘은 여덟 장이 왔지만 시안의 새 분류용이라, 지금 네 묶음엔 뜻이 맞는 셋만 붙인다
+///   (`OnboardingArt.groupIcon` — 취미 · 문화 · 스포츠). 라이프스타일은 🚧 `Icons.*` 자리 표시(08 §0-4).
 /// - 37종이 한 화면을 넘는다 → 판(머리·진행 표시·`STEP 4`·`<` `>`)은 고정이고, **`STEP 4`와 질문 사이(y 990)부터**
 ///   아래가 스크롤 칸이다 — 질문 문구도 스크롤 안에 있다(사용자 2026-11-21).
 /// - 🚧 `STEP 4` 배지 그림이 안 왔다 — 판이 같은 자리에 보라 알약을 그린다.
@@ -88,13 +88,6 @@ class _InterestList extends StatelessWidget {
   final List<String> selected;
   final ValueChanged<String> onTap;
 
-  /// 묶음 아이콘 — 온 그림만. 없으면 null(자리 표시).
-  static (String, Size)? _groupArt(String group) => switch (group) {
-    'HOBBY' => (OnboardingArt.groupTrip, const Size(94, 127)),
-    'CULTURE' => (OnboardingArt.groupArt, const Size(123, 98)),
-    _ => null,
-  };
-
   @override
   Widget build(BuildContext context) {
     final s = DesignCanvas.scaleOf(context);
@@ -140,11 +133,13 @@ class _InterestList extends StatelessWidget {
             height: 127 * s,
             child: Row(
               children: [
+                // 아이콘 칸은 가장 넓은 아이콘(게임 패드 148) 폭, 그 가운데에 둔다. 이름은 칸 끝에서
+                // 33 띄운 x 276 — 시안의 251은 폭 123짜리 카메라 기준(123 + 33)이라 넓은 아이콘이면 붙는다.
                 SizedBox(
-                  width: 156 * s, // 아이콘 95 → 이름 251
+                  width: 148 * s,
                   child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: switch (_groupArt(groups[g].code)) {
+                    alignment: Alignment.center,
+                    child: switch (OnboardingArt.groupIcon(groups[g].code)) {
                       (final String art, final Size size) => ArtImage(
                         art,
                         width: size.width,
@@ -158,6 +153,7 @@ class _InterestList extends StatelessWidget {
                     },
                   ),
                 ),
+                SizedBox(width: 33 * s),
                 Expanded(
                   child: Text(
                     ProfileCatalog.groupTitle(l10n, groups[g].code),

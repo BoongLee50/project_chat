@@ -62,8 +62,27 @@ abstract final class OnboardingArt {
       '$_s4/back_porfile_interest.png'; // 479×440 @ 530,137
   static const chipOn = '$_s4/frame_interest_selected.png'; // 265×114
   static const chipOff = '$_s4/frame_interest_unselected.png'; // 265×114
-  static const groupTrip = '$_s4/icon_interest_trip.png'; // 94×127
-  static const groupArt = '$_s4/icon_interest_art.png'; // 123×98
+
+  /// 묶음 아이콘 여덟(같은 날 14:21 전달) — 시안의 **새 분류**(여행 · 미술 · 창작 · 음식 · 건강 · 취미 · 음악 · 독서)용이다.
+  /// 분류 정보는 나중에 온다(사용자 2026-11-21) — 지금은 네 묶음에 뜻이 맞는 것만 붙인다([groupIcon]).
+  static const groupTrip = '$_s4/icon_interest_trip.png'; // 94×127 여행 가방
+  static const groupArt = '$_s4/icon_interest_art.png'; // 129×115 팔레트
+  static const groupCreation = '$_s4/icon_interest_creation.png'; // 123×98 카메라
+  static const groupFood = '$_s4/icon_interest_food.png'; // 134×102 요리 모자
+  static const groupHealth = '$_s4/icon_interest_health.png'; // 144×105 하트·아령
+  static const groupHobby = '$_s4/icon_interest_hobby.png'; // 148×97 게임 패드
+  static const groupMusic = '$_s4/icon_interest_music.png'; // 136×104 헤드폰
+  static const groupReading = '$_s4/icon_interest_reading.png'; // 131×97 책
+
+  /// 지금 네 묶음(`ProfileCatalog.interestGroups`) → 아이콘. 맞는 그림이 없으면 null(자리 표시).
+  /// 취미 ← 게임 패드 · 문화/엔터테인먼트(K-POP·J-POP·뮤지컬·페스티벌…) ← 헤드폰 · 스포츠 ← 하트·아령 ·
+  /// 라이프스타일(자기계발·재테크·IT·패션…)은 맞는 그림이 없다.
+  static (String, Size)? groupIcon(String group) => switch (group) {
+    'HOBBY' => (groupHobby, const Size(148, 97)),
+    'CULTURE' => (groupMusic, const Size(136, 104)),
+    'SPORTS' => (groupHealth, const Size(144, 105)),
+    _ => null,
+  };
 
   /// 진행 표시 일곱 칸의 가운데 — x = 292 + 83·i, y = 739(시안 실측).
   static const markCenterY = 739.0;
