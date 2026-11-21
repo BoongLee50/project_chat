@@ -55,6 +55,15 @@ KOREAN_DIRS = {
     '달빛 한마디 화면/답글 상세 화면': 'scene_word/reply_detail',
     # 상점(신버전)은 상점 세션이 **상품 화면 그림을 한 벌로 모아** `scene_shop/item`에 들였다(폴더마다 겹쳐 와서).
     # 프라임 구독 관리 쪽만 `prime_sub/` 아래 화면별로 나뉜다.
+    # 로그인(타이틀 · 온보딩 일곱 단계) — 2026-11-21 첫 전달, 프로필 세션.
+    '로그인 화면': 'scene_login', '로그인 화면/타이틀 화면': 'scene_login/title',
+    '로그인 화면/1. 성별 선택 화면': 'scene_login/step1',
+    '로그인 화면/2. 생년월일 작성 화면': 'scene_login/step2',
+    '로그인 화면/3. 거주 지역 선택 화면': 'scene_login/step3',
+    '로그인 화면/4. 관심사 등록 화면': 'scene_login/step4',
+    '로그인 화면/5. 자기 소개 작성 화면': 'scene_login/step5',
+    '로그인 화면/6. 닉네임 등록 화면': 'scene_login/step6',
+    '로그인 화면/7. 프로필 사진 등록 화면': 'scene_login/step7',
     '상점 화면 (신버전)': 'scene_shop/item',
     '상점 화면 (신버전)/상품별 관리 화면/프라임 구독 관리 화면/프라임 구독 관리': 'scene_shop/prime_sub/sub_manage',
     '상점 화면 (신버전)/상품별 관리 화면/프라임 구독 관리 화면/프라임 구독 해지': 'scene_shop/prime_sub/sub_end',
@@ -89,8 +98,9 @@ def is_mockup(name):
     return any('\uac00' <= ch <= '\ud7a3' for ch in name)
 
 # 언어가 아니라 **나라**를 뜻하는 접미사 — ja/로 옮기지 않는다.
+# 타이틀 화면의 카카오(한국)·라인(일본) 버튼도 언어판이 아니라 **나라별 버튼**이다(2026-11-21).
 COUNTRY_PREFIXES = ('icon_flag_', 'filtering_nation_', 'icon_sflag_', 'icon_mflag_',
-                    'icon_mmflag_')
+                    'icon_mmflag_', 'button_kakao_', 'button_line_')
 
 
 def dir_name(part):

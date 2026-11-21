@@ -4,19 +4,22 @@ import 'package:go_router/go_router.dart';
 
 import '../features/auth/presentation/providers/session_provider.dart';
 import '../features/auth/presentation/screens/login_screen.dart';
-import '../features/onboarding/presentation/screens/birth_year_screen.dart';
-import '../features/onboarding/presentation/screens/gender_country_screen.dart';
+import '../features/onboarding/presentation/screens/birth_date_step_screen.dart';
+import '../features/onboarding/presentation/screens/gender_step_screen.dart';
 import '../features/onboarding/presentation/screens/nickname_screen.dart';
+import '../features/onboarding/presentation/screens/residence_step_screen.dart';
 import 'main_shell.dart';
-import 'theme/app_colors.dart';
 
 /// 라우트 경로 상수.
 abstract final class Routes {
   static const splash = '/splash';
   static const login = '/login';
-  static const onboardingNickname = '/onboarding/nickname';
-  static const onboardingBirthYear = '/onboarding/birth-year';
-  static const onboardingGender = '/onboarding/gender';
+  // 온보딩(가입 정보 입력) — 그래픽 소스 `로그인 화면` STEP 1~7(2026-11-21).
+  // 🚧 약관 화면(로그인 다음)은 아직 없다. STEP 4·5·7은 그림이 없어 건너뛰고, STEP 6 닉네임은 옛 화면이 임시로 맡는다.
+  static const onboardingGender = '/onboarding/gender'; // STEP 1
+  static const onboardingBirth = '/onboarding/birth'; // STEP 2
+  static const onboardingResidence = '/onboarding/residence'; // STEP 3
+  static const onboardingNickname = '/onboarding/nickname'; // STEP 6(임시 — 옛 화면)
   static const home = '/home';
 }
 
@@ -43,9 +46,9 @@ final routerProvider = Provider<GoRouter>((ref) {
           location == Routes.splash ? null : Routes.splash,
         SessionStatus.unauthenticated =>
           location == Routes.login ? null : Routes.login,
-        // 온보딩 중에는 3단계 화면 사이 이동을 허용.
+        // 온보딩 중에는 단계 화면 사이 이동을 허용. 시작은 STEP 1(성별).
         SessionStatus.onboarding =>
-          inOnboarding ? null : Routes.onboardingNickname,
+          inOnboarding ? null : Routes.onboardingGender,
         SessionStatus.authenticated =>
           location == Routes.home ? null : Routes.home,
       };
@@ -53,23 +56,28 @@ final routerProvider = Provider<GoRouter>((ref) {
     routes: [
       GoRoute(
         path: Routes.splash,
-        builder: (context, state) => const _SplashScreen(),
+        // 저장된 토큰을 확인하는 동안 = 타이틀 화면 [자동 로그인] 상태.
+        builder: (context, state) => const TitleSplashScreen(),
       ),
       GoRoute(
         path: Routes.login,
         builder: (context, state) => const LoginScreen(),
       ),
       GoRoute(
+        path: Routes.onboardingGender,
+        builder: (context, state) => const GenderStepScreen(),
+      ),
+      GoRoute(
+        path: Routes.onboardingBirth,
+        builder: (context, state) => const BirthDateStepScreen(),
+      ),
+      GoRoute(
+        path: Routes.onboardingResidence,
+        builder: (context, state) => const ResidenceStepScreen(),
+      ),
+      GoRoute(
         path: Routes.onboardingNickname,
         builder: (context, state) => const NicknameScreen(),
-      ),
-      GoRoute(
-        path: Routes.onboardingBirthYear,
-        builder: (context, state) => const BirthYearScreen(),
-      ),
-      GoRoute(
-        path: Routes.onboardingGender,
-        builder: (context, state) => const GenderCountryScreen(),
       ),
       GoRoute(
         path: Routes.home,
@@ -78,17 +86,3 @@ final routerProvider = Provider<GoRouter>((ref) {
     ],
   );
 });
-
-/// 저장된 토큰을 확인하는 동안 보여줄 화면.
-class _SplashScreen extends StatelessWidget {
-  const _SplashScreen();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(
-        child: CircularProgressIndicator(color: AppColors.moonlight),
-      ),
-    );
-  }
-}

@@ -4,41 +4,54 @@ import '../../../../core/error/api_exception.dart';
 import '../../../../core/providers.dart';
 import '../../../auth/presentation/providers/session_provider.dart';
 
-/// 온보딩 3단계(닉네임 → 출생년도 → 성별/국가)에서 모은 입력값.
+/// 온보딩(가입 정보 입력)에서 모은 값 — 그래픽 소스 `로그인 화면` 일곱 단계(2026-11-21).
+///
+/// STEP 1 성별 · 2 생년월일 · 3 거주 국가·지역 · 4 관심사 · 5 자기소개 · 6 닉네임 · 7 프로필 사진.
+/// 🚧 지금 그림이 온 것은 **1~3**뿐이다. 4·5·7은 아직 화면이 없어 건너뛰고(프로필에서 나중에 채운다),
+/// 6 닉네임은 **옛 닉네임 화면을 임시로** 마지막에 둔다 — 서버 `POST /profile`에 닉네임이 꼭 필요해서다.
 class OnboardingForm {
   const OnboardingForm({
-    this.nickname,
-    this.birthYear,
     this.gender,
+    this.birthDate,
     this.country,
+    this.region,
+    this.nickname,
     this.busy = false,
     this.error,
   });
 
-  final String? nickname;
-  final int? birthYear;
-
   /// MALE | FEMALE
   final String? gender;
 
-  /// KR | JP
+  /// 생년월일(시각은 버린다).
+  final DateTime? birthDate;
+
+  /// 거주 국가 KR | JP — `users.country`가 된다(앱 언어와는 다른 것).
   final String? country;
+
+  /// 거주 지역 코드(`KR_SEOUL` …) — 프로필의 **활동 지역 1곳**으로 저장한다.
+  final String? region;
+
+  final String? nickname;
 
   final bool busy;
   final String? error;
 
   OnboardingForm copyWith({
-    String? nickname,
-    int? birthYear,
     String? gender,
+    DateTime? birthDate,
     String? country,
+    String? region,
+    bool clearRegion = false,
+    String? nickname,
     bool? busy,
     String? error,
   }) => OnboardingForm(
-    nickname: nickname ?? this.nickname,
-    birthYear: birthYear ?? this.birthYear,
     gender: gender ?? this.gender,
+    birthDate: birthDate ?? this.birthDate,
     country: country ?? this.country,
+    region: clearRegion ? null : (region ?? this.region),
+    nickname: nickname ?? this.nickname,
     busy: busy ?? this.busy,
     error: error,
   );
@@ -47,6 +60,18 @@ class OnboardingForm {
 class OnboardingController extends Notifier<OnboardingForm> {
   @override
   OnboardingForm build() => const OnboardingForm();
+
+  void setGender(String gender) => state = state.copyWith(gender: gender);
+
+  void setBirthDate(DateTime date) => state = state.copyWith(birthDate: date);
+
+  /// 나라를 바꾸면 고른 지역은 비운다 — 다른 나라의 지역이 남으면 안 된다.
+  void setCountry(String country) => state = state.copyWith(
+    country: country,
+    clearRegion: country != state.country,
+  );
+
+  void setRegion(String region) => state = state.copyWith(region: region);
 
   /// 닉네임 중복/금지어 검사(서버 판정). 통과하면 폼에 저장하고 true.
   Future<bool> submitNickname(String value) async {
@@ -67,17 +92,14 @@ class OnboardingController extends Notifier<OnboardingForm> {
     }
   }
 
-  void setBirthYear(int year) => state = state.copyWith(birthYear: year);
-
-  void setGender(String gender) => state = state.copyWith(gender: gender);
-
-  void setCountry(String country) => state = state.copyWith(country: country);
-
-  /// 프로필 생성 요청 → 성공 시 세션을 authenticated로 전환.
+  /// 프로필 생성 요청 → 거주 지역 저장 → 세션을 authenticated로 전환.
+  ///
+  /// ⚠️ 지역은 프로필이 만들어진 **뒤에** 저장한다(`PUT /me/regions`). 세션 전환([completeOnboarding])이
+  /// 마지막이어야 한다 — 먼저 바꾸면 라우터가 메인으로 넘어가 버린다.
   Future<bool> submitProfile() async {
     final form = state;
     if (form.nickname == null ||
-        form.birthYear == null ||
+        form.birthDate == null ||
         form.gender == null ||
         form.country == null) {
       state = state.copyWith(error: '입력이 완료되지 않았어요.');
@@ -86,14 +108,14 @@ class OnboardingController extends Notifier<OnboardingForm> {
 
     state = state.copyWith(busy: true);
     try {
-      await ref
-          .read(profileApiProvider)
-          .createProfile(
-            nickname: form.nickname!,
-            birthYear: form.birthYear!,
-            gender: form.gender!,
-            country: form.country!,
-          );
+      final api = ref.read(profileApiProvider);
+      await api.createProfile(
+        nickname: form.nickname!,
+        birthDate: form.birthDate!,
+        gender: form.gender!,
+        country: form.country!,
+      );
+      if (form.region != null) await api.updateRegions([form.region!]);
       await ref.read(sessionProvider.notifier).completeOnboarding();
       state = const OnboardingForm();
       return true;

@@ -10,7 +10,8 @@ import '../../../../app/theme/app_dimens.dart';
 import '../providers/onboarding_provider.dart';
 import '../widgets/onboarding_scaffold.dart';
 
-/// 온보딩 1/3 — 닉네임 설정.
+/// 온보딩 STEP 6 — 닉네임. 🚧 **임시**: STEP 6 그림이 아직 없어 옛 화면을 그대로 쓰고,
+/// 4·5·7을 건너뛴 지금은 **마지막 단계**라 여기서 가입을 마친다(`POST /profile`).
 /// 서버(`GET /profile/nickname:check`)가 중복·금지어·형식을 판정한다.
 class NicknameScreen extends ConsumerStatefulWidget {
   const NicknameScreen({super.key});
@@ -38,10 +39,10 @@ class _NicknameScreenState extends ConsumerState<NicknameScreen> {
   bool get _valid => _controller.text.trim().length >= 2;
 
   Future<void> _submit() async {
-    final ok = await ref
-        .read(onboardingProvider.notifier)
-        .submitNickname(_controller.text.trim());
-    if (ok && mounted) context.go(Routes.onboardingBirthYear);
+    final notifier = ref.read(onboardingProvider.notifier);
+    final ok = await notifier.submitNickname(_controller.text.trim());
+    // 통과하면 바로 가입을 마친다 — 세션이 바뀌면 라우터가 메인으로 보낸다.
+    if (ok) await notifier.submitProfile();
   }
 
   @override
@@ -66,6 +67,7 @@ class _NicknameScreenState extends ConsumerState<NicknameScreen> {
       subtitle: l10n.nicknameSubtitle,
       submitEnabled: _valid && !form.busy,
       onSubmit: _submit,
+      onBack: () => context.go(Routes.onboardingResidence),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

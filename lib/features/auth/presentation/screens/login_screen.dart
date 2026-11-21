@@ -1,24 +1,24 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-
-import '../../../../l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../app/theme/app_colors.dart';
-import '../../../../app/theme/app_dimens.dart';
-import '../../../../shared/widgets/design_canvas.dart';
 import '../../../../core/config/app_config.dart';
+import '../../../../l10n/app_localizations.dart';
+import '../../../../shared/widgets/design_canvas.dart';
 import '../../data/models/auth_models.dart';
 import '../../data/social/social_sign_in.dart';
 import '../providers/session_provider.dart';
+import '../widgets/title_art.dart';
 
-/// 로그인 화면.
+/// 타이틀(로그인) 화면 — [로그인 선택] 상태(`그래픽 소스\로그인 화면\타이틀 화면`, 2026-11-21).
 ///
-/// 배경은 시안의 밤하늘 이미지(상단), 하단은 소셜 로그인 버튼 — **라인 · 카카오 · 구글 · 애플**(애플은 2026-11-15 추가).
-/// 버튼을 누르면 ① 공급자 토큰을 받고([SocialSignIn]) ② `POST /auth/social`로 우리 계정에 로그인한다.
-/// 개발 빌드는 목 토큰을 보내고 서버의 mock provider가 받아 준다(docs/01 §1.1 · 서버 `app.auth.social.mock.enabled`).
+/// - **기기 언어가 나라다**(사용자 결정 2026-11-21): 한국어 → 카카오 · 애플 · 구글 / 그 밖(일본어 · 기본값) → 라인 · 애플 · 구글.
+///   그림·글자도 그 언어로 나온다. 프로필에서 고르는 거주 국가와는 다른 것이다.
+/// - 버튼을 누르면 ① 공급자 토큰을 받고([SocialSignIn]) ② `POST /auth/social`로 우리 계정에 로그인한다.
+///   개발 빌드는 목 토큰을 보내고 서버의 mock provider가 받아 준다(docs/01 §1.1).
+/// - 로그인 뒤: 새 회원은 **약관 화면**(🚧 미구현 — 지금은 바로 온보딩 STEP 1) → 온보딩 일곱 단계.
 ///
-/// ⚠️ 버튼은 아직 **코드로 그린 자리 표시**다 — 로그인 화면 그림(버튼 4 · 배경, 한·일)이 오면 바꾼다.
+/// 같은 판의 [자동 로그인] 상태(버튼 없이 타이틀만 가운데)는 [TitleSplashScreen].
 class LoginScreen extends ConsumerWidget {
   const LoginScreen({super.key});
 
@@ -34,53 +34,10 @@ class LoginScreen extends ConsumerWidget {
       }
     });
 
-    return Scaffold(
-      body: Stack(
-        fit: StackFit.expand,
-        children: [
-          // 배경 사진 (밤의 한·일 정취)
-          //
-          // 🚨 이 그림에는 **글자가 구워져 있다**(현재 한국어 *"밤에만 만나는 대화"* —
-          // 야간 게이트가 폐지돼 내용 자체가 틀렸다. 새 그림 대기 중, 08 참고).
-          // 언어별 교체 통로를 미리 거쳐 둔다 — 일본어판이 오면
-          // `DesignCanvas.localizedAssets`에 한 줄 더하는 것으로 켜진다.
-          Image.asset(
-            DesignCanvas.localizedAsset(context, 'assets/images/login_bg.jpg'),
-            fit: BoxFit.cover,
-            alignment: Alignment.topCenter,
-          ),
-          // 아래로 갈수록 어두워지는 스크림 — 버튼 가독성 확보
-          const DecoratedBox(
-            decoration: BoxDecoration(gradient: AppColors.nightScrim),
-          ),
-          // 하단 컨텐츠
-          SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.all(AppDimens.pagePad),
-              child: Column(
-                children: const [
-                  Spacer(), // 상단 풍경(타이틀 포함)이 보이도록 밀어냄
-                  SizedBox(height: AppDimens.gapLg),
-                  _SocialButtons(),
-                  SizedBox(height: AppDimens.gapLg),
-                  _Disclaimer(),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _SocialButtons extends ConsumerWidget {
-  const _SocialButtons();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = L10n.of(context);
+    final ja = Localizations.localeOf(context).languageCode != 'ko';
     final busy = ref.watch(sessionProvider).busy;
+    final safeBottom = MediaQuery.paddingOf(context).bottom;
 
     // ① 공급자 토큰(개발 빌드는 목) → ② 서버 로그인. 창을 닫으면 아무 일도 없던 것으로,
     // 아직 연결 안 된 공급자면 이유를 말한다(버튼을 죽이지 않는다).
@@ -104,158 +61,90 @@ class _SocialButtons extends ConsumerWidget {
           .signIn(provider: provider, providerToken: token);
     }
 
-    // 애플은 **아이폰에서만** 보인다(안드로이드는 웹 방식이라 서버 설정이 더 든다 — 사용자에게 확인 대기).
+    // 애플은 **아이폰에서만** 보인다(안드로이드는 웹 방식이라 서버 설정이 더 든다 — 사용자 결정 대기, 09 §2-2 F).
     // 개발(목) 빌드는 어디서든 보여서 안드로이드 에뮬에서도 흐름을 시험할 수 있다.
     final showApple = defaultTargetPlatform == TargetPlatform.iOS || AppConfig.useMockLogin;
 
-    return Column(
-      children: [
-        _SocialButton(
-          label: l10n.loginWithLine,
-          background: AppColors.line,
-          foreground: Colors.white,
-          onPressed: () => signIn(SocialProvider.line),
-          leading: _badge(
-            bg: Colors.white,
-            child: const Icon(
-              Icons.chat_bubble,
-              size: 16,
-              color: AppColors.line,
-            ),
+    // 위에서부터 칸을 채운다 — 애플이 빠지면 구글이 둘째 칸으로 올라온다.
+    final buttons = <(String, double, SocialProvider)>[
+      ja
+          ? (TitleArt.buttonLine, 142, SocialProvider.line)
+          : (TitleArt.buttonKakao, 137, SocialProvider.kakao),
+      if (showApple) (TitleArt.buttonApple, 136, SocialProvider.apple),
+      (TitleArt.buttonGoogle, 136, SocialProvider.google),
+    ];
+
+    return Scaffold(
+      body: TitleFrame(
+        builder: (context, place) => [
+          place.art(
+            TitleArt.title,
+            left: TitleArt.titleLeft(ja),
+            top: TitleArt.titleTopLogin,
+            size: TitleArt.titleSize,
           ),
-        ),
-        const SizedBox(height: AppDimens.gapMd),
-        _SocialButton(
-          label: l10n.loginWithKakao,
-          background: AppColors.kakao,
-          foreground: AppColors.kakaoText,
-          onPressed: () => signIn(SocialProvider.kakao),
-          leading: _badge(
-            bg: AppColors.kakaoText,
-            child: const Icon(
-              Icons.chat_bubble,
-              size: 16,
-              color: AppColors.kakao,
+          for (var i = 0; i < buttons.length; i++)
+            Positioned(
+              left: place.x(TitleArt.buttonLeft),
+              top: place.y(TitleArt.buttonTops[i]),
+              child: Opacity(
+                opacity: busy ? 0.6 : 1,
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () => signIn(buttons[i].$3),
+                  child: ArtImage(
+                    buttons[i].$1,
+                    width: TitleArt.buttonWidth,
+                    height: buttons[i].$2,
+                    scale: place.scale,
+                  ),
+                ),
+              ),
             ),
-          ),
-        ),
-        const SizedBox(height: AppDimens.gapMd),
-        _SocialButton(
-          label: l10n.loginWithGoogle,
-          background: AppColors.google,
-          foreground: AppColors.googleText,
-          onPressed: () => signIn(SocialProvider.google),
-          leading: _badge(
-            bg: Colors.white,
-            child: const Text(
-              'G',
+          // 아래 안내 — 글자(폰트). 화면이 시안보다 짧아 잘리는 폰에서도 시스템 바에 묻히지 않게 끌어올린다.
+          Positioned(
+            left: 0,
+            right: 0,
+            top: place
+                .y(TitleArt.noticeTop)
+                .clamp(0.0, place.screen.height - safeBottom - 64 * place.scale),
+            child: Text(
+              l10n.loginChooseMethod,
+              textAlign: TextAlign.center,
               style: TextStyle(
-                color: Color(0xFF4285F4),
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
+                color: Colors.white,
+                fontSize: 42 * place.scale,
+                fontWeight: FontWeight.w500,
+                shadows: const [Shadow(color: Colors.black54, blurRadius: 8)],
               ),
             ),
           ),
-        ),
-        if (showApple) ...[
-          const SizedBox(height: AppDimens.gapMd),
-          _SocialButton(
-            label: l10n.loginWithApple,
-            background: AppColors.apple,
-            foreground: AppColors.appleText,
-            // 검은 버튼이 어두운 배경에 묻히지 않게 흰 테두리 — 애플 가이드의 "흰 테두리 검은 버튼" 형태.
-            borderColor: AppColors.appleText,
-            onPressed: () => signIn(SocialProvider.apple),
-            leading: _badge(
-              bg: AppColors.appleText,
-              child: const Icon(Icons.apple, size: 18, color: AppColors.apple),
-            ),
-          ),
+          if (busy)
+            const Center(child: CircularProgressIndicator(color: Colors.white)),
         ],
-      ],
-    );
-  }
-
-  static Widget _badge({required Color bg, required Widget child}) {
-    return Container(
-      width: 28,
-      height: 28,
-      alignment: Alignment.center,
-      decoration: BoxDecoration(color: bg, shape: BoxShape.circle),
-      child: child,
-    );
-  }
-}
-
-class _SocialButton extends StatelessWidget {
-  const _SocialButton({
-    required this.label,
-    required this.background,
-    required this.foreground,
-    required this.leading,
-    required this.onPressed,
-    this.borderColor,
-  });
-
-  final String label;
-  final Color background;
-  final Color foreground;
-  final Widget leading;
-  final VoidCallback onPressed;
-  final Color? borderColor;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: AppDimens.buttonHeight,
-      width: double.infinity,
-      child: Material(
-        color: background,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppDimens.radiusMd),
-          side: borderColor == null ? BorderSide.none : BorderSide(color: borderColor!),
-        ),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(AppDimens.radiusMd),
-          onTap: onPressed,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Row(
-              children: [
-                leading,
-                Expanded(
-                  child: Text(
-                    label,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: foreground,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 28), // leading 폭 보정 → 라벨 중앙 정렬
-              ],
-            ),
-          ),
-        ),
       ),
     );
   }
 }
 
-class _Disclaimer extends StatelessWidget {
-  const _Disclaimer();
+/// 타이틀 화면 [자동 로그인] 상태 — 저장된 토큰을 확인하는 동안(스플래시) 보인다.
+/// 버튼 없이 타이틀만 가운데(시안 `타이틀 화면_자동 로그인_좌표값.png`).
+class TitleSplashScreen extends StatelessWidget {
+  const TitleSplashScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      L10n.of(context).loginTermsNotice,
-      textAlign: TextAlign.center,
-      style: const TextStyle(
-        color: AppColors.textMuted,
-        fontSize: 12,
-        height: 1.4,
+    final ja = Localizations.localeOf(context).languageCode != 'ko';
+    return Scaffold(
+      body: TitleFrame(
+        builder: (context, place) => [
+          place.art(
+            TitleArt.title,
+            left: TitleArt.titleLeft(ja),
+            top: TitleArt.titleTopAuto(ja),
+            size: TitleArt.titleSize,
+          ),
+        ],
       ),
     );
   }

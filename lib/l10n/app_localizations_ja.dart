@@ -9,7 +9,7 @@ class L10nJa extends L10n {
   L10nJa([String locale = 'ja']) : super(locale);
 
   @override
-  String get appTitle => '月光トーク';
+  String get appTitle => '月あかりトーク';
 
   @override
   String get commonSave => '保存する';
@@ -36,28 +36,13 @@ class L10nJa extends L10n {
   String get loginTagline => '夜だけ開くチャットの時間';
 
   @override
-  String get loginWithLine => 'LINEでログイン';
-
-  @override
-  String get loginWithKakao => 'カカオトークでログイン';
-
-  @override
-  String get loginWithGoogle => 'Googleでログイン';
-
-  @override
-  String get loginWithApple => 'Appleでサインイン';
-
-  @override
   String get loginProviderUnavailable => 'このログイン方法はまだ準備中です。別の方法でログインしてください。';
-
-  @override
-  String get loginTermsNotice => 'ログインすると、利用規約およびプライバシーポリシーに同意したものとみなされます。';
 
   @override
   String get nicknameTitle => 'ニックネーム設定';
 
   @override
-  String get nicknameSubtitle => '月光トークで使うニックネームを入力してください。';
+  String get nicknameSubtitle => '月あかりトークで使うニックネームを入力してください。';
 
   @override
   String get nicknameHint => 'ニックネームを入力してください';
@@ -81,31 +66,58 @@ class L10nJa extends L10n {
   String get onboardingNext => '完了';
 
   @override
-  String get onboardingPrivateNotice => '※ この情報は他のユーザーには公開されません。';
+  String get loginChooseMethod => 'ログイン方法を選択してください';
+
+  @override
+  String get onboardingHeaderTitle => 'プロフィール';
+
+  @override
+  String get onboardingHeaderDesc => 'あなたらしさが伝わる\nプロフィールを作りましょう。';
+
+  @override
+  String get onboardingGenderQuestion => '性別を選択してください';
+
+  @override
+  String get onboardingGenderNote => 'プロフィールはいつでも編集できます';
+
+  @override
+  String get onboardingBirthQuestion => '生年月日を入力してください';
+
+  @override
+  String get onboardingBirthNote => '登録した生年月日は変更できません';
+
+  @override
+  String get onboardingBirthInvalid => '生年月日を正しく入力してください';
+
+  @override
+  String get onboardingResidenceQuestion => 'お住まいの地域を選択してください';
+
+  @override
+  String get onboardingResidenceNote => '登録したプロフィールは後から編集できます';
+
+  @override
+  String get onboardingResidenceCountry => '居住国';
+
+  @override
+  String get onboardingResidenceRegion => '居住地域';
+
+  @override
+  String get onboardingResidenceDetail => '詳細地域';
+
+  @override
+  String get onboardingResidencePick => '選択してください';
+
+  @override
+  String get onboardingResidenceDetailSoon => '詳細地域は準備中です';
 
   @override
   String get birthYearTitle => '生年設定';
-
-  @override
-  String get birthYearSubtitle => '年齢確認のため生まれた年を選択してください。';
-
-  @override
-  String get genderCountryTitle => '性別・国の設定';
-
-  @override
-  String get genderCountrySubtitle => 'より合う相手と出会えるよう性別と国を選択してください。';
-
-  @override
-  String get genderSectionTitle => '性別を選択';
 
   @override
   String get genderMale => '男性';
 
   @override
   String get genderFemale => '女性';
-
-  @override
-  String get countrySectionTitle => '国を選択';
 
   @override
   String get countryKorea => '韓国';

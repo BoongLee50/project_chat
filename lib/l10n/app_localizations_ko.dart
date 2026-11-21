@@ -36,22 +36,7 @@ class L10nKo extends L10n {
   String get loginTagline => '밤에만 열리는 채팅의 시간';
 
   @override
-  String get loginWithLine => 'LINE으로 로그인';
-
-  @override
-  String get loginWithKakao => '카카오톡으로 로그인';
-
-  @override
-  String get loginWithGoogle => 'Google로 로그인';
-
-  @override
-  String get loginWithApple => 'Apple로 로그인';
-
-  @override
   String get loginProviderUnavailable => '아직 준비 중인 로그인이에요. 다른 방법으로 로그인해 주세요.';
-
-  @override
-  String get loginTermsNotice => '로그인하면 서비스 이용약관 및 개인정보처리방침에 동의하게 됩니다.';
 
   @override
   String get nicknameTitle => '닉네임 설정';
@@ -81,31 +66,58 @@ class L10nKo extends L10n {
   String get onboardingNext => '완료';
 
   @override
-  String get onboardingPrivateNotice => '* 이 정보는 다른 사용자에게 공개되지 않습니다.';
+  String get loginChooseMethod => '로그인 방법을 선택해 주세요';
+
+  @override
+  String get onboardingHeaderTitle => '프로필';
+
+  @override
+  String get onboardingHeaderDesc => '나를 가장 잘 보여주는\n프로필을 만들어보세요.';
+
+  @override
+  String get onboardingGenderQuestion => '성별을 선택해 주세요';
+
+  @override
+  String get onboardingGenderNote => '작성한 프로필은 언제든 수정할 수 있어요';
+
+  @override
+  String get onboardingBirthQuestion => '생년월일을 입력해 주세요';
+
+  @override
+  String get onboardingBirthNote => '등록된 생년월일은 변경할 수 없어요';
+
+  @override
+  String get onboardingBirthInvalid => '생년월일을 정확히 입력해 주세요';
+
+  @override
+  String get onboardingResidenceQuestion => '거주 지역을 선택해 주세요';
+
+  @override
+  String get onboardingResidenceNote => '등록된 프로필은 나중에 수정할 수 있어요';
+
+  @override
+  String get onboardingResidenceCountry => '거주 국가';
+
+  @override
+  String get onboardingResidenceRegion => '거주 지역';
+
+  @override
+  String get onboardingResidenceDetail => '세부 지역';
+
+  @override
+  String get onboardingResidencePick => '선택해 주세요';
+
+  @override
+  String get onboardingResidenceDetailSoon => '세부 지역은 준비 중이에요';
 
   @override
   String get birthYearTitle => '출생년도 설정';
-
-  @override
-  String get birthYearSubtitle => '정확한 나이 확인을 위해 출생년도를 선택해주세요.';
-
-  @override
-  String get genderCountryTitle => '성별 및 나라 설정';
-
-  @override
-  String get genderCountrySubtitle => '정확한 매칭을 위해 성별과 나라를 선택해주세요.';
-
-  @override
-  String get genderSectionTitle => '성별 선택';
 
   @override
   String get genderMale => '남자';
 
   @override
   String get genderFemale => '여자';
-
-  @override
-  String get countrySectionTitle => '나라 선택';
 
   @override
   String get countryKorea => '한국';

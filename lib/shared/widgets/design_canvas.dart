@@ -165,6 +165,12 @@ class DesignCanvas {
     'assets/images/scene_shop/item/title_reserves.png': Size(282, 90),
     'assets/images/scene_shop/item/title_retention.png': Size(377, 92),
     'assets/images/scene_shop/item/title_transshop.png': Size(321, 80),
+
+    // 타이틀(로그인) 화면 — 앱 이름 · 애플 · 구글 버튼(2026-11-21). 앱 이름은 일본어판이 넓다(512×224 → 652×197).
+    // 카카오(한국)·라인(일본)은 언어 변형이 아니라 나라별 버튼이라 여기 없다(`TitleArt`).
+    'assets/images/scene_login/title/title_appmain.png': Size(652, 197),
+    'assets/images/scene_login/title/button_apple.png': null,
+    'assets/images/scene_login/title/button_google.png': null,
   };
 
   /// [koAsset]을 [languageCode]로 그릴 때의 **규격**. 일본어판 크기가 따로 적혀 있으면 그것을 쓴다.

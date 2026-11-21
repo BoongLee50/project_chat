@@ -4,6 +4,8 @@ import com.moonlighttalk.server.auth.entity.User;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.time.LocalDate;
+
 @Mapper
 public interface UserMapper {
 
@@ -16,6 +18,7 @@ public interface UserMapper {
     void updateProfile(@Param("id") String id,
                         @Param("nickname") String nickname,
                         @Param("birthYear") Integer birthYear,
+                        @Param("birthDate") LocalDate birthDate,
                         @Param("gender") String gender,
                         @Param("country") String country);
 

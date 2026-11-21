@@ -4,7 +4,7 @@ import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimens.dart';
 import '../../../../l10n/app_localizations.dart';
 
-/// 온보딩 3단계(닉네임·출생년도·성별/국가)가 공유하는 공통 레이아웃.
+/// 🚧 옛 온보딩 레이아웃 — 지금은 **임시 STEP 6 닉네임**만 쓴다(새 그림이 오면 [OnboardingFrame]으로 옮기고 지운다).
 ///
 /// 상단 배경 풍경 + 하단 다크 패널(제목·부제·콘텐츠·완료 버튼) + 뒤로가기.
 class OnboardingScaffold extends StatelessWidget {
@@ -18,6 +18,7 @@ class OnboardingScaffold extends StatelessWidget {
     this.note,
     this.submitLabel,
     this.submitEnabled = true,
+    this.onBack,
   });
 
   final String backgroundAsset;
@@ -26,9 +27,13 @@ class OnboardingScaffold extends StatelessWidget {
   final String? note;
   final Widget child;
   final VoidCallback onSubmit;
+
   /// 완료 버튼 문구. 없으면 기본값(l10n.onboardingNext)을 쓴다.
   final String? submitLabel;
   final bool submitEnabled;
+
+  /// 뒤로 — 단계 화면은 `context.go`로 옮겨 다녀 쌓인 화면이 없다. 없으면 `maybePop`.
+  final VoidCallback? onBack;
 
   @override
   Widget build(BuildContext context) {
@@ -126,7 +131,7 @@ class OnboardingScaffold extends StatelessWidget {
               left: 4,
               child: SafeArea(
                 child: TextButton.icon(
-                  onPressed: () => Navigator.of(context).maybePop(),
+                  onPressed: onBack ?? () => Navigator.of(context).maybePop(),
                   icon: const Icon(
                     Icons.chevron_left,
                     color: AppColors.textPrimary,

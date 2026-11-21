@@ -13,7 +13,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.Period;
 import java.time.Year;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.UUID;
 
@@ -21,6 +24,7 @@ import java.util.UUID;
 public class ProfileService {
 
     private static final int MIN_AGE = 18;
+    private static final ZoneId KST = ZoneId.of("Asia/Seoul");
 
     private final UserMapper userMapper;
     private final ProfileMapper profileMapper;
@@ -43,10 +47,24 @@ public class ProfileService {
 
     @Transactional
     public void createProfile(String userId, CreateProfileRequest request) {
-        int age = Year.now().getValue() - request.birthYear();
+        LocalDate birthDate = request.birthDate();
+        Integer birthYear = birthDate != null ? Integer.valueOf(birthDate.getYear()) : request.birthYear();
+        if (birthYear == null) {
+            throw new ApiException(ErrorCode.VALIDATION_FAILED, HttpStatus.BAD_REQUEST,
+                    "생년월일을 입력해 주세요.", "birthDate");
+        }
+        // 날짜가 있으면 **만 나이**(생일이 지났는지까지), 해만 있으면 옛 방식(연 단위).
+        LocalDate today = LocalDate.now(KST);
+        if (birthDate != null && birthDate.isAfter(today)) {
+            throw new ApiException(ErrorCode.VALIDATION_FAILED, HttpStatus.BAD_REQUEST,
+                    "생년월일을 확인해 주세요.", "birthDate");
+        }
+        int age = birthDate != null
+                ? Period.between(birthDate, today).getYears()
+                : Year.now(KST).getValue() - birthYear;
         if (age < MIN_AGE) {
             throw new ApiException(ErrorCode.AGE_RESTRICTED, HttpStatus.BAD_REQUEST,
-                    "만 18세 이상만 가입할 수 있습니다.", "birthYear");
+                    "만 18세 이상만 가입할 수 있습니다.", "birthDate");
         }
 
         User user = getUserOrThrow(userId);
@@ -54,7 +72,7 @@ public class ProfileService {
             nicknameValidator.validateAvailableOrThrow(request.nickname());
         }
 
-        userMapper.updateProfile(userId, request.nickname(), request.birthYear(), request.gender(), request.country());
+        userMapper.updateProfile(userId, request.nickname(), birthYear, birthDate, request.gender(), request.country());
 
         if (profileMapper.selectByUserId(userId) == null) {
             profileMapper.insertProfile(userId);

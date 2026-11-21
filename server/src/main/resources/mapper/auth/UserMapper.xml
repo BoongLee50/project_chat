@@ -8,6 +8,7 @@
         <result property="providerUid" column="provider_uid"/>
         <result property="nickname" column="nickname"/>
         <result property="birthYear" column="birth_year"/>
+        <result property="birthDate" column="birth_date"/>
         <result property="gender" column="gender"/>
         <result property="country" column="country"/>
         <result property="status" column="status"/>
@@ -31,7 +32,8 @@
 
     <update id="updateProfile">
         UPDATE users
-        SET nickname = #{nickname}, birth_year = #{birthYear}, gender = #{gender}, country = #{country}
+        SET nickname = #{nickname}, birth_year = #{birthYear}, birth_date = #{birthDate},
+            gender = #{gender}, country = #{country}
         WHERE id = #{id}
     </update>
 

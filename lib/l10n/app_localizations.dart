@@ -151,41 +151,11 @@ abstract class L10n {
   /// **'밤에만 열리는 채팅의 시간'**
   String get loginTagline;
 
-  /// No description provided for @loginWithLine.
-  ///
-  /// In ko, this message translates to:
-  /// **'LINE으로 로그인'**
-  String get loginWithLine;
-
-  /// No description provided for @loginWithKakao.
-  ///
-  /// In ko, this message translates to:
-  /// **'카카오톡으로 로그인'**
-  String get loginWithKakao;
-
-  /// No description provided for @loginWithGoogle.
-  ///
-  /// In ko, this message translates to:
-  /// **'Google로 로그인'**
-  String get loginWithGoogle;
-
-  /// No description provided for @loginWithApple.
-  ///
-  /// In ko, this message translates to:
-  /// **'Apple로 로그인'**
-  String get loginWithApple;
-
   /// No description provided for @loginProviderUnavailable.
   ///
   /// In ko, this message translates to:
   /// **'아직 준비 중인 로그인이에요. 다른 방법으로 로그인해 주세요.'**
   String get loginProviderUnavailable;
-
-  /// No description provided for @loginTermsNotice.
-  ///
-  /// In ko, this message translates to:
-  /// **'로그인하면 서비스 이용약관 및 개인정보처리방침에 동의하게 됩니다.'**
-  String get loginTermsNotice;
 
   /// No description provided for @nicknameTitle.
   ///
@@ -241,41 +211,101 @@ abstract class L10n {
   /// **'완료'**
   String get onboardingNext;
 
-  /// No description provided for @onboardingPrivateNotice.
+  /// No description provided for @loginChooseMethod.
   ///
   /// In ko, this message translates to:
-  /// **'* 이 정보는 다른 사용자에게 공개되지 않습니다.'**
-  String get onboardingPrivateNotice;
+  /// **'로그인 방법을 선택해 주세요'**
+  String get loginChooseMethod;
+
+  /// No description provided for @onboardingHeaderTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'프로필'**
+  String get onboardingHeaderTitle;
+
+  /// No description provided for @onboardingHeaderDesc.
+  ///
+  /// In ko, this message translates to:
+  /// **'나를 가장 잘 보여주는\n프로필을 만들어보세요.'**
+  String get onboardingHeaderDesc;
+
+  /// No description provided for @onboardingGenderQuestion.
+  ///
+  /// In ko, this message translates to:
+  /// **'성별을 선택해 주세요'**
+  String get onboardingGenderQuestion;
+
+  /// No description provided for @onboardingGenderNote.
+  ///
+  /// In ko, this message translates to:
+  /// **'작성한 프로필은 언제든 수정할 수 있어요'**
+  String get onboardingGenderNote;
+
+  /// No description provided for @onboardingBirthQuestion.
+  ///
+  /// In ko, this message translates to:
+  /// **'생년월일을 입력해 주세요'**
+  String get onboardingBirthQuestion;
+
+  /// No description provided for @onboardingBirthNote.
+  ///
+  /// In ko, this message translates to:
+  /// **'등록된 생년월일은 변경할 수 없어요'**
+  String get onboardingBirthNote;
+
+  /// No description provided for @onboardingBirthInvalid.
+  ///
+  /// In ko, this message translates to:
+  /// **'생년월일을 정확히 입력해 주세요'**
+  String get onboardingBirthInvalid;
+
+  /// No description provided for @onboardingResidenceQuestion.
+  ///
+  /// In ko, this message translates to:
+  /// **'거주 지역을 선택해 주세요'**
+  String get onboardingResidenceQuestion;
+
+  /// No description provided for @onboardingResidenceNote.
+  ///
+  /// In ko, this message translates to:
+  /// **'등록된 프로필은 나중에 수정할 수 있어요'**
+  String get onboardingResidenceNote;
+
+  /// No description provided for @onboardingResidenceCountry.
+  ///
+  /// In ko, this message translates to:
+  /// **'거주 국가'**
+  String get onboardingResidenceCountry;
+
+  /// No description provided for @onboardingResidenceRegion.
+  ///
+  /// In ko, this message translates to:
+  /// **'거주 지역'**
+  String get onboardingResidenceRegion;
+
+  /// No description provided for @onboardingResidenceDetail.
+  ///
+  /// In ko, this message translates to:
+  /// **'세부 지역'**
+  String get onboardingResidenceDetail;
+
+  /// No description provided for @onboardingResidencePick.
+  ///
+  /// In ko, this message translates to:
+  /// **'선택해 주세요'**
+  String get onboardingResidencePick;
+
+  /// No description provided for @onboardingResidenceDetailSoon.
+  ///
+  /// In ko, this message translates to:
+  /// **'세부 지역은 준비 중이에요'**
+  String get onboardingResidenceDetailSoon;
 
   /// No description provided for @birthYearTitle.
   ///
   /// In ko, this message translates to:
   /// **'출생년도 설정'**
   String get birthYearTitle;
-
-  /// No description provided for @birthYearSubtitle.
-  ///
-  /// In ko, this message translates to:
-  /// **'정확한 나이 확인을 위해 출생년도를 선택해주세요.'**
-  String get birthYearSubtitle;
-
-  /// No description provided for @genderCountryTitle.
-  ///
-  /// In ko, this message translates to:
-  /// **'성별 및 나라 설정'**
-  String get genderCountryTitle;
-
-  /// No description provided for @genderCountrySubtitle.
-  ///
-  /// In ko, this message translates to:
-  /// **'정확한 매칭을 위해 성별과 나라를 선택해주세요.'**
-  String get genderCountrySubtitle;
-
-  /// No description provided for @genderSectionTitle.
-  ///
-  /// In ko, this message translates to:
-  /// **'성별 선택'**
-  String get genderSectionTitle;
 
   /// No description provided for @genderMale.
   ///
@@ -288,12 +318,6 @@ abstract class L10n {
   /// In ko, this message translates to:
   /// **'여자'**
   String get genderFemale;
-
-  /// No description provided for @countrySectionTitle.
-  ///
-  /// In ko, this message translates to:
-  /// **'나라 선택'**
-  String get countrySectionTitle;
 
   /// No description provided for @countryKorea.
   ///

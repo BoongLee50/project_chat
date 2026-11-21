@@ -17,17 +17,22 @@ class ProfileApi {
   }
 
   /// 프로필 생성(온보딩 완료).
+  ///
+  /// 나이는 **생년월일**(연·월·일)로 보낸다 — 서버가 만 나이(생일까지)로 18세를 검사하고
+  /// `birth_year`도 함께 채운다(V33, 온보딩 STEP 2).
   Future<void> createProfile({
     required String nickname,
-    required int birthYear,
+    required DateTime birthDate,
     required String gender,
     required String country,
   }) async {
+    String two(int v) => v.toString().padLeft(2, '0');
     await _client.post(
       '/profile',
       body: {
         'nickname': nickname,
-        'birthYear': birthYear,
+        'birthDate':
+            '${birthDate.year}-${two(birthDate.month)}-${two(birthDate.day)}',
         'gender': gender,
         'country': country,
       },

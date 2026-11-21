@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Data
@@ -15,6 +16,8 @@ public class User {
     private String providerUid;
     private String nickname;      // 온보딩 전 NULL
     private Integer birthYear;
+    /** 생년월일(V33). 온보딩이 연·월·일을 받기 전 가입자는 NULL. */
+    private LocalDate birthDate;
     private String gender;
     private String country;
     private String status;        // ACTIVE | SUSPENDED | BANNED
