@@ -88,16 +88,19 @@ class OnboardingFrame extends StatelessWidget {
     required this.illustration,
     required this.illustrationAt,
     required this.illustrationSize,
-    required this.question,
-    required this.questionTop,
+    this.question,
+    this.questionTop,
     this.note,
     this.noteTop,
     this.content,
     this.body,
+    this.bodyTop,
     required this.onBack,
     required this.onNext,
     this.keyboardLimit,
-  }) : assert(note == null || noteTop != null);
+  }) : assert(note == null || noteTop != null),
+       assert(question == null || questionTop != null),
+       assert(bodyTop == null || body != null);
 
   /// 1~7.
   final int step;
@@ -106,8 +109,10 @@ class OnboardingFrame extends StatelessWidget {
   final Offset illustrationAt;
   final Size illustrationSize;
 
-  final String question;
-  final double questionTop;
+  /// 질문 한 줄. `null`이면 판이 그리지 않는다 — 질문까지 스크롤 칸에 넣는 단계(STEP 4)는
+  /// [body] 안에서 [questionText]로 같은 모양을 그린다.
+  final String? question;
+  final double? questionTop;
 
   /// 회색 안내 한 줄 — 없는 단계도 있다(STEP 4 관심사).
   final String? note;
@@ -116,9 +121,12 @@ class OnboardingFrame extends StatelessWidget {
   /// 이 단계만의 조각들 — 시안 좌표로 `Positioned`를 돌려준다(배율 s를 받는다).
   final List<Widget> Function(double s)? content;
 
-  /// 질문 아래 ~ `<` `>` 버튼 사이를 채우는 칸 — 목록이 길어 화면을 넘는 단계(STEP 4 관심사 37종)가 쓴다.
-  /// 판(머리·질문·버튼)은 그대로 두고 **이 칸 안만** 스크롤한다(고정 화면에서 늘어나는 칸이 흡수하는 원칙).
+  /// 위쪽 판 아래 ~ `<` `>` 버튼 사이를 채우는 칸 — 목록이 길어 화면을 넘는 단계(STEP 4 관심사 37종)가 쓴다.
+  /// 판(머리·진행 표시·STEP·버튼)은 그대로 두고 **이 칸 안만** 스크롤한다(고정 화면에서 늘어나는 칸이 흡수하는 원칙).
   final Widget? body;
+
+  /// [body]가 시작하는 시안 y — 주면 위쪽 판이 여기서 끝난다(STEP 4: `STEP` 배지와 질문 사이, 사용자 2026-11-21).
+  final double? bodyTop;
 
   /// 뒤로. `null`이면 `<` 버튼이 없다 — STEP 1은 로그인 직후라 되돌아갈 곳이 없다(사용자 2026-11-21).
   final VoidCallback? onBack;
@@ -133,8 +141,24 @@ class OnboardingFrame extends StatelessWidget {
   /// 다음으로 — 못 넘어가면 이유 문구를, 넘어가면 null을 돌려준다.
   final Future<String?> Function() onNext;
 
-  /// 안내 문구 아래 여백까지가 위쪽 판의 높이다(안내가 없으면 질문 한 줄 아래까지).
-  double get _topHeight => noteTop != null ? noteTop! + 100 : questionTop + 110;
+  /// 위쪽 판의 높이 — [bodyTop]이 있으면 거기까지, 아니면 안내 문구(없으면 질문 한 줄) 아래까지.
+  double get _topHeight =>
+      bodyTop ??
+      (noteTop != null ? noteTop! + 100 : (questionTop ?? 943) + 110);
+
+  /// 질문 한 줄의 모양(한 줄 · 길면 줄인다) — 판이 그리든 [body]가 그리든 같게.
+  static Widget questionText(String question, double s) => FittedBox(
+    fit: BoxFit.scaleDown,
+    child: Text(
+      question,
+      maxLines: 1,
+      style: TextStyle(
+        color: OnboardingArt.ink,
+        fontSize: 64 * s,
+        fontWeight: FontWeight.w600,
+      ),
+    ),
+  );
 
   /// 자판 때문에 위쪽 판을 얼마나 올릴까(논리px) — [keyboardLimit] 설명대로. 테스트가 직접 부른다.
   @visibleForTesting
@@ -269,23 +293,13 @@ class OnboardingFrame extends StatelessWidget {
                           null => _StepBadgePlaceholder(step: step, scale: s),
                         },
                       ),
-                      _centered(
-                        s,
-                        top: questionTop,
-                        // 한 줄로 — 일본어처럼 길면 줄여서 아래 칸을 밀어내지 않게.
-                        child: FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: Text(
-                            question,
-                            maxLines: 1,
-                            style: TextStyle(
-                              color: OnboardingArt.ink,
-                              fontSize: 64 * s,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
+                      if (question != null)
+                        _centered(
+                          s,
+                          top: questionTop!,
+                          // 한 줄로 — 일본어처럼 길면 줄여서 아래 칸을 밀어내지 않게.
+                          child: questionText(question!, s),
                         ),
-                      ),
                       ...?content?.call(s),
                       if (note != null)
                         _centered(

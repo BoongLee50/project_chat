@@ -456,7 +456,7 @@ adb shell cmd locale set-app-locales com.example.project_chat --locales ko-KR
 | | |
 |---|---|
 | 화면 | `interest_step_screen.dart` — 판(`OnboardingFrame`) 위에 질문 *"관심사를 3개까지 선택해 주세요"* · 묶음마다 [아이콘 + 이름] · 칩 셋씩(95 / 409 / 722, 줄 간격 147, 묶음 사이 113 — 시안 실측) |
-| 규칙 | **프로필 관심사와 같다** — `ProfileCatalog.interestGroups` 37종·네 묶음 · **최대 3개**(`maxInterests`) · 넘기면 버튼을 죽이지 않고 프로필과 같은 팝업(`interestsEditLimit`) · 하나도 안 고르면 `>`가 이유를 말한다(`onboardingInterestRequired`) |
+| 규칙 | **프로필 관심사와 같다** — `ProfileCatalog.interestGroups` 37종·네 묶음 · **최대 3개**(`maxInterests`) · 넘기면 버튼을 죽이지 않고 ~~프로필과 같은 팝업~~ → **토스트**(후속 3, `interestsEditLimit`) · 하나도 안 고르면 `>`가 이유를 말한다(`onboardingInterestRequired`) |
 | 저장 | `OnboardingForm.interests` → 가입 끝(`submitProfile`)에 `PUT /me/interests` — 프로필 관심사 그대로 |
 | 판 | `OnboardingFrame`에 `body`(질문 아래 ~ `<` `>` 사이를 채우는 칸) — 37종이 화면을 넘어 **이 칸 안만 스크롤**하고 판은 고정. 안내 문구(`note`)는 선택이 됐다(STEP 4엔 없다). `STEP n` 배지 그림이 없으면 같은 자리에 **보라 알약을 코드로**(자리 표시) |
 | 순서 | STEP 3 → **4** → (5 건너뜀) → 임시 닉네임(STEP 6) — 닉네임 `<`는 STEP 4로 |
@@ -470,6 +470,13 @@ adb shell cmd locale set-app-locales com.example.project_chat --locales ko-KR
 
 **검증**: `analyze` 깨끗 · `flutter test` 37/37 · 에뮬(Pixel_10, 앱 언어 ko): 애플 목 계정으로 STEP 1 → 2 → 3 → **4**(세 개 고르고 넷째 → 안내 팝업, 끝까지 스크롤 — 네 묶음) → 임시 닉네임 → 가입 끝, DB `user_interests` = `TRAVEL·PHOTO·MOVIE` · `user_regions` = `KR_SEOUL` 확인.
 ⚠️ 확인 뒤 `mock-dev-apple`을 **다시 가입 전 상태로** 되돌렸다(`users` 이름·생일·성별·나라 비움, 관심사·지역 지움 — 지난번에 남은 `posts` 한 줄은 그대로). 에뮬 앱은 이 계정 토큰을 쥔 채라 켜면 온보딩부터다.
+
+**후속(같은 날, 사용자 지시 셋)**:
+1. 관심사 **시안 분류(여행 · 문화, 예술 …)는 나중에 정보를 준다** — 그때까지 목록은 37종 그대로
+2. **스크롤 칸을 넓힌다** — 칸 윗변을 `STEP 4` 배지와 질문 사이(시안 y **990**)로 올리고 **질문 문구도 스크롤 안에** 넣었다.
+   `OnboardingFrame`에 `bodyTop`(위쪽 판이 끝나는 y)을 더하고 `question`을 선택으로 — 질문 모양은 `OnboardingFrame.questionText` 하나를 판·칸이 같이 쓴다
+3. **넷째를 고르면 토스트**(스낵바) *"관심사 등록은 3개까지만 선택할 수 있습니다."* — 팝업이 아니다. 프로필 [관심사] 시트는 팝업 그대로
+에뮬: 셋 고른 뒤 넷째 → 아래 토스트 · 위로 밀면 질문까지 함께 올라가 배지 아래에서 잘림 확인(가입은 안 끝내서 계정은 가입 전 그대로).
 
 ### 2026-11-21 [프로필] — 타이틀 화면 · 온보딩 STEP 1~3 (그래픽 소스 `로그인 화면` · **V33**)
 
