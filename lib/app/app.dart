@@ -36,6 +36,11 @@ class DalbittokApp extends ConsumerWidget {
         }
         return const Locale('ja');
       },
+      // 폰트는 언어마다 다르다(AppTheme.darkFor) — 여기서 지금 언어로 테마를 다시 씌운다.
+      builder: (context, child) => Theme(
+        data: AppTheme.darkFor(Localizations.localeOf(context).languageCode),
+        child: child!,
+      ),
       routerConfig: ref.watch(routerProvider),
     );
   }

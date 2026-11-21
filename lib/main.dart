@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -31,6 +32,12 @@ Future<void> main() async {
       systemNavigationBarDividerColor: Colors.transparent,
     ),
   );
+
+  // 폰트 라이선스(OFL)는 폰트와 함께 배포해야 한다 — 앱의 라이선스 목록에 올린다.
+  LicenseRegistry.addLicense(() async* {
+    final ofl = await rootBundle.loadString('assets/fonts/OFL.txt');
+    yield LicenseEntryWithLineBreaks(const ['Noto Sans KR', 'Noto Sans JP'], ofl);
+  });
 
   runApp(const ProviderScope(child: DalbittokApp()));
 }

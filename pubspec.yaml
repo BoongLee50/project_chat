@@ -76,8 +76,19 @@ flutter:
   # 여기에 명시해야 앱이 로드한다.)
   # 하위 폴더는 자동으로 포함되지 않는다 — 폴더마다 한 줄씩 적어야 한다.
   # ⚠️ 하위 폴더는 자동으로 안 들어간다 — 폴더를 추가하면 여기에도 줄을 넣을 것(07 함정 #30).
+  # 🔤 폰트 — 언어별 하나씩(사용자 결정 2026-11-21: Noto Sans). 정하는 곳은 lib/app/theme/app_theme.dart `darkFor`.
+  # 굵기 조절형(variable) 한 파일이 400~900을 다 낸다 — 굵기별 파일을 따로 넣지 말 것. 라이선스 OFL(assets/fonts/OFL.txt).
+  fonts:
+    - family: AppKo
+      fonts:
+        - asset: assets/fonts/NotoSansKR.ttf
+    - family: AppJa
+      fonts:
+        - asset: assets/fonts/NotoSansJP.ttf
+
   assets:
     - assets/images/
+    - assets/fonts/OFL.txt
     # 전달 폴더(Plan_Chat/UI/Scene_*) 구조를 그대로 따른다 — 다음 전달본을 그대로 떨어뜨리면 된다.
     - assets/images/scene_post/
     - assets/images/scene_garden/
