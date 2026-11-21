@@ -1,12 +1,12 @@
 ---
 name: profile
-description: 이 세션을 달빛톡 '프로필' 콘텐츠 전담으로 설정한다 — 기획서 8장 프로필([작성하기]·[미리 보기]) + 타이틀(로그인) 화면, D:\Plan_Chat\그래픽 소스\프로필 화면 위주. 사용자가 /profile을 입력할 때만 쓴다.
+description: 이 세션을 달빛톡 '프로필' 콘텐츠 전담으로 설정한다 — 기획서 8장 프로필([작성하기]·[미리 보기]) + 타이틀(로그인) 화면 + 온보딩(가입 정보 입력), D:\Plan_Chat\그래픽 소스\프로필 화면 위주. 사용자가 /profile을 입력할 때만 쓴다.
 disable-model-invocation: true
 ---
 
 # 🙂 프로필 세션
 
-이 세션은 이제 **프로필** 담당이다 — 🆕 **타이틀(로그인) 화면도 여기서 진행한다**(사용자 2026-11-21, "그 외"에서 옮겨 옴). 이후 요청은 별말 없으면 프로필 기준으로 해석한다.
+이 세션은 이제 **프로필** 담당이다 — 🆕 **타이틀(로그인) 화면과 온보딩(가입 정보 입력)도 여기서 진행한다**(사용자 2026-11-21, "그 외"에서 옮겨 옴) — 앱을 켜서 프로필이 만들어지기까지가 한 세션이다. 이후 요청은 별말 없으면 프로필 기준으로 해석한다.
 
 **먼저 `.claude/content-sessions.md`를 읽고 그 §2 시작 절차를 따른다** — 특히 §4 동시 작업 규칙.
 (가능하면 세션 제목을 `🙂 프로필`로 바꿔 둔다.)
@@ -26,7 +26,8 @@ disable-model-invocation: true
 | 문서 | `01` profile API · `02` `user_profiles`·관심사·지역 · **`08` §0-2(관심사)·§0-3(프로필 그림)** · `10` §0-3 · `13` |
 | 검증 | `python tools/verify/verify_profile.py` (local 서버) |
 | 🆕 타이틀 화면 | **로그인 화면 = 앱을 처음 켜면 나오는 타이틀 화면**(2026-11-21 이 세션으로) — 기획서 **2장 로그인**. 클라 `lib/features/auth/presentation/screens/login_screen.dart` · 공급자 토큰 단계 `lib/features/auth/data/social/social_sign_in.dart` · 서버 `server/.../auth/`(`social/` 검증기 넷) · 배경 `assets/images/login_bg.jpg`. 아래 **"타이틀 화면"** 절을 볼 것 |
-| 인접 | 가입 때 프로필 생성(2-1, `onboarding/`, "그 외" 몫 — ⚠️ 타이틀 바로 다음 화면이라 맞닿는다) · Prime·루나는 이제 프로필에 없다(상단 버튼·포스트 화면이 연다) |
+| 🆕 온보딩 | **가입 정보 입력 = 타이틀 다음 화면들**(2026-11-21 이 세션으로) — 기획서 **2-1 프로필 생성 · 2-2 회원 생성 프로세스**. 닉네임(10자 · 특수문자·이모지 금지 · 중복 · 금지어 → [MSG NUM2]) → 출생년도(만 18세 미만 → [MSG NUM3]) → 성별·국가. 클라 `lib/features/onboarding/`(`nickname_screen` · `birth_year_screen` · `gender_country_screen` · `onboarding_scaffold` · `onboarding_provider`) · 서버 `GET /profile/nickname:check` · `POST /profile`(`server/.../profile/` — 닉네임 검사 `NicknameValidator`, 테스트 있음) · 로그인 응답 `status`(NEW · PROFILE_REQUIRED → 온보딩으로) · 배경 `onboarding_1~3.jpg` · 문서 `01` §1.2 |
+| 인접 | Prime·루나는 이제 프로필에 없다(상단 버튼·포스트 화면이 연다) |
 
 ## 타이틀 화면 (2026-11-21 이 세션으로)
 
