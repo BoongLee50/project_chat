@@ -67,7 +67,7 @@ class _NicknameScreenState extends ConsumerState<NicknameScreen> {
       subtitle: l10n.nicknameSubtitle,
       submitEnabled: _valid && !form.busy,
       onSubmit: _submit,
-      onBack: () => context.go(Routes.onboardingResidence),
+      onBack: () => context.go(Routes.onboardingInterest),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

@@ -6,6 +6,7 @@ import '../features/auth/presentation/providers/session_provider.dart';
 import '../features/auth/presentation/screens/login_screen.dart';
 import '../features/onboarding/presentation/screens/birth_date_step_screen.dart';
 import '../features/onboarding/presentation/screens/gender_step_screen.dart';
+import '../features/onboarding/presentation/screens/interest_step_screen.dart';
 import '../features/onboarding/presentation/screens/nickname_screen.dart';
 import '../features/onboarding/presentation/screens/residence_step_screen.dart';
 import 'main_shell.dart';
@@ -15,10 +16,11 @@ abstract final class Routes {
   static const splash = '/splash';
   static const login = '/login';
   // 온보딩(가입 정보 입력) — 그래픽 소스 `로그인 화면` STEP 1~7(2026-11-21).
-  // 🚧 약관 화면(로그인 다음)은 아직 없다. STEP 4·5·7은 그림이 없어 건너뛰고, STEP 6 닉네임은 옛 화면이 임시로 맡는다.
+  // 🚧 약관 화면(로그인 다음)은 아직 없다. STEP 5·7은 그림이 없어 건너뛰고, STEP 6 닉네임은 옛 화면이 임시로 맡는다.
   static const onboardingGender = '/onboarding/gender'; // STEP 1
   static const onboardingBirth = '/onboarding/birth'; // STEP 2
   static const onboardingResidence = '/onboarding/residence'; // STEP 3
+  static const onboardingInterest = '/onboarding/interest'; // STEP 4
   static const onboardingNickname = '/onboarding/nickname'; // STEP 6(임시 — 옛 화면)
   static const home = '/home';
 }
@@ -74,6 +76,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: Routes.onboardingResidence,
         builder: (context, state) => const ResidenceStepScreen(),
+      ),
+      GoRoute(
+        path: Routes.onboardingInterest,
+        builder: (context, state) => const InterestStepScreen(),
       ),
       GoRoute(
         path: Routes.onboardingNickname,

@@ -111,6 +111,14 @@ class L10nKo extends L10n {
   String get onboardingResidenceDetailSoon => '세부 지역은 준비 중이에요';
 
   @override
+  String onboardingInterestQuestion(int max) {
+    return '관심사를 $max개까지 선택해 주세요';
+  }
+
+  @override
+  String get onboardingInterestRequired => '관심사를 1개 이상 선택해 주세요';
+
+  @override
   String get birthYearTitle => '출생년도 설정';
 
   @override

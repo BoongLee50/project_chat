@@ -117,7 +117,7 @@
 
 ## 0-4. 🔑 로그인 — 타이틀 화면 · 온보딩 (`그래픽 소스\로그인 화면`, 2026-11-21 첫 전달 · 프로필 세션)
 
-33장 들였다 → `assets/images/scene_login/{title,step1,step2,step3}/` + `title/ja/`. 대조 도구 `KOREAN_DIRS`에 폴더 짝을 더했다.
+38장 들였다 → `assets/images/scene_login/{title,step1,step2,step3,step4}/` + `title/ja/`(STEP 4 다섯 장은 같은 날 12:39 추가 전달). 대조 도구 `KOREAN_DIRS`에 폴더 짝을 더했다.
 
 | 화면 | 들인 그림 | 비고 |
 |---|---|---|
@@ -125,7 +125,8 @@
 | STEP 1 성별 | 머리 배경 `back_porfile_top` · 흰 판 `back_porfile_bottom` · 남·여 버튼(선택/미선택) · 앞뒤 버튼 · 진행 표시(✓ ◎ ○ · 선 두 가지) · `STEP 1` · 그림 | 공용 조각이 이 폴더로 왔다 → STEP 2·3도 `step1/`을 쓴다 |
 | STEP 2 생년월일 | 그림 · `AGE` · 사선 · 밑줄 · `STEP 2` | 숫자는 **글자**(값이 변한다) |
 | STEP 3 거주 지역 | 그림 · 칸(선택 보라 / 미선택 회색, `\|`와 `⌄`가 구워져 있다) · `STEP 3` | 이름표·값은 글자 |
-| STEP 4~7 | — | 🎨 **아직 안 왔다**(폴더만 있다) |
+| STEP 4 관심사 | 그림 `back_porfile_interest`(479×440) · 칩 틀 `frame_interest_selected`/`unselected`(265×114, 글자 없음) · 묶음 아이콘 `icon_interest_trip`(94×127)·`icon_interest_art`(123×98) | 칩 이름·묶음 이름은 **글자**. 🎨 **`STEP 4` 배지가 안 왔다** — 코드로 그린 보라 알약이 자리를 지킨다. 🎨 묶음 아이콘은 **두 장뿐** — 취미 ← trip · 문화 ← art, 라이프스타일·스포츠는 `Icons.*` 자리 표시 |
+| STEP 5~7 | — | 🎨 **아직 안 왔다**(폴더만 있다) |
 
 - 🚫 STEP 시안 왼쪽 위 `<`는 **그림 실수**(사용자 2026-11-21) — 없다.
 - 🗑 **`login_bg.jpg`(막힌 것 C) 해소** — 새 타이틀 배경으로 바뀌어 지웠다. 옛 온보딩 배경 `onboarding_2·3.jpg`도 지웠다(`onboarding_1.jpg`는 임시 STEP 6 닉네임 화면이 아직 쓴다).

@@ -34,6 +34,8 @@
   "onboardingResidenceDetail": "詳細地域",
   "onboardingResidencePick": "選択してください",
   "onboardingResidenceDetailSoon": "詳細地域は準備中です",
+  "onboardingInterestQuestion": "興味・関心を{max}個まで選んでください",
+  "onboardingInterestRequired": "興味・関心を1個以上選んでください",
   "birthYearTitle": "生年設定",
   "genderMale": "男性",
   "genderFemale": "女性",

@@ -301,6 +301,18 @@ abstract class L10n {
   /// **'세부 지역은 준비 중이에요'**
   String get onboardingResidenceDetailSoon;
 
+  /// No description provided for @onboardingInterestQuestion.
+  ///
+  /// In ko, this message translates to:
+  /// **'관심사를 {max}개까지 선택해 주세요'**
+  String onboardingInterestQuestion(int max);
+
+  /// No description provided for @onboardingInterestRequired.
+  ///
+  /// In ko, this message translates to:
+  /// **'관심사를 1개 이상 선택해 주세요'**
+  String get onboardingInterestRequired;
+
   /// No description provided for @birthYearTitle.
   ///
   /// In ko, this message translates to:

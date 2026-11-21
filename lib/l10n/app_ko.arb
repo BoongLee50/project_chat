@@ -40,6 +40,15 @@
   "onboardingResidenceDetail": "세부 지역",
   "onboardingResidencePick": "선택해 주세요",
   "onboardingResidenceDetailSoon": "세부 지역은 준비 중이에요",
+  "onboardingInterestQuestion": "관심사를 {max}개까지 선택해 주세요",
+  "@onboardingInterestQuestion": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "onboardingInterestRequired": "관심사를 1개 이상 선택해 주세요",
   "birthYearTitle": "출생년도 설정",
   "genderMale": "남자",
   "genderFemale": "여자",

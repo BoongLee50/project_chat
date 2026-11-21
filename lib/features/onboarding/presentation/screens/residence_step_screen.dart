@@ -159,9 +159,7 @@ class _ResidenceStepScreenState extends ConsumerState<ResidenceStepScreen> {
         if (country == null || region == null) {
           return l10n.onboardingResidenceQuestion;
         }
-        // 🚧 STEP 4~7 그림이 아직 없다 — 관심사·자기소개·사진은 건너뛰고(프로필에서 채운다)
-        // 옛 닉네임 화면으로 가서 가입을 마친다.
-        context.go(Routes.onboardingNickname);
+        context.go(Routes.onboardingInterest);
         return null;
       },
     );

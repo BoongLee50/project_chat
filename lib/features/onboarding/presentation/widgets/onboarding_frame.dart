@@ -11,6 +11,7 @@ abstract final class OnboardingArt {
   static const _s1 = 'assets/images/scene_login/step1';
   static const _s2 = 'assets/images/scene_login/step2';
   static const _s3 = 'assets/images/scene_login/step3';
+  static const _s4 = 'assets/images/scene_login/step4';
 
   /// 머리 배경(보라 그라데이션 + 필기체 `Profile`, 1080×728). `프로필`·설명 두 줄은 **글자**다.
   static const headerBack = '$_s1/back_porfile_top.png';
@@ -27,11 +28,13 @@ abstract final class OnboardingArt {
   static const barFill = '$_s1/icon_porfile_fillbar.png'; // 40×4
   static const barUnfill = '$_s1/icon_porfile_unfillbar.png';
 
-  /// `STEP n` 배지(239×104). 지금은 1~3만 왔다.
-  static String stepBadge(int step) => switch (step) {
+  /// `STEP n` 배지(239×104). 지금은 1~3만 왔다 — 없는 단계는 `null`이고, 판이 같은 자리·크기의
+  /// 보라 알약을 코드로 그린다(🚧 자리 표시 — 그림이 오면 여기 한 줄).
+  static String? stepBadge(int step) => switch (step) {
     1 => '$_s1/icon_porfile_step1.png',
     2 => '$_s2/icon_porfile_step2.png',
-    _ => '$_s3/icon_porfile_step3.png',
+    3 => '$_s3/icon_porfile_step3.png',
+    _ => null,
   };
 
   // STEP 1 성별
@@ -53,6 +56,14 @@ abstract final class OnboardingArt {
       '$_s3/back_porfile_residence.png'; // 428×403 @ 557,150
   static const regionOn = '$_s3/button_profile_selectregion.png'; // 906×138
   static const regionOff = '$_s3/button_profile_unselectregion.png'; // 907×138
+
+  // STEP 4 관심사
+  static const illustInterest =
+      '$_s4/back_porfile_interest.png'; // 479×440 @ 530,137
+  static const chipOn = '$_s4/frame_interest_selected.png'; // 265×114
+  static const chipOff = '$_s4/frame_interest_unselected.png'; // 265×114
+  static const groupTrip = '$_s4/icon_interest_trip.png'; // 94×127
+  static const groupArt = '$_s4/icon_interest_art.png'; // 123×98
 
   /// 진행 표시 일곱 칸의 가운데 — x = 292 + 83·i, y = 739(시안 실측).
   static const markCenterY = 739.0;
@@ -79,13 +90,14 @@ class OnboardingFrame extends StatelessWidget {
     required this.illustrationSize,
     required this.question,
     required this.questionTop,
-    required this.note,
-    required this.noteTop,
-    required this.content,
+    this.note,
+    this.noteTop,
+    this.content,
+    this.body,
     required this.onBack,
     required this.onNext,
     this.keyboardLimit,
-  });
+  }) : assert(note == null || noteTop != null);
 
   /// 1~7.
   final int step;
@@ -96,11 +108,17 @@ class OnboardingFrame extends StatelessWidget {
 
   final String question;
   final double questionTop;
-  final String note;
-  final double noteTop;
+
+  /// 회색 안내 한 줄 — 없는 단계도 있다(STEP 4 관심사).
+  final String? note;
+  final double? noteTop;
 
   /// 이 단계만의 조각들 — 시안 좌표로 `Positioned`를 돌려준다(배율 s를 받는다).
-  final List<Widget> Function(double s) content;
+  final List<Widget> Function(double s)? content;
+
+  /// 질문 아래 ~ `<` `>` 버튼 사이를 채우는 칸 — 목록이 길어 화면을 넘는 단계(STEP 4 관심사 37종)가 쓴다.
+  /// 판(머리·질문·버튼)은 그대로 두고 **이 칸 안만** 스크롤한다(고정 화면에서 늘어나는 칸이 흡수하는 원칙).
+  final Widget? body;
 
   /// 뒤로. `null`이면 `<` 버튼이 없다 — STEP 1은 로그인 직후라 되돌아갈 곳이 없다(사용자 2026-11-21).
   final VoidCallback? onBack;
@@ -115,8 +133,8 @@ class OnboardingFrame extends StatelessWidget {
   /// 다음으로 — 못 넘어가면 이유 문구를, 넘어가면 null을 돌려준다.
   final Future<String?> Function() onNext;
 
-  /// 안내 문구 아래 여백까지가 위쪽 판의 높이다.
-  double get _topHeight => noteTop + 100;
+  /// 안내 문구 아래 여백까지가 위쪽 판의 높이다(안내가 없으면 질문 한 줄 아래까지).
+  double get _topHeight => noteTop != null ? noteTop! + 100 : questionTop + 110;
 
   /// 자판 때문에 위쪽 판을 얼마나 올릴까(논리px) — [keyboardLimit] 설명대로. 테스트가 직접 부른다.
   @visibleForTesting
@@ -242,11 +260,14 @@ class OnboardingFrame extends StatelessWidget {
                       DesignPositioned(
                         left: 419,
                         top: 839,
-                        child: ArtImage(
-                          OnboardingArt.stepBadge(step),
-                          width: 239,
-                          height: 104,
-                        ),
+                        child: switch (OnboardingArt.stepBadge(step)) {
+                          final String badge => ArtImage(
+                            badge,
+                            width: 239,
+                            height: 104,
+                          ),
+                          null => _StepBadgePlaceholder(step: step, scale: s),
+                        },
                       ),
                       _centered(
                         s,
@@ -265,25 +286,26 @@ class OnboardingFrame extends StatelessWidget {
                           ),
                         ),
                       ),
-                      ...content(s),
-                      _centered(
-                        s,
-                        top: noteTop,
-                        child: Text(
-                          note,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: OnboardingArt.gray,
-                            fontSize: 40 * s,
-                            fontWeight: FontWeight.w600,
+                      ...?content?.call(s),
+                      if (note != null)
+                        _centered(
+                          s,
+                          top: noteTop!,
+                          child: Text(
+                            note!,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: OnboardingArt.gray,
+                              fontSize: 40 * s,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ),
-                      ),
                     ],
                   ),
                 ),
               ),
-              const Spacer(),
+              if (body != null) Expanded(child: body!) else const Spacer(),
               Padding(
                 padding: EdgeInsets.fromLTRB(
                   127 * s,
@@ -367,4 +389,35 @@ class OnboardingFrame extends StatelessWidget {
     top: top * s,
     child: Center(child: child),
   );
+}
+
+/// `STEP n` 배지 그림이 아직 없는 단계의 자리 표시 — 같은 자리·크기(239×104)의 보라 알약 + 흰 글자.
+/// 🚧 `icon_porfile_step{n}.png`가 오면 [OnboardingArt.stepBadge]에 한 줄 더하면 이 위젯은 안 쓰인다.
+class _StepBadgePlaceholder extends StatelessWidget {
+  const _StepBadgePlaceholder({required this.step, required this.scale});
+
+  final int step;
+  final double scale;
+
+  @override
+  Widget build(BuildContext context) {
+    final s = scale;
+    return Container(
+      width: 239 * s,
+      height: 104 * s,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: OnboardingArt.purple,
+        borderRadius: BorderRadius.circular(52 * s),
+      ),
+      child: Text(
+        'STEP $step',
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: 46 * s,
+          fontWeight: FontWeight.w800,
+        ),
+      ),
+    );
+  }
 }

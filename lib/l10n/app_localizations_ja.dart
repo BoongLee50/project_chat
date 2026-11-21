@@ -111,6 +111,14 @@ class L10nJa extends L10n {
   String get onboardingResidenceDetailSoon => '詳細地域は準備中です';
 
   @override
+  String onboardingInterestQuestion(int max) {
+    return '興味・関心を$max個まで選んでください';
+  }
+
+  @override
+  String get onboardingInterestRequired => '興味・関心を1個以上選んでください';
+
+  @override
   String get birthYearTitle => '生年設定';
 
   @override
